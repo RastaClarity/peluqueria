@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+mport { useState, useCallback, useEffect } from "react";
 
 // ═══════════════════════════════════════════════════════════
 //  SUPABASE CONFIG
