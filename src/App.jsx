@@ -1,4 +1,4 @@
-mport { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 // ═══════════════════════════════════════════════════════════
 //  SUPABASE CONFIG
@@ -849,32 +849,6 @@ function Productos({user,setUser,showToast,showPoints}){
         </div>);
       })}
     </div>
-  </div>);
-}
-
-function Ranking(){
-  const [users,setUsers]=useState([]);
-  useEffect(()=>{dbGet('usuarios','?role=eq.client&select=nombre,puntos,visitas,avatar&order=puntos.desc').then(r=>setUsers(r||[]));},[]);
-  const medals=['🥇','🥈','🥉'];
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem',marginBottom:2}}>🏆 Ranking</div>
-    <div style={{color:'#ccc',fontSize:'0.81rem',fontWeight:700,marginBottom:14}}>Top clientas del mes ✨</div>
-    <div style={{background:'linear-gradient(135deg,#FFD93D,#FF9A3C)',borderRadius:20,padding:'16px 20px',color:'white',marginBottom:16,textAlign:'center'}}>
-      <div style={{fontSize:'2rem',marginBottom:4}}>🏆</div>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.2rem'}}>¡Gana puntos y sube al podio!</div>
-      <div style={{fontSize:'0.8rem',opacity:0.9}}>Juega, compra y visita para llegar arriba</div>
-    </div>
-    {users.map((u,i)=>(
-      <div key={i} style={{background:'white',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:12,border:i===0?'2px solid #FFD93D':'2px solid transparent'}}>
-        <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.6rem',minWidth:36,textAlign:'center'}}>{medals[i]||`#${i+1}`}</div>
-        <AvatarSVG av={u.avatar} size={44}/>
-        <div style={{flex:1}}><div style={{fontWeight:800}}>{u.nombre}</div><div style={{fontSize:'0.75rem',color:'#bbb'}}>{u.visitas} visitas</div></div>
-        <div style={{textAlign:'right'}}>
-          <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.3rem',color:'#C77DFF'}}>⭐ {u.puntos}</div>
-          {i<3&&<Badge c={i===0?'yellow':i===1?'blue':'green'}>{medals[i]} Top {i+1}</Badge>}
-        </div>
-      </div>
-    ))}
   </div>);
 }
 
