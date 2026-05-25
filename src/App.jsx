@@ -35,6 +35,7 @@ const dbDelete = (table, query)      => db(table, "DELETE", null,  query);
 let audioCtx = null;
 let musicInterval = null;
 let musicPlaying = false;
+let globalMuted = false;
 const PENTA = [261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25];
 
 function getCtx() {
@@ -42,6 +43,7 @@ function getCtx() {
   return audioCtx;
 }
 function playTone(freq,type='sine',dur=0.12,vol=0.15,delay=0) {
+  if (globalMuted) return;
   try {
     const ctx=getCtx(); const osc=ctx.createOscillator(); const g=ctx.createGain();
     osc.connect(g); g.connect(ctx.destination); osc.type=type;
@@ -141,10 +143,10 @@ function AvatarSVG({av,size=80}){
   return(<svg width={size} height={size} viewBox="0 0 100 100" style={{borderRadius:'50%',background:a.bg||AV.bg[0],flexShrink:0,display:'block'}}><g style={{color:a.hcol||'#2C1810'}}>{h}</g><ellipse cx="50" cy="58" rx="20" ry="22" fill={a.skin||'#FDDBB4'}/><text x="50" y="62" textAnchor="middle" fontSize="15" style={{userSelect:'none'}}>{a.eyes||'😊'}</text>{(a.hair==='bob'||a.hair==='liso'||!a.hair)&&<path d="M30,40 Q30,36 50,36 Q70,36 70,40 L70,38 Q70,20 50,20 Q30,20 30,38Z" fill={a.hcol||'#2C1810'}/>}{a.acc&&a.acc!=='none'&&<text x="50" y="25" textAnchor="middle" fontSize="17" style={{userSelect:'none'}}>{a.acc}</text>}</svg>);
 }
 function ACircle({nombre,size=36}){return <div style={{width:size,height:size,borderRadius:'50%',background:acol(nombre),display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontWeight:900,fontSize:size*.34,flexShrink:0}}>{ini(nombre)}</div>;}
-function Toast({msg,show}){return <div style={{position:'fixed',bottom:90,left:12,right:12,background:'white',borderRadius:16,padding:'13px 16px',boxShadow:'0 8px 32px rgba(0,0,0,0.16)',display:'flex',alignItems:'center',gap:10,fontWeight:700,fontSize:'0.87rem',transform:show?'translateY(0)':'translateY(140px)',opacity:show?1:0,transition:'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',zIndex:9999,borderLeft:'4px solid #4CAF50',maxWidth:460,margin:'0 auto'}}>{msg}</div>;}
+function Toast({msg,show}){return <div style={{position:'fixed',bottom:90,left:12,right:12,background:'#F8FBF6',borderRadius:16,padding:'13px 16px',boxShadow:'0 8px 32px rgba(0,0,0,0.16)',display:'flex',alignItems:'center',gap:10,fontWeight:700,fontSize:'0.87rem',transform:show?'translateY(0)':'translateY(140px)',opacity:show?1:0,transition:'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',zIndex:9999,borderLeft:'4px solid #4CAF50',maxWidth:460,margin:'0 auto'}}>{msg}</div>;}
 function Badge({c,children}){const p={pink:{bg:'#FFE8F3',tx:'#D63384'},green:{bg:'#E8FAE8',tx:'#2E7D32'},yellow:{bg:'#FFF8DC',tx:'#B8860B'},blue:{bg:'#E8F0FF',tx:'#1565C0'},red:{bg:'#FFE8E8',tx:'#C62828'},purple:{bg:'#F3E8FF',tx:'#7B1FA2'},orange:{bg:'#FFF0E8',tx:'#E65100'}}[c]||{bg:'#eee',tx:'#555'};return <span style={{background:p.bg,color:p.tx,borderRadius:50,padding:'3px 11px',fontSize:'0.72rem',fontWeight:800}}>{children}</span>;}
 function RoleBadge({role}){const cfg={admin:{c:'purple',l:'👑 Admin'},staff:{c:'blue',l:'💼 Staff'},client:{c:'pink',l:'💅 Cliente'}}[role]||{c:'pink',l:'Cliente'};return <Badge c={cfg.c}>{cfg.l}</Badge>;}
-function Card({children,style}){return <div style={{background:'white',borderRadius:20,padding:20,boxShadow:'0 4px 20px rgba(0,0,0,0.07)',marginBottom:16,...style}}>{children}</div>;}
+function Card({children,style}){return <div style={{background:'#F8FBF6',borderRadius:20,padding:20,boxShadow:'0 4px 20px rgba(0,0,0,0.07)',marginBottom:16,...style}}>{children}</div>;}
 function Btn({children,onClick,col='pink',sm,full,style,disabled}){
   const bg={pink:'linear-gradient(135deg,#2E7D32,#4CAF50)',green:'linear-gradient(135deg,#6BCB77,#4CAF50)',yellow:'linear-gradient(135deg,#FFD93D,#FF9A3C)',red:'linear-gradient(135deg,#FF6B6B,#FF4444)',blue:'linear-gradient(135deg,#4D96FF,#2979FF)',purple:'linear-gradient(135deg,#C77DFF,#9C27B0)',gray:'#EFEFEF'}[col]||'#FF6B9D';
   return <button onClick={()=>{if(!disabled){SFX.click();if(onClick)onClick();}}} disabled={disabled} style={{background:disabled?'#E0E0E0':bg,color:(col==='gray'||disabled)?'#aaa':'white',border:'none',borderRadius:50,padding:sm?'8px 16px':'12px 22px',fontWeight:800,fontSize:sm?'0.79rem':'0.88rem',cursor:disabled?'not-allowed':'pointer',fontFamily:'Nunito,sans-serif',boxShadow:(col==='gray'||disabled)?'none':'0 4px 14px rgba(0,0,0,0.14)',display:'inline-flex',alignItems:'center',gap:6,transition:'transform 0.12s',width:full?'100%':'auto',justifyContent:full?'center':'flex-start',...style}} onPointerDown={e=>{if(!disabled)e.currentTarget.style.transform='scale(0.93)';}} onPointerUp={e=>e.currentTarget.style.transform='scale(1)'} onPointerLeave={e=>e.currentTarget.style.transform='scale(1)'}>{children}</button>;
@@ -153,14 +155,14 @@ function Modal({open,onClose,title,children}){
   useEffect(()=>{if(open)SFX.click();},[open]);
   if(!open)return null;
   return <div onClick={e=>{if(e.target===e.currentTarget)onClose();}} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',backdropFilter:'blur(5px)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:14}}>
-    <div style={{background:'white',borderRadius:24,padding:22,width:'100%',maxWidth:460,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 30px 80px rgba(0,0,0,0.25)',animation:'popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)'}}>
+    <div style={{background:'#F8FBF6',borderRadius:24,padding:22,width:'100%',maxWidth:460,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 30px 80px rgba(0,0,0,0.25)',animation:'popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)'}}>
       <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.4rem',marginBottom:16,background:'linear-gradient(135deg,#2E7D32,#4CAF50)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{title}</div>
       {children}
     </div>
   </div>;
 }
-function FI({label,...p}){return <div style={{marginBottom:12}}>{label&&<label style={{display:'block',fontSize:'0.74rem',fontWeight:800,marginBottom:4,color:'#bbb',textTransform:'uppercase',letterSpacing:1}}>{label}</label>}<input {...p} style={{width:'100%',padding:'11px 13px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontSize:'0.93rem',fontWeight:600,outline:'none',background:'#FAFAFA',color:'#2D2D2D',boxSizing:'border-box',...p.style}} onFocus={e=>e.target.style.borderColor='#FF6B9D'} onBlur={e=>e.target.style.borderColor='#F0EAE0'}/></div>;}
-function FS({label,children,...p}){return <div style={{marginBottom:12}}>{label&&<label style={{display:'block',fontSize:'0.74rem',fontWeight:800,marginBottom:4,color:'#bbb',textTransform:'uppercase',letterSpacing:1}}>{label}</label>}<select {...p} style={{width:'100%',padding:'11px 13px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontSize:'0.93rem',fontWeight:600,outline:'none',background:'#FAFAFA',color:'#2D2D2D',boxSizing:'border-box'}}>{children}</select></div>;}
+function FI({label,...p}){return <div style={{marginBottom:12}}>{label&&<label style={{display:'block',fontSize:'0.74rem',fontWeight:800,marginBottom:4,color:'#bbb',textTransform:'uppercase',letterSpacing:1}}>{label}</label>}<input {...p} style={{width:'100%',padding:'11px 13px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontSize:'0.93rem',fontWeight:600,outline:'none',background:'#F2F8F0',color:'#2D2D2D',boxSizing:'border-box',...p.style}} onFocus={e=>e.target.style.borderColor='#FF6B9D'} onBlur={e=>e.target.style.borderColor='#F0EAE0'}/></div>;}
+function FS({label,children,...p}){return <div style={{marginBottom:12}}>{label&&<label style={{display:'block',fontSize:'0.74rem',fontWeight:800,marginBottom:4,color:'#bbb',textTransform:'uppercase',letterSpacing:1}}>{label}</label>}<select {...p} style={{width:'100%',padding:'11px 13px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontSize:'0.93rem',fontWeight:600,outline:'none',background:'#F2F8F0',color:'#2D2D2D',boxSizing:'border-box'}}>{children}</select></div>;}
 
 // ═══════════════════════════════════════════════════════════
 //  AVATAR EDITOR
@@ -171,7 +173,7 @@ function AvatarEditor({av,onSave,onClose}){
   const Sw=({val,cur,onClick,style})=><div onClick={onClick} style={{width:34,height:34,borderRadius:9,cursor:'pointer',border:cur===val?'3px solid #FF6B9D':'2px solid transparent',boxShadow:cur===val?'0 0 0 2px white,0 0 0 4px #FF6B9D':'0 1px 4px rgba(0,0,0,0.1)',transition:'all 0.15s',flexShrink:0,...style}}/>;
   const HBtn=({h})=><button onClick={()=>upd('hair',h)} style={{padding:'6px 10px',borderRadius:10,border:loc.hair===h?'2px solid #FF6B9D':'2px solid #F0EAE0',background:loc.hair===h?'#FFE8F3':'white',fontFamily:'Nunito,sans-serif',fontWeight:700,fontSize:'0.74rem',cursor:'pointer',color:loc.hair===h?'#FF6B9D':'#777'}}>{h.charAt(0).toUpperCase()+h.slice(1)}</button>;
   return(<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.55)',backdropFilter:'blur(5px)',zIndex:2000,display:'flex',alignItems:'flex-end',justifyContent:'center'}}>
-    <div style={{background:'white',borderRadius:'26px 26px 0 0',padding:'22px 20px 28px',width:'100%',maxWidth:480,maxHeight:'92vh',overflowY:'auto',animation:'slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1)'}}>
+    <div style={{background:'#F8FBF6',borderRadius:'26px 26px 0 0',padding:'22px 20px 28px',width:'100%',maxWidth:480,maxHeight:'92vh',overflowY:'auto',animation:'slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1)'}}>
       <div style={{width:40,height:4,background:'#E0E0E0',borderRadius:2,margin:'0 auto 18px'}}/>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18}}>
         <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.5rem',background:'linear-gradient(135deg,#2E7D32,#4CAF50)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>🎨 Crea tu Avatar</div>
@@ -221,18 +223,24 @@ function Auth({onLogin,showToast}){
     SFX.success(); onLogin(nu[0]);
   };
 
-  return(<div style={{minHeight:'100vh',background:'linear-gradient(160deg,#FFE8F3 0%,#F3E8FF 45%,#E8F4FF 100%)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:20,fontFamily:'Nunito,sans-serif',position:'relative'}}>
-    <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}@keyframes fadeSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes floatUp{0%{transform:translateY(110vh) rotate(0deg);opacity:0}10%{opacity:.35}90%{opacity:.2}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}::-webkit-scrollbar{display:none}input,select,button{font-family:Nunito,sans-serif}`}</style>
+  return(<div style={{minHeight:'100vh',background:'linear-gradient(160deg,#C8E6C9 0%,#E8F5E9 45%,#F1F8E9 100%)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:20,fontFamily:'Nunito,sans-serif',position:'relative',overflow:'hidden'}}>
+    <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}@keyframes fadeSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes floatUp{0%{transform:translateY(110vh) rotate(0deg);opacity:0}10%{opacity:.35}90%{opacity:.2}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}@keyframes wiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}::-webkit-scrollbar{display:none}input,select,button{font-family:Nunito,sans-serif}`}</style>
     <Particles/>
-    <button onClick={()=>{if(musicOn){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}} style={{position:'fixed',top:16,right:16,background:'white',border:'2px solid #FFE8F3',borderRadius:50,padding:'8px 14px',cursor:'pointer',fontWeight:800,fontSize:'0.85rem',zIndex:10}}>
-      {musicOn?'🔇 Música':'🎵 Música'}
+    <div style={{position:'absolute',top:'8%',left:'5%',fontSize:'2.5rem',animation:'wiggle 2s ease-in-out infinite',opacity:0.4}}>✂️</div>
+    <div style={{position:'absolute',top:'15%',right:'8%',fontSize:'2rem',animation:'bounce 2.5s ease-in-out infinite',opacity:0.35}}>💇</div>
+    <div style={{position:'absolute',top:'70%',left:'8%',fontSize:'1.8rem',animation:'bounce 3s ease-in-out infinite 0.5s',opacity:0.3}}>🌿</div>
+    <div style={{position:'absolute',top:'75%',right:'6%',fontSize:'2rem',animation:'wiggle 2.2s ease-in-out infinite 0.3s',opacity:0.35}}>💅</div>
+    <div style={{position:'absolute',top:'40%',left:'3%',fontSize:'1.5rem',animation:'spin 8s linear infinite',opacity:0.2}}>⭐</div>
+    <div style={{position:'absolute',top:'30%',right:'3%',fontSize:'1.5rem',animation:'spin 6s linear infinite reverse',opacity:0.2}}>✨</div>
+    <button onClick={()=>{globalMuted=!globalMuted; if(globalMuted){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}}} style={{position:'fixed',top:16,right:16,background:'white',border:'2px solid #FFE8F3',borderRadius:50,padding:'8px 14px',cursor:'pointer',fontWeight:800,fontSize:'0.85rem',zIndex:10}}>
+      {musicOn?'🔇 Silenciar':'🎵 Sonido'}
     </button>
     <div style={{textAlign:'center',marginBottom:26,animation:'popIn 0.6s ease'}}>
       <div style={{fontSize:'3.5rem',marginBottom:6,animation:'pulse 2s ease-in-out infinite',filter:'drop-shadow(0 4px 12px rgba(255,107,157,0.4))'}}>✂️</div>
       <div style={{fontFamily:'Fredoka One,cursive',fontSize:'2.6rem',background:'linear-gradient(135deg,#2E7D32,#4CAF50)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>PeluquerIA</div>
       <div style={{color:'#C8A0CC',fontWeight:800,fontSize:'0.78rem',letterSpacing:3,marginTop:2}}>TU PELUQUERÍA DIGITAL ✨</div>
     </div>
-    <div style={{background:'white',borderRadius:28,padding:26,width:'100%',maxWidth:370,boxShadow:'0 24px 64px rgba(255,107,157,0.15)',border:'1.5px solid #FFE8F3',animation:'fadeSlide 0.5s ease 0.2s both'}}>
+    <div style={{background:'#F8FBF6',borderRadius:28,padding:26,width:'100%',maxWidth:370,boxShadow:'0 24px 64px rgba(46,125,50,0.18)',border:'1.5px solid #A5D6A7',animation:'fadeSlide 0.5s ease 0.2s both'}}>
       <div style={{display:'flex',background:'#F8F5FF',borderRadius:14,padding:4,marginBottom:22}}>
         {['login','register'].map(m=><button key={m} onClick={()=>{SFX.nav();setMode(m);setErr('');}} style={{flex:1,padding:'10px',border:'none',borderRadius:11,fontFamily:'Nunito,sans-serif',fontWeight:800,fontSize:'0.87rem',cursor:'pointer',background:mode===m?'white':'transparent',color:mode===m?'#FF6B9D':'#bbb',boxShadow:mode===m?'0 2px 10px rgba(255,107,157,0.18)':'none',transition:'all 0.22s'}}>{m==='login'?'🔑 Entrar':'✨ Registrarse'}</button>)}
       </div>
@@ -248,7 +256,7 @@ function Auth({onLogin,showToast}){
       <Btn full col="pink" onClick={mode==='login'?login:register} disabled={loading} style={{marginTop:4,fontSize:'0.95rem',padding:'13px'}}>
         {loading?'⏳ Cargando...':(mode==='login'?'🚀 Entrar':'🎉 Crear cuenta gratis')}
       </Btn>
-      {mode==='login'&&<div style={{marginTop:14,padding:12,background:'linear-gradient(135deg,#FFF9F0,#FFF0FA)',borderRadius:12,fontSize:'0.78rem',color:'#C8A0CC',fontWeight:700,textAlign:'center',border:'1px dashed #FFD0EC'}}>💡 Demo admin: allue1995@gmail.com / admin123</div>}
+      {mode==='login'&&<div style={{marginTop:14,padding:12,background:'linear-gradient(135deg,#E8FAE8,#F0FFF0)',borderRadius:12,fontSize:'0.78rem',color:'#2E7D32',fontWeight:700,textAlign:'center',border:'1px dashed #81C784'}}>📍 {SHOP.address} · 📱 {SHOP.whatsapp}</div>}
     </div>
   </div>);
 }
@@ -319,6 +327,20 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
         </div>
       ))}
     </Card>
+    <Card style={{background:'linear-gradient(135deg,#FFF9C4,#FFE8D0)',border:'2px solid #FFD93D',marginBottom:12}}>
+      <div style={{fontWeight:800,fontSize:'1.05rem',marginBottom:4}}>💎 Suscripción VIP</div>
+      <div style={{fontSize:'0.82rem',color:'#777',marginBottom:12,lineHeight:1.5}}>Descuentos exclusivos en todos los servicios. Contrata por WhatsApp.</div>
+      {[{plan:'Básica',precio:'9.99€/mes',desc:'10% en todos los cortes',icon:'🌿'},{plan:'Premium',precio:'19.99€/mes',desc:'20% en servicios + trato prioritario',icon:'👑'},{plan:'VIP Total',precio:'34.99€/mes',desc:'30% dto + productos gratis',icon:'💎'}].map((s,i)=>(
+        <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'white',borderRadius:12,boxShadow:'0 2px 8px rgba(0,0,0,0.06)',marginBottom:6}}>
+          <div style={{fontSize:'1.3rem'}}>{s.icon}</div>
+          <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.85rem'}}>{s.plan}</div><div style={{fontSize:'0.73rem',color:'#999'}}>{s.desc}</div></div>
+          <div style={{fontWeight:900,color:'#FF9A3C',fontSize:'0.82rem'}}>{s.precio}</div>
+        </div>
+      ))}
+      <a href={`https://wa.me/${SHOP.whatsapp}?text=Hola! Me interesa la suscripción VIP de PeluquerIA`} target="_blank" rel="noreferrer" style={{display:'block',textDecoration:'none',marginTop:8}}>
+        <div style={{background:'linear-gradient(135deg,#FFD93D,#FF9A3C)',color:'white',borderRadius:50,padding:'11px',textAlign:'center',fontWeight:800,fontSize:'0.88rem'}}>📱 Contratar por WhatsApp</div>
+      </a>
+    </Card>
     <Card style={{background:'#E8F5E9',marginBottom:12}}>
       <div style={{fontWeight:800,fontSize:'0.95rem',marginBottom:12}}>📞 Contacta con {SHOP.name}</div>
       <a href={`https://wa.me/${SHOP.whatsapp}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'white',borderRadius:12,textDecoration:'none',marginBottom:8,color:'#2D2D2D',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}><span style={{fontSize:'1.4rem'}}>📱</span><div><div style={{fontWeight:800,fontSize:'0.88rem'}}>WhatsApp</div><div style={{fontSize:'0.77rem',color:'#bbb'}}>{SHOP.whatsapp}</div></div></a>
@@ -374,7 +396,7 @@ function AdminUsuarios({showToast}){
       })}
     </div>
     {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:users.map(u=>(
-      <div key={u.id} style={{background:'white',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
+      <div key={u.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <AvatarSVG av={u.avatar} size={44}/>
           <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.9rem'}}>{u.nombre}</div><div style={{fontSize:'0.75rem',color:'#bbb'}}>{u.email}</div></div>
@@ -437,7 +459,7 @@ function Citas({showToast}){
       <Btn onClick={()=>setModal(true)}>➕ Nueva</Btn>
     </div>
     {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:citas.length===0?<Card><div style={{textAlign:'center',color:'#ddd',padding:36,fontWeight:700}}>Sin citas registradas</div></Card>:citas.map(c=>{const cli=getCli(c.cliente_id);return(
-      <div key={c.id} style={{background:'white',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:10}}>
+      <div key={c.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:10}}>
         <div style={{background:'linear-gradient(135deg,#2E7D32,#4CAF50)',color:'white',borderRadius:12,padding:'8px 10px',textAlign:'center',minWidth:62,fontFamily:'Fredoka One,cursive'}}>
           <div style={{fontSize:'0.95rem'}}>{c.hora?.slice(0,5)}</div>
           <div style={{fontSize:'0.62rem',opacity:0.85}}>{fmt(c.fecha)}</div>
@@ -498,7 +520,7 @@ function Clientes({showToast}){
       <input placeholder="Buscar..." value={q} onChange={e=>setQ(e.target.value)} style={{width:'100%',padding:'11px 13px 11px 36px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontWeight:600,fontSize:'0.9rem',outline:'none',boxSizing:'border-box',background:'#FAFAFA'}}/>
     </div>
     {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:lista.map(c=>(
-      <div key={c.id} style={{background:'white',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
+      <div key={c.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <ACircle nombre={c.nombre}/>
           <div style={{flex:1}}><div style={{fontWeight:800}}>{c.nombre}</div><div style={{fontSize:'0.79rem',color:'#bbb'}}>{c.telefono}</div></div>
@@ -560,7 +582,7 @@ function Inventario({showToast}){
     {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:inv.map(p=>{
       const pct=Math.min(100,Math.round((p.stock/Math.max(p.stock_minimo*3,1))*100));
       const bc=p.stock<=p.stock_minimo?'#FF6B6B':p.stock<=p.stock_minimo*2?'#FFD93D':'#6BCB77';
-      return(<div key={p.id} style={{background:'white',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
+      return(<div key={p.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
         <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
           <div><div style={{fontWeight:800,fontSize:'0.9rem'}}>{p.nombre}</div><Badge c="blue">{p.categoria}</Badge></div>
           <div style={{fontWeight:800,color:'#6BCB77',alignSelf:'center'}}>{parseFloat(p.precio).toFixed(2)}€</div>
@@ -642,7 +664,7 @@ function Caja({showToast}){
       ))}
     </div>
     {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:facturas.map(fc=>{const cli=getCli(fc.cliente_id);return(
-      <div key={fc.id} style={{background:'white',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:10}}>
+      <div key={fc.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:10}}>
         <ACircle nombre={cli.nombre} size={34}/>
         <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.88rem'}}>{cli.nombre}</div><div style={{fontSize:'0.74rem',color:'#bbb'}}>{fc.lineas?.map(l=>l.servicio).join(', ')}</div></div>
         <div style={{textAlign:'right'}}><div style={{fontFamily:'Fredoka One,cursive',color:'#6BCB77'}}>{parseFloat(fc.total).toFixed(0)}€</div><Badge c={fc.estado==='pagada'?'green':'yellow'}>{fc.estado==='pagada'?'✅':'⏳'}</Badge></div>
@@ -780,7 +802,7 @@ function Noticias(){
     <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem',marginBottom:2}}>📰 Noticias</div>
     <div style={{color:'#ccc',fontSize:'0.81rem',fontWeight:700,marginBottom:16}}>Lo último del mundo capilar ✨</div>
     {NOTICIAS.map((n,i)=>(
-      <div key={i} onClick={()=>{SFX.click();setSel(sel===i?null:i);}} style={{background:'white',borderRadius:18,padding:18,marginBottom:12,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',cursor:'pointer',border:sel===i?'2px solid #FF6B9D':'2px solid transparent',transition:'all 0.25s'}}>
+      <div key={i} onClick={()=>{SFX.click();setSel(sel===i?null:i);}} style={{background:'#F8FBF6',borderRadius:18,padding:18,marginBottom:12,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',cursor:'pointer',border:sel===i?'2px solid #FF6B9D':'2px solid transparent',transition:'all 0.25s'}}>
         <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
           <div style={{fontSize:'2rem'}}>{n.emoji}</div>
           <div style={{flex:1}}>
@@ -807,10 +829,17 @@ function Productos({user,setUser,showToast,showPoints}){
 
   const confirmar=async()=>{
     if(!carrito.length)return;
-    const np=user.puntos+pts;
+    // Comprobar si es la primera compra
+    const prevFacturas = await dbGet('facturas', `?cliente_id=eq.${user.id}&select=id`);
+    const esPrimera = !prevFacturas || prevFacturas.length === 0;
+    const bonusPrimera = esPrimera ? 25 : 0;
+    const ptsTotal = pts + bonusPrimera;
+    const np=user.puntos+ptsTotal;
     await dbPatch('usuarios',`?id=eq.${user.id}`,{puntos:np});
     setUser({...user,puntos:np});
-    SFX.coins(); showPoints(pts); showToast(`🛍️ Pedido de ${total.toFixed(2)}€! +${pts} puntos ⭐`);
+    SFX.coins(); showPoints(ptsTotal);
+    if (esPrimera) showToast(`🛍️ ¡Primera compra! ${total.toFixed(2)}€ · +${ptsTotal} pts (bonus +25) ⭐`);
+    else showToast(`🛍️ Pedido de ${total.toFixed(2)}€! +${pts} puntos ⭐`);
     setCarrito([]);
   };
 
@@ -830,7 +859,7 @@ function Productos({user,setUser,showToast,showPoints}){
     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
       {PRODUCTOS_TIENDA.map(p=>{
         const qty=carrito.find(x=>x.id===p.id)?.qty||0;
-        return(<div key={p.id} style={{background:'white',borderRadius:18,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,0.07)',display:'flex',flexDirection:'column'}}>
+        return(<div key={p.id} style={{background:'#F8FBF6',borderRadius:18,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,0.07)',display:'flex',flexDirection:'column'}}>
           <div style={{fontSize:'2.4rem',marginBottom:8,textAlign:'center'}}>{p.emoji}</div>
           <Badge c={catColors[p.cat]||'blue'}>{p.cat}</Badge>
           <div style={{fontWeight:800,fontSize:'0.87rem',marginTop:8,marginBottom:4}}>{p.nombre}</div>
@@ -858,6 +887,18 @@ function Juegos({user,setUser,showToast,showPoints}){
   const [found,setFound]=useState(user.words_found||[]);
   const [tIdx,setTIdx]=useState(0);
   const [ans,setAns]=useState(null);
+  const [triviaHoy,setTriviaHoy]=useState(()=>{
+    const d=localStorage.getItem('trivia_date');
+    const c=parseInt(localStorage.getItem('trivia_count')||'0');
+    const today=new Date().toDateString();
+    return d===today?c:0;
+  });
+  const [sopaHoy,setSopaHoy]=useState(()=>{
+    const d=localStorage.getItem('sopa_date');
+    const today=new Date().toDateString();
+    return d===today;
+  });
+  const MAX_TRIVIA_DIA=3;
 
   const addPts=async pts=>{
     const np=user.puntos+pts;
@@ -879,17 +920,29 @@ function Juegos({user,setUser,showToast,showPoints}){
     const idx=cells.findIndex(([sr,sc])=>sr===r&&sc===c);
     if(idx>=0){setCells(cells.slice(0,idx));return;}
     const ns=[...cells,[r,c]]; setCells(ns);
-    if(ns.length>=3){
+    const allLens=WORDS.map(w=>w.length);
+    if(ns.length>=3 && allLens.includes(ns.length)){
       const w=ns.map(([r,c])=>GRID[r][c]).join('');
-      const m=WORDS.find(x=>x===w||x===w.split('').reverse().join(''));
+      const m=WORDS.find(x=>(x===w||x===w.split('').reverse().join(''))&&x.length===ns.length);
       if(m&&!found.includes(m)){
         const nf=[...found,m];
         setFound(nf);
         await dbPatch('usuarios',`?id=eq.${user.id}`,{words_found:nf,puntos:user.puntos+20});
         setUser({...user,puntos:user.puntos+20,words_found:nf});
-        SFX.coins(); showPoints(20); showToast(`✨ "${m}" encontrada! +20 pts`);
-        if(nf.length===WORDS.length){setTimeout(async()=>{ await addPts(50); SFX.success(); showPoints(50); showToast('🏆 ¡Sopa completa! +50 bonus');},900);}
+        const today=new Date().toDateString();
+        if(!sopaHoy){
+          SFX.coins(); showPoints(20); showToast(`✨ "${m}" encontrada! +20 pts`);
+          if(nf.length===WORDS.length){
+            setSopaHoy(true);
+            localStorage.setItem('sopa_date',today);
+            setTimeout(async()=>{ await addPts(50); SFX.success(); showPoints(50); showToast('🏆 ¡Sopa completa! +50 bonus');},900);
+          }
+        } else {
+          showToast(`✨ "${m}" encontrada (ya jugaste hoy, vuelve mañana para ganar pts)`);
+        }
       }
+      setCells([]);
+    } else if(ns.length>Math.max(...WORDS.map(w=>w.length))){
       setCells([]);
     }
   };
@@ -897,8 +950,20 @@ function Juegos({user,setUser,showToast,showPoints}){
   const preg=TRIVIA[tIdx%TRIVIA.length];
   const resp=async i=>{
     if(ans!==null)return; setAns(i);
-    if(i===preg.ans){await addPts(preg.pts); SFX.coins(); showPoints(preg.pts); showToast(`🎉 ¡Correcto! +${preg.pts} pts`);}
-    else{SFX.error(); showToast('❌ Incorrecto — ¡la próxima!');}
+    const today=new Date().toDateString();
+    const puedeGanar=triviaHoy<MAX_TRIVIA_DIA;
+    if(i===preg.ans){
+      if(puedeGanar){
+        await addPts(preg.pts); SFX.coins(); showPoints(preg.pts);
+        const nuevo=triviaHoy+1;
+        setTriviaHoy(nuevo);
+        localStorage.setItem('trivia_date',today);
+        localStorage.setItem('trivia_count',nuevo.toString());
+        showToast(`🎉 ¡Correcto! +${preg.pts} pts (${nuevo}/${MAX_TRIVIA_DIA} hoy)`);
+      } else {
+        SFX.coins(); showToast(`✅ ¡Correcto! (Límite diario alcanzado, vuelve mañana)`);
+      }
+    } else { SFX.error(); showToast('❌ Incorrecto — ¡la próxima!'); }
   };
 
   if(juego==='sopa')return(<div style={{animation:'fadeSlide 0.3s ease'}}>
@@ -941,12 +1006,12 @@ function Juegos({user,setUser,showToast,showPoints}){
       <div style={{fontSize:'0.76rem',opacity:0.85,textAlign:'right',lineHeight:1.7}}><div>500 = 10% dto</div><div>1000 = 20% dto</div><div>2000 = Gratis</div></div>
     </div>
     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
-      {[{icon:'🔤',name:'Sopa de Letras',desc:'Palabras capilares',pts:'+20 pts/palabra',c:'#4D96FF',bg:'#E8F0FF',act:()=>{SFX.nav();setJuego('sopa');}},{icon:'🧠',name:'Trivia Capilar',desc:'¿Cuánto sabes?',pts:'+10–15 pts',c:'#C77DFF',bg:'#F3E8FF',act:()=>{SFX.nav();setJuego('trivia');}}].map((j,i)=>(
-        <div key={i} onClick={j.act} style={{background:'white',borderRadius:18,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,0.07)',cursor:'pointer',border:`2px solid ${j.c}22`,transition:'transform 0.15s'}} onPointerDown={e=>e.currentTarget.style.transform='scale(0.95)'} onPointerUp={e=>e.currentTarget.style.transform='scale(1)'} onPointerLeave={e=>e.currentTarget.style.transform='scale(1)'}>
-          <div style={{fontSize:'2.4rem',marginBottom:8}}>{j.icon}</div>
+      {[{icon:'🔤',name:'Sopa de Letras',desc:'Palabras capilares',pts:'+20 pts/palabra',c:'#4D96FF',bg:'#E8F0FF',lock:sopaHoy,lockMsg:'✅ Jugada hoy',act:()=>{SFX.nav();setJuego('sopa');}},{icon:'🧠',name:'Trivia Capilar',desc:'¿Cuánto sabes?',pts:`+10–15 pts (${triviaHoy}/${MAX_TRIVIA_DIA} hoy)`,c:'#C77DFF',bg:'#F3E8FF',lock:false,lockMsg:'',act:()=>{SFX.nav();setJuego('trivia');}}].map((j,i)=>(
+        <div key={i} onClick={j.act} style={{background:'#F8FBF6',borderRadius:18,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,0.07)',cursor:'pointer',border:`2px solid ${j.c}22`,transition:'transform 0.15s'}} onPointerDown={e=>e.currentTarget.style.transform='scale(0.95)'} onPointerUp={e=>e.currentTarget.style.transform='scale(1)'} onPointerLeave={e=>e.currentTarget.style.transform='scale(1)'}>
+          <div style={{fontSize:'2.4rem',marginBottom:8}}>{j.lock?'🔒':j.icon}</div>
           <div style={{fontWeight:800,fontSize:'0.9rem',marginBottom:4}}>{j.name}</div>
-          <div style={{fontSize:'0.74rem',color:'#bbb',marginBottom:8}}>{j.desc}</div>
-          <span style={{background:j.bg,color:j.c,borderRadius:50,padding:'3px 10px',fontSize:'0.7rem',fontWeight:800}}>{j.pts}</span>
+          <div style={{fontSize:'0.74rem',color:'#bbb',marginBottom:8}}>{j.lock?j.lockMsg:j.desc}</div>
+          <span style={{background:j.lock?'#F0F0F0':j.bg,color:j.lock?'#bbb':j.c,borderRadius:50,padding:'3px 10px',fontSize:'0.7rem',fontWeight:800}}>{j.lock?'Vuelve mañana':j.pts}</span>
         </div>
       ))}
     </div>
@@ -1014,23 +1079,33 @@ function SocialFeed({user, setUser, showToast, showPoints}) {
       setLiked(prev => new Set([...prev, post.id]));
       setPosts(prev => prev.map(p => p.id===post.id ? {...p, likes_count:p.likes_count+1} : p));
       SFX.coins();
-      const np = user.puntos + 2;
-      await dbPatch('usuarios', `?id=eq.${user.id}`, {puntos: np});
-      setUser({...user, puntos: np});
-      if (showPoints) showPoints(2);
+      // Solo puntos en el PRIMER like de toda la historia del usuario
+      if (liked.size === 0) {
+        const np = user.puntos + 5;
+        await dbPatch('usuarios', `?id=eq.${user.id}`, {puntos: np});
+        setUser({...user, puntos: np});
+        if (showPoints) showPoints(5);
+        showToast('❤️ ¡Primer like! +5 pts');
+      }
     }
   };
 
   const sendCm = async () => {
     if (!newCm.trim() || !cmModal) return;
+    // Comprobar si es el primer comentario del usuario
+    const prevCms = await dbGet('comentarios', `?autor_id=eq.${user.id}&select=id`);
     await dbPost('comentarios', {publicacion_id:cmModal.id, autor_id:user.id, contenido:newCm.trim(), likes_count:0});
     setNewCm(''); await loadCm(cmModal.id);
     SFX.coins();
-    const np = user.puntos + 3;
-    await dbPatch('usuarios', `?id=eq.${user.id}`, {puntos: np});
-    setUser({...user, puntos: np});
-    if (showPoints) showPoints(3);
-    showToast('💬 Comentario publicado! +3 pts');
+    if (!prevCms || prevCms.length === 0) {
+      const np = user.puntos + 10;
+      await dbPatch('usuarios', `?id=eq.${user.id}`, {puntos: np});
+      setUser({...user, puntos: np});
+      if (showPoints) showPoints(10);
+      showToast('💬 ¡Primer comentario! +10 pts');
+    } else {
+      showToast('💬 Comentario publicado');
+    }
   };
 
   const publish = async () => {
@@ -1186,7 +1261,7 @@ function Ranking({user}) {
 
       {loading ? <Card><div style={{textAlign:'center',color:'#bbb',padding:24}}>⏳ Cargando...</div></Card>
       : users.map((u,i) => (
-        <div key={u.id} style={{background:'white',borderRadius:14,padding:12,marginBottom:8,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:10,border:u.id===user.id?'2px solid #4CAF50':'1px solid #E8F5E9'}}>
+        <div key={u.id} style={{background:'#F8FBF6',borderRadius:14,padding:12,marginBottom:8,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:10,border:u.id===user.id?'2px solid #4CAF50':'1px solid #E8F5E9'}}>
           <div style={{fontWeight:900,fontSize:'1.2rem',minWidth:32,textAlign:'center',color:i<3?'#E91E8C':'#bbb'}}>{medals[i]||`#${i+1}`}</div>
           <AvatarSVG av={u.avatar} size={38}/>
           <div style={{flex:1}}>
@@ -1316,7 +1391,7 @@ export default function App(){
 
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:''}),3200);},[]);
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
-  const toggleMusic=()=>{if(musicOn){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}};
+  const toggleMusic=()=>{ globalMuted=!globalMuted; if(globalMuted){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}};
   const navTo=id=>{SFX.nav();setPage(id);};
   const logout=()=>{setUser(null);setPage('dashboard');};
 
@@ -1355,7 +1430,7 @@ export default function App(){
         {role!=='client'&&<span style={{background:'rgba(255,255,255,0.25)',color:'white',borderRadius:50,padding:'2px 8px',fontSize:'0.7rem',fontWeight:800,textTransform:'uppercase'}}>{role}</span>}
       </div>
       <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <button onClick={toggleMusic} style={{background:'rgba(255,255,255,0.2)',border:'none',borderRadius:50,padding:'5px 10px',cursor:'pointer',color:'white',fontWeight:800,fontSize:'0.75rem'}}>{musicOn?'🔇':'🎵'}</button>
+        <button onClick={toggleMusic} style={{background:'rgba(255,255,255,0.2)',border:'none',borderRadius:50,padding:'5px 10px',cursor:'pointer',color:'white',fontWeight:800,fontSize:'0.75rem'}}>{musicOn?'🔇 Silenciar':'🎵 Sonido'}</button>
         {role==='client'&&<div style={{background:'rgba(255,255,255,0.22)',borderRadius:50,padding:'5px 12px',color:'white',fontWeight:800,fontSize:'0.84rem'}}>⭐ {user.puntos}</div>}
         <div onClick={()=>navTo('perfil')} style={{cursor:'pointer',padding:2,background:'rgba(255,255,255,0.2)',borderRadius:'50%'}}><AvatarSVG av={user.avatar} size={34}/></div>
       </div>
@@ -1363,7 +1438,7 @@ export default function App(){
     {/* PAGE */}
     <div style={{padding:'18px 14px'}}>{pages[ap]||pages['dashboard']}</div>
     {/* BOTTOM NAV */}
-    <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:480,background:'white',borderTop:'1.5px solid #F0EAE0',display:'flex',justifyContent:'space-around',padding:'7px 2px 11px',zIndex:100,boxShadow:'0 -4px 20px rgba(0,0,0,0.07)'}}>
+    <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:480,background:'#F0F7EE',borderTop:'1.5px solid #F0EAE0',display:'flex',justifyContent:'space-around',padding:'7px 2px 11px',zIndex:100,boxShadow:'0 -4px 20px rgba(0,0,0,0.07)'}}>
       {nav.map(n=>(
         <button key={n.id} onClick={()=>navTo(n.id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,background:'none',border:'none',cursor:'pointer',padding:'2px 4px',minWidth:38}}>
           <div style={{fontSize:'1.1rem',background:ap===n.id?grad:'transparent',borderRadius:10,padding:'4px 7px',transform:ap===n.id?'scale(1.2)':'scale(1)',transition:'all 0.22s cubic-bezier(0.34,1.56,0.64,1)',boxShadow:ap===n.id?'0 3px 12px rgba(0,0,0,0.2)':'none'}}>{n.icon}</div>
