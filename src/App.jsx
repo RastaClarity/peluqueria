@@ -1,20 +1,46 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
-// ═══════════════════════════════════════════════════════════
-//  SUPABASE CONFIG
-// ═══════════════════════════════════════════════════════════
 const SUPA_URL = "https://uetuoxtfccrbymwlsssx.supabase.co";
-const SUPA_KEY = "sb_publishable_-ow7f5HJgbcDgXvI7tyIzw_vR3PnrfZ";
+const SUPA_KEY = "sb_publissable_-ow7f5HJgbcDgXvI7tyIzw_vR3PnrfZ";
+
+// Nombres reales de tus tablas
+const TB = {
+  usuarios:      "usuarios",
+  citas:         "citas",
+  inventario:    "inventario",
+  facturas:      "facturas",
+  publicaciones: "publicaciones",
+  retos:         "retos",
+  retos_progreso:"retos_progreso",
+  premios:       "premios",
+  canjes:        "canjes",
+  reviews:       "reviews",
+  galeria:       "galeria",
+  mensajes:      "mensajes",
+  cupones:       "cupones",
+};
+
+// Nombres reales de columnas de tu tabla usuarios
+const U = {
+  id:       "identificaci\u00f3n",
+  nombre:   "nombre",
+  email:    "correo electr\u00f3nico",
+  password: "contrase\u00f1a",
+  rol:      "role",
+  puntos:   "puntos",
+  avatar:   "avatar",
+  creado:   "creado_en",
+};
 
 async function db(table, method = "GET", body = null, query = "") {
   const url = `${SUPA_URL}/rest/v1/${table}${query}`;
   const res = await fetch(url, {
     method,
     headers: {
-      "apikey": SUPA_KEY,
-      "Authorization": `Bearer ${SUPA_KEY}`,
+      apikey: SUPA_KEY,
+      Authorization: `Bearer ${SUPA_KEY}`,
       "Content-Type": "application/json",
-      "Prefer": method === "POST" ? "return=representation" : "return=minimal",
+      Prefer: method === "POST" ? "return=representation" : "return=minimal",
     },
     body: body ? JSON.stringify(body) : null,
   });
@@ -23,1429 +49,1376 @@ async function db(table, method = "GET", body = null, query = "") {
   }
   return res.ok;
 }
+const dbGet    = (t, q = "") => db(t, "GET",    null, q);
+const dbPost   = (t, b)      => db(t, "POST",   b,    "");
+const dbPatch  = (t, q, b)   => db(t, "PATCH",  b,    q);
 
-const dbGet    = (table, query="")   => db(table, "GET",    null,  query);
-const dbPost   = (table, body)       => db(table, "POST",   body,  "");
-const dbPatch  = (table, query, body)=> db(table, "PATCH",  body,  query);
-const dbDelete = (table, query)      => db(table, "DELETE", null,  query);
-
-// ═══════════════════════════════════════════════════════════
-//  AUDIO
-// ═══════════════════════════════════════════════════════════
-let audioCtx = null;
-let musicInterval = null;
-let musicPlaying = false;
-let globalMuted = false;
-const PENTA = [261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25];
-
-function getCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  return audioCtx;
+function getAvatarIndex(av) {
+  if (typeof av === "number") return av;
+  return 0;
 }
-function playTone(freq,type='sine',dur=0.12,vol=0.15,delay=0) {
-  if (globalMuted) return;
-  try {
-    const ctx=getCtx(); const osc=ctx.createOscillator(); const g=ctx.createGain();
-    osc.connect(g); g.connect(ctx.destination); osc.type=type;
+
+// DESIGN TOKENS
+const T = {
+  g900:"#1B4332",g800:"#1E4D2B",g700:"#2D6A4F",g600:"#40916C",
+  g500:"#52B788",g400:"#74C69D",g300:"#95D5B2",g200:"#B7E4C7",
+  g150:"#D8F3DC",g100:"#EAFAF0",g50:"#F2FBF5",
+  pink:"#E91E8C",gold:"#FFB703",orange:"#FB8500",red:"#E53935",blue:"#1565C0",
+  text:"#1B4332",textSub:"#52B788",white:"#FFFFFF",
+  gradAdmin:"linear-gradient(135deg,#1B4332,#2D6A4F)",
+  gradStaff:"linear-gradient(135deg,#2D6A4F,#40916C)",
+  gradClient:"linear-gradient(135deg,#40916C,#52B788)",
+  gradGold:"linear-gradient(135deg,#FFB703,#FB8500)",
+  gradPink:"linear-gradient(135deg,#E91E8C,#F48FB1)",
+};
+
+const ROLES = { ADMIN:"admin", STAFF:"staff", CLIENT:"cliente" };
+
+// AUDIO
+let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
+const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
+function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playTone(freq,type="sine",dur=0.12,vol=0.15,delay=0){
+  if(globalMuted)return;
+  try{
+    const ctx=getCtx(),osc=ctx.createOscillator(),g=ctx.createGain();
+    osc.connect(g);g.connect(ctx.destination);osc.type=type;
     osc.frequency.setValueAtTime(freq,ctx.currentTime+delay);
     g.gain.setValueAtTime(0,ctx.currentTime+delay);
     g.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.01);
     g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
-    osc.start(ctx.currentTime+delay); osc.stop(ctx.currentTime+delay+dur+0.05);
-  } catch(e){}
+    osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+dur+0.05);
+  }catch(e){}
 }
-const SFX = {
-  nav:    ()=>{ playTone(520,'sine',0.08,0.1); playTone(660,'sine',0.08,0.08,0.06); },
-  click:  ()=>{ playTone(440,'triangle',0.07,0.12); },
-  coins:  ()=>{ [880,1047,1319].forEach((f,i)=>playTone(f,'sine',0.12,0.15,i*0.07)); },
-  success:()=>{ [523,659,784,1047].forEach((f,i)=>playTone(f,'sine',0.14,0.14,i*0.08)); },
-  error:  ()=>{ playTone(220,'sawtooth',0.15,0.12); playTone(180,'sawtooth',0.12,0.1,0.1); },
+const SFX={
+  nav:()=>{playTone(520,"sine",0.08,0.1);playTone(660,"sine",0.08,0.08,0.06);},
+  click:()=>{playTone(440,"triangle",0.07,0.12);},
+  coins:()=>{[880,1047,1319].forEach((f,i)=>playTone(f,"sine",0.12,0.15,i*0.07));},
+  success:()=>{[523,659,784,1047].forEach((f,i)=>playTone(f,"sine",0.14,0.14,i*0.08));},
+  error:()=>{playTone(220,"sawtooth",0.15,0.12);playTone(180,"sawtooth",0.12,0.1,0.1);},
 };
-function startMusic() {
-  if(musicPlaying) return; musicPlaying=true; let beat=0;
+function startMusic(){
+  if(musicPlaying)return;musicPlaying=true;let beat=0;
   const pat=[0,2,4,2,1,3,5,3,4,6,4,2];
-  const tick=()=>{
-    if(!musicPlaying) return;
+  musicInterval=setInterval(()=>{
+    if(!musicPlaying)return;
     try{
-      const ctx=getCtx(); if(ctx.state==='suspended') ctx.resume();
+      const ctx=getCtx();if(ctx.state==="suspended")ctx.resume();
       const f=PENTA[pat[beat%pat.length]%PENTA.length];
       const o=ctx.createOscillator(),g=ctx.createGain();
-      o.connect(g); g.connect(ctx.destination); o.type='sine'; o.frequency.value=f;
-      g.gain.setValueAtTime(0,ctx.currentTime); g.gain.linearRampToValueAtTime(0.035,ctx.currentTime+0.05);
+      o.connect(g);g.connect(ctx.destination);o.type="sine";o.frequency.value=f;
+      g.gain.setValueAtTime(0,ctx.currentTime);
+      g.gain.linearRampToValueAtTime(0.035,ctx.currentTime+0.05);
       g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.2);
-      o.start(ctx.currentTime); o.stop(ctx.currentTime+1.3);
-      if(beat%4===0){const b=ctx.createOscillator(),bg=ctx.createGain(); b.connect(bg); bg.connect(ctx.destination); b.type='triangle'; b.frequency.value=f/2; bg.gain.setValueAtTime(0,ctx.currentTime); bg.gain.linearRampToValueAtTime(0.02,ctx.currentTime+0.08); bg.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.6); b.start(ctx.currentTime); b.stop(ctx.currentTime+1.7);}
-      beat++;
+      o.start(ctx.currentTime);o.stop(ctx.currentTime+1.3);beat++;
     }catch(e){}
+  },600);
+}
+function stopMusic(){musicPlaying=false;if(musicInterval){clearInterval(musicInterval);musicInterval=null;}}
+
+const GLOBAL_CSS=`
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#EAFAF0}::-webkit-scrollbar-thumb{background:#74C69D;border-radius:4px}
+body{margin:0;background:#EAFAF0}
+input,select,button,textarea{font-family:'Nunito',sans-serif}
+@keyframes popIn{from{opacity:0;transform:scale(0.82)}to{opacity:1;transform:scale(1)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes floatUp{0%{transform:translateY(110vh) rotate(0deg);opacity:0}10%{opacity:.3}90%{opacity:.15}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes ptsFloat{0%{opacity:0;transform:translateY(0) scale(0.7)}20%{opacity:1;transform:translateY(-10px) scale(1.1)}80%{opacity:1;transform:translateY(-40px)}100%{opacity:0;transform:translateY(-60px) scale(0.9)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.btn-press:active{transform:scale(0.94)!important}
+.card-hover:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,67,50,0.15)!important}
+`;
+
+// PRIMITIVOS
+function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
+  const colors={
+    green:{bg:T.gradClient,sh:"rgba(64,145,108,0.35)"},dark:{bg:T.gradAdmin,sh:"rgba(27,67,50,0.35)"},
+    pink:{bg:T.gradPink,sh:"rgba(233,30,140,0.3)"},gold:{bg:T.gradGold,sh:"rgba(255,183,3,0.35)"},
+    red:{bg:"linear-gradient(135deg,#E53935,#EF5350)",sh:"rgba(229,57,53,0.3)"},ghost:{bg:"transparent",sh:"none"},
   };
-  tick(); musicInterval=setInterval(tick,700);
+  const c=colors[col]||colors.green;
+  return(
+    <button onClick={disabled?undefined:onClick} className="btn-press" style={{
+      background:col==="ghost"?"transparent":c.bg,color:col==="ghost"?T.g700:T.white,
+      border:col==="ghost"?`2px solid ${T.g300}`:"none",borderRadius:14,
+      padding:small?"7px 14px":"11px 20px",fontWeight:800,fontSize:small?"0.78rem":"0.9rem",
+      cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,
+      width:full?"100%":"auto",boxShadow:col==="ghost"?"none":`0 4px 14px ${c.sh}`,
+      transition:"all 0.18s ease",...sx,
+    }}>{children}</button>
+  );
 }
-function stopMusic(){ musicPlaying=false; if(musicInterval){clearInterval(musicInterval);musicInterval=null;} }
+function Card({children,style:sx={},onClick,hover=false}){
+  return(
+    <div onClick={onClick} className={hover?"card-hover":""} style={{
+      background:T.white,borderRadius:18,padding:"16px",
+      boxShadow:"0 2px 12px rgba(27,67,50,0.08)",border:`1px solid ${T.g150}`,
+      transition:"all 0.22s ease",cursor:onClick?"pointer":"default",...sx,
+    }}>{children}</div>
+  );
+}
+function Input({label,value,onChange,type="text",placeholder="",style:sx={}}){
+  return(
+    <div style={{marginBottom:14}}>
+      {label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}
+      <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+        style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.88rem",color:T.text,outline:"none",...sx}}
+        onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`}
+        onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}
+      />
+    </div>
+  );
+}
+function Select({label,value,onChange,options=[]}){
+  return(
+    <div style={{marginBottom:14}}>
+      {label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}
+      <select value={value} onChange={e=>onChange(e.target.value)} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.88rem",color:T.text,outline:"none"}}>
+        {options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  );
+}
+function Badge({children,col="green"}){
+  const cols={green:{bg:T.g150,c:T.g700},pink:{bg:"#FCE4EC",c:T.pink},gold:{bg:"#FFF8E1",c:"#E65100"},red:{bg:"#FFEBEE",c:T.red},blue:{bg:"#E3F2FD",c:T.blue}};
+  const cc=cols[col]||cols.green;
+  return <span style={{background:cc.bg,color:cc.c,borderRadius:50,padding:"3px 10px",fontSize:"0.72rem",fontWeight:800}}>{children}</span>;
+}
+function Modal({show,onClose,title,children}){
+  if(!show)return null;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(27,67,50,0.55)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{background:T.white,borderRadius:"22px 22px 0 0",padding:"24px 18px 32px",width:"100%",maxWidth:480,animation:"slideUp 0.3s ease",maxHeight:"90vh",overflowY:"auto"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+          <div style={{fontWeight:900,fontSize:"1.1rem",color:T.text}}>{title}</div>
+          <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:32,height:32,cursor:"pointer",fontSize:"1rem",color:T.g700}}>âœ•</button>
 
-// ═══════════════════════════════════════════════════════════
-//  CONSTANTS
-// ═══════════════════════════════════════════════════════════
-const ROLES = { ADMIN:'admin', STAFF:'staff', CLIENT:'client' };
-const SHOP = { name:'PeluquerIA', whatsapp:'622123873', email:'allue1995@gmail.com', address:'Santa Engracia, City 50669' };
-const TIPS = [
-  { emoji:"💧", titulo:"Hidratación profunda", texto:"Aplica mascarilla capilar una vez por semana. Déjala 20 min bajo un gorro de ducha." },
-  { emoji:"✂️", titulo:"Corte cada 6-8 semanas", texto:"Cortar las puntas regularmente evita que el daño suba por el cabello." },
-  { emoji:"🌡️", titulo:"Protege del calor", texto:"Usa siempre protector térmico antes de plancha o secador." },
-  { emoji:"🌙", titulo:"Funda de seda al dormir", texto:"La seda reduce el frizz y mantiene el estilismo más tiempo." },
-  { emoji:"💆", titulo:"Masaje capilar diario", texto:"5 minutos estimula la circulación. Prueba con aceite de romero." },
-  { emoji:"🚿", titulo:"Agua fría al final", texto:"10 segundos de agua fría cierra la cutícula y da más brillo." },
-];
-const NOTICIAS = [
-  { emoji:"🌿", titulo:"Coloración vegetal en auge", texto:"Los tintes naturales de henna e indigo ganan terreno. Menos daño, más color.", tag:"Tendencia" },
-  { emoji:"✂️", titulo:"El corte 'bixie' arrasa", texto:"Entre bob y píxie, el bixie es el corte del año. Favorece casi todos los rostros.", tag:"Moda" },
-  { emoji:"💆", titulo:"Tratamientos express en cabina", texto:"15 minutos de tratamiento están revolucionando la experiencia en peluquería.", tag:"Novedad" },
-  { emoji:"🌊", titulo:"El wet look vuelve con fuerza", texto:"Pelo mojado y brillante. Sencillo de conseguir con gel fijador ligero.", tag:"Estilo" },
-];
-const PRODUCTOS_TIENDA = [
-  { id:1, nombre:"Mascarilla Brillo Intenso", precio:18.90, emoji:"✨", desc:"Hidratación profunda con aceite de argán.", cat:"Tratamiento" },
-  { id:2, nombre:"Champú Volumen Total", precio:12.50, emoji:"🫧", desc:"Limpieza suave con efecto voluminizador. Sin sulfatos.", cat:"Limpieza" },
-  { id:3, nombre:"Sérum Antiencrespamiento", precio:22.00, emoji:"💧", desc:"Controla el frizz durante 48h. Aplicar en húmedo.", cat:"Estilismo" },
-  { id:4, nombre:"Spray Protector Térmico", precio:15.75, emoji:"🌡️", desc:"Protege hasta 230°C. Imprescindible antes de plancha.", cat:"Protección" },
-  { id:5, nombre:"Aceite de Argán Puro", precio:28.00, emoji:"🫙", desc:"100% natural. Nutre, da brillo y doma el cabello.", cat:"Tratamiento" },
-  { id:6, nombre:"Pack Cuidado Completo", precio:45.00, emoji:"🎁", desc:"Champú + mascarilla + sérum. El regalo perfecto.", cat:"Pack" },
-];
-const GRID=[['T','I','N','T','E','R','O','J','A','T'],['R','M','E','C','H','A','S','P','E','R'],['I','A','S','C','O','R','T','E','L','I'],['Z','S','C','A','B','E','L','L','O','Z'],['A','C','O','N','D','I','C','I','O','N'],['D','A','M','P','U','C','H','A','S','A'],['O','R','I','Z','A','D','O','B','R','D'],['R','A','P','L','A','N','C','H','A','O'],['F','L','E','C','O','S','V','E','L','R'],['B','R','I','L','L','O','T','O','N','O']];
-const WORDS=['TINTE','MECHAS','CORTE','CABELLO','RIZADO','PLANCHA','FLECOS','BRILLO'];
-const TRIVIA=[{q:"¿Con qué frecuencia se recomienda la mascarilla?",opts:["Cada día","Una vez/semana","Una vez/mes","Nunca"],ans:1,pts:10},{q:"¿Qué vitamina es clave para el cabello?",opts:["Vitamina C","Vitamina D","Biotina","Vitamina K"],ans:2,pts:10},{q:"¿Temperatura más segura para la plancha?",opts:["120-150°C","180-200°C","230°C","250°C"],ans:0,pts:15},{q:"¿Cada cuánto cortar las puntas?",opts:["2 semanas","6-8 semanas","6 meses","1 año"],ans:1,pts:10},{q:"¿Mejor funda de almohada para el pelo?",opts:["Algodón","Poliéster","Seda o satén","Lana"],ans:2,pts:15}];
-const AV={skin:['#FDDBB4','#F0C27F','#C68642','#8D5524','#F5CBA7','#D4A574'],hair:['liso','ondulado','rizado','corto','coleta','trenzas','mohicano','bob'],hcol:['#2C1810','#8B4513','#DAA520','#FF6B9D','#C77DFF','#4D96FF','#FF9A3C','#E8E8E8','#1a1a1a'],eyes:['😊','😄','🥰','😎','🤩','😏'],acc:['none','👑','🎀','💎','🌸','⭐','🎓','🦋'],bg:['linear-gradient(135deg,#FFE8F3,#F3E8FF)','linear-gradient(135deg,#E8F4FF,#E8FAE8)','linear-gradient(135deg,#FFF8DC,#FFE8D0)','linear-gradient(135deg,#E8F0FF,#F0E8FF)','linear-gradient(135deg,#F0FFF0,#E0FFE0)','linear-gradient(135deg,#FFE4E1,#FFF0E1)']};
-const HAIR_SVG={liso:<path d="M50,20 Q30,20 25,40 L25,55 Q35,50 50,50 Q65,50 75,55 L75,40 Q70,20 50,20Z" fill="currentColor"/>,ondulado:<path d="M50,18 Q28,18 23,38 Q20,52 25,58 Q35,52 50,52 Q65,52 75,58 Q80,52 77,38 Q72,18 50,18Z" fill="currentColor"/>,rizado:<path d="M50,16 Q25,16 22,38 Q20,55 28,60 Q32,52 36,58 Q40,50 44,56 Q48,48 52,54 Q56,46 60,52 Q64,44 68,50 Q72,42 75,48 Q80,38 78,22 Q70,14 50,16Z" fill="currentColor"/>,corto:<path d="M50,24 Q32,24 28,38 L28,48 Q38,44 50,44 Q62,44 72,48 L72,38 Q68,24 50,24Z" fill="currentColor"/>,coleta:<><path d="M50,18 Q30,18 26,38 L26,54 Q36,50 50,50 Q64,50 74,54 L74,38 Q70,18 50,18Z" fill="currentColor"/><ellipse cx="78" cy="62" rx="6" ry="14" fill="currentColor" transform="rotate(20,78,62)"/></>,trenzas:<><path d="M50,18 Q30,18 26,36 L26,52 Q36,48 50,48 Q64,48 74,52 L74,36 Q70,18 50,18Z" fill="currentColor"/><path d="M30,52 Q27,60 30,68 Q33,76 30,84" stroke="currentColor" strokeWidth="5" fill="none" strokeLinecap="round"/><path d="M70,52 Q73,60 70,68 Q67,76 70,84" stroke="currentColor" strokeWidth="5" fill="none" strokeLinecap="round"/></>,mohicano:<><path d="M50,22 Q40,22 38,34 L38,50 Q44,48 50,48 Q56,48 62,50 L62,34 Q60,22 50,22Z" fill="currentColor"/><path d="M44,18 Q50,0 56,18" stroke="currentColor" strokeWidth="6" fill="none" strokeLinecap="round"/></>,bob:<path d="M50,20 Q28,20 24,40 L24,62 Q36,60 50,60 Q64,60 76,62 L76,40 Q72,20 50,20Z" fill="currentColor"/>};
-const COLS=['#FF6B9D','#4D96FF','#6BCB77','#C77DFF','#FF9A3C'];
-const acol=n=>COLS[(n||'A').charCodeAt(0)%COLS.length];
-const ini=n=>(n||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-const hoyStr=()=>new Date().toISOString().split('T')[0];
-const fmt=s=>{if(!s)return'';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;};
-const DEFAULT_AVATAR={skin:'#FDDBB4',hair:'liso',hcol:'#2C1810',eyes:'😊',acc:'none',bg:AV.bg[0]};
-
-// ═══════════════════════════════════════════════════════════
-//  FLOATING PARTICLES
-// ═══════════════════════════════════════════════════════════
-const PEMOJIS=['✂️','🌸','⭐','💫','✨','💅','🎀','💎'];
-function Particles() {
-  const ps=Array.from({length:10},(_,i)=>({id:i,e:PEMOJIS[i%PEMOJIS.length],x:Math.random()*100,delay:Math.random()*8,dur:6+Math.random()*6,sz:0.7+Math.random()*0.7}));
-  return(<div style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:0,overflow:'hidden'}}>{ps.map(p=><div key={p.id} style={{position:'absolute',left:`${p.x}%`,bottom:0,fontSize:`${p.sz}rem`,animation:`floatUp ${p.dur}s ease-in-out ${p.delay}s infinite`}}>{p.e}</div>)}</div>);
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+function Spinner(){return <div style={{width:28,height:28,border:`3px solid ${T.g200}`,borderTop:`3px solid ${T.g600}`,borderRadius:"50%",animation:"spin 0.7s linear infinite",margin:"20px auto"}}/>;}
+function EmptyState({icon,title,sub}){
+  return(
+    <div style={{textAlign:"center",padding:"40px 20px",color:T.textSub}}>
+      <div style={{fontSize:"2.8rem",marginBottom:10}}>{icon}</div>
+      <div style={{fontWeight:800,fontSize:"1rem",color:T.g700,marginBottom:6}}>{title}</div>
+      <div style={{fontSize:"0.83rem"}}>{sub}</div>
+    </div>
+  );
+}
+function SectionHeader({icon,title,sub,action}){
+  return(
+    <div style={{marginBottom:18,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+      <div>
+        <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.3rem",color:T.g800}}>{icon} {title}</div>
+        {sub&&<div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2}}>{sub}</div>}
+      </div>
+      {action}
+    </div>
+  );
+}
+function StatCard({icon,label,value,col="green"}){
+  const cols={green:{bg:T.g150,ac:T.g600},gold:{bg:"#FFF8E1",ac:T.orange},pink:{bg:"#FCE4EC",ac:T.pink},blue:{bg:"#E3F2FD",ac:T.blue}};
+  const c=cols[col]||cols.green;
+  return(
+    <Card style={{background:c.bg,border:"none",padding:"14px 16px"}} hover>
+      <div style={{fontSize:"1.5rem",marginBottom:4}}>{icon}</div>
+      <div style={{fontSize:"0.72rem",fontWeight:700,color:T.textSub,marginBottom:2}}>{label}</div>
+      <div style={{fontWeight:900,fontSize:"1.4rem",color:c.ac}}>{value}</div>
+    </Card>
+  );
 }
 
+const AVATARS=["ðŸ§‘","ðŸ‘©","ðŸ‘¨","ðŸ‘©â€�ðŸ¦±","ðŸ‘¨â€�ðŸ¦±","ðŸ‘©â€�ðŸ¦°","ðŸ‘¨â€�ðŸ¦°","ðŸ‘©â€�ðŸ¦³","ðŸ‘¨â€�ðŸ¦³","ðŸ§”","ðŸ‘±â€�â™€ï¸�","ðŸ‘±"];
+function AvatarSVG({av=0,size=36}){
+  return(
+    <div style={{width:size,height:size,borderRadius:"50%",background:T.g150,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.55,border:`2px solid ${T.g300}`}}>
+      {AVATARS[getAvatarIndex(av)%AVATARS.length]}
+    </div>
+  );
+}
+function Toast({msg,show}){
+  if(!show)return null;
+  return <div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",background:T.g800,color:T.white,padding:"12px 22px",borderRadius:50,fontWeight:700,fontSize:"0.88rem",zIndex:9999,whiteSpace:"nowrap",boxShadow:"0 6px 24px rgba(27,67,50,0.35)",animation:"toastIn 0.3s ease"}}>{msg}</div>;
+}
 function PtsPopup({pts,show}){
-  return <div style={{position:'fixed',top:'20%',left:'50%',transform:`translateX(-50%) scale(${show?1:0.5})`,background:'linear-gradient(135deg,#FFD93D,#FF9A3C)',color:'white',borderRadius:20,padding:'12px 24px',fontFamily:'Fredoka One,cursive',fontSize:'1.4rem',boxShadow:'0 8px 30px rgba(255,150,0,0.4)',opacity:show?1:0,transition:'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',zIndex:9998,pointerEvents:'none',whiteSpace:'nowrap'}}>+{pts} ⭐ puntos!</div>;
-}
-
-// ═══════════════════════════════════════════════════════════
-//  UI ATOMS
-// ═══════════════════════════════════════════════════════════
-function AvatarSVG({av,size=80}){
-  const a=av||DEFAULT_AVATAR;
-  const h=HAIR_SVG[a.hair]||HAIR_SVG.liso;
-  return(<svg width={size} height={size} viewBox="0 0 100 100" style={{borderRadius:'50%',background:a.bg||AV.bg[0],flexShrink:0,display:'block'}}><g style={{color:a.hcol||'#2C1810'}}>{h}</g><ellipse cx="50" cy="58" rx="20" ry="22" fill={a.skin||'#FDDBB4'}/><text x="50" y="62" textAnchor="middle" fontSize="15" style={{userSelect:'none'}}>{a.eyes||'😊'}</text>{(a.hair==='bob'||a.hair==='liso'||!a.hair)&&<path d="M30,40 Q30,36 50,36 Q70,36 70,40 L70,38 Q70,20 50,20 Q30,20 30,38Z" fill={a.hcol||'#2C1810'}/>}{a.acc&&a.acc!=='none'&&<text x="50" y="25" textAnchor="middle" fontSize="17" style={{userSelect:'none'}}>{a.acc}</text>}</svg>);
-}
-function ACircle({nombre,size=36}){return <div style={{width:size,height:size,borderRadius:'50%',background:acol(nombre),display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontWeight:900,fontSize:size*.34,flexShrink:0}}>{ini(nombre)}</div>;}
-function Toast({msg,show}){return <div style={{position:'fixed',bottom:90,left:12,right:12,background:'#F8FBF6',borderRadius:16,padding:'13px 16px',boxShadow:'0 8px 32px rgba(0,0,0,0.16)',display:'flex',alignItems:'center',gap:10,fontWeight:700,fontSize:'0.87rem',transform:show?'translateY(0)':'translateY(140px)',opacity:show?1:0,transition:'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',zIndex:9999,borderLeft:'4px solid #4CAF50',maxWidth:460,margin:'0 auto'}}>{msg}</div>;}
-function Badge({c,children}){const p={pink:{bg:'#FFE8F3',tx:'#D63384'},green:{bg:'#E8FAE8',tx:'#2E7D32'},yellow:{bg:'#FFF8DC',tx:'#B8860B'},blue:{bg:'#E8F0FF',tx:'#1565C0'},red:{bg:'#FFE8E8',tx:'#C62828'},purple:{bg:'#F3E8FF',tx:'#7B1FA2'},orange:{bg:'#FFF0E8',tx:'#E65100'}}[c]||{bg:'#eee',tx:'#555'};return <span style={{background:p.bg,color:p.tx,borderRadius:50,padding:'3px 11px',fontSize:'0.72rem',fontWeight:800}}>{children}</span>;}
-function RoleBadge({role}){const cfg={admin:{c:'purple',l:'👑 Admin'},staff:{c:'blue',l:'💼 Staff'},client:{c:'pink',l:'💅 Cliente'}}[role]||{c:'pink',l:'Cliente'};return <Badge c={cfg.c}>{cfg.l}</Badge>;}
-function Card({children,style}){return <div style={{background:'#F8FBF6',borderRadius:20,padding:20,boxShadow:'0 4px 20px rgba(0,0,0,0.07)',marginBottom:16,...style}}>{children}</div>;}
-function Btn({children,onClick,col='pink',sm,full,style,disabled}){
-  const bg={pink:'linear-gradient(135deg,#2E7D32,#4CAF50)',green:'linear-gradient(135deg,#6BCB77,#4CAF50)',yellow:'linear-gradient(135deg,#FFD93D,#FF9A3C)',red:'linear-gradient(135deg,#FF6B6B,#FF4444)',blue:'linear-gradient(135deg,#4D96FF,#2979FF)',purple:'linear-gradient(135deg,#C77DFF,#9C27B0)',gray:'#EFEFEF'}[col]||'#FF6B9D';
-  return <button onClick={()=>{if(!disabled){SFX.click();if(onClick)onClick();}}} disabled={disabled} style={{background:disabled?'#E0E0E0':bg,color:(col==='gray'||disabled)?'#aaa':'white',border:'none',borderRadius:50,padding:sm?'8px 16px':'12px 22px',fontWeight:800,fontSize:sm?'0.79rem':'0.88rem',cursor:disabled?'not-allowed':'pointer',fontFamily:'Nunito,sans-serif',boxShadow:(col==='gray'||disabled)?'none':'0 4px 14px rgba(0,0,0,0.14)',display:'inline-flex',alignItems:'center',gap:6,transition:'transform 0.12s',width:full?'100%':'auto',justifyContent:full?'center':'flex-start',...style}} onPointerDown={e=>{if(!disabled)e.currentTarget.style.transform='scale(0.93)';}} onPointerUp={e=>e.currentTarget.style.transform='scale(1)'} onPointerLeave={e=>e.currentTarget.style.transform='scale(1)'}>{children}</button>;
-}
-function Modal({open,onClose,title,children}){
-  useEffect(()=>{if(open)SFX.click();},[open]);
-  if(!open)return null;
-  return <div onClick={e=>{if(e.target===e.currentTarget)onClose();}} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',backdropFilter:'blur(5px)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:14}}>
-    <div style={{background:'#F8FBF6',borderRadius:24,padding:22,width:'100%',maxWidth:460,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 30px 80px rgba(0,0,0,0.25)',animation:'popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)'}}>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.4rem',marginBottom:16,background:'linear-gradient(135deg,#2E7D32,#4CAF50)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{title}</div>
-      {children}
+  if(!show||!pts)return null;
+  return(
+    <div style={{position:"fixed",top:"35%",left:"50%",transform:"translateX(-50%)",zIndex:9999,animation:"ptsFloat 1.8s ease forwards",pointerEvents:"none"}}>
+      <div style={{background:T.gradGold,color:T.white,borderRadius:50,padding:"10px 24px",fontWeight:900,fontSize:"1.4rem",boxShadow:"0 6px 24px rgba(255,183,3,0.5)"}}>+{pts} â­�</div>
     </div>
-  </div>;
+  );
 }
-function FI({label,...p}){return <div style={{marginBottom:12}}>{label&&<label style={{display:'block',fontSize:'0.74rem',fontWeight:800,marginBottom:4,color:'#bbb',textTransform:'uppercase',letterSpacing:1}}>{label}</label>}<input {...p} style={{width:'100%',padding:'11px 13px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontSize:'0.93rem',fontWeight:600,outline:'none',background:'#F2F8F0',color:'#2D2D2D',boxSizing:'border-box',...p.style}} onFocus={e=>e.target.style.borderColor='#FF6B9D'} onBlur={e=>e.target.style.borderColor='#F0EAE0'}/></div>;}
-function FS({label,children,...p}){return <div style={{marginBottom:12}}>{label&&<label style={{display:'block',fontSize:'0.74rem',fontWeight:800,marginBottom:4,color:'#bbb',textTransform:'uppercase',letterSpacing:1}}>{label}</label>}<select {...p} style={{width:'100%',padding:'11px 13px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontSize:'0.93rem',fontWeight:600,outline:'none',background:'#F2F8F0',color:'#2D2D2D',boxSizing:'border-box'}}>{children}</select></div>;}
-
-// ═══════════════════════════════════════════════════════════
-//  AVATAR EDITOR
-// ═══════════════════════════════════════════════════════════
-function AvatarEditor({av,onSave,onClose}){
-  const [loc,setLoc]=useState({...DEFAULT_AVATAR,...av});
-  const upd=(k,v)=>{SFX.click();setLoc(l=>({...l,[k]:v}));};
-  const Sw=({val,cur,onClick,style})=><div onClick={onClick} style={{width:34,height:34,borderRadius:9,cursor:'pointer',border:cur===val?'3px solid #FF6B9D':'2px solid transparent',boxShadow:cur===val?'0 0 0 2px white,0 0 0 4px #FF6B9D':'0 1px 4px rgba(0,0,0,0.1)',transition:'all 0.15s',flexShrink:0,...style}}/>;
-  const HBtn=({h})=><button onClick={()=>upd('hair',h)} style={{padding:'6px 10px',borderRadius:10,border:loc.hair===h?'2px solid #FF6B9D':'2px solid #F0EAE0',background:loc.hair===h?'#FFE8F3':'white',fontFamily:'Nunito,sans-serif',fontWeight:700,fontSize:'0.74rem',cursor:'pointer',color:loc.hair===h?'#FF6B9D':'#777'}}>{h.charAt(0).toUpperCase()+h.slice(1)}</button>;
-  return(<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.55)',backdropFilter:'blur(5px)',zIndex:2000,display:'flex',alignItems:'flex-end',justifyContent:'center'}}>
-    <div style={{background:'#F8FBF6',borderRadius:'26px 26px 0 0',padding:'22px 20px 28px',width:'100%',maxWidth:480,maxHeight:'92vh',overflowY:'auto',animation:'slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1)'}}>
-      <div style={{width:40,height:4,background:'#E0E0E0',borderRadius:2,margin:'0 auto 18px'}}/>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18}}>
-        <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.5rem',background:'linear-gradient(135deg,#2E7D32,#4CAF50)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>🎨 Crea tu Avatar</div>
-        <button onClick={onClose} style={{background:'#F5F5F5',border:'none',borderRadius:10,padding:'7px 13px',cursor:'pointer',fontWeight:800}}>✕</button>
-      </div>
-      <div style={{display:'flex',justifyContent:'center',marginBottom:22}}>
-        <div style={{padding:6,background:'linear-gradient(135deg,#2E7D32,#4CAF50)',borderRadius:'50%',boxShadow:'0 8px 24px rgba(255,107,157,0.35)'}}><AvatarSVG av={loc} size={100}/></div>
-      </div>
-      {[{label:'🌈 Fondo',content:<div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{AV.bg.map((b,i)=><div key={i} onClick={()=>upd('bg',b)} style={{width:38,height:38,borderRadius:10,background:b,cursor:'pointer',border:loc.bg===b?'3px solid #FF6B9D':'2px solid transparent'}}/>)}</div>},{label:'🫙 Tono de piel',content:<div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{AV.skin.map(s=><Sw key={s} val={s} cur={loc.skin} onClick={()=>upd('skin',s)} style={{background:s}}/>)}</div>},{label:'💇 Peinado',content:<div style={{display:'flex',gap:6,flexWrap:'wrap'}}>{AV.hair.map(h=><HBtn key={h} h={h}/>)}</div>},{label:'🎨 Color de pelo',content:<div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{AV.hcol.map(c=><Sw key={c} val={c} cur={loc.hcol} onClick={()=>upd('hcol',c)} style={{background:c}}/>)}</div>},{label:'😊 Expresión',content:<div style={{display:'flex',gap:7}}>{AV.eyes.map(e=><button key={e} onClick={()=>upd('eyes',e)} style={{fontSize:'1.5rem',background:loc.eyes===e?'#FFE8F3':'#F5F5F5',border:loc.eyes===e?'2px solid #FF6B9D':'2px solid transparent',borderRadius:10,padding:'6px 8px',cursor:'pointer'}}>{e}</button>)}</div>},{label:'👑 Accesorio',content:<div style={{display:'flex',gap:7,flexWrap:'wrap'}}>{AV.acc.map(a=><button key={a} onClick={()=>upd('acc',a)} style={{fontSize:a==='none'?'0.7rem':'1.4rem',background:loc.acc===a?'#FFE8F3':'#F5F5F5',border:loc.acc===a?'2px solid #FF6B9D':'2px solid transparent',borderRadius:10,padding:'6px 8px',cursor:'pointer',color:a==='none'?'#bbb':'inherit',fontFamily:'Nunito,sans-serif',fontWeight:700}}>{a==='none'?'❌ Ninguno':a}</button>)}</div>}].map((s,i)=><div key={i} style={{marginBottom:18}}><div style={{fontSize:'0.76rem',fontWeight:800,color:'#bbb',textTransform:'uppercase',letterSpacing:1.2,marginBottom:9}}>{s.label}</div>{s.content}</div>)}
-      <div style={{display:'flex',gap:10}}>
-        <Btn col="gray" onClick={onClose} style={{flex:1,justifyContent:'center'}}>Cancelar</Btn>
-        <Btn col="pink" onClick={()=>onSave(loc)} style={{flex:1,justifyContent:'center'}}>💾 Guardar</Btn>
-      </div>
+function Particles(){
+  const items=["âœ‚ï¸�","ðŸ’ˆ","ðŸŒ¿","â­�","ðŸ’š","âœ¨"];
+  return(
+    <div style={{position:"fixed",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:0}}>
+      {[...Array(8)].map((_,i)=>(
+        <div key={i} style={{position:"absolute",left:`${10+i*11}%`,bottom:"-10%",fontSize:"1.1rem",opacity:0.15,animation:`floatUp ${14+i*2}s linear ${i*1.8}s infinite`}}>
+          {items[i%items.length]}
+        </div>
+      ))}
     </div>
-  </div>);
+  );
 }
 
-// ═══════════════════════════════════════════════════════════
-//  AUTH
-// ═══════════════════════════════════════════════════════════
+// AUTH
 function Auth({onLogin,showToast}){
-  const [mode,setMode]=useState('login');
-  const [f,setF]=useState({nombre:'',email:'',pass:'',pass2:''});
-  const [err,setErr]=useState('');
+  const [mode,setMode]=useState("login");
+  const [email,setEmail]=useState("");
+  const [pass,setPass]=useState("");
+  const [name,setName]=useState("");
   const [loading,setLoading]=useState(false);
-  const [show,setShow]=useState(false);
-  const [musicOn,setMusicOn]=useState(false);
 
-  const login=async()=>{
-    if(!f.email||!f.pass){setErr('Rellena email y contraseña');return;}
+  function normalizeUser(raw){
+    return{
+      id:raw[U.id]||raw.id||raw.identificacion,
+      nombre:raw[U.nombre]||raw.nombre||"",
+      email:raw[U.email]||raw["correo electrÃ³nico"]||raw.email||"",
+      rol:raw[U.rol]||raw.role||raw.rol||"cliente",
+      puntos:raw[U.puntos]??raw.puntos??0,
+      avatar:getAvatarIndex(raw[U.avatar]??raw.avatar),
+      telefono:raw.telefono||"",
+      fecha_registro:raw[U.creado]||raw.creado_en||new Date().toISOString(),
+    };
+  }
+
+  async function handleLogin(){
+    if(!email||!pass){showToast("Rellena todos los campos");SFX.error();return;}
     setLoading(true);
-    const rows=await dbGet('usuarios',`?email=eq.${encodeURIComponent(f.email)}&password=eq.${encodeURIComponent(f.pass)}&select=*`);
+    const users=await dbGet(TB.usuarios,`?${encodeURIComponent(U.email)}=eq.${encodeURIComponent(email)}&${encodeURIComponent(U.password)}=eq.${encodeURIComponent(pass)}&select=*`);
     setLoading(false);
-    if(!rows||rows.length===0){SFX.error();setErr('Email o contraseña incorrectos');return;}
-    SFX.success(); onLogin(rows[0]);
-  };
+    if(!users||users.length===0){showToast("â�Œ Email o contraseÃ±a incorrectos");SFX.error();return;}
+    SFX.success();onLogin(normalizeUser(users[0]));
+  }
 
-  const register=async()=>{
-    if(!f.nombre||!f.email||!f.pass){setErr('Rellena todos los campos');return;}
-    if(f.pass!==f.pass2){setErr('Las contraseñas no coinciden');return;}
+  async function handleRegister(){
+    if(!email||!pass||!name){showToast("Rellena todos los campos");SFX.error();return;}
     setLoading(true);
-    const exists=await dbGet('usuarios',`?email=eq.${encodeURIComponent(f.email)}&select=id`);
-    if(exists&&exists.length>0){setLoading(false);SFX.error();setErr('Email ya registrado');return;}
-    const nu=await dbPost('usuarios',{nombre:f.nombre,email:f.email,password:f.pass,role:ROLES.CLIENT,puntos:20,visitas:0,avatar:DEFAULT_AVATAR,words_found:[]});
+    const existing=await dbGet(TB.usuarios,`?${encodeURIComponent(U.email)}=eq.${encodeURIComponent(email)}&select=${encodeURIComponent(U.id)}`);
+    if(existing&&existing.length>0){setLoading(false);showToast("â�Œ Ese email ya estÃ¡ registrado");SFX.error();return;}
+    const newUser=await dbPost(TB.usuarios,{
+      [U.nombre]:name,[U.email]:email,[U.password]:pass,
+      [U.rol]:"cliente",[U.puntos]:0,[U.avatar]:Math.floor(Math.random()*AVATARS.length),
+    });
     setLoading(false);
-    if(!nu||nu.length===0){setErr('Error al crear cuenta. Inténtalo de nuevo.');return;}
-    SFX.success(); onLogin(nu[0]);
-  };
+    if(!newUser||newUser.length===0){showToast("â�Œ Error al registrar");SFX.error();return;}
+    SFX.success();showToast("âœ… Â¡Bienvenid@ a PeluquerIA!");onLogin(normalizeUser(newUser[0]));
+  }
 
-  return(<div style={{minHeight:'100vh',background:'linear-gradient(160deg,#C8E6C9 0%,#E8F5E9 45%,#F1F8E9 100%)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:20,fontFamily:'Nunito,sans-serif',position:'relative',overflow:'hidden'}}>
-    <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}@keyframes fadeSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes floatUp{0%{transform:translateY(110vh) rotate(0deg);opacity:0}10%{opacity:.35}90%{opacity:.2}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}@keyframes wiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}::-webkit-scrollbar{display:none}input,select,button{font-family:Nunito,sans-serif}`}</style>
-    <Particles/>
-    <div style={{position:'absolute',top:'8%',left:'5%',fontSize:'2.5rem',animation:'wiggle 2s ease-in-out infinite',opacity:0.4}}>✂️</div>
-    <div style={{position:'absolute',top:'15%',right:'8%',fontSize:'2rem',animation:'bounce 2.5s ease-in-out infinite',opacity:0.35}}>💇</div>
-    <div style={{position:'absolute',top:'70%',left:'8%',fontSize:'1.8rem',animation:'bounce 3s ease-in-out infinite 0.5s',opacity:0.3}}>🌿</div>
-    <div style={{position:'absolute',top:'75%',right:'6%',fontSize:'2rem',animation:'wiggle 2.2s ease-in-out infinite 0.3s',opacity:0.35}}>💅</div>
-    <div style={{position:'absolute',top:'40%',left:'3%',fontSize:'1.5rem',animation:'spin 8s linear infinite',opacity:0.2}}>⭐</div>
-    <div style={{position:'absolute',top:'30%',right:'3%',fontSize:'1.5rem',animation:'spin 6s linear infinite reverse',opacity:0.2}}>✨</div>
-    <button onClick={()=>{globalMuted=!globalMuted; if(globalMuted){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}}} style={{position:'fixed',top:16,right:16,background:'white',border:'2px solid #FFE8F3',borderRadius:50,padding:'8px 14px',cursor:'pointer',fontWeight:800,fontSize:'0.85rem',zIndex:10}}>
-      {musicOn?'🔇 Silenciar':'🎵 Sonido'}
-    </button>
-    <div style={{textAlign:'center',marginBottom:26,animation:'popIn 0.6s ease'}}>
-      <div style={{fontSize:'3.5rem',marginBottom:6,animation:'pulse 2s ease-in-out infinite',filter:'drop-shadow(0 4px 12px rgba(255,107,157,0.4))'}}>✂️</div>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'2.6rem',background:'linear-gradient(135deg,#2E7D32,#4CAF50)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>PeluquerIA</div>
-      <div style={{color:'#C8A0CC',fontWeight:800,fontSize:'0.78rem',letterSpacing:3,marginTop:2}}>TU PELUQUERÍA DIGITAL ✨</div>
-    </div>
-    <div style={{background:'#F8FBF6',borderRadius:28,padding:26,width:'100%',maxWidth:370,boxShadow:'0 24px 64px rgba(46,125,50,0.18)',border:'1.5px solid #A5D6A7',animation:'fadeSlide 0.5s ease 0.2s both'}}>
-      <div style={{display:'flex',background:'#F8F5FF',borderRadius:14,padding:4,marginBottom:22}}>
-        {['login','register'].map(m=><button key={m} onClick={()=>{SFX.nav();setMode(m);setErr('');}} style={{flex:1,padding:'10px',border:'none',borderRadius:11,fontFamily:'Nunito,sans-serif',fontWeight:800,fontSize:'0.87rem',cursor:'pointer',background:mode===m?'white':'transparent',color:mode===m?'#FF6B9D':'#bbb',boxShadow:mode===m?'0 2px 10px rgba(255,107,157,0.18)':'none',transition:'all 0.22s'}}>{m==='login'?'🔑 Entrar':'✨ Registrarse'}</button>)}
-      </div>
-      {mode==='register'&&<FI label="Tu nombre" placeholder="María García" value={f.nombre} onChange={e=>setF({...f,nombre:e.target.value})}/>}
-      <FI label="Email" type="email" placeholder="tu@email.com" value={f.email} onChange={e=>setF({...f,email:e.target.value})}/>
-      <div style={{position:'relative'}}>
-        <FI label="Contraseña" type={show?'text':'password'} placeholder="••••••••" value={f.pass} onChange={e=>setF({...f,pass:e.target.value})}/>
-        <button onClick={()=>setShow(!show)} style={{position:'absolute',right:12,top:29,background:'none',border:'none',cursor:'pointer',fontSize:'1rem'}}>{show?'🙈':'👁'}</button>
-      </div>
-      {mode==='register'&&<FI label="Repetir contraseña" type="password" placeholder="••••••••" value={f.pass2} onChange={e=>setF({...f,pass2:e.target.value})}/>}
-      {mode==='register'&&<div style={{background:'linear-gradient(135deg,#E8FAE8,#FFF8DC)',borderRadius:12,padding:'10px 14px',fontSize:'0.8rem',fontWeight:700,color:'#2E7D32',marginBottom:10}}>🎁 Al registrarte recibes 20 puntos de bienvenida</div>}
-      {err&&<div style={{background:'#FFE8E8',color:'#C62828',borderRadius:10,padding:'10px 13px',fontSize:'0.82rem',fontWeight:700,marginBottom:12}}>⚠️ {err}</div>}
-      <Btn full col="pink" onClick={mode==='login'?login:register} disabled={loading} style={{marginTop:4,fontSize:'0.95rem',padding:'13px'}}>
-        {loading?'⏳ Cargando...':(mode==='login'?'🚀 Entrar':'🎉 Crear cuenta gratis')}
-      </Btn>
-      {mode==='login'&&<div style={{marginTop:14,padding:12,background:'linear-gradient(135deg,#E8FAE8,#F0FFF0)',borderRadius:12,fontSize:'0.78rem',color:'#2E7D32',fontWeight:700,textAlign:'center',border:'1px dashed #81C784'}}>📍 {SHOP.address} · 📱 {SHOP.whatsapp}</div>}
-    </div>
-  </div>);
-}
-
-// ═══════════════════════════════════════════════════════════
-//  PERFIL
-// ═══════════════════════════════════════════════════════════
-function Perfil({user,setUser,onLogout,showToast,showPoints}){
-  const [editAv,setEditAv]=useState(false);
-
-  const saveAvatar=async(av)=>{
-    await dbPatch('usuarios',`?id=eq.${user.id}`,{avatar:av});
-    setUser({...user,avatar:av});
-    setEditAv(false); showToast('🎨 Avatar guardado!');
-  };
-
-  const canjear=async(pts,desc)=>{
-    if(user.puntos<pts){SFX.error();showToast('⭐ No tienes suficientes puntos');return;}
-    const np=user.puntos-pts;
-    await dbPatch('usuarios',`?id=eq.${user.id}`,{puntos:np});
-    setUser({...user,puntos:np});
-    SFX.success(); showToast(`🎁 ¡${desc} canjeado! Muéstraselo en la peluquería`);
-  };
-
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    {editAv&&<AvatarEditor av={user.avatar} onSave={saveAvatar} onClose={()=>setEditAv(false)}/>}
-    <div style={{background:'linear-gradient(135deg,#2E7D32,#4CAF50)',borderRadius:22,padding:'22px 20px',marginBottom:16,color:'white',textAlign:'center',position:'relative',overflow:'hidden'}}>
-      <div style={{position:'absolute',top:-20,right:-20,width:80,height:80,background:'rgba(255,255,255,0.08)',borderRadius:'50%'}}/>
-      <div style={{display:'flex',justifyContent:'center',marginBottom:10}}>
-        <div style={{position:'relative'}}>
-          <div style={{padding:4,background:'rgba(255,255,255,0.25)',borderRadius:'50%'}}><AvatarSVG av={user.avatar} size={86}/></div>
-          <button onClick={()=>setEditAv(true)} style={{position:'absolute',bottom:0,right:-4,background:'white',border:'none',borderRadius:50,width:27,height:27,cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,0.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.82rem'}}>✏️</button>
+  return(
+    <div style={{minHeight:"100vh",background:`linear-gradient(160deg,${T.g800} 0%,${T.g600} 60%,${T.g400} 100%)`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+      <style>{GLOBAL_CSS}</style>
+      <Particles/>
+      <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:400}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:"3.5rem",animation:"bounce 2s ease infinite"}}>âœ‚ï¸�</div>
+          <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"2.4rem",color:T.white}}>PeluquerIA</div>
+          <div style={{color:T.g200,fontSize:"0.85rem",marginTop:4,fontWeight:600}}>Tu peluquerÃ­a inteligente âœ¨</div>
         </div>
-      </div>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.5rem'}}>{user.nombre}</div>
-      <div style={{fontSize:'0.8rem',opacity:0.8,marginBottom:6}}>{user.email}</div>
-      <RoleBadge role={user.role}/>
-      <div style={{display:'flex',justifyContent:'center',gap:24,marginTop:14,background:'rgba(255,255,255,0.15)',borderRadius:14,padding:'12px 20px'}}>
-        <div><div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem'}}>{user.puntos}</div><div style={{fontSize:'0.7rem',opacity:0.8,fontWeight:700}}>PUNTOS</div></div>
-        <div style={{width:1,background:'rgba(255,255,255,0.3)'}}/>
-        <div><div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem'}}>{user.visitas}</div><div style={{fontSize:'0.7rem',opacity:0.8,fontWeight:700}}>VISITAS</div></div>
-      </div>
-    </div>
-    {user.role===ROLES.CLIENT&&<>
-      <Card>
-        <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}><div style={{fontWeight:800,fontSize:'0.9rem'}}>🎯 Próximo premio</div><div style={{color:'#FF6B9D',fontWeight:800}}>{user.puntos}/500</div></div>
-        <div style={{height:10,background:'#F0EAE0',borderRadius:50,overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(100,(user.puntos/500)*100)}%`,background:'linear-gradient(90deg,#FF6B9D,#C77DFF)',borderRadius:50,transition:'width 0.8s ease'}}/></div>
-        <div style={{fontSize:'0.77rem',color:'#bbb',marginTop:6,fontWeight:700}}>Faltan {Math.max(0,500-user.puntos)} pts para el 10% de descuento</div>
-      </Card>
-      <Card>
-        <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.1rem',marginBottom:12}}>🎁 Canjear puntos</div>
-        {[{pts:500,icon:'💅',desc:'10% descuento'},{pts:1000,icon:'✨',desc:'20% descuento'},{pts:2000,icon:'👑',desc:'Servicio de cortesía'}].map((r,i)=>(
-          <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 0',borderBottom:i<2?'1px solid #F9F9F9':'none'}}>
-            <div style={{fontSize:'1.8rem'}}>{r.icon}</div>
-            <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.87rem'}}>{r.desc}</div><div style={{fontSize:'0.74rem',color:'#C77DFF',fontWeight:700}}>⭐ {r.pts}</div></div>
-            <Btn sm col={user.puntos>=r.pts?'pink':'gray'} onClick={()=>canjear(r.pts,r.desc)}>{user.puntos>=r.pts?'Canjear':'🔒'}</Btn>
+        <Card style={{padding:"28px 24px",animation:"popIn 0.4s ease"}}>
+          <div style={{display:"flex",background:T.g100,borderRadius:12,padding:4,marginBottom:22}}>
+            {["login","register"].map(m=>(
+              <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"8px",borderRadius:10,border:"none",background:mode===m?T.white:"transparent",color:mode===m?T.g800:T.textSub,fontWeight:800,fontSize:"0.85rem",cursor:"pointer",transition:"all 0.2s"}}>
+                {m==="login"?"ðŸ”� Entrar":"âœ¨ Registrarse"}
+              </button>
+            ))}
           </div>
-        ))}
-      </Card>
-    </>}
-    <Card style={{background:'linear-gradient(135deg,#FFF9F0,#FFF0FA)'}}>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.1rem',marginBottom:12}}>🏆 Logros</div>
-      {[{cond:true,icon:'🎉',label:'Registrada',desc:'Bienvenida a PeluquerIA (+20 pts)'},{cond:user.visitas>=5,icon:'💫',label:'Cliente habitual',desc:'5 visitas completadas'},{cond:user.visitas>=10,icon:'👑',label:'VIP',desc:'10 visitas — ¡eres una estrella!'},{cond:user.puntos>=100,icon:'⭐',label:'Coleccionista',desc:'100 puntos acumulados'},{cond:(user.words_found||[]).length>=4,icon:'🔤',label:'Wordmaster',desc:'4+ palabras en la sopa'}].map((l,i)=>(
-        <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',opacity:l.cond?1:0.35}}>
-          <div style={{fontSize:'1.5rem',filter:l.cond?'none':'grayscale(1)'}}>{l.icon}</div>
-          <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.86rem'}}>{l.label}</div><div style={{fontSize:'0.74rem',color:'#bbb'}}>{l.desc}</div></div>
-          {l.cond&&<Badge c="green">✅</Badge>}
-        </div>
-      ))}
-    </Card>
-    <Card style={{background:'linear-gradient(135deg,#FFF9C4,#FFE8D0)',border:'2px solid #FFD93D',marginBottom:12}}>
-      <div style={{fontWeight:800,fontSize:'1.05rem',marginBottom:4}}>💎 Suscripción VIP</div>
-      <div style={{fontSize:'0.82rem',color:'#777',marginBottom:12,lineHeight:1.5}}>Descuentos exclusivos en todos los servicios. Contrata por WhatsApp.</div>
-      {[{plan:'Básica',precio:'9.99€/mes',desc:'10% en todos los cortes',icon:'🌿'},{plan:'Premium',precio:'19.99€/mes',desc:'20% en servicios + trato prioritario',icon:'👑'},{plan:'VIP Total',precio:'34.99€/mes',desc:'30% dto + productos gratis',icon:'💎'}].map((s,i)=>(
-        <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'white',borderRadius:12,boxShadow:'0 2px 8px rgba(0,0,0,0.06)',marginBottom:6}}>
-          <div style={{fontSize:'1.3rem'}}>{s.icon}</div>
-          <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.85rem'}}>{s.plan}</div><div style={{fontSize:'0.73rem',color:'#999'}}>{s.desc}</div></div>
-          <div style={{fontWeight:900,color:'#FF9A3C',fontSize:'0.82rem'}}>{s.precio}</div>
-        </div>
-      ))}
-      <a href={`https://wa.me/${SHOP.whatsapp}?text=Hola! Me interesa la suscripción VIP de PeluquerIA`} target="_blank" rel="noreferrer" style={{display:'block',textDecoration:'none',marginTop:8}}>
-        <div style={{background:'linear-gradient(135deg,#FFD93D,#FF9A3C)',color:'white',borderRadius:50,padding:'11px',textAlign:'center',fontWeight:800,fontSize:'0.88rem'}}>📱 Contratar por WhatsApp</div>
-      </a>
-    </Card>
-    <Card style={{background:'#E8F5E9',marginBottom:12}}>
-      <div style={{fontWeight:800,fontSize:'0.95rem',marginBottom:12}}>📞 Contacta con {SHOP.name}</div>
-      <a href={`https://wa.me/${SHOP.whatsapp}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'white',borderRadius:12,textDecoration:'none',marginBottom:8,color:'#2D2D2D',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}><span style={{fontSize:'1.4rem'}}>📱</span><div><div style={{fontWeight:800,fontSize:'0.88rem'}}>WhatsApp</div><div style={{fontSize:'0.77rem',color:'#bbb'}}>{SHOP.whatsapp}</div></div></a>
-      <a href={`mailto:${SHOP.email}`} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'white',borderRadius:12,textDecoration:'none',color:'#2D2D2D',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}><span style={{fontSize:'1.4rem'}}>📍</span><div><div style={{fontWeight:800,fontSize:'0.88rem'}}>{SHOP.address}</div><div style={{fontSize:'0.77rem',color:'#bbb'}}>{SHOP.email}</div></div></a>
-    </Card>
-    <Btn full col="gray" onClick={onLogout} style={{justifyContent:'center',marginTop:4}}>🚪 Cerrar sesión</Btn>
-  </div>);
+          {mode==="login"?(
+            <div>
+              <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
+              <Input label="ContraseÃ±a" value={pass} onChange={setPass} type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"/>
+              <Btn full col="dark" onClick={handleLogin} disabled={loading}>{loading?"Entrando...":"ðŸšª Entrar"}</Btn>
+            </div>
+          ):(
+            <div>
+              <Input label="Nombre completo" value={name} onChange={setName} placeholder="Tu nombre"/>
+              <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
+              <Input label="ContraseÃ±a" value={pass} onChange={setPass} type="password" placeholder="MÃ­nimo 6 caracteres"/>
+              <Btn full col="green" onClick={handleRegister} disabled={loading}>{loading?"Registrando...":"ðŸŒŸ Crear cuenta"}</Btn>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
 }
 
-// ═══════════════════════════════════════════════════════════
-//  ADMIN — USUARIOS
-// ═══════════════════════════════════════════════════════════
+// DASHBOARD ADMIN
+function DashboardAdmin({user}){
+  const [stats,setStats]=useState({citas:0,clientes:0,ingresos:0,stockBajo:0});
+  const [citasHoy,setCitasHoy]=useState([]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{
+    async function load(){
+      const today=new Date().toISOString().split("T")[0];
+      const [citas,clientes,ventas,stock]=await Promise.all([
+        dbGet(TB.citas,`?fecha=gte.${today}&select=*`),
+        dbGet(TB.usuarios,`?${encodeURIComponent(U.rol)}=eq.cliente&select=${encodeURIComponent(U.id)}`),
+        dbGet(TB.facturas,`?fecha=gte.${today}&select=total`),
+        dbGet(TB.inventario,`?stock=lte.5&select=id`),
+      ]);
+      setStats({citas:(citas||[]).length,clientes:(clientes||[]).length,ingresos:(ventas||[]).reduce((s,v)=>s+(v.total||0),0),stockBajo:(stock||[]).length});
+      setCitasHoy((citas||[]).slice(0,5));setLoading(false);
+    }
+    load();
+  },[]);
+  if(loading)return <Spinner/>;
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ� " title={`Hola, ${user.nombre?.split(" ")[0]}`} sub={new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"})}/>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:18}}>
+        <StatCard icon="ðŸ“…" label="Citas hoy" value={stats.citas} col="green"/>
+        <StatCard icon="ðŸ‘¥" label="Clientes" value={stats.clientes} col="blue"/>
+        <StatCard icon="ðŸ’°" label="Ingresos hoy" value={`${stats.ingresos.toFixed(2)}â‚¬`} col="gold"/>
+        <StatCard icon="ðŸ“¦" label="Stock bajo" value={stats.stockBajo} col={stats.stockBajo>0?"pink":"green"}/>
+      </div>
+      <Card>
+        <div style={{fontWeight:800,fontSize:"0.95rem",color:T.g800,marginBottom:12}}>ðŸ“… PrÃ³ximas citas</div>
+        {citasHoy.length===0?<EmptyState icon="âœ‚ï¸�" title="Sin citas hoy" sub="Â¡DÃ­a tranquilo!"/>
+          :citasHoy.map(c=>(
+            <div key={c.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${T.g100}`}}>
+              <div>
+                <div style={{fontWeight:700,fontSize:"0.88rem"}}>{c.cliente_nombre||c.nombre_cliente||"Cliente"}</div>
+
+                <div style={{fontSize:"0.75rem",color:T.textSub}}>{c.servicio}</div>
+              </div>
+              <div style={{fontWeight:800,color:T.g600}}>{c.hora}</div>
+            </div>
+          ))
+        }
+      </Card>
+    </div>
+  );
+}
+
+// DASHBOARD CLIENTE
+function ClientDashboard({user}){
+  const [proxCita,setProxCita]=useState(null);
+  const [noticias,setNoticias]=useState([]);
+  useEffect(()=>{
+    async function load(){
+      const today=new Date().toISOString().split("T")[0];
+      const [citas,news]=await Promise.all([
+        dbGet(TB.citas,`?usuario_id=eq.${user.id}&fecha=gte.${today}&order=fecha.asc&limit=1&select=*`),
+        dbGet(TB.publicaciones,`?tipo=eq.correo&order=creado_en.desc&limit=3&select=*`),
+      ]);
+      setProxCita(citas?.[0]||null);setNoticias(news||[]);
+    }
+    load();
+  },[user.id]);
+  const nivel=user.puntos>=1000?"ðŸ’Ž VIP":user.puntos>=500?"ðŸ¥‡ Gold":user.puntos>=200?"ðŸ¥ˆ Silver":"ðŸ¥‰ Bronze";
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <Card style={{background:T.gradClient,border:"none",marginBottom:16,padding:"20px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.8rem",fontWeight:700}}>Â¡Hola de nuevo!</div>
+            <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.4rem",color:T.white}}>{user.nombre?.split(" ")[0]} âœ¨</div>
+            <div style={{marginTop:6}}><Badge col="gold">{nivel}</Badge></div>
+          </div>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.75)",fontWeight:700}}>TUS PUNTOS</div>
+            <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"2rem",color:T.white}}>{user.puntos||0}</div>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.75)"}}>â­�</div>
+          </div>
+        </div>
+        <div style={{marginTop:14,height:8,background:"rgba(255,255,255,0.25)",borderRadius:50,overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${Math.min(((user.puntos||0)/1000)*100,100)}%`,background:T.white,borderRadius:50,transition:"width 0.6s ease"}}/>
+        </div>
+      </Card>
+      {proxCita&&(
+        <Card style={{marginBottom:16,background:T.g50}}>
+          <div style={{fontWeight:800,color:T.g700,marginBottom:8}}>ðŸ“… Tu prÃ³xima cita</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontWeight:700}}>{proxCita.servicio}</div>
+              <div style={{fontSize:"0.8rem",color:T.textSub}}>{new Date(proxCita.fecha).toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"})}</div>
+            </div>
+            <Badge col="green">{proxCita.hora}</Badge>
+          </div>
+        </Card>
+      )}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:18}}>
+        {[["ðŸ“…","Cita"],["ðŸ›�ï¸�","Tienda"],["ðŸŽ®","Jugar"]].map(([icon,lbl])=>(
+          <Card key={lbl} style={{textAlign:"center",padding:"14px 8px",background:T.g50}} hover>
+            <div style={{fontSize:"1.6rem"}}>{icon}</div>
+            <div style={{fontSize:"0.72rem",fontWeight:800,color:T.g700,marginTop:4}}>{lbl}</div>
+          </Card>
+        ))}
+      </div>
+      {noticias.length>0&&(
+        <div>
+          <div style={{fontWeight:800,color:T.g800,marginBottom:10}}>ðŸ“£ Novedades</div>
+          {noticias.map(n=>(
+            <Card key={n.identificaciÃ³n||n.id} style={{marginBottom:10}} hover>
+              <div style={{fontWeight:800,color:T.g800}}>{n.emoji} {n.titulo}</div>
+              <div style={{fontSize:"0.8rem",color:T.textSub,marginTop:4}}>{n.contenido}</div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// CITAS
+const SERVICIOS=[
+  {id:"corte",label:"âœ‚ï¸� Corte",precio:15},{id:"color",label:"ðŸŽ¨ ColoraciÃ³n",precio:45},
+  {id:"mechas",label:"âœ¨ Mechas",precio:60},{id:"lavado",label:"ðŸš¿ Lavado",precio:12},
+  {id:"tratamiento",label:"ðŸ’† Tratamiento",precio:25},{id:"alisado",label:"ðŸ’¨ Alisado",precio:55},
+  {id:"recogido",label:"ðŸ’� Recogido",precio:30},
+];
+const HORARIOS=["09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30"];
+
+function Citas({user,showToast}){
+  const [citas,setCitas]=useState([]);
+  const [showNew,setShowNew]=useState(false);
+  const [loading,setLoading]=useState(true);
+  const [form,setForm]=useState({servicio:"corte",fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});
+  const [ocupados,setOcupados]=useState([]);
+  const isAdmin=user?.rol!==ROLES.CLIENT;
+
+  useEffect(()=>{loadCitas();},[]);
+  async function loadCitas(){
+    setLoading(true);
+    const q=isAdmin?`?order=fecha.asc,hora.asc&select=*`:`?usuario_id=eq.${user.id}&order=fecha.asc&select=*`;
+    setCitas(await dbGet(TB.citas,q)||[]);setLoading(false);
+  }
+  async function checkHorarios(fecha){
+    if(!fecha)return;
+    const data=await dbGet(TB.citas,`?fecha=eq.${fecha}&select=hora`);
+    setOcupados((data||[]).map(c=>c.hora));
+  }
+  async function saveCita(){
+    if(!form.fecha||!form.hora){showToast("Selecciona fecha y hora");return;}
+    const serv=SERVICIOS.find(s=>s.id===form.servicio);
+    await dbPost(TB.citas,{...form,usuario_id:user.id,estado:"pendiente",servicio_precio:serv?.precio,servicio_label:serv?.label});
+    showToast("âœ… Cita reservada");SFX.success();setShowNew(false);
+    setForm({servicio:"corte",fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});loadCitas();
+  }
+  const estadoColor={pendiente:"gold",confirmada:"green",cancelada:"red",completada:"blue"};
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ“…" title="Citas" sub={isAdmin?"GestiÃ³n de citas":"Tus citas"} action={<Btn small onClick={()=>setShowNew(true)}>+ Nueva</Btn>}/>
+      {loading?<Spinner/>:citas.length===0?<EmptyState icon="ðŸ“…" title="Sin citas" sub="Â¡Reserva la primera!"/>
+        :citas.map(c=>(
+          <Card key={c.id||c.identificaciÃ³n} style={{marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div>
+                <div style={{fontWeight:800,fontSize:"0.92rem"}}>{c.servicio_label||c.servicio}</div>
+                <div style={{fontSize:"0.8rem",color:T.textSub}}>{c.cliente_nombre||c.nombre_cliente}</div>
+                <div style={{fontSize:"0.78rem",color:T.textSub,marginTop:2}}>{c.fecha&&new Date(c.fecha).toLocaleDateString("es-ES",{day:"numeric",month:"short"})} Â· {c.hora}</div>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                <Badge col={estadoColor[c.estado]||"green"}>{c.estado}</Badge>
+                {c.servicio_precio&&<span style={{fontWeight:800,color:T.g600,fontSize:"0.88rem"}}>{c.servicio_precio}â‚¬</span>}
+              </div>
+            </div>
+            {c.estado==="pendiente"&&(
+              <div style={{marginTop:10,display:"flex",gap:8}}>
+                {isAdmin&&<Btn small col="green" onClick={()=>{dbPatch(TB.citas,`?id=eq.${c.id}`,{estado:"confirmada"});loadCitas();}}>âœ… Confirmar</Btn>}
+                <Btn small col="red" onClick={()=>{dbPatch(TB.citas,`?id=eq.${c.id}`,{estado:"cancelada"});loadCitas();}}>â�Œ Cancelar</Btn>
+              </div>
+            )}
+          </Card>
+        ))
+      }
+      <Modal show={showNew} onClose={()=>setShowNew(false)} title="ðŸ“… Nueva cita">
+        {isAdmin&&<Input label="Nombre del cliente" value={form.cliente_nombre} onChange={v=>setForm(f=>({...f,cliente_nombre:v}))}/>}
+        <Select label="Servicio" value={form.servicio} onChange={v=>setForm(f=>({...f,servicio:v}))} options={SERVICIOS.map(s=>({value:s.id,label:`${s.label} â€” ${s.precio}â‚¬`}))}/>
+        <Input label="Fecha" value={form.fecha} onChange={v=>{setForm(f=>({...f,fecha:v,hora:""}));checkHorarios(v);}} type="date"/>
+        {form.fecha&&(
+          <div style={{marginBottom:14}}>
+            <div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:8}}>Hora disponible</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+              {HORARIOS.map(h=>{
+                const busy=ocupados.includes(h);
+                return(
+                  <button key={h} disabled={busy} onClick={()=>setForm(f=>({...f,hora:h}))}
+                    style={{padding:"7px 12px",borderRadius:10,border:`2px solid ${form.hora===h?T.g600:busy?T.g200:T.g300}`,background:form.hora===h?T.g600:busy?T.g100:T.white,color:form.hora===h?T.white:busy?T.textSub:T.text,fontWeight:700,fontSize:"0.8rem",cursor:busy?"not-allowed":"pointer",opacity:busy?0.5:1}}>
+                    {h}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <Input label="Notas" value={form.notas} onChange={v=>setForm(f=>({...f,notas:v}))} placeholder="Indicaciones especiales..."/>
+        <Btn full onClick={saveCita}>âœ… Reservar cita</Btn>
+      </Modal>
+    </div>
+  );
+}
+
+// CLIENTES
+function Clientes({showToast}){
+  const [clientes,setClientes]=useState([]);
+  const [search,setSearch]=useState("");
+  const [selected,setSelected]=useState(null);
+  const [historial,setHistorial]=useState([]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{load();},[]);
+  async function load(){
+    setLoading(true);
+    const data=await dbGet(TB.usuarios,`?${encodeURIComponent(U.rol)}=eq.cliente&order=${encodeURIComponent(U.nombre)}.asc&select=*`);
+    setClientes(data||[]);setLoading(false);
+  }
+  async function selectCliente(c){
+    setSelected(c);
+    const uid=c[U.id]||c.id;
+    setHistorial(await dbGet(TB.citas,`?usuario_id=eq.${uid}&order=fecha.desc&limit=10&select=*`)||[]);
+
+  }
+  const filtered=clientes.filter(c=>(c[U.nombre]||"").toLowerCase().includes(search.toLowerCase())||(c[U.email]||c["correo electrÃ³nico"]||"").toLowerCase().includes(search.toLowerCase()));
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ‘¥" title="Clientes" sub={`${clientes.length} clientes`}/>
+      <Input value={search} onChange={setSearch} placeholder="ðŸ”� Buscar..."/>
+      {loading?<Spinner/>:filtered.map(c=>(
+        <Card key={c[U.id]||c.id} style={{marginBottom:10}} hover onClick={()=>selectCliente(c)}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <AvatarSVG av={c[U.avatar]||c.avatar} size={44}/>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:800}}>{c[U.nombre]||c.nombre}</div>
+              <div style={{fontSize:"0.78rem",color:T.textSub}}>{c[U.email]||c["correo electrÃ³nico"]}</div>
+            </div>
+            <div style={{fontWeight:900,color:T.g600}}>â­� {c[U.puntos]||c.puntos||0}</div>
+          </div>
+        </Card>
+      ))}
+      <Modal show={!!selected} onClose={()=>setSelected(null)} title={`ðŸ‘¤ ${selected?.[U.nombre]||selected?.nombre||""}`}>
+        {selected&&(
+          <div>
+            <div style={{display:"flex",gap:12,marginBottom:16,alignItems:"center"}}>
+              <AvatarSVG av={selected[U.avatar]||selected.avatar} size={56}/>
+              <div>
+                <div style={{fontWeight:800}}>{selected[U.nombre]||selected.nombre}</div>
+                <div style={{fontSize:"0.82rem",color:T.textSub}}>{selected[U.email]||selected["correo electrÃ³nico"]}</div>
+              </div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+              <StatCard icon="â­�" label="Puntos" value={selected[U.puntos]||selected.puntos||0} col="gold"/>
+              <StatCard icon="ðŸ“…" label="Citas" value={historial.length} col="green"/>
+            </div>
+            <div style={{fontWeight:800,color:T.g800,marginBottom:10}}>Historial</div>
+            {historial.length===0?<EmptyState icon="ðŸ“…" title="Sin citas" sub=""/>:historial.map(h=>(
+              <div key={h.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${T.g100}`,fontSize:"0.83rem"}}>
+                <span>{h.servicio_label||h.servicio}</span>
+                <span style={{color:T.textSub}}>{h.fecha} {h.hora}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}
+
+// INVENTARIO
+function Inventario({showToast}){
+  const [items,setItems]=useState([]);
+  const [showNew,setShowNew]=useState(false);
+  const [loading,setLoading]=useState(true);
+  const [form,setForm]=useState({nombre:"",categoria:"coloracion",stock:0,stock_min:5,precio_compra:0,precio_venta:0});
+  const CATS=["coloracion","tratamiento","herramientas","consumibles","styling"];
+  useEffect(()=>{load();},[]);
+  async function load(){setLoading(true);setItems(await dbGet(TB.inventario,`?order=nombre.asc&select=*`)||[]);setLoading(false);}
+  async function saveItem(){if(!form.nombre){showToast("Escribe un nombre");return;}await dbPost(TB.inventario,form);showToast("âœ… AÃ±adido");setShowNew(false);setForm({nombre:"",categoria:"coloracion",stock:0,stock_min:5,precio_compra:0,precio_venta:0});load();}
+  async function updateStock(id,delta){const item=items.find(i=>i.id===id);if(!item)return;await dbPatch(TB.inventario,`?id=eq.${id}`,{stock:Math.max(0,item.stock+delta)});load();}
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ“¦" title="Inventario" sub={`${items.length} productos`} action={<Btn small onClick={()=>setShowNew(true)}>+ AÃ±adir</Btn>}/>
+      {items.filter(i=>i.stock<=i.stock_min).length>0&&<Card style={{background:"#FFEBEE",border:`1px solid ${T.red}`,marginBottom:14}}><div style={{fontWeight:800,color:T.red,fontSize:"0.88rem"}}>âš ï¸� {items.filter(i=>i.stock<=i.stock_min).length} productos con stock bajo</div></Card>}
+      {loading?<Spinner/>:items.map(item=>(
+        <Card key={item.id} style={{marginBottom:10}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:800}}>{item.nombre}</div>
+              <div style={{fontSize:"0.75rem",color:T.textSub}}>{item.categoria}</div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <button onClick={()=>updateStock(item.id,-1)} style={{width:28,height:28,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.red}}>âˆ’</button>
+              <span style={{fontWeight:900,fontSize:"1.1rem",color:item.stock<=item.stock_min?T.red:T.g600,minWidth:28,textAlign:"center"}}>{item.stock}</span>
+              <button onClick={()=>updateStock(item.id,1)} style={{width:28,height:28,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.g600}}>+</button>
+              <Badge col={item.stock<=item.stock_min?"red":"green"}>{item.stock<=item.stock_min?"Bajo":"OK"}</Badge>
+            </div>
+          </div>
+        </Card>
+      ))}
+      <Modal show={showNew} onClose={()=>setShowNew(false)} title="ðŸ“¦ Nuevo producto">
+        <Input label="Nombre" value={form.nombre} onChange={v=>setForm(f=>({...f,nombre:v}))}/>
+        <Select label="CategorÃ­a" value={form.categoria} onChange={v=>setForm(f=>({...f,categoria:v}))} options={CATS.map(c=>({value:c,label:c.charAt(0).toUpperCase()+c.slice(1)}))}/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <Input label="Stock" value={form.stock} onChange={v=>setForm(f=>({...f,stock:+v}))} type="number"/>
+          <Input label="MÃ­nimo" value={form.stock_min} onChange={v=>setForm(f=>({...f,stock_min:+v}))} type="number"/>
+          <Input label="Precio compra â‚¬" value={form.precio_compra} onChange={v=>setForm(f=>({...f,precio_compra:+v}))} type="number"/>
+          <Input label="Precio venta â‚¬" value={form.precio_venta} onChange={v=>setForm(f=>({...f,precio_venta:+v}))} type="number"/>
+        </div>
+        <Btn full onClick={saveItem}>âœ… Guardar</Btn>
+      </Modal>
+    </div>
+  );
+}
+
+// CAJA
+function Caja({showToast}){
+  const [ventas,setVentas]=useState([]);
+  const [showNew,setShowNew]=useState(false);
+  const [loading,setLoading]=useState(true);
+  const [carrito,setCarrito]=useState([]);
+  const [metodo,setMetodo]=useState("efectivo");
+  const [clienteNombre,setClienteNombre]=useState("");
+  useEffect(()=>{loadVentas();},[]);
+  async function loadVentas(){setLoading(true);const today=new Date().toISOString().split("T")[0];setVentas(await dbGet(TB.facturas,`?fecha=gte.${today}&order=creado_en.desc&select=*`)||[]);setLoading(false);}
+  function addToCarrito(s){setCarrito(c=>{const ex=c.find(i=>i.id===s.id);if(ex)return c.map(i=>i.id===s.id?{...i,qty:i.qty+1}:i);return[...c,{...s,qty:1}];});}
+  const total=carrito.reduce((s,i)=>s+i.precio*i.qty,0);
+  async function cobrar(){
+    if(!carrito.length)return;
+    await dbPost(TB.facturas,{items:JSON.stringify(carrito),total,metodo_pago:metodo,cliente_nombre:clienteNombre,fecha:new Date().toISOString().split("T")[0]});
+    SFX.coins();showToast(`âœ… Cobrado ${total.toFixed(2)}â‚¬`);setCarrito([]);setClienteNombre("");setShowNew(false);loadVentas();
+  }
+  const totalHoy=ventas.reduce((s,v)=>s+(v.total||0),0);
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ’°" title="Caja" sub={`Hoy: ${totalHoy.toFixed(2)}â‚¬`} action={<Btn small onClick={()=>setShowNew(true)}>+ Venta</Btn>}/>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+        <StatCard icon="ðŸ’¶" label="Efectivo" value={`${ventas.filter(v=>v.metodo_pago==="efectivo").reduce((s,v)=>s+(v.total||0),0).toFixed(2)}â‚¬`} col="green"/>
+        <StatCard icon="ðŸ’³" label="Tarjeta"  value={`${ventas.filter(v=>v.metodo_pago==="tarjeta").reduce((s,v)=>s+(v.total||0),0).toFixed(2)}â‚¬`} col="blue"/>
+      </div>
+      {loading?<Spinner/>:ventas.length===0?<EmptyState icon="ðŸ’°" title="Sin ventas hoy" sub=""/>
+        :ventas.map(v=>(
+          <Card key={v.id} style={{marginBottom:8}}>
+            <div style={{display:"flex",justifyContent:"space-between"}}>
+              <div>
+                <div style={{fontWeight:800}}>{v.cliente_nombre||"AnÃ³nimo"}</div>
+                <div style={{fontSize:"0.75rem",color:T.textSub}}>{v.metodo_pago}</div>
+              </div>
+              <div style={{fontWeight:900,fontSize:"1.1rem",color:T.g600}}>{(v.total||0).toFixed(2)}â‚¬</div>
+            </div>
+          </Card>
+        ))
+      }
+      <Modal show={showNew} onClose={()=>setShowNew(false)} title="ðŸ’° Nueva venta">
+        <Input label="Cliente (opcional)" value={clienteNombre} onChange={setClienteNombre}/>
+        <div style={{fontWeight:800,color:T.g700,marginBottom:8,fontSize:"0.85rem"}}>Servicios</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
+          {SERVICIOS.map(s=><button key={s.id} onClick={()=>addToCarrito(s)} style={{padding:"8px 12px",borderRadius:10,border:`1.5px solid ${T.g300}`,background:T.g50,cursor:"pointer",fontSize:"0.8rem",fontWeight:700}}>{s.label} {s.precio}â‚¬</button>)}
+        </div>
+        {carrito.length>0&&(
+          <div style={{background:T.g50,borderRadius:12,padding:12,marginBottom:14}}>
+            {carrito.map(i=><div key={i.id} style={{display:"flex",justifyContent:"space-between",fontSize:"0.85rem",marginBottom:4}}><span>{i.label} x{i.qty}</span><span style={{fontWeight:800}}>{(i.precio*i.qty).toFixed(2)}â‚¬</span></div>)}
+            <div style={{borderTop:`1px solid ${T.g200}`,marginTop:8,paddingTop:8,fontWeight:900,display:"flex",justifyContent:"space-between"}}>
+
+              <span>TOTAL</span><span style={{color:T.g600}}>{total.toFixed(2)}â‚¬</span>
+            </div>
+          </div>
+        )}
+        <Select label="MÃ©todo de pago" value={metodo} onChange={setMetodo} options={[{value:"efectivo",label:"ðŸ’¶ Efectivo"},{value:"tarjeta",label:"ðŸ’³ Tarjeta"},{value:"bizum",label:"ðŸ“± Bizum"}]}/>
+        <Btn full col="gold" onClick={cobrar} disabled={!carrito.length}>ðŸ’° Cobrar {total.toFixed(2)}â‚¬</Btn>
+      </Modal>
+    </div>
+  );
+}
+
+// ADMIN USUARIOS
 function AdminUsuarios({showToast}){
   const [users,setUsers]=useState([]);
   const [loading,setLoading]=useState(true);
-  const [modal,setModal]=useState(false);
-  const [edit,setEdit]=useState(null);
-  const [f,setF]=useState({nombre:'',email:'',password:'',role:ROLES.STAFF});
-
-  useEffect(()=>{ loadUsers(); },[]);
-  const loadUsers=async()=>{ setLoading(true); const r=await dbGet('usuarios','?select=*&order=created_at.asc'); setUsers(r||[]); setLoading(false); };
-
-  const guardar=async()=>{
-    if(!f.nombre||!f.email||!f.password){SFX.error();showToast('⚠️ Rellena todos los campos');return;}
-    if(edit){
-      await dbPatch('usuarios',`?id=eq.${edit.id}`,{nombre:f.nombre,email:f.email,password:f.password,role:f.role});
-      showToast('✅ Usuario actualizado');
-    } else {
-      const exists=await dbGet('usuarios',`?email=eq.${encodeURIComponent(f.email)}&select=id`);
-      if(exists&&exists.length>0){SFX.error();showToast('⚠️ Email ya registrado');return;}
-      await dbPost('usuarios',{nombre:f.nombre,email:f.email,password:f.password,role:f.role,puntos:f.role===ROLES.CLIENT?20:0,visitas:0,avatar:DEFAULT_AVATAR,words_found:[]});
-      showToast('✅ Usuario creado');
-    }
-    SFX.success(); setModal(false); setEdit(null); loadUsers();
-  };
-
-  const del=async(id)=>{ if(!confirm('¿Eliminar usuario?'))return; await dbDelete('usuarios',`?id=eq.${id}`); showToast('🗑 Eliminado'); loadUsers(); };
-
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.6rem'}}>👥 Usuarios</div>
-      <Btn sm col="purple" onClick={()=>{setEdit(null);setF({nombre:'',email:'',password:'',role:ROLES.STAFF});setModal(true);}}>➕ Nuevo</Btn>
-    </div>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:16}}>
-      {[ROLES.ADMIN,ROLES.STAFF,ROLES.CLIENT].map(r=>{
-        const count=users.filter(u=>u.role===r).length;
-        const cfg={admin:{icon:'👑',label:'Admins',bg:'#F3E8FF',c:'#7B1FA2'},staff:{icon:'💼',label:'Staff',bg:'#E8F0FF',c:'#1565C0'},client:{icon:'💅',label:'Clientes',bg:'#FFE8F3',c:'#D63384'}}[r];
-        return <div key={r} style={{background:cfg.bg,borderRadius:14,padding:'12px 8px',textAlign:'center'}}>
-          <div style={{fontSize:'1.3rem'}}>{cfg.icon}</div>
-          <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.4rem',color:cfg.c}}>{count}</div>
-          <div style={{fontSize:'0.68rem',color:'#999',fontWeight:700}}>{cfg.label}</div>
-        </div>;
-      })}
-    </div>
-    {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:users.map(u=>(
-      <div key={u.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
-        <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <AvatarSVG av={u.avatar} size={44}/>
-          <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.9rem'}}>{u.nombre}</div><div style={{fontSize:'0.75rem',color:'#bbb'}}>{u.email}</div></div>
-          <RoleBadge role={u.role}/>
-        </div>
-        <div style={{display:'flex',gap:8,marginTop:10,justifyContent:'flex-end'}}>
-          <Btn sm col="blue" onClick={()=>{setEdit(u);setF({nombre:u.nombre,email:u.email,password:u.password,role:u.role});setModal(true);}}>✏️</Btn>
-          {u.role!==ROLES.ADMIN&&<Btn sm col="red" onClick={()=>del(u.id)}>🗑</Btn>}
-        </div>
-      </div>
-    ))}
-    <Modal open={modal} onClose={()=>setModal(false)} title={edit?'✏️ Editar Usuario':'➕ Nuevo Usuario'}>
-      <FI label="Nombre" value={f.nombre} onChange={e=>setF({...f,nombre:e.target.value})} placeholder="Nombre completo"/>
-      <FI label="Email" type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} placeholder="email@ejemplo.com"/>
-      <FI label="Contraseña" type="password" value={f.password} onChange={e=>setF({...f,password:e.target.value})} placeholder="••••••••"/>
-      <FS label="Rol" value={f.role} onChange={e=>setF({...f,role:e.target.value})}>
-        <option value={ROLES.CLIENT}>💅 Cliente</option>
-        <option value={ROLES.STAFF}>💼 Staff</option>
-        <option value={ROLES.ADMIN}>👑 Admin</option>
-      </FS>
-      <div style={{display:'flex',gap:10,marginTop:6,justifyContent:'flex-end'}}>
-        <Btn col="gray" onClick={()=>setModal(false)}>Cancelar</Btn>
-        <Btn col="purple" onClick={guardar}>💾 Guardar</Btn>
-      </div>
-    </Modal>
-  </div>);
-}
-
-// ═══════════════════════════════════════════════════════════
-//  CITAS
-// ═══════════════════════════════════════════════════════════
-function Citas({showToast}){
-  const [citas,setCitas]=useState([]);
-  const [clientes,setClientes]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [modal,setModal]=useState(false);
-  const [f,setF]=useState({cliente_id:'',fecha:hoyStr(),hora:'',servicio:'Corte de pelo'});
-
   useEffect(()=>{load();},[]);
-  const load=async()=>{
-    setLoading(true);
-    const [c,cl]=await Promise.all([dbGet('citas','?select=*&order=fecha.asc,hora.asc'),dbGet('clientes','?select=*&order=nombre.asc')]);
-    setCitas(c||[]); setClientes(cl||[]); setLoading(false);
-  };
-
-  const guardar=async()=>{
-    if(!f.cliente_id||!f.fecha||!f.hora){SFX.error();showToast('⚠️ Rellena todos los campos');return;}
-    await dbPost('citas',{...f,estado:'pendiente'});
-    await dbPatch('clientes',`?id=eq.${f.cliente_id}`,{visitas:(clientes.find(c=>c.id===f.cliente_id)?.visitas||0)+1,puntos:(clientes.find(c=>c.id===f.cliente_id)?.puntos||0)+50});
-    SFX.coins(); setModal(false); showToast('✅ Cita guardada! +50 pts al cliente');
-    setF({cliente_id:'',fecha:hoyStr(),hora:'',servicio:'Corte de pelo'}); load();
-  };
-  const tog=async(c)=>{ await dbPatch('citas',`?id=eq.${c.id}`,{estado:c.estado==='confirmada'?'pendiente':'confirmada'}); load(); };
-  const del=async(id)=>{ if(!confirm('¿Eliminar?'))return; await dbDelete('citas',`?id=eq.${id}`); showToast('🗑 Eliminada'); load(); };
-  const getCli=id=>clientes.find(c=>c.id===id)||{nombre:'?'};
-
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem'}}>📅 Citas</div>
-      <Btn onClick={()=>setModal(true)}>➕ Nueva</Btn>
-    </div>
-    {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:citas.length===0?<Card><div style={{textAlign:'center',color:'#ddd',padding:36,fontWeight:700}}>Sin citas registradas</div></Card>:citas.map(c=>{const cli=getCli(c.cliente_id);return(
-      <div key={c.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:10}}>
-        <div style={{background:'linear-gradient(135deg,#2E7D32,#4CAF50)',color:'white',borderRadius:12,padding:'8px 10px',textAlign:'center',minWidth:62,fontFamily:'Fredoka One,cursive'}}>
-          <div style={{fontSize:'0.95rem'}}>{c.hora?.slice(0,5)}</div>
-          <div style={{fontSize:'0.62rem',opacity:0.85}}>{fmt(c.fecha)}</div>
-        </div>
-        <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.9rem'}}>{cli.nombre}</div><div style={{fontSize:'0.76rem',color:'#bbb'}}>{c.servicio}</div></div>
-        <Badge c={c.estado==='confirmada'?'green':'yellow'}>{c.estado==='confirmada'?'✅':'⏳'}</Badge>
-        <button onClick={()=>tog(c)} style={{background:'#F5F5F5',border:'none',borderRadius:8,padding:'5px 8px',cursor:'pointer',fontWeight:800}}>↕</button>
-        <button onClick={()=>del(c.id)} style={{background:'#FFE8E8',border:'none',borderRadius:8,padding:'5px 8px',cursor:'pointer',color:'#C62828',fontWeight:800}}>🗑</button>
-      </div>
-    );})}
-    <Modal open={modal} onClose={()=>setModal(false)} title="📅 Nueva Cita">
-      <FS label="Cliente" value={f.cliente_id} onChange={e=>setF({...f,cliente_id:e.target.value})}>
-        <option value="">Seleccionar...</option>
-        {clientes.map(c=><option key={c.id} value={c.id}>{c.nombre}</option>)}
-      </FS>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-        <FI label="Fecha" type="date" value={f.fecha} onChange={e=>setF({...f,fecha:e.target.value})}/>
-        <FI label="Hora" type="time" value={f.hora} onChange={e=>setF({...f,hora:e.target.value})}/>
-      </div>
-      <FS label="Servicio" value={f.servicio} onChange={e=>setF({...f,servicio:e.target.value})}>
-        {['Corte de pelo','Tinte','Mechas','Permanente','Alisado','Peinado','Tratamiento'].map(s=><option key={s}>{s}</option>)}
-      </FS>
-      <div style={{display:'flex',gap:10,marginTop:6,justifyContent:'flex-end'}}>
-        <Btn col="gray" onClick={()=>setModal(false)}>Cancelar</Btn>
-        <Btn onClick={guardar}>💾 Guardar</Btn>
-      </div>
-    </Modal>
-  </div>);
-}
-
-// ═══════════════════════════════════════════════════════════
-//  CLIENTES
-// ═══════════════════════════════════════════════════════════
-function Clientes({showToast}){
-  const [clientes,setClientes]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [modal,setModal]=useState(false);
-  const [q,setQ]=useState('');
-  const [f,setF]=useState({nombre:'',telefono:'',servicio:'Corte de pelo'});
-
-  useEffect(()=>{load();},[]);
-  const load=async()=>{ setLoading(true); const r=await dbGet('clientes','?select=*&order=nombre.asc'); setClientes(r||[]); setLoading(false); };
-
-  const guardar=async()=>{
-    if(!f.nombre||!f.telefono){SFX.error();showToast('⚠️ Nombre y teléfono obligatorios');return;}
-    await dbPost('clientes',{...f,visitas:0,puntos:0});
-    SFX.success(); setModal(false); setF({nombre:'',telefono:'',servicio:'Corte de pelo'}); showToast('👤 Cliente añadido!'); load();
-  };
-
-  const lista=clientes.filter(c=>c.nombre.toLowerCase().includes(q.toLowerCase())||c.telefono?.includes(q));
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem'}}>👥 Clientes</div>
-      <Btn onClick={()=>setModal(true)}>➕ Nuevo</Btn>
-    </div>
-    <div style={{position:'relative',marginBottom:14}}>
-      <span style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)'}}>🔍</span>
-      <input placeholder="Buscar..." value={q} onChange={e=>setQ(e.target.value)} style={{width:'100%',padding:'11px 13px 11px 36px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontWeight:600,fontSize:'0.9rem',outline:'none',boxSizing:'border-box',background:'#FAFAFA'}}/>
-    </div>
-    {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:lista.map(c=>(
-      <div key={c.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
-        <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <ACircle nombre={c.nombre}/>
-          <div style={{flex:1}}><div style={{fontWeight:800}}>{c.nombre}</div><div style={{fontSize:'0.79rem',color:'#bbb'}}>{c.telefono}</div></div>
-          <div style={{textAlign:'right'}}><div style={{fontFamily:'Fredoka One,cursive',color:'#C77DFF'}}>⭐ {c.puntos}</div><div style={{fontSize:'0.71rem',color:'#ddd'}}>{c.visitas} visitas</div></div>
-        </div>
-        <div style={{marginTop:8,display:'flex',gap:6,flexWrap:'wrap'}}>
-          <Badge c="pink">{c.servicio}</Badge>
-          {c.puntos>=2000&&<Badge c="purple">👑 VIP</Badge>}
-          {c.puntos>=500&&c.puntos<2000&&<Badge c="green">🎁 Premio disponible</Badge>}
-        </div>
-      </div>
-    ))}
-    <Modal open={modal} onClose={()=>setModal(false)} title="👤 Nuevo Cliente">
-      <FI label="Nombre" value={f.nombre} onChange={e=>setF({...f,nombre:e.target.value})} placeholder="María García"/>
-      <FI label="Teléfono" type="tel" value={f.telefono} onChange={e=>setF({...f,telefono:e.target.value})} placeholder="612 345 678"/>
-      <FS label="Servicio habitual" value={f.servicio} onChange={e=>setF({...f,servicio:e.target.value})}>
-        {['Corte de pelo','Tinte','Mechas','Permanente','Peinado'].map(s=><option key={s}>{s}</option>)}
-      </FS>
-      <div style={{display:'flex',gap:10,marginTop:6,justifyContent:'flex-end'}}>
-        <Btn col="gray" onClick={()=>setModal(false)}>Cancelar</Btn>
-        <Btn onClick={guardar}>💾 Guardar</Btn>
-      </div>
-    </Modal>
-  </div>);
-}
-
-// ═══════════════════════════════════════════════════════════
-//  INVENTARIO
-// ═══════════════════════════════════════════════════════════
-function Inventario({showToast}){
-  const [inv,setInv]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [modal,setModal]=useState(false);
-  const [f,setF]=useState({nombre:'',categoria:'Tintes',precio:'',stock:'',stock_minimo:''});
-
-  useEffect(()=>{load();},[]);
-  const load=async()=>{ setLoading(true); const r=await dbGet('inventario','?select=*&order=nombre.asc'); setInv(r||[]); setLoading(false); };
-
-  const adj=async(p,d)=>{
-    const ns=Math.max(0,p.stock+d);
-    await dbPatch('inventario',`?id=eq.${p.id}`,{stock:ns});
-    setInv(inv.map(x=>x.id===p.id?{...x,stock:ns}:x));
-    if(ns<=p.stock_minimo) showToast(`⚠️ Stock bajo en ${p.nombre}`);
-  };
-
-  const guardar=async()=>{
-    if(!f.nombre){SFX.error();showToast('⚠️ El nombre es obligatorio');return;}
-    await dbPost('inventario',{...f,precio:parseFloat(f.precio)||0,stock:parseInt(f.stock)||0,stock_minimo:parseInt(f.stock_minimo)||1});
-    SFX.success(); setModal(false); setF({nombre:'',categoria:'Tintes',precio:'',stock:'',stock_minimo:''}); showToast('📦 Producto añadido!'); load();
-  };
-
-  const al=inv.filter(p=>p.stock<=p.stock_minimo);
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem'}}>📦 Inventario</div>
-      <Btn onClick={()=>setModal(true)}>➕ Añadir</Btn>
-    </div>
-    {al.map(p=><div key={p.id} style={{background:'#FFF8DC',border:'2px solid #FFD93D',borderRadius:12,padding:'11px 14px',marginBottom:8,fontWeight:700,fontSize:'0.82rem',color:'#8B6914'}}>⚠️ <b>{p.nombre}</b> — Solo {p.stock} uds (mín: {p.stock_minimo})</div>)}
-    {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:inv.map(p=>{
-      const pct=Math.min(100,Math.round((p.stock/Math.max(p.stock_minimo*3,1))*100));
-      const bc=p.stock<=p.stock_minimo?'#FF6B6B':p.stock<=p.stock_minimo*2?'#FFD93D':'#6BCB77';
-      return(<div key={p.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
-        <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
-          <div><div style={{fontWeight:800,fontSize:'0.9rem'}}>{p.nombre}</div><Badge c="blue">{p.categoria}</Badge></div>
-          <div style={{fontWeight:800,color:'#6BCB77',alignSelf:'center'}}>{parseFloat(p.precio).toFixed(2)}€</div>
-        </div>
-        <div style={{height:7,background:'#F0EAE0',borderRadius:50,marginBottom:8}}><div style={{height:'100%',width:`${pct}%`,background:bc,borderRadius:50,transition:'width 0.4s'}}/></div>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <div style={{fontSize:'0.75rem',color:'#ddd',fontWeight:700}}>Mín: {p.stock_minimo}</div>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <button onClick={()=>adj(p,-1)} style={{background:'#F5F5F5',border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',fontWeight:800}}>−</button>
-            <span style={{fontFamily:'Fredoka One,cursive',fontSize:'1.25rem',minWidth:28,textAlign:'center',color:p.stock<=p.stock_minimo?'#FF6B6B':'#2D2D2D'}}>{p.stock}</span>
-            <button onClick={()=>adj(p,1)} style={{background:'#F5F5F5',border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',fontWeight:800}}>+</button>
+  async function load(){setLoading(true);setUsers(await dbGet(TB.usuarios,`?order=${encodeURIComponent(U.nombre)}.asc&select=*`)||[]);setLoading(false);}
+  async function changeRole(id,rol){await dbPatch(TB.usuarios,`?${encodeURIComponent(U.id)}=eq.${id}`,{[U.rol]:rol});showToast("âœ… Rol actualizado");load();}
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ‘‘" title="Usuarios" sub={`${users.length} usuarios`}/>
+      {loading?<Spinner/>:users.map(u=>(
+        <Card key={u[U.id]||u.id} style={{marginBottom:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <AvatarSVG av={u[U.avatar]||u.avatar} size={40}/>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:800,fontSize:"0.9rem"}}>{u[U.nombre]||u.nombre}</div>
+              <div style={{fontSize:"0.75rem",color:T.textSub}}>{u[U.email]||u["correo electrÃ³nico"]}</div>
+            </div>
+            <select value={u[U.rol]||u.role||"cliente"} onChange={e=>changeRole(u[U.id]||u.id,e.target.value)}
+              style={{padding:"5px 8px",borderRadius:8,border:`1.5px solid ${T.g300}`,background:T.g50,fontSize:"0.78rem",fontWeight:700,cursor:"pointer"}}>
+              <option value="cliente">ðŸ‘¤ Cliente</option>
+              <option value="staff">âœ‚ï¸� Staff</option>
+              <option value="admin">ðŸ‘‘ Admin</option>
+            </select>
           </div>
-        </div>
-      </div>);
-    })}
-    <Modal open={modal} onClose={()=>setModal(false)} title="📦 Nuevo Producto">
-      <FI label="Nombre" value={f.nombre} onChange={e=>setF({...f,nombre:e.target.value})} placeholder="Tinte Rubio Ceniza"/>
-      <FS label="Categoría" value={f.categoria} onChange={e=>setF({...f,categoria:e.target.value})}>
-        {['Tintes','Champús','Acondicionadores','Tratamientos','Herramientas','Otros'].map(s=><option key={s}>{s}</option>)}
-      </FS>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-        <FI label="Precio €" type="number" value={f.precio} onChange={e=>setF({...f,precio:e.target.value})} placeholder="12.50"/>
-        <FI label="Stock" type="number" value={f.stock} onChange={e=>setF({...f,stock:e.target.value})} placeholder="10"/>
-      </div>
-      <FI label="Stock mínimo" type="number" value={f.stock_minimo} onChange={e=>setF({...f,stock_minimo:e.target.value})} placeholder="3"/>
-      <div style={{display:'flex',gap:10,marginTop:6,justifyContent:'flex-end'}}>
-        <Btn col="gray" onClick={()=>setModal(false)}>Cancelar</Btn>
-        <Btn onClick={guardar}>💾 Guardar</Btn>
-      </div>
-    </Modal>
-  </div>);
+        </Card>
+      ))}
+    </div>
+  );
 }
 
-// ═══════════════════════════════════════════════════════════
-//  CAJA
-// ═══════════════════════════════════════════════════════════
-function Caja({showToast}){
-  const [facturas,setFacturas]=useState([]);
-  const [clientes,setClientes]=useState([]);
+// FEED â€” usa tu tabla publicaciones
+function SocialFeed({user,setUser,showToast,showPoints}){
+  const [posts,setPosts]=useState([]);
+  const [newPost,setNewPost]=useState("");
   const [loading,setLoading]=useState(true);
-  const [modal,setModal]=useState(false);
-  const [f,setF]=useState({cliente_id:'',lineas:[{servicio:'',precio:''}],estado:'pagada'});
-
   useEffect(()=>{load();},[]);
-  const load=async()=>{
-    setLoading(true);
-    const [fa,cl]=await Promise.all([dbGet('facturas','?select=*&order=created_at.desc'),dbGet('clientes','?select=*&order=nombre.asc')]);
-    setFacturas(fa||[]); setClientes(cl||[]); setLoading(false);
-  };
-
-  const addL=()=>setF(x=>({...x,lineas:[...x.lineas,{servicio:'',precio:''}]}));
-  const updL=(i,k,v)=>setF(x=>({...x,lineas:x.lineas.map((l,idx)=>idx===i?{...l,[k]:v}:l)}));
-  const total=f.lineas.reduce((a,l)=>a+(parseFloat(l.precio)||0),0);
-
-  const guardar=async()=>{
-    if(!f.cliente_id){SFX.error();showToast('⚠️ Selecciona cliente');return;}
-    const ls=f.lineas.filter(l=>l.servicio.trim());
-    if(!ls.length){SFX.error();showToast('⚠️ Añade un servicio');return;}
-    await dbPost('facturas',{cliente_id:f.cliente_id,lineas:ls,total,estado:f.estado,fecha:hoyStr()});
-    SFX.coins(); setModal(false); setF({cliente_id:'',lineas:[{servicio:'',precio:''}],estado:'pagada'}); showToast('🧾 Factura emitida!'); load();
-  };
-
-  const pag=facturas.filter(f=>f.estado==='pagada');
-  const tot=pag.reduce((a,f)=>a+parseFloat(f.total||0),0);
-  const getCli=id=>clientes.find(c=>c.id===id)||{nombre:'?'};
-
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem'}}>💰 Caja</div>
-      <Btn onClick={()=>setModal(true)}>➕ Nueva</Btn>
-    </div>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:9,marginBottom:16}}>
-      {[{icon:'💵',val:tot.toFixed(0)+'€',label:'Este mes',bg:'#E8FAE8',c:'#2E7D32'},{icon:'🧾',val:facturas.length,label:'Facturas',bg:'#FFE8F3',c:'#D63384'},{icon:'⭐',val:pag.length?(tot/pag.length).toFixed(0)+'€':'0€',label:'Ticket medio',bg:'#FFF8DC',c:'#B8860B'}].map((s,i)=>(
-        <div key={i} style={{background:s.bg,borderRadius:14,padding:'12px 8px',textAlign:'center'}}>
-          <div style={{fontSize:'1.2rem'}}>{s.icon}</div>
-          <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.2rem',color:s.c}}>{s.val}</div>
-          <div style={{fontSize:'0.67rem',color:'#999',fontWeight:700}}>{s.label}</div>
+  async function load(){setLoading(true);setPosts(await dbGet(TB.publicaciones,`?order=creado_en.desc&limit=20&select=*`)||[]);setLoading(false);}
+  async function publish(){
+    if(!newPost.trim())return;
+    await dbPost(TB.publicaciones,{contenido:newPost,autor_id:user.id,titulo:"",tipo:"post",emoji:"ðŸ’¬","nÃºmero_de_me_g":0});
+    const nuevos=(user.puntos||0)+5;
+    await dbPatch(TB.usuarios,`?${encodeURIComponent(U.id)}=eq.${user.id}`,{[U.puntos]:nuevos});
+    setUser(u=>({...u,puntos:nuevos}));showPoints(5);setNewPost("");SFX.success();load();
+  }
+  async function likePost(post){
+    const id=post.identificaciÃ³n||post.id;
+    const likes=(post["nÃºmero_de_me_g"]||0)+1;
+    await dbPatch(TB.publicaciones,`?identificaciÃ³n=eq.${id}`,{"nÃºmero_de_me_g":likes});load();
+  }
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ“±" title="Feed" sub="Comparte con la comunidad"/>
+      <Card style={{marginBottom:16}}>
+        <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Â¿QuÃ© te parece tu nuevo look? âœ¨" rows={3}
+          style={{width:"100%",border:`1.5px solid ${T.g200}`,borderRadius:12,padding:"10px",fontSize:"0.88rem",color:T.text,background:T.g50,resize:"none",outline:"none"}}/>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
+          <span style={{fontSize:"0.75rem",color:T.textSub}}>+5â­� por publicar</span>
+          <Btn small onClick={publish}>ðŸ“¤ Publicar</Btn>
         </div>
-      ))}
-    </div>
-    {loading?<div style={{textAlign:'center',padding:40,color:'#bbb'}}>⏳ Cargando...</div>:facturas.map(fc=>{const cli=getCli(fc.cliente_id);return(
-      <div key={fc.id} style={{background:'#F8FBF6',borderRadius:16,padding:14,marginBottom:10,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:10}}>
-        <ACircle nombre={cli.nombre} size={34}/>
-        <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.88rem'}}>{cli.nombre}</div><div style={{fontSize:'0.74rem',color:'#bbb'}}>{fc.lineas?.map(l=>l.servicio).join(', ')}</div></div>
-        <div style={{textAlign:'right'}}><div style={{fontFamily:'Fredoka One,cursive',color:'#6BCB77'}}>{parseFloat(fc.total).toFixed(0)}€</div><Badge c={fc.estado==='pagada'?'green':'yellow'}>{fc.estado==='pagada'?'✅':'⏳'}</Badge></div>
-      </div>
-    );})}
-    <Modal open={modal} onClose={()=>setModal(false)} title="🧾 Nueva Factura">
-      <FS label="Cliente" value={f.cliente_id} onChange={e=>setF({...f,cliente_id:e.target.value})}>
-        <option value="">Seleccionar...</option>
-        {clientes.map(c=><option key={c.id} value={c.id}>{c.nombre}</option>)}
-      </FS>
-      {f.lineas.map((l,i)=><div key={i} style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:6}}>
-        <FI placeholder="Servicio" value={l.servicio} onChange={e=>updL(i,'servicio',e.target.value)}/>
-        <FI placeholder="Precio €" type="number" value={l.precio} onChange={e=>updL(i,'precio',e.target.value)}/>
-      </div>)}
-      <button onClick={addL} style={{background:'#F5F5F5',border:'none',borderRadius:10,padding:'7px 12px',cursor:'pointer',fontWeight:700,marginBottom:10,fontFamily:'Nunito,sans-serif',fontSize:'0.82rem'}}>➕ Línea</button>
-      <div style={{background:'linear-gradient(135deg,#FFF0F7,#F8F0FF)',borderRadius:12,padding:12,textAlign:'right',marginBottom:10}}>
-        <span style={{fontFamily:'Fredoka One,cursive',fontSize:'1.2rem',color:'#FF6B9D'}}>Total: {total.toFixed(2)} €</span>
-      </div>
-      <FS label="Estado" value={f.estado} onChange={e=>setF({...f,estado:e.target.value})}>
-        <option value="pagada">✅ Pagada</option>
-        <option value="pendiente">⏳ Pendiente</option>
-      </FS>
-      <div style={{display:'flex',gap:10,marginTop:6,justifyContent:'flex-end'}}>
-        <Btn col="gray" onClick={()=>setModal(false)}>Cancelar</Btn>
-        <Btn onClick={guardar}>💾 Emitir</Btn>
-      </div>
-    </Modal>
-  </div>);
-}
-
-// ═══════════════════════════════════════════════════════════
-//  DASHBOARDS
-// ═══════════════════════════════════════════════════════════
-function DashboardAdmin({user}){
-  const [citasHoy,setCitasHoy]=useState([]);
-  const [clientes,setClientes]=useState([]);
-  const [alertas,setAlertas]=useState([]);
-  const [ingresos,setIngresos]=useState(0);
-  const tip=TIPS[Math.floor(Date.now()/86400000)%TIPS.length];
-
-  useEffect(()=>{
-    const load=async()=>{
-      const [ci,cl,inv,fa]=await Promise.all([
-        dbGet('citas',`?fecha=eq.${hoyStr()}&select=*,clientes(nombre)`),
-        dbGet('clientes','?select=id'),
-        dbGet('inventario','?select=*'),
-        dbGet('facturas','?estado=eq.pagada&select=total'),
-      ]);
-      setCitasHoy(ci||[]); setClientes(cl||[]);
-      setAlertas((inv||[]).filter(p=>p.stock<=p.stock_minimo));
-      setIngresos((fa||[]).reduce((a,f)=>a+parseFloat(f.total||0),0));
-    };
-    load();
-  },[]);
-
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{background:'linear-gradient(135deg,#2E7D32,#4CAF50)',borderRadius:22,padding:'18px 20px',marginBottom:14,color:'white',display:'flex',justifyContent:'space-between',alignItems:'center',position:'relative',overflow:'hidden'}}>
-      <div style={{position:'absolute',top:-20,right:80,width:80,height:80,background:'rgba(255,255,255,0.08)',borderRadius:'50%'}}/>
-      <div>
-        <div style={{fontSize:'0.78rem',opacity:0.85,fontWeight:700}}>{user.role===ROLES.ADMIN?'👑 ADMIN':'💼 STAFF'}</div>
-        <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.6rem'}}>Hola, {user.nombre.split(' ')[0]}!</div>
-        <div style={{fontSize:'0.79rem',opacity:0.85}}>Panel de gestión PeluquerIA</div>
-      </div>
-      <AvatarSVG av={user.avatar} size={70}/>
-    </div>
-    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
-      {[{icon:'📅',val:citasHoy.length,label:'Citas hoy',c:'#FF6B9D',bg:'#FFE8F3'},{icon:'👥',val:clientes.length,label:'Clientes',c:'#4D96FF',bg:'#E8F0FF'},{icon:'💰',val:ingresos.toFixed(0)+'€',label:'Ingresos',c:'#6BCB77',bg:'#E8FAE8'},{icon:'⚠️',val:alertas.length,label:'Stock bajo',c:'#FF9A3C',bg:'#FFF0E8'}].map((s,i)=>(
-        <div key={i} style={{background:s.bg,borderRadius:16,padding:14}}>
-          <div style={{fontSize:'1.4rem'}}>{s.icon}</div>
-          <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.5rem',color:s.c}}>{s.val}</div>
-          <div style={{fontSize:'0.71rem',color:'#999',fontWeight:700}}>{s.label}</div>
-        </div>
-      ))}
-    </div>
-    <Card>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.1rem',marginBottom:12}}>📅 Citas de hoy</div>
-      {citasHoy.length===0?<div style={{textAlign:'center',color:'#ddd',padding:'18px 0',fontWeight:700}}>Sin citas hoy 🌴</div>:citasHoy.map(c=>(
-        <div key={c.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F8F8F8'}}>
-          <div style={{background:'linear-gradient(135deg,#2E7D32,#4CAF50)',color:'white',borderRadius:10,padding:'7px 9px',textAlign:'center',minWidth:56,fontFamily:'Fredoka One,cursive',fontSize:'0.88rem'}}>{c.hora?.slice(0,5)}</div>
-          <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.88rem'}}>{c.clientes?.nombre||'?'}</div><div style={{fontSize:'0.75rem',color:'#bbb'}}>{c.servicio}</div></div>
-          <Badge c={c.estado==='confirmada'?'green':'yellow'}>{c.estado==='confirmada'?'✅':'⏳'}</Badge>
-        </div>
-      ))}
-    </Card>
-    <div style={{background:'linear-gradient(135deg,#FFFDE8,#FFF0D0)',borderRadius:18,padding:18,border:'2px solid #FFD93D'}}>
-      <div style={{fontFamily:'Fredoka One,cursive',color:'#B8860B',marginBottom:6}}>💡 Consejo del día</div>
-      <div style={{fontSize:'1.4rem',marginBottom:4}}>{tip.emoji}</div>
-      <div style={{fontWeight:800,fontSize:'0.9rem',marginBottom:4}}>{tip.titulo}</div>
-      <div style={{fontSize:'0.81rem',color:'#777',lineHeight:1.55}}>{tip.texto}</div>
-    </div>
-  </div>);
-}
-
-function ClientDashboard({user}){
-  const tip=TIPS[Math.floor(Date.now()/86400000)%TIPS.length];
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{background:'linear-gradient(135deg,#2E7D32,#4CAF50)',borderRadius:22,padding:'18px 20px',marginBottom:14,color:'white',display:'flex',justifyContent:'space-between',alignItems:'center',position:'relative',overflow:'hidden'}}>
-      <div style={{position:'absolute',top:-20,right:80,width:80,height:80,background:'rgba(255,255,255,0.08)',borderRadius:'50%'}}/>
-      <div>
-        <div style={{fontSize:'0.78rem',opacity:0.85,fontWeight:700}}>BIENVENIDA ✨</div>
-        <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.6rem'}}>{user.nombre.split(' ')[0]}!</div>
-        <div style={{fontSize:'0.79rem',opacity:0.85}}>⭐ {user.puntos} puntos</div>
-      </div>
-      <AvatarSVG av={user.avatar} size={70}/>
-    </div>
-    <Card>
-      <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}><div style={{fontWeight:800,fontSize:'0.9rem'}}>🎯 Tu progreso</div><div style={{color:'#FF6B9D',fontWeight:800}}>{user.puntos}/500</div></div>
-      <div style={{height:10,background:'#F0EAE0',borderRadius:50,overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(100,(user.puntos/500)*100)}%`,background:'linear-gradient(90deg,#FF6B9D,#C77DFF)',borderRadius:50,transition:'width 0.8s ease'}}/></div>
-      <div style={{fontSize:'0.77rem',color:'#bbb',marginTop:6,fontWeight:700}}>{Math.max(0,500-user.puntos)} puntos para tu 1er descuento 💅</div>
-    </Card>
-    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
-      {[{icon:'🎮',label:'Juega y gana',desc:'Trivia & sopa de letras',c:'#C77DFF',bg:'#F3E8FF'},{icon:'🛍️',label:'Tienda online',desc:'1 pt por cada 3€',c:'#6BCB77',bg:'#E8FAE8'}].map((s,i)=>(
-        <div key={i} style={{background:s.bg,borderRadius:16,padding:14,textAlign:'center'}}>
-          <div style={{fontSize:'1.8rem',marginBottom:4}}>{s.icon}</div>
-          <div style={{fontWeight:800,fontSize:'0.85rem',color:s.c}}>{s.label}</div>
-          <div style={{fontSize:'0.72rem',color:'#bbb',fontWeight:700}}>{s.desc}</div>
-        </div>
-      ))}
-    </div>
-    <div style={{background:'linear-gradient(135deg,#FFFDE8,#FFF0D0)',borderRadius:18,padding:18,border:'2px solid #FFD93D'}}>
-      <div style={{fontFamily:'Fredoka One,cursive',color:'#B8860B',marginBottom:6}}>💡 Consejo del día</div>
-      <div style={{fontSize:'1.4rem',marginBottom:4}}>{tip.emoji}</div>
-      <div style={{fontWeight:800,fontSize:'0.9rem',marginBottom:4}}>{tip.titulo}</div>
-      <div style={{fontSize:'0.81rem',color:'#777',lineHeight:1.55}}>{tip.texto}</div>
-    </div>
-  </div>);
-}
-
-// ═══════════════════════════════════════════════════════════
-//  CLIENT PAGES
-// ═══════════════════════════════════════════════════════════
-function Noticias(){
-  const [sel,setSel]=useState(null);
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem',marginBottom:2}}>📰 Noticias</div>
-    <div style={{color:'#ccc',fontSize:'0.81rem',fontWeight:700,marginBottom:16}}>Lo último del mundo capilar ✨</div>
-    {NOTICIAS.map((n,i)=>(
-      <div key={i} onClick={()=>{SFX.click();setSel(sel===i?null:i);}} style={{background:'#F8FBF6',borderRadius:18,padding:18,marginBottom:12,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',cursor:'pointer',border:sel===i?'2px solid #FF6B9D':'2px solid transparent',transition:'all 0.25s'}}>
-        <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
-          <div style={{fontSize:'2rem'}}>{n.emoji}</div>
-          <div style={{flex:1}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
-              <div style={{fontWeight:800,fontSize:'0.92rem'}}>{n.titulo}</div>
-              <Badge c="blue">{n.tag}</Badge>
-            </div>
-            {sel===i?<div style={{fontSize:'0.82rem',color:'#666',lineHeight:1.6}}>{n.texto}</div>:<div style={{fontSize:'0.79rem',color:'#bbb',fontWeight:700}}>Toca para leer →</div>}
+      </Card>
+      {loading?<Spinner/>:posts.map(p=>(
+        <Card key={p.identificaciÃ³n||p.id} style={{marginBottom:12}}>
+          {p.titulo&&<div style={{fontWeight:800,color:T.g800,marginBottom:4}}>{p.emoji} {p.titulo}</div>}
+          {p.imagen_url&&<img src={p.imagen_url} alt="" style={{width:"100%",borderRadius:10,marginBottom:8,objectFit:"cover",maxHeight:200}}/>}
+          <div style={{fontSize:"0.9rem",color:T.text,lineHeight:1.5}}>{p.contenido}</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
+            <span style={{fontSize:"0.72rem",color:T.textSub}}>{new Date(p.creado_en).toLocaleDateString("es-ES")}</span>
+            <button onClick={()=>likePost(p)} style={{background:"none",border:"none",cursor:"pointer",fontSize:"0.82rem",color:T.textSub,fontWeight:700}}>â�¤ï¸� {p["nÃºmero_de_me_g"]||0}</button>
           </div>
-        </div>
-      </div>
-    ))}
-    <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.2rem',marginBottom:12,marginTop:8}}>✨ Consejos esenciales</div>
-    {TIPS.map((t,i)=><Card key={i} style={{marginBottom:10}}><div style={{display:'flex',gap:12}}><div style={{fontSize:'1.6rem',flexShrink:0}}>{t.emoji}</div><div><div style={{fontWeight:800,marginBottom:4,fontSize:'0.9rem'}}>{t.titulo}</div><div style={{fontSize:'0.81rem',color:'#777',lineHeight:1.6}}>{t.texto}</div></div></div></Card>)}
-  </div>);
+        </Card>
+      ))}
+    </div>
+  );
 }
 
-function Productos({user,setUser,showToast,showPoints}){
-  const [carrito,setCarrito]=useState([]);
-  const add=p=>{SFX.click();setCarrito(c=>{const ex=c.find(x=>x.id===p.id);return ex?c.map(x=>x.id===p.id?{...x,qty:x.qty+1}:x):[...c,{...p,qty:1}];});};
-  const sub=p=>setCarrito(c=>c.map(x=>x.id===p.id?{...x,qty:x.qty-1}:x).filter(x=>x.qty>0));
-  const total=carrito.reduce((a,x)=>a+x.precio*x.qty,0);
-  const pts=Math.floor(total/3);
-
-  const confirmar=async()=>{
-    if(!carrito.length)return;
-    // Comprobar si es la primera compra
-    const prevFacturas = await dbGet('facturas', `?cliente_id=eq.${user.id}&select=id`);
-    const esPrimera = !prevFacturas || prevFacturas.length === 0;
-    const bonusPrimera = esPrimera ? 25 : 0;
-    const ptsTotal = pts + bonusPrimera;
-    const np=user.puntos+ptsTotal;
-    await dbPatch('usuarios',`?id=eq.${user.id}`,{puntos:np});
-    setUser({...user,puntos:np});
-    SFX.coins(); showPoints(ptsTotal);
-    if (esPrimera) showToast(`🛍️ ¡Primera compra! ${total.toFixed(2)}€ · +${ptsTotal} pts (bonus +25) ⭐`);
-    else showToast(`🛍️ Pedido de ${total.toFixed(2)}€! +${pts} puntos ⭐`);
-    setCarrito([]);
-  };
-
-  const catColors={Tratamiento:'pink',Limpieza:'blue',Estilismo:'purple',Protección:'orange',Pack:'green'};
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem',marginBottom:2}}>🛍️ Tienda</div>
-    <div style={{color:'#ccc',fontSize:'0.81rem',fontWeight:700,marginBottom:14}}>1 punto por cada 3€ de compra ⭐</div>
-    {carrito.length>0&&(
-      <div style={{background:'linear-gradient(135deg,#6BCB77,#4CAF50)',borderRadius:16,padding:14,color:'white',marginBottom:16}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-          <div><div style={{fontWeight:800}}>🛒 Tu carrito</div><div style={{fontSize:'0.8rem',opacity:0.9}}>{carrito.reduce((a,x)=>a+x.qty,0)} artículos · {total.toFixed(2)}€</div></div>
-          <Btn sm col="yellow" onClick={confirmar}>Pedir 🚀</Btn>
-        </div>
-        <div style={{background:'rgba(255,255,255,0.2)',borderRadius:10,padding:'8px 12px',fontSize:'0.8rem',fontWeight:700}}>⭐ Ganarás <b>{pts} puntos</b> con esta compra</div>
-      </div>
-    )}
-    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-      {PRODUCTOS_TIENDA.map(p=>{
-        const qty=carrito.find(x=>x.id===p.id)?.qty||0;
-        return(<div key={p.id} style={{background:'#F8FBF6',borderRadius:18,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,0.07)',display:'flex',flexDirection:'column'}}>
-          <div style={{fontSize:'2.4rem',marginBottom:8,textAlign:'center'}}>{p.emoji}</div>
-          <Badge c={catColors[p.cat]||'blue'}>{p.cat}</Badge>
-          <div style={{fontWeight:800,fontSize:'0.87rem',marginTop:8,marginBottom:4}}>{p.nombre}</div>
-          <div style={{fontSize:'0.74rem',color:'#bbb',marginBottom:10,flex:1,lineHeight:1.5}}>{p.desc}</div>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-            <div>
-              <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.1rem',color:'#6BCB77'}}>{p.precio.toFixed(2)}€</div>
-              <div style={{fontSize:'0.65rem',color:'#C77DFF',fontWeight:700}}>+{Math.floor(p.precio/3)} pts</div>
-            </div>
-            {qty>0?<div style={{display:'flex',alignItems:'center',gap:5}}>
-              <button onClick={()=>sub(p)} style={{background:'#FFE8E8',border:'none',borderRadius:8,width:26,height:26,cursor:'pointer',fontWeight:800,color:'#C62828'}}>−</button>
-              <span style={{fontWeight:800,fontFamily:'Fredoka One,cursive',minWidth:16,textAlign:'center'}}>{qty}</span>
-              <button onClick={()=>add(p)} style={{background:'#E8FAE8',border:'none',borderRadius:8,width:26,height:26,cursor:'pointer',fontWeight:800,color:'#2E7D32'}}>+</button>
-            </div>:<Btn sm col="pink" onClick={()=>add(p)}>+ Añadir</Btn>}
+// TIENDA
+function Tienda({user,setUser,showToast,showPoints}){
+  const [productos,setProductos]=useState([]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{load();},[]);
+  async function load(){setLoading(true);setProductos(await dbGet(TB.premios,`?activo=eq.true&order=puntos_precio.asc&select=*`)||[]);setLoading(false);}
+  async function canjear(p){
+    if((user.puntos||0)<p.puntos_precio){showToast("â�Œ No tienes suficientes puntos");SFX.error();return;}
+    const nuevos=user.puntos-p.puntos_precio;
+    await dbPatch(TB.usuarios,`?${encodeURIComponent(U.id)}=eq.${user.id}`,{[U.puntos]:nuevos});
+    await dbPost(TB.canjes,{usuario_id:user.id,premio_id:p.id,premio_nombre:p.nombre,puntos_gastados:p.puntos_precio});
+    setUser(u=>({...u,puntos:nuevos}));SFX.coins();showToast(`ðŸŽ� Â¡${p.nombre} canjeado!`);
+  }
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ›�ï¸�" title="Tienda" sub={`Tienes ${user.puntos||0} â­�`}/>
+      <Card style={{background:T.gradGold,border:"none",marginBottom:16,padding:"14px 16px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{color:T.white}}>
+            <div style={{fontSize:"0.78rem",fontWeight:700,opacity:0.85}}>TUS PUNTOS</div>
+            <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"2rem"}}>{user.puntos||0} â­�</div>
           </div>
-        </div>);
-      })}
-    </div>
-  </div>);
-}
-
-function Juegos({user,setUser,showToast,showPoints}){
-  const [juego,setJuego]=useState(null);
-  const [cells,setCells]=useState([]);
-  const [found,setFound]=useState(user.words_found||[]);
-  const [tIdx,setTIdx]=useState(0);
-  const [ans,setAns]=useState(null);
-  const [triviaHoy,setTriviaHoy]=useState(()=>{
-    const d=localStorage.getItem('trivia_date');
-    const c=parseInt(localStorage.getItem('trivia_count')||'0');
-    const today=new Date().toDateString();
-    return d===today?c:0;
-  });
-  const [sopaHoy,setSopaHoy]=useState(()=>{
-    const d=localStorage.getItem('sopa_date');
-    const today=new Date().toDateString();
-    return d===today;
-  });
-  const MAX_TRIVIA_DIA=3;
-
-  const addPts=async pts=>{
-    const np=user.puntos+pts;
-    await dbPatch('usuarios',`?id=eq.${user.id}`,{puntos:np});
-    setUser({...user,puntos:np});
-  };
-
-  const isFound=(r,c)=>found.some(word=>{
-    for(let r2=0;r2<10;r2++) for(let c2=0;c2<10;c2++) if(GRID[r2][c2]===word[0])
-      for(const [dr,dc] of [[0,1],[1,0],[1,1],[1,-1]]){
-        let ok=true;
-        for(let k=0;k<word.length;k++){const nr=r2+dr*k,nc=c2+dc*k;if(nr<0||nr>=10||nc<0||nc>=10||GRID[nr][nc]!==word[k]){ok=false;break;}}
-        if(ok) for(let k=0;k<word.length;k++) if(r2+dr*k===r&&c2+dc*k===c) return true;
-      }
-    return false;
-  });
-
-  const tap=async(r,c)=>{
-    const idx=cells.findIndex(([sr,sc])=>sr===r&&sc===c);
-    if(idx>=0){setCells(cells.slice(0,idx));return;}
-    const ns=[...cells,[r,c]]; setCells(ns);
-    const allLens=WORDS.map(w=>w.length);
-    if(ns.length>=3 && allLens.includes(ns.length)){
-      const w=ns.map(([r,c])=>GRID[r][c]).join('');
-      const m=WORDS.find(x=>(x===w||x===w.split('').reverse().join(''))&&x.length===ns.length);
-      if(m&&!found.includes(m)){
-        const nf=[...found,m];
-        setFound(nf);
-        await dbPatch('usuarios',`?id=eq.${user.id}`,{words_found:nf,puntos:user.puntos+20});
-        setUser({...user,puntos:user.puntos+20,words_found:nf});
-        const today=new Date().toDateString();
-        if(!sopaHoy){
-          SFX.coins(); showPoints(20); showToast(`✨ "${m}" encontrada! +20 pts`);
-          if(nf.length===WORDS.length){
-            setSopaHoy(true);
-            localStorage.setItem('sopa_date',today);
-            setTimeout(async()=>{ await addPts(50); SFX.success(); showPoints(50); showToast('🏆 ¡Sopa completa! +50 bonus');},900);
-          }
-        } else {
-          showToast(`✨ "${m}" encontrada (ya jugaste hoy, vuelve mañana para ganar pts)`);
-        }
-      }
-      setCells([]);
-    } else if(ns.length>Math.max(...WORDS.map(w=>w.length))){
-      setCells([]);
-    }
-  };
-
-  const preg=TRIVIA[tIdx%TRIVIA.length];
-  const resp=async i=>{
-    if(ans!==null)return; setAns(i);
-    const today=new Date().toDateString();
-    const puedeGanar=triviaHoy<MAX_TRIVIA_DIA;
-    if(i===preg.ans){
-      if(puedeGanar){
-        await addPts(preg.pts); SFX.coins(); showPoints(preg.pts);
-        const nuevo=triviaHoy+1;
-        setTriviaHoy(nuevo);
-        localStorage.setItem('trivia_date',today);
-        localStorage.setItem('trivia_count',nuevo.toString());
-        showToast(`🎉 ¡Correcto! +${preg.pts} pts (${nuevo}/${MAX_TRIVIA_DIA} hoy)`);
-      } else {
-        SFX.coins(); showToast(`✅ ¡Correcto! (Límite diario alcanzado, vuelve mañana)`);
-      }
-    } else { SFX.error(); showToast('❌ Incorrecto — ¡la próxima!'); }
-  };
-
-  if(juego==='sopa')return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
-      <button onClick={()=>{SFX.nav();setJuego(null);}} style={{background:'#F5F5F5',border:'none',borderRadius:10,padding:'7px 12px',cursor:'pointer',fontWeight:800,fontFamily:'Nunito,sans-serif'}}>← Volver</button>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.4rem'}}>🔤 Sopa de Letras</div>
-    </div>
-    <div style={{background:'linear-gradient(135deg,#E8F0FF,#F3E8FF)',borderRadius:14,padding:12,marginBottom:14}}>
-      <div style={{fontWeight:700,fontSize:'0.79rem',color:'#5C6BC0',marginBottom:7}}>Encuentra (+20 pts c/u):</div>
-      <div style={{display:'flex',flexWrap:'wrap',gap:5}}>{WORDS.map(w=><span key={w} style={{background:found.includes(w)?'#6BCB77':'white',color:found.includes(w)?'white':'#777',borderRadius:50,padding:'3px 9px',fontSize:'0.72rem',fontWeight:700,textDecoration:found.includes(w)?'line-through':'none',transition:'all 0.3s'}}>{w}</span>)}</div>
-    </div>
-    <div style={{overflowX:'auto'}}><div style={{display:'grid',gridTemplateColumns:'repeat(10,1fr)',gap:3,maxWidth:340,margin:'0 auto'}}>
-      {GRID.map((row,r)=>row.map((l,c)=>{ const s=cells.some(([sr,sc])=>sr===r&&sc===c),fd=isFound(r,c);
-        return <button key={`${r}-${c}`} onClick={()=>tap(r,c)} style={{background:fd?'#6BCB77':s?'#FF6B9D':'white',color:(fd||s)?'white':'#2D2D2D',border:'none',borderRadius:6,aspectRatio:1,fontWeight:800,fontSize:'0.72rem',cursor:'pointer',fontFamily:'Nunito,sans-serif',padding:0,transition:'all 0.15s'}}>{l}</button>;
-      }))}
-    </div></div>
-    {found.length===WORDS.length&&<div style={{textAlign:'center',marginTop:20,background:'linear-gradient(135deg,#FFD93D,#FF9A3C)',borderRadius:18,padding:22,color:'white'}}><div style={{fontSize:'2.5rem'}}>🏆</div><div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.5rem'}}>¡Completada!</div></div>}
-  </div>);
-
-  if(juego==='trivia')return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
-      <button onClick={()=>{SFX.nav();setJuego(null);}} style={{background:'#F5F5F5',border:'none',borderRadius:10,padding:'7px 12px',cursor:'pointer',fontWeight:800,fontFamily:'Nunito,sans-serif'}}>← Volver</button>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.4rem'}}>🧠 Trivia Capilar</div>
-    </div>
-    <Card>
-      <div style={{background:'linear-gradient(135deg,#2E7D32,#4CAF50)',borderRadius:14,padding:18,color:'white',marginBottom:16}}>
-        <div style={{fontSize:'0.71rem',fontWeight:700,opacity:0.85,marginBottom:6}}>PREGUNTA {(tIdx%TRIVIA.length)+1}/{TRIVIA.length} · {preg.pts} PTS</div>
-        <div style={{fontWeight:800,fontSize:'1rem',lineHeight:1.55}}>{preg.q}</div>
-      </div>
-      {preg.opts.map((opt,i)=>{let bg='white',col='#2D2D2D',brd='2px solid #F0EAE0';if(ans!==null){if(i===preg.ans){bg='#E8FAE8';brd='2px solid #6BCB77';col='#2E7D32';}else if(i===ans){bg='#FFE8E8';brd='2px solid #FF6B6B';col='#C62828';}}return <button key={i} onClick={()=>resp(i)} style={{width:'100%',textAlign:'left',padding:'12px 14px',background:bg,border:brd,borderRadius:12,marginBottom:7,fontFamily:'Nunito,sans-serif',fontWeight:700,fontSize:'0.88rem',cursor:ans===null?'pointer':'default',color:col,transition:'all 0.2s'}}>{opt}</button>;})}
-      {ans!==null&&<div style={{textAlign:'center',marginTop:10}}><Btn onClick={()=>{SFX.nav();setTIdx(n=>(n+1)%TRIVIA.length);setAns(null);}} col="blue">Siguiente →</Btn></div>}
-    </Card>
-  </div>);
-
-  return(<div style={{animation:'fadeSlide 0.3s ease'}}>
-    <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem',marginBottom:2}}>🎮 Juegos</div>
-    <div style={{color:'#ccc',fontSize:'0.81rem',fontWeight:700,marginBottom:14}}>Juega, sube al ranking y gana premios ✨</div>
-    <div style={{background:'linear-gradient(135deg,#C77DFF,#4D96FF)',borderRadius:20,padding:'18px 20px',color:'white',marginBottom:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-      <div><div style={{fontSize:'0.77rem',opacity:0.85,fontWeight:700}}>TUS PUNTOS</div><div style={{fontFamily:'Fredoka One,cursive',fontSize:'2.2rem'}}>{user.puntos} ⭐</div></div>
-      <div style={{fontSize:'0.76rem',opacity:0.85,textAlign:'right',lineHeight:1.7}}><div>500 = 10% dto</div><div>1000 = 20% dto</div><div>2000 = Gratis</div></div>
-    </div>
-    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
-      {[{icon:'🔤',name:'Sopa de Letras',desc:'Palabras capilares',pts:'+20 pts/palabra',c:'#4D96FF',bg:'#E8F0FF',lock:sopaHoy,lockMsg:'✅ Jugada hoy',act:()=>{SFX.nav();setJuego('sopa');}},{icon:'🧠',name:'Trivia Capilar',desc:'¿Cuánto sabes?',pts:`+10–15 pts (${triviaHoy}/${MAX_TRIVIA_DIA} hoy)`,c:'#C77DFF',bg:'#F3E8FF',lock:false,lockMsg:'',act:()=>{SFX.nav();setJuego('trivia');}}].map((j,i)=>(
-        <div key={i} onClick={j.act} style={{background:'#F8FBF6',borderRadius:18,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,0.07)',cursor:'pointer',border:`2px solid ${j.c}22`,transition:'transform 0.15s'}} onPointerDown={e=>e.currentTarget.style.transform='scale(0.95)'} onPointerUp={e=>e.currentTarget.style.transform='scale(1)'} onPointerLeave={e=>e.currentTarget.style.transform='scale(1)'}>
-          <div style={{fontSize:'2.4rem',marginBottom:8}}>{j.lock?'🔒':j.icon}</div>
-          <div style={{fontWeight:800,fontSize:'0.9rem',marginBottom:4}}>{j.name}</div>
-          <div style={{fontSize:'0.74rem',color:'#bbb',marginBottom:8}}>{j.lock?j.lockMsg:j.desc}</div>
-          <span style={{background:j.lock?'#F0F0F0':j.bg,color:j.lock?'#bbb':j.c,borderRadius:50,padding:'3px 10px',fontSize:'0.7rem',fontWeight:800}}>{j.lock?'Vuelve mañana':j.pts}</span>
+          <div style={{fontSize:"2.5rem"}}>ðŸŽ�</div>
         </div>
-      ))}
-    </div>
-    <Card>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.1rem',marginBottom:12}}>🎁 Canjear puntos</div>
-      {[{pts:500,icon:'💅',desc:'10% descuento'},{pts:1000,icon:'✨',desc:'20% descuento'},{pts:2000,icon:'👑',desc:'Servicio de cortesía'}].map((r,i)=>(
-        <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 0',borderBottom:i<2?'1px solid #F9F9F9':'none'}}>
-          <div style={{fontSize:'1.6rem'}}>{r.icon}</div>
-          <div style={{flex:1}}><div style={{fontWeight:800,fontSize:'0.87rem'}}>{r.desc}</div><div style={{fontSize:'0.73rem',color:'#C77DFF',fontWeight:700}}>⭐ {r.pts} pts</div></div>
-          <Btn sm col={user.puntos>=r.pts?'pink':'gray'} onClick={async()=>{
-            if(user.puntos>=r.pts){
-              const np=user.puntos-r.pts;
-              await dbPatch('usuarios',`?id=eq.${user.id}`,{puntos:np});
-              setUser({...user,puntos:np}); SFX.success();
-              showToast(`🎁 ¡${r.desc} canjeado! Muéstraselo en la peluquería`);
-            } else { SFX.error(); showToast('⭐ No tienes suficientes puntos'); }
-          }}>{user.puntos>=r.pts?'Canjear':'🔒'}</Btn>
-        </div>
-      ))}
-    </Card>
-  </div>);
-}
-
-
-// ═══════════════════════════════════════════════════════════
-//  SOCIAL FEED
-// ═══════════════════════════════════════════════════════════
-function SocialFeed({user, setUser, showToast, showPoints}) {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(false);
-  const [cmModal, setCmModal] = useState(null);
-  const [comments, setComments] = useState({});
-  const [newCm, setNewCm] = useState('');
-  const [liked, setLiked] = useState(new Set());
-  const [f, setF] = useState({titulo:'', contenido:'', emoji:'✂️', tipo:'post'});
-  const isAdmin = user.role === ROLES.ADMIN || user.role === ROLES.STAFF;
-
-  useEffect(() => { load(); }, []);
-
-  const load = async () => {
-    setLoading(true);
-    const [p, l] = await Promise.all([
-      dbGet('publicaciones', '?select=*,usuarios(nombre,avatar)&order=created_at.desc'),
-      dbGet('likes', `?usuario_id=eq.${user.id}&publicacion_id=not.is.null&select=publicacion_id`),
-    ]);
-    setPosts(p||[]); setLiked(new Set((l||[]).map(x=>x.publicacion_id))); setLoading(false);
-  };
-
-  const loadCm = async (pid) => {
-    const c = await dbGet('comentarios', `?publicacion_id=eq.${pid}&select=*,usuarios(nombre,avatar)&order=created_at.asc`);
-    setComments(prev => ({...prev, [pid]: c||[]}));
-  };
-
-  const toggleLike = async (post) => {
-    const isLiked = liked.has(post.id);
-    if (isLiked) {
-      await dbDelete('likes', `?usuario_id=eq.${user.id}&publicacion_id=eq.${post.id}`);
-      await dbPatch('publicaciones', `?id=eq.${post.id}`, {likes_count: Math.max(0, post.likes_count-1)});
-      setLiked(prev => { const s=new Set(prev); s.delete(post.id); return s; });
-      setPosts(prev => prev.map(p => p.id===post.id ? {...p, likes_count:Math.max(0,p.likes_count-1)} : p));
-    } else {
-      await dbPost('likes', {usuario_id:user.id, publicacion_id:post.id});
-      await dbPatch('publicaciones', `?id=eq.${post.id}`, {likes_count: post.likes_count+1});
-      setLiked(prev => new Set([...prev, post.id]));
-      setPosts(prev => prev.map(p => p.id===post.id ? {...p, likes_count:p.likes_count+1} : p));
-      SFX.coins();
-      // Solo puntos en el PRIMER like de toda la historia del usuario
-      if (liked.size === 0) {
-        const np = user.puntos + 5;
-        await dbPatch('usuarios', `?id=eq.${user.id}`, {puntos: np});
-        setUser({...user, puntos: np});
-        if (showPoints) showPoints(5);
-        showToast('❤️ ¡Primer like! +5 pts');
-      }
-    }
-  };
-
-  const sendCm = async () => {
-    if (!newCm.trim() || !cmModal) return;
-    // Comprobar si es el primer comentario del usuario
-    const prevCms = await dbGet('comentarios', `?autor_id=eq.${user.id}&select=id`);
-    await dbPost('comentarios', {publicacion_id:cmModal.id, autor_id:user.id, contenido:newCm.trim(), likes_count:0});
-    setNewCm(''); await loadCm(cmModal.id);
-    SFX.coins();
-    if (!prevCms || prevCms.length === 0) {
-      const np = user.puntos + 10;
-      await dbPatch('usuarios', `?id=eq.${user.id}`, {puntos: np});
-      setUser({...user, puntos: np});
-      if (showPoints) showPoints(10);
-      showToast('💬 ¡Primer comentario! +10 pts');
-    } else {
-      showToast('💬 Comentario publicado');
-    }
-  };
-
-  const publish = async () => {
-    if (!f.titulo||!f.contenido) { showToast('⚠️ Rellena título y contenido'); return; }
-    await dbPost('publicaciones', {autor_id:user.id, ...f, likes_count:0});
-    setModal(false); setF({titulo:'', contenido:'', emoji:'✂️', tipo:'post'});
-    load(); SFX.success(); showToast('📝 Publicación creada!');
-  };
-
-  const ago = s => { const d=(Date.now()-new Date(s))/1000; if(d<60)return'ahora'; if(d<3600)return`${Math.floor(d/60)}m`; if(d<86400)return`${Math.floor(d/3600)}h`; return`${Math.floor(d/86400)}d`; };
-  const TB = {post:{c:'green',l:'Post'}, noticia:{c:'blue',l:'Noticia'}, oferta:{c:'pink',l:'Oferta'}, reto:{c:'yellow',l:'Reto'}};
-
-  return (
-    <div style={{animation:'fadeSlide 0.3s ease'}}>
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14}}>
-        <div style={{fontFamily:'Fredoka One,cursive', fontSize:'1.8rem'}}>📱 Feed</div>
-        {isAdmin && <Btn sm col="green" onClick={()=>setModal(true)}>✍️ Publicar</Btn>}
-      </div>
-      {loading ? <Card><div style={{textAlign:'center',color:'#bbb',padding:30}}>⏳ Cargando...</div></Card>
-      : posts.length===0 ? <Card><div style={{textAlign:'center',color:'#bbb',padding:24,fontWeight:700}}>Sin publicaciones aún ✍️</div></Card>
-      : posts.map(post => {
-        const isLiked = liked.has(post.id);
-        const tb = TB[post.tipo]||TB.post;
-        return (
-          <Card key={post.id} style={{marginBottom:12}}>
-            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
-              <AvatarSVG av={post.usuarios?.avatar} size={40}/>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:800,fontSize:'0.88rem'}}>{post.usuarios?.nombre||SHOP.name}</div>
-                <div style={{fontSize:'0.72rem',color:'#bbb'}}>{ago(post.created_at)}</div>
-              </div>
-              <Badge c={tb.c}>{tb.l}</Badge>
-            </div>
-            <div style={{fontSize:'1.8rem',marginBottom:6}}>{post.emoji}</div>
-            <div style={{fontWeight:800,fontSize:'1rem',marginBottom:6}}>{post.titulo}</div>
-            <div style={{fontSize:'0.85rem',color:'#666',lineHeight:1.6,marginBottom:12}}>{post.contenido}</div>
-            <div style={{display:'flex',gap:10,paddingTop:10,borderTop:'1px solid #F0F0F0'}}>
-              <button onClick={()=>toggleLike(post)} style={{display:'flex',alignItems:'center',gap:5,background:'none',border:'none',cursor:'pointer',fontWeight:700,fontSize:'0.84rem',color:isLiked?'#E91E8C':'#bbb',padding:'4px 8px',borderRadius:8}}>
-                {isLiked?'❤️':'🤍'} {post.likes_count}
-              </button>
-              <button onClick={async()=>{await loadCm(post.id);setCmModal(post);}} style={{display:'flex',alignItems:'center',gap:5,background:'none',border:'none',cursor:'pointer',fontWeight:700,fontSize:'0.84rem',color:'#bbb',padding:'4px 8px',borderRadius:8}}>
-                💬 Comentar
-              </button>
-              <a href={`https://wa.me/${SHOP.whatsapp}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:5,fontWeight:700,fontSize:'0.84rem',color:'#4CAF50',padding:'4px 8px',borderRadius:8,textDecoration:'none',marginLeft:'auto'}}>
-                📱 Reservar
-              </a>
-            </div>
-          </Card>
-        );
-      })}
-
-      <Modal open={modal} onClose={()=>setModal(false)} title="✍️ Nueva Publicación">
-        <div style={{display:'flex',gap:8,marginBottom:12}}>
-          {['✂️','💅','🌿','🎉','💇','✨','🎁','🏆'].map(e=><button key={e} onClick={()=>setF({...f,emoji:e})} style={{fontSize:'1.4rem',background:f.emoji===e?'#E8F5E9':'#F5F5F5',border:f.emoji===e?'2px solid #4CAF50':'2px solid transparent',borderRadius:10,padding:'6px 8px',cursor:'pointer'}}>{e}</button>)}
-        </div>
-        <FI label="Título" value={f.titulo} onChange={e=>setF({...f,titulo:e.target.value})} placeholder="Título de la publicación"/>
-        <div style={{marginBottom:12}}>
-          <label style={{display:'block',fontSize:'0.74rem',fontWeight:800,marginBottom:4,color:'#bbb',textTransform:'uppercase',letterSpacing:1}}>Contenido</label>
-          <textarea value={f.contenido} onChange={e=>setF({...f,contenido:e.target.value})} placeholder="Escribe aquí..." rows={4}
-            style={{width:'100%',padding:'11px 13px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontSize:'0.9rem',fontWeight:600,outline:'none',background:'#FAFAFA',resize:'vertical',boxSizing:'border-box'}}/>
-        </div>
-        <FS label="Tipo" value={f.tipo} onChange={e=>setF({...f,tipo:e.target.value})}>
-          <option value="post">📝 Post</option>
-          <option value="noticia">📰 Noticia</option>
-          <option value="oferta">🎁 Oferta</option>
-          <option value="reto">🏆 Reto</option>
-        </FS>
-        <div style={{display:'flex',gap:10,marginTop:6,justifyContent:'flex-end'}}>
-          <Btn col="gray" onClick={()=>setModal(false)}>Cancelar</Btn>
-          <Btn col="green" onClick={publish}>📤 Publicar</Btn>
-        </div>
-      </Modal>
-
-      <Modal open={!!cmModal} onClose={()=>setCmModal(null)} title={`💬 ${cmModal?.titulo||''}`}>
-        <div style={{maxHeight:240,overflowY:'auto',marginBottom:14}}>
-          {(comments[cmModal?.id]||[]).length===0
-            ? <div style={{textAlign:'center',color:'#bbb',padding:20,fontWeight:700}}>Sin comentarios. ¡Sé el primero!</div>
-            : (comments[cmModal?.id]||[]).map(c=>(
-              <div key={c.id} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:'1px solid #F5F5F5'}}>
-                <AvatarSVG av={c.usuarios?.avatar} size={34}/>
+      </Card>
+      {loading?<Spinner/>:productos.length===0?<EmptyState icon="ðŸ›�ï¸�" title="Sin premios aÃºn" sub="Â¡Pronto habrÃ¡ novedades!"/>
+        :productos.map(p=>{
+          const canClaim=(user.puntos||0)>=p.puntos_precio;
+          return(
+            <Card key={p.id} style={{marginBottom:12,border:canClaim?`2px solid ${T.g400}`:`1px solid ${T.g150}`,opacity:canClaim?1:0.75}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:800,fontSize:'0.82rem'}}>{c.usuarios?.nombre||'?'} <span style={{fontWeight:400,color:'#bbb',fontSize:'0.72rem'}}>{ago(c.created_at)}</span></div>
-                  <div style={{fontSize:'0.84rem',color:'#666',marginTop:2}}>{c.contenido}</div>
+                  <div style={{fontWeight:800}}>{p.nombre}</div>
+                  <div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2}}>{p.descripcion}</div>
                 </div>
+                <div style={{fontWeight:900,color:T.orange,fontSize:"1.1rem",marginLeft:12}}>{p.puntos_precio} â­�</div>
               </div>
-            ))
-          }
-        </div>
-        <div style={{display:'flex',gap:8}}>
-          <input value={newCm} onChange={e=>setNewCm(e.target.value)}
-            onKeyDown={e=>{if(e.key==='Enter')sendCm();}}
-            placeholder="Escribe un comentario..." style={{flex:1,padding:'10px 13px',border:'2px solid #F0EAE0',borderRadius:12,fontFamily:'Nunito,sans-serif',fontSize:'0.88rem',fontWeight:600,outline:'none',background:'#FAFAFA'}}/>
-          <Btn sm col="green" onClick={sendCm}>Enviar</Btn>
-        </div>
-      </Modal>
+              <div style={{marginTop:12}}>
+                {canClaim?<Btn full small col="gold" onClick={()=>canjear(p)}>ðŸŽ� Canjear</Btn>
+                  :<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:700}}>Te faltan {p.puntos_precio-(user.puntos||0)} â­�</div>}
+              </div>
+            </Card>
+          );
+        })
+      }
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════
-//  RANKING
-// ═══════════════════════════════════════════════════════════
-function Ranking({user}) {
-  const [tab, setTab] = useState('general');
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => { load(); }, []);
-  const load = async () => {
-    setLoading(true);
-    const r = await dbGet('usuarios', '?role=eq.client&select=id,nombre,puntos,visitas,avatar&order=puntos.desc');
-    setUsers(r||[]); setLoading(false);
-  };
-
-  const medals = ['🥇','🥈','🥉'];
-  const myPos = users.findIndex(u => u.id===user.id) + 1;
-  const tabs = [{id:'general',l:'🌍 General'},{id:'semanal',l:'📅 Semanal'},{id:'mensual',l:'📆 Mensual'},{id:'anual',l:'🗓 Anual'}];
-
-  return (
-    <div style={{animation:'fadeSlide 0.3s ease'}}>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem',marginBottom:4}}>🏆 Ranking</div>
-      <div style={{color:'#bbb',fontSize:'0.81rem',fontWeight:700,marginBottom:14}}>Compite y gana premios ✨</div>
-
-      <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,marginBottom:14}}>
-        {tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)}
-          style={{padding:'8px 14px',borderRadius:50,border:'none',fontFamily:'Nunito,sans-serif',fontWeight:800,fontSize:'0.78rem',cursor:'pointer',background:tab===t.id?'linear-gradient(135deg,#2E7D32,#4CAF50)':'white',color:tab===t.id?'white':'#bbb',boxShadow:tab===t.id?'0 4px 14px rgba(46,125,50,0.3)':'none',whiteSpace:'nowrap',flexShrink:0,transition:'all 0.2s'}}>
-          {t.l}
-        </button>)}
-      </div>
-
-      {users.length>=3 && (
-        <div style={{background:'linear-gradient(180deg,#C8E6C9,white)',borderRadius:20,padding:'20px 10px',marginBottom:14,display:'flex',alignItems:'flex-end',justifyContent:'center',gap:8}}>
-          {[1,0,2].map(idx => {
-            const u = users[idx]; if(!u) return null;
-            const hs=[100,130,85];
-            return <div key={u.id} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-              <div style={{fontSize:'1.4rem'}}>{medals[idx]}</div>
-              <AvatarSVG av={u.avatar} size={idx===0?52:44}/>
-              <div style={{fontWeight:800,fontSize:'0.74rem',textAlign:'center',maxWidth:68,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.nombre.split(' ')[0]}</div>
-              <div style={{background:idx===0?'linear-gradient(135deg,#2E7D32,#4CAF50)':idx===1?'linear-gradient(135deg,#E91E8C,#F48FB1)':'linear-gradient(135deg,#4CAF50,#81C784)',color:'white',borderRadius:50,padding:'3px 9px',fontSize:'0.71rem',fontWeight:800}}>⭐{u.puntos}</div>
-              <div style={{width:58,height:hs[idx],background:idx===0?'linear-gradient(135deg,#2E7D32,#4CAF50)':idx===1?'linear-gradient(135deg,#E91E8C,#F48FB1)':'linear-gradient(135deg,#4CAF50,#81C784)',borderRadius:'8px 8px 0 0',opacity:0.7}}/>
-            </div>;
-          })}
+// CUPONES
+function Cupones({user,showToast}){
+  const [cupones,setCupones]=useState([]);
+  const [code,setCode]=useState("");
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{load();},[]);
+  async function load(){setLoading(true);setCupones(await dbGet(TB.cupones,`?activo=eq.true&order=creado_en.desc&select=*`)||[]);setLoading(false);}
+  async function validar(){
+    if(!code.trim())return;
+    const found=cupones.find(c=>c.codigo?.toLowerCase()===code.toLowerCase());
+    if(!found){showToast("â�Œ CupÃ³n no vÃ¡lido");SFX.error();return;}
+    if(new Date(found.fecha_fin)<new Date()){showToast("â�Œ CupÃ³n caducado");SFX.error();return;}
+    SFX.coins();showToast(`âœ… ${found.descuento}% de descuento â€” Â¡vÃ¡lido!`);
+  }
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ�·ï¸�" title="Cupones" sub="Descuentos exclusivos"/>
+      <Card style={{marginBottom:16}}>
+        <div style={{fontWeight:800,color:T.g700,marginBottom:10}}>ðŸ”� Validar cupÃ³n</div>
+        <div style={{display:"flex",gap:8}}>
+          <input value={code} onChange={e=>setCode(e.target.value.toUpperCase())} placeholder="Ej: BIENVENIDA10"
+            style={{flex:1,padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.88rem",outline:"none",letterSpacing:"0.05em",fontWeight:700}}/>
+          <Btn small onClick={validar}>Validar</Btn>
         </div>
-      )}
-
-      {myPos>0 && <div style={{background:'#E8F5E9',borderRadius:14,padding:'12px 16px',marginBottom:14,border:'2px solid #81C784',display:'flex',alignItems:'center',gap:10}}>
-        <div style={{fontWeight:900,color:'#2E7D32',minWidth:28}}>#{myPos}</div>
-        <AvatarSVG av={user.avatar} size={36}/>
-        <div style={{flex:1,fontWeight:800,fontSize:'0.88rem'}}>Tú — {user.nombre.split(' ')[0]}</div>
-        <div style={{fontWeight:900,color:'#2E7D32'}}>⭐ {user.puntos}</div>
-      </div>}
-
-      {loading ? <Card><div style={{textAlign:'center',color:'#bbb',padding:24}}>⏳ Cargando...</div></Card>
-      : users.map((u,i) => (
-        <div key={u.id} style={{background:'#F8FBF6',borderRadius:14,padding:12,marginBottom:8,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',display:'flex',alignItems:'center',gap:10,border:u.id===user.id?'2px solid #4CAF50':'1px solid #E8F5E9'}}>
-          <div style={{fontWeight:900,fontSize:'1.2rem',minWidth:32,textAlign:'center',color:i<3?'#E91E8C':'#bbb'}}>{medals[i]||`#${i+1}`}</div>
-          <AvatarSVG av={u.avatar} size={38}/>
-          <div style={{flex:1}}>
-            <div style={{fontWeight:800,fontSize:'0.88rem'}}>{u.nombre}</div>
-            <div style={{fontSize:'0.72rem',color:'#bbb'}}>{u.visitas} visitas</div>
+      </Card>
+      {loading?<Spinner/>:cupones.map(c=>(
+        <Card key={c.id} style={{marginBottom:10,background:T.g50}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.2rem",color:T.g800}}>{c.codigo}</div>
+              <div style={{fontSize:"0.8rem",color:T.textSub}}>{c.servicio||"Cualquier servicio"}</div>
+              <div style={{fontSize:"0.72rem",color:T.textSub}}>Hasta {new Date(c.fecha_fin).toLocaleDateString("es-ES")}</div>
+            </div>
+            <div style={{background:T.gradPink,color:T.white,borderRadius:12,padding:"8px 14px",fontWeight:900,fontSize:"1.1rem"}}>-{c.descuento}%</div>
           </div>
-          <div style={{textAlign:'right'}}>
-            <div style={{fontWeight:900,color:'#E91E8C'}}>⭐ {u.puntos}</div>
-            {i<3 && <Badge c={i===0?'yellow':i===1?'green':'blue'}>{medals[i]}</Badge>}
-          </div>
-        </div>
+        </Card>
       ))}
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════
-//  RETOS
-// ═══════════════════════════════════════════════════════════
-function Retos({user, setUser, showToast, showPoints}) {
-  const [retos, setRetos] = useState([]);
-  const [prog, setProg] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('semanal');
+// JUEGOS â€” lÃ­mite
+ diario
+const TODAY_KEY=()=>new Date().toISOString().split("T")[0];
+function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${uid}_${TODAY_KEY()}`)==="1";}
+function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
 
-  useEffect(() => { load(); }, [tab]);
+const SOPA_WORDS=["TIJERA","COLOR","BRILLO","CORTE","MECHAS","RIZOS","SECADOR"];
+function generateGrid(words){
+  const SIZE=10,grid=Array(SIZE).fill(null).map(()=>Array(SIZE).fill(""));
+  const placed=[],DIRS=[[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
+  for(const word of words){
+    let tries=0;
+    while(tries<100){
+      tries++;
+      const dir=DIRS[Math.floor(Math.random()*DIRS.length)];
+      const r=Math.floor(Math.random()*SIZE),c=Math.floor(Math.random()*SIZE);
+      let ok=true;
+      for(let i=0;i<word.length;i++){const nr=r+dir[0]*i,nc=c+dir[1]*i;if(nr<0||nr>=SIZE||nc<0||nc>=SIZE||grid[nr][nc]!==""&&grid[nr][nc]!==word[i]){ok=false;break;}}
+      if(ok){const cells=[];for(let i=0;i<word.length;i++){const nr=r+dir[0]*i,nc=c+dir[1]*i;grid[nr][nc]=word[i];cells.push(`${nr}-${nc}`);}placed.push({word,cells});break;}
+    }
+  }
+  const L="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++)if(grid[r][c]==="")grid[r][c]=L[Math.floor(Math.random()*L.length)];
+  return{grid,placed};
+}
 
-  const load = async () => {
-    setLoading(true);
-    const [r, p] = await Promise.all([
-      dbGet('retos', `?tipo=eq.${tab}&activo=eq.true&select=*`),
-      dbGet('retos_progreso', `?usuario_id=eq.${user.id}&select=*`),
-    ]);
-    setRetos(r||[]);
-    const pg = {};
-    (p||[]).forEach(x => pg[x.reto_id]=x);
-    setProg(pg); setLoading(false);
-  };
-
-  const claim = async (reto) => {
-    const p = prog[reto.id];
-    if (!p||p.progreso<reto.meta) return;
-    if (p.completado) { showToast('Ya reclamaste este reto'); return; }
-    await dbPatch('retos_progreso', `?id=eq.${p.id}`, {completado:true});
-    const np = user.puntos + reto.puntos_premio;
-    await dbPatch('usuarios', `?id=eq.${user.id}`, {puntos:np});
-    setUser({...user, puntos:np});
-    SFX.success(); if(showPoints) showPoints(reto.puntos_premio);
-    showToast(`🏆 ¡Reto completado! +${reto.puntos_premio} pts`);
-    load();
-  };
-
-  const daysLeft = f => { if(!f)return'∞'; const d=Math.ceil((new Date(f)-new Date())/86400000); return d>0?`${d}d`:'Fin'; };
-
-  return (
-    <div style={{animation:'fadeSlide 0.3s ease'}}>
-      <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.8rem',marginBottom:4}}>🎯 Retos</div>
-      <div style={{color:'#bbb',fontSize:'0.81rem',fontWeight:700,marginBottom:14}}>Completa retos y gana puntos extra ✨</div>
-
-      <div style={{display:'flex',gap:6,marginBottom:14}}>
-        {[['semanal','📅 Semanal'],['mensual','📆 Mensual'],['anual','🗓 Anual']].map(([id,l])=>(
-          <button key={id} onClick={()=>setTab(id)} style={{flex:1,padding:'9px 6px',borderRadius:12,border:'none',fontFamily:'Nunito,sans-serif',fontWeight:800,fontSize:'0.78rem',cursor:'pointer',background:tab===id?'linear-gradient(135deg,#2E7D32,#4CAF50)':'white',color:tab===id?'white':'#bbb',boxShadow:tab===id?'0 4px 14px rgba(46,125,50,0.3)':'none',transition:'all 0.2s'}}>
-            {l}
-          </button>
+function SopaLetras({onWin}){
+  const [{grid,placed}]=useState(()=>generateGrid(SOPA_WORDS));
+  const [found,setFound]=useState([]);
+  const [selecting,setSelecting]=useState(false);
+  const [selected,setSelected]=useState([]);
+  const [wrong,setWrong]=useState(false);
+  const SIZE=10;
+  function ck(r,c){return `${r}-${c}`;}
+  function startSel(r,c){setSelecting(true);setSelected([ck(r,c)]);setWrong(false);}
+  function contSel(r,c){
+    if(!selecting)return;
+    const [fr,fc]=selected[0].split("-").map(Number);
+    const dr=r-fr,dc=c-fc,len=Math.max(Math.abs(dr),Math.abs(dc));
+    if(len===0){setSelected([selected[0]]);return;}
+    if(dr!==0&&dc!==0&&Math.abs(dr)!==Math.abs(dc))return;
+    const sr=dr===0?0:dr/Math.abs(dr),sc=dc===0?0:dc/Math.abs(dc);
+    setSelected([...Array(len+1)].map((_,i)=>ck(fr+sr*i,fc+sc*i)));
+  }
+  function endSel(){
+    if(!selecting)return;setSelecting(false);
+    for(const p of placed){
+      if(p.cells.join(",")===selected.join(",")||[...p.cells].reverse().join(",")===selected.join(",")){
+        if(!found.includes(p.word)){const nf=[...found,p.word];setFound(nf);if(nf.length===placed.length)setTimeout(()=>onWin(nf.length*5),300);}
+        setSelected([]);return;
+      }
+    }
+    setWrong(true);setTimeout(()=>{setWrong(false);setSelected([]);},600);
+  }
+  const foundCells=new Set(found.flatMap(w=>placed.find(p=>p.word===w)?.cells||[]));
+  return(
+    <div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+        {SOPA_WORDS.map(w=><Badge key={w} col={found.includes(w)?"green":"gold"}>{found.includes(w)?"âœ… ":""}{w}</Badge>)}
+      </div>
+      <div style={{userSelect:"none",touchAction:"none",display:"inline-block",background:T.g50,borderRadius:12,padding:8,border:`1.5px solid ${T.g200}`}}>
+        {Array(SIZE).fill(null).map((_,r)=>(
+          <div key={r} style={{display:"flex"}}>
+            {Array(SIZE).fill(null).map((_,c)=>{
+              const key=ck(r,c),isSel=selected.includes(key),isF=foundCells.has(key);
+              return(
+                <div key={c}
+                  onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);startSel(r,c);}}
+                  onPointerEnter={()=>contSel(r,c)} onPointerUp={endSel}
+                  style={{width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.75rem",fontWeight:800,cursor:"pointer",borderRadius:6,
+                    background:isF?T.g300:isSel?(wrong?"#FFCDD2":T.g150):"transparent",
+                    color:isF?T.g800:isSel?T.g700:T.text,
+                    border:isSel&&!wrong?`1.5px solid ${T.g400}`:"1.5px solid transparent",transition:"background 0.1s"}}>
+                  {grid[r][c]}
+                </div>
+              );
+            })}
+          </div>
         ))}
       </div>
-
-      {loading ? <Card><div style={{textAlign:'center',color:'#bbb',padding:24}}>⏳ Cargando...</div></Card>
-      : retos.length===0 ? <Card><div style={{textAlign:'center',color:'#bbb',padding:24,fontWeight:700}}>Sin retos activos</div></Card>
-      : retos.map(r => {
-        const p = prog[r.id];
-        const pv = p?.progreso||0;
-        const pct = Math.min(100, Math.round((pv/r.meta)*100));
-        const done = p?.completado;
-        const canClaim = pv>=r.meta && !done;
-
-        return (
-          <Card key={r.id} style={{border:canClaim?'2px solid #4CAF50':done?'2px solid #81C784':'1px solid #E8F5E9'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:800,fontSize:'0.95rem',marginBottom:4}}>{r.titulo}</div>
-                <div style={{fontSize:'0.82rem',color:'#666',lineHeight:1.5}}>{r.descripcion}</div>
-              </div>
-              <div style={{textAlign:'right',marginLeft:10}}>
-                <div style={{fontWeight:900,color:'#E91E8C',fontSize:'1.1rem'}}>+{r.puntos_premio}⭐</div>
-                <div style={{fontSize:'0.72rem',color:'#bbb'}}>{daysLeft(r.fecha_fin)}</div>
-              </div>
-            </div>
-            <div style={{marginBottom:10}}>
-              <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-                <div style={{fontSize:'0.77rem',fontWeight:700,color:'#bbb'}}>Progreso</div>
-                <div style={{fontSize:'0.77rem',fontWeight:800,color:'#4CAF50'}}>{pv}/{r.meta}</div>
-              </div>
-              <div style={{height:8,background:'#E8F5E9',borderRadius:50,overflow:'hidden'}}>
-                <div style={{height:'100%',width:`${pct}%`,background:done?'linear-gradient(135deg,#2E7D32,#4CAF50)':canClaim?'linear-gradient(135deg,#E91E8C,#F48FB1)':'linear-gradient(135deg,#4CAF50,#81C784)',borderRadius:50,transition:'width 0.6s ease'}}/>
-              </div>
-            </div>
-            {done ? <div style={{background:'#E8F5E9',borderRadius:10,padding:'8px 12px',fontSize:'0.82rem',fontWeight:700,color:'#2E7D32'}}>✅ Reto completado y reclamado</div>
-            : canClaim ? <Btn full col="green" onClick={()=>claim(r)}>🏆 ¡Reclamar {r.puntos_premio} puntos!</Btn>
-            : <div style={{fontSize:'0.78rem',color:'#bbb',fontWeight:600}}>{r.meta-pv} acciones más para completarlo</div>}
-          </Card>
-        );
-      })}
+      <div style={{marginTop:8,fontSize:"0.78rem",color:T.textSub}}>Encontradas: {found.length}/{placed.length}</div>
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════
-//  NAV CONFIG
-// ═══════════════════════════════════════════════════════════
-const NAV_CFG={
-  admin:[{id:'dashboard',icon:'🏠',label:'Inicio'},{id:'citas',icon:'📅',label:'Citas'},{id:'clientes',icon:'👥',label:'Clientes'},{id:'inventario',icon:'📦',label:'Stock'},{id:'caja',icon:'💰',label:'Caja'},{id:'usuarios',icon:'👑',label:'Usuarios'},{id:'perfil',icon:'👤',label:'Perfil'}],
-  staff:[{id:'dashboard',icon:'🏠',label:'Inicio'},{id:'citas',icon:'📅',label:'Citas'},{id:'clientes',icon:'👥',label:'Clientes'},{id:'inventario',icon:'📦',label:'Stock'},{id:'caja',icon:'💰',label:'Caja'},{id:'perfil',icon:'👤',label:'Perfil'}],
-  client:[{id:'dashboard',icon:'🏠',label:'Inicio'},{id:'feed',icon:'📱',label:'Feed'},{id:'tienda',icon:'🛍️',label:'Tienda'},{id:'juegos',icon:'🎮',label:'Juegos'},{id:'retos',icon:'🎯',label:'Retos'},{id:'ranking',icon:'🏆',label:'Ranking'},{id:'perfil',icon:'👤',label:'Perfil'}],
-};
-const GRAD={admin:'linear-gradient(135deg,#1B5E20,#2E7D32)',staff:'linear-gradient(135deg,#2E7D32,#4CAF50)',client:'linear-gradient(135deg,#4CAF50,#81C784)'};
-
-// ═══════════════════════════════════════════════════════════
-//  APP ROOT
-// ═══════════════════════════════════════════════════════════
-export default function App(){
-  const [user,setUser]=useState(null);
-  const [page,setPage]=useState('dashboard');
-  const [toast,setToast]=useState({show:false,msg:''});
-  const [ptsPopup,setPtsPopup]=useState({show:false,pts:0});
-  const [musicOn,setMusicOn]=useState(false);
-
-  const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:''}),3200);},[]);
-  const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
-  const toggleMusic=()=>{ globalMuted=!globalMuted; if(globalMuted){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}};
-  const navTo=id=>{SFX.nav();setPage(id);};
-  const logout=()=>{setUser(null);setPage('dashboard');};
-
-  if(!user) return <Auth onLogin={u=>{setUser(u);setPage('dashboard');}} showToast={showToast}/>;
-
-  const role=user.role;
-  const nav=NAV_CFG[role]||NAV_CFG.client;
-  const grad=GRAD[role]||GRAD.client;
-  const ap=nav.find(n=>n.id===page)?page:'dashboard';
-
-  const sp={showToast,showPoints};
-  const pages={
-    dashboard: role===ROLES.CLIENT?<ClientDashboard user={user}/>:<DashboardAdmin user={user}/>,
-    citas:     <Citas {...sp}/>,
-    clientes:  <Clientes {...sp}/>,
-    inventario:<Inventario {...sp}/>,
-    caja:      <Caja {...sp}/>,
-    usuarios:  <AdminUsuarios {...sp}/>,
-    feed:      <SocialFeed user={user} setUser={setUser} {...sp}/>,
-    noticias:  <Noticias/>,
-    tienda:    <Productos user={user} setUser={setUser} {...sp}/>,
-    juegos:    <Juegos user={user} setUser={setUser} {...sp}/>,
-    retos:     <Retos user={user} setUser={setUser} {...sp}/>,
-    ranking:   <Ranking user={user}/>,
-    perfil:    <Perfil user={user} setUser={setUser} onLogout={logout} {...sp}/>,
-  };
-
-  return(<div style={{fontFamily:'Nunito,sans-serif',background:'#F1F8E9',minHeight:'100vh',maxWidth:480,margin:'0 auto',paddingBottom:82,position:'relative'}}>
-    <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}@keyframes fadeSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes floatUp{0%{transform:translateY(110vh) rotate(0deg);opacity:0}10%{opacity:.35}90%{opacity:.2}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}::-webkit-scrollbar{display:none}input,select,button{font-family:Nunito,sans-serif}`}</style>
-    <Particles/>
-    <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
-    {/* HEADER */}
-    <div style={{background:grad,padding:'13px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:50,boxShadow:'0 4px 20px rgba(0,0,0,0.2)'}}>
-      <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <div style={{fontFamily:'Fredoka One,cursive',fontSize:'1.4rem',color:'white'}}>✂️ PeluquerIA</div>
-        {role!=='client'&&<span style={{background:'rgba(255,255,255,0.25)',color:'white',borderRadius:50,padding:'2px 8px',fontSize:'0.7rem',fontWeight:800,textTransform:'uppercase'}}>{role}</span>}
-      </div>
-      <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <button onClick={toggleMusic} style={{background:'rgba(255,255,255,0.2)',border:'none',borderRadius:50,padding:'5px 10px',cursor:'pointer',color:'white',fontWeight:800,fontSize:'0.75rem'}}>{musicOn?'🔇 Silenciar':'🎵 Sonido'}</button>
-        {role==='client'&&<div style={{background:'rgba(255,255,255,0.22)',borderRadius:50,padding:'5px 12px',color:'white',fontWeight:800,fontSize:'0.84rem'}}>⭐ {user.puntos}</div>}
-        <div onClick={()=>navTo('perfil')} style={{cursor:'pointer',padding:2,background:'rgba(255,255,255,0.2)',borderRadius:'50%'}}><AvatarSVG av={user.avatar} size={34}/></div>
+const MEMO_EMOJIS=["âœ‚ï¸�","ðŸ’ˆ","ðŸŒ¿","ðŸ’š","â­�","ðŸŒ¸","ðŸŽ¨","ðŸ’†"];
+function MemoryGame({onWin}){
+  const [cards,setCards]=useState(()=>[...MEMO_EMOJIS,...MEMO_EMOJIS].map((e,i)=>({id:i,emoji:e,flipped:false,matched:false})).sort(()=>Math.random()-0.5));
+  const [flipped,setFlipped]=useState([]);const [moves,setMoves]=useState(0);const [lock,setLock]=useState(false);
+  function flip(id){
+    if(lock)return;const card=cards.find(c=>c.id===id);if(!card||card.flipped||card.matched)return;
+    const nc=cards.map(c=>c.id===id?{...c,flipped:true}:c);const nf=[...flipped,id];setCards(nc);setFlipped(nf);
+    if(nf.length===2){
+      setLock(true);setMoves(m=>m+1);const [a,b]=nf.map(fid=>nc.find(c=>c.id===fid));
+      setTimeout(()=>{
+        if(a.emoji===b.emoji){const m=nc.map(c=>nf.includes(c.id)?{...c,matched:true}:c);setCards(m);setFlipped([]);setLock(false);if(m.every(c=>c.matched))onWin(Math.max(20-moves,5));}
+        else{setCards(nc.map(c=>nf.includes(c.id)?{...c,flipped:false}:c));setFlipped([]);setLock(false);}
+      },900);
+    }
+  }
+  return(
+    <div>
+      <div style={{fontSize:"0.8rem",color:T.textSub,fontWeight:700,marginBottom:10}}>Movimientos: {moves}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+        {cards.map(c=>(
+          <div key={c.id} onClick={()=>flip(c.id)} style={{height:60,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.6rem",cursor:"pointer",background:c.flipped||c.matched?T.g100:T.g600,border:`2px solid ${c.matched?T.g400:T.g500}`,transition:"all 0.2s"}}>
+            {(c.flipped||c.matched)?c.emoji:""}
+          </div>
+        ))}
       </div>
     </div>
-    {/* PAGE */}
-    <div style={{padding:'18px 14px'}}>{pages[ap]||pages['dashboard']}</div>
-    {/* BOTTOM NAV */}
-    <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:480,background:'#F0F7EE',borderTop:'1.5px solid #F0EAE0',display:'flex',justifyContent:'space-around',padding:'7px 2px 11px',zIndex:100,boxShadow:'0 -4px 20px rgba(0,0,0,0.07)'}}>
-      {nav.map(n=>(
-        <button key={n.id} onClick={()=>navTo(n.id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,background:'none',border:'none',cursor:'pointer',padding:'2px 4px',minWidth:38}}>
-          <div style={{fontSize:'1.1rem',background:ap===n.id?grad:'transparent',borderRadius:10,padding:'4px 7px',transform:ap===n.id?'scale(1.2)':'scale(1)',transition:'all 0.22s cubic-bezier(0.34,1.56,0.64,1)',boxShadow:ap===n.id?'0 3px 12px rgba(0,0,0,0.2)':'none'}}>{n.icon}</div>
-          <span style={{fontSize:'0.54rem',fontWeight:800,color:ap===n.id?'#FF6B9D':'#ccc',transition:'color 0.2s'}}>{n.label}</span>
+  );
+}
+
+const TRIVIA_QS=[
+  {q:"Â¿CuÃ¡ntos volÃºmenes tiene el tinte permanente mÃ¡s comÃºn?",opts:["20 vol","30 vol","10 vol","40 vol"],a:1},
+  {q:"Â¿QuÃ© vitamina es esencial para el cabello sano?",opts:["Vitamina C","Vitamina K","Biotina (B7)","Vitamina D"],a:2},
+  {q:"Â¿CuÃ¡l es el pH ideal del cabello?",opts:["4.5â€“5.5","7â€“8","2â€“3","6â€“7"],a:0},
+  {q:"Â¿QuÃ© es la queratina?",opts:["Un tinte","Una proteÃ­na capilar","Un champÃº","Una vitamina"],a:1},
+  {q:"Â¿Cada cuÃ¡nto se recomienda cortar las puntas?",opts:["Cada aÃ±o","Cada 6-8 semanas","Cada semana","Cada 6 meses"],a:1},
+];
+function TriviaGame({onWin}){
+  const [idx,setIdx]=useState(0);const [score,setScore]=useState(0);const [answered,setAnswered]=useState(null);
+  const q=TRIVIA_QS[idx];
+  function answer(i){
+    if(answered!==null)return;setAnswered(i);const correct=i===q.a;
+    if(correct){SFX.success();setScore(s=>s+1);}else SFX.error();
+    setTimeout(()=>{if(idx+1>=TRIVIA_QS.length)onWin(score+(correct?1:0));else{setIdx(x=>x+1);setAnswered(null);}},1200);
+  }
+  return(
+    <div>
+      <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:700,marginBottom:12}}>Pregunta {idx+1}/{TRIVIA_QS.length} Â· Puntos: {score}</div>
+      <div style={{fontWeight:800,fontSize:"0.95rem",color:T.g800,marginBottom:16,lineHeight:1.5}}>{q.q}</div>
+      {q.opts.map((o,i)=>(
+        <button key={i} onClick={()=>answer(i)} style={{display:"block",width:"100%",textAlign:"left",padding:"10px 14px",borderRadius:12,marginBottom:8,border:"2px solid",
+          borderColor:answered!==null?(i===q.a?T.g500:i===answered?T.red:T.g200):T.g200,
+          background:answered!==null?(i===q.a?T.g150:i===answered?"#FFEBEE":T.white):T.white,
+          fontSize:"0.88rem",fontWeight:700,cursor:answered!==null?"default":"pointer",transition:"all 0.2s"}}>
+          {answered!==null&&i===q.a?"âœ… ":answered===i&&i!==q.a?"â�Œ ":""}{o}
         </button>
       ))}
     </div>
-    <Toast msg={toast.msg} show={toast.show}/>
-  </div>);
+  );
+}
+
+function Juegos({user,setUser,showToast,showPoints}){
+  const [activeGame,setActiveGame]=useState(null);
+  const GAMES=[
+    {id:"sopa",icon:"ðŸ”¤",title:"Sopa de Letras",desc:"Encuentra las palabras ocultas",pts:25},
+    {id:"memoria",icon:"ðŸ§ ",title:"Memoria",desc:"Encuentra todos los pares",pts:20},
+    {id:"trivia",icon:"â�“",title:"Trivia Capilar",desc:"Demuestra tu conocimiento",pts:15},
+  ];
+  async function handleWin(gameId,pts){
+    markPlayedToday(gameId,user.id);
+    const nuevos=(user.puntos||0)+pts;
+    await dbPatch(TB.usuarios,`?${encodeURIComponent(U.id)}=eq.${user.id}`,{[U.puntos]:nuevos});
+    setUser(u=>({...u,puntos:nuevos}));showPoints(pts);SFX.coins();showToast(`ðŸŽ® +${pts} puntos!`);setActiveGame(null);
+  }
+  if(activeGame){
+    const g=GAMES.find(x=>x.id===activeGame);
+    return(
+      <div style={{animation:"fadeSlide 0.4s ease"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
+          <button onClick={()=>setActiveGame(null)} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,cursor:"pointer",fontWeight:900,fontSize:"1rem",color:T.g700}}>â†�</button>
+          <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.2rem",color:T.g800}}>{g?.icon} {g?.title}</div>
+        </div>
+        {activeGame==="sopa"&&<SopaLetras onWin={pts=>handleWin("sopa",pts)}/>}
+        {activeGame==="memoria"&&<MemoryGame onWin={pts=>handleWin("memoria",pts)}/>}
+        {activeGame==="trivia"&&<TriviaGame onWin={pts=>handleWin("trivia",pts)}/>}
+      </div>
+    );
+  }
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸŽ®" title="Juegos" sub="Gana puntos â€” 1 vez al dÃ­a por juego"/>
+      {GAMES.map(g=>{
+        const played=getPlayedToday(g.id,user.id);
+        return(
+          <Card key={g.id} style={{marginBottom:12,opacity:played?0.65:1}}>
+            <div style={{display:"flex",alignItems:"center",gap:14}}>
+              <div style={{fontSize:"2.2rem"}}>{g.icon}</div>
+
+              <div style={{flex:1}}>
+                <div style={{fontWeight:800}}>{g.title}</div>
+                <div style={{fontSize:"0.8rem",color:T.textSub}}>{g.desc}</div>
+                <div style={{fontSize:"0.75rem",color:T.orange,fontWeight:700,marginTop:2}}>Hasta +{g.pts} â­�</div>
+              </div>
+              {played?<Badge col="green">âœ… Jugado hoy</Badge>:<Btn small onClick={()=>setActiveGame(g.id)}>Jugar</Btn>}
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+// RETOS â€” usa tus tablas retos y retos_progreso con identificaciÃ³n uuid
+function Retos({user,setUser,showToast,showPoints}){
+  const [retos,setRetos]=useState([]);
+  const [progresos,setProgresos]=useState({});
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{load();},[user.id]);
+  async function load(){
+    setLoading(true);
+    const today=new Date().toISOString().split("T")[0];
+    const [r,p]=await Promise.all([
+      dbGet(TB.retos,`?activo=eq.true&fecha_fin=gte.${today}&select=*`),
+      dbGet(TB.retos_progreso,`?usuario_id=eq.${user.id}&select=*`),
+    ]);
+    setRetos(r||[]);
+    const pm={};(p||[]).forEach(x=>{pm[x.reto_id]=x;});
+    setProgresos(pm);setLoading(false);
+  }
+  async function reclamar(reto){
+    const id=reto.identificaciÃ³n||reto.id;
+    const prog=progresos[id];if(!prog||prog.completado)return;
+    const progId=prog.identificaciÃ³n||prog.id;
+    await dbPatch(TB.retos_progreso,`?identificaciÃ³n=eq.${progId}`,{completado:true});
+    const nuevos=(user.puntos||0)+reto.puntos_premio;
+    await dbPatch(TB.usuarios,`?${encodeURIComponent(U.id)}=eq.${user.id}`,{[U.puntos]:nuevos});
+    setUser(u=>({...u,puntos:nuevos}));showPoints(reto.puntos_premio);SFX.coins();showToast(`ðŸ�† +${reto.puntos_premio} puntos!`);load();
+  }
+  function daysLeft(f){const d=Math.ceil((new Date(f)-new Date())/86400000);return d<=0?"Vence hoy":`${d} dÃ­as`;}
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸŽ¯" title="Retos" sub="Completa retos y gana puntos"/>
+      {loading?<Spinner/>:retos.length===0?<EmptyState icon="ðŸŽ¯" title="Sin retos activos" sub="Â¡Vuelve pronto!"/>
+        :retos.map(r=>{
+          const id=r.identificaciÃ³n||r.id;
+          const prog=progresos[id];
+          const pv=prog?.progreso||0,pct=Math.min((pv/r.meta)*100,100);
+          const canClaim=pv>=r.meta&&prog&&!prog.completado,done=prog?.completado;
+          return(
+            <Card key={id} style={{marginBottom:12,border:canClaim?`2px solid ${T.g400}`:done?`2px solid ${T.g300}`:`1px solid ${T.g150}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:800}}>{r.titulo}</div>
+                  <div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2}}>{r.descripciÃ³n||r.descripcion}</div>
+                </div>
+                <div style={{textAlign:"right",marginLeft:10}}>
+                  <div style={{fontWeight:900,color:T.pink,fontSize:"1rem"}}>+{r.puntos_premio} â­�</div>
+                  <div style={{fontSize:"0.7rem",color:T.textSub}}>{daysLeft(r.fecha_fin)}</div>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                  <div style={{fontSize:"0.75rem",fontWeight:700,color:T.textSub}}>Progreso</div>
+                  <div style={{fontSize:"0.75rem",fontWeight:800,color:T.g600}}>{pv}/{r.meta}</div>
+                </div>
+                <div style={{height:8,background:T.g150,borderRadius:50,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:`${pct}%`,background:done?T.gradAdmin:canClaim?T.gradPink:T.gradClient,borderRadius:50,transition:"width 0.6s ease"}}/>
+                </div>
+              </div>
+              {done?<div style={{background:T.g100,borderRadius:10,padding:"8px 12px",fontSize:"0.82rem",fontWeight:700,color:T.g700}}>âœ… Reto completado</div>
+                :canClaim?<Btn full small col="gold" onClick={()=>reclamar(r)}>ðŸ�† Â¡Reclamar {r.puntos_premio} puntos!</Btn>
+                :<div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:600}}>{r.meta-pv} mÃ¡s para completarlo</div>}
+            </Card>
+          );
+        })
+      }
+    </div>
+  );
+}
+
+// RANKING
+function Ranking({user}){
+  const [lista,setLista]=useState([]);const [loading,setLoading]=useState(true);
+  useEffect(()=>{load();},[]);
+  async function load(){
+    setLoading(true);
+    setLista(await dbGet(TB.usuarios,`?${encodeURIComponent(U.rol)}=eq.cliente&order=${encodeURIComponent(U.puntos)}.desc&limit=20&select=*`)||[]);
+    setLoading(false);
+  }
+  const medals=["ðŸ¥‡","ðŸ¥ˆ","ðŸ¥‰"];
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ�†" title="Ranking" sub="Top clientes del mes"/>
+      {loading?<Spinner/>:lista.map((u,i)=>{
+        const uid=u[U.id]||u.id,isMe=uid===user.id;
+        return(
+          <Card key={uid} style={{marginBottom:8,background:isMe?T.g100:T.white,border:isMe?`2px solid ${T.g400}`:`1px solid ${T.g150}`}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.3rem",minWidth:32,textAlign:"center"}}>{i<3?medals[i]:`#${i+1}`}</div>
+              <AvatarSVG av={u[U.avatar]||u.avatar} size={38}/>
+              <div style={{flex:1}}><div style={{fontWeight:800}}>{u[U.nombre]||u.nombre}{isMe?" (tÃº)":""}</div></div>
+              <div style={{fontWeight:900,color:T.orange}}>â­� {u[U.puntos]||u.puntos||0}</div>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+// GALERÃ�A
+function Galeria({showToast,isAdmin=false}){
+  const [fotos,setFotos]=useState([]);const [showNew,setShowNew]=useState(false);
+  const [form,setForm]=useState({titulo:"",url:"",categoria:"corte",antes_url:""});
+  const CATS=["corte","color","mechas","recogido","tratamiento"];
+  useEffect(()=>{load();},[]);
+  async function load(){setFotos(await dbGet(TB.galeria,`?activo=eq.true&order=creado_en.desc&select=*`)||[]);}
+  async function save(){if(!form.url){showToast("AÃ±ade una URL");return;}await dbPost(TB.galeria,{...form,activo:true});showToast("âœ… AÃ±adido");setShowNew(false);setForm({titulo:"",url:"",categoria:"corte",antes_url:""});load();}
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ–¼ï¸�" title="GalerÃ­a" sub="Nuestros mejores trabajos" action={isAdmin&&<Btn small onClick={()=>setShowNew(true)}>+ AÃ±adir</Btn>}/>
+      {fotos.length===0?<EmptyState icon="ðŸ–¼ï¸�" title="Sin fotos aÃºn" sub="Â¡AÃ±ade los primeros trabajos!"/>:(
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          {fotos.map(f=>(
+            <Card key={f.id} style={{padding:0,overflow:"hidden"}}>
+              <img src={f.url} alt={f.titulo} style={{width:"100%",height:140,objectFit:"cover"}} onError={e=>e.target.style.display="none"}/>
+              <div style={{padding:"10px"}}>
+                <div style={{fontWeight:800,fontSize:"0.82rem"}}>{f.titulo}</div>
+                <Badge col="green">{f.categoria}</Badge>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+      <Modal show={showNew} onClose={()=>setShowNew(false)} title="ðŸ–¼ï¸� AÃ±adir trabajo">
+        <Input label="URL imagen (despuÃ©s)" value={form.url} onChange={v=>setForm(f=>({...f,url:v}))} placeholder="https://..."/>
+        <Input label="URL imagen antes (opcional)" value={form.antes_url} onChange={v=>setForm(f=>({...f,antes_url:v}))} placeholder="https://..."/>
+        <Input label="TÃ­tulo" value={form.titulo} onChange={v=>setForm(f=>({...f,titulo:v}))}/>
+        <Select label="CategorÃ­a" value={form.categoria} onChange={v=>setForm(f=>({...f,categoria:v}))} options={CATS.map(c=>({value:c,label:c.charAt(0).toUpperCase()+c.slice(1)}))}/>
+        <Btn full onClick={save}>âœ… Guardar</Btn>
+      </Modal>
+    </div>
+  );
+}
+
+// REVIEWS
+function Reviews({user,setUser,showToast,showPoints}){
+  const [reviews,setReviews]=useState([]);const [showNew,setShowNew]=useState(false);
+  const [rating,setRating]=useState(5);const [comment,setComment]=useState("");const [loading,setLoading]=useState(true);
+  useEffect(()=>{load();},[]);
+  async function load(){setLoading(true);setReviews(await dbGet(TB.reviews,`?order=creado_en.desc&limit=20&select=*`)||[]);setLoading(false);}
+  async function submit(){
+    if(!comment.trim()){showToast("Escribe un comentario");return;}
+    await dbPost(TB.reviews,{usuario_id:user.id,autor_nombre:user.nombre,autor_avatar:user.avatar,rating,comentario:comment});
+    const nuevos=(user.puntos||0)+10;
+    await dbPatch(TB.usuarios,`?${encodeURIComponent(U.id)}=eq.${user.id}`,{[U.puntos]:nuevos});
+    setUser(u=>({...u,puntos:nuevos}));showPoints(10);showToast("âœ… Â¡Gracias! +10â­�");
+    setShowNew(false);setComment("");setRating(5);SFX.success();load();
+  }
+  const avg=reviews.length>0?(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1):"â€”";
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="â­�" title="ReseÃ±as" sub={`${avg}â˜… Â· ${reviews.length} valoraciones`} action={user.rol===ROLES.CLIENT&&<Btn small onClick={()=>setShowNew(true)}>+ ReseÃ±a</Btn>}/>
+      {loading?<Spinner/>:reviews.map(r=>(
+        <Card key={r.id} style={{marginBottom:10}}>
+          <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:8}}>
+            <AvatarSVG av={r.autor_avatar} size={36}/>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:800,fontSize:"0.88rem"}}>{r.autor_nombre}</div>
+              <div style={{fontSize:"0.72rem",color:T.textSub}}>{new Date(r.creado_en||r.created_at).toLocaleDateString("es-ES")}</div>
+
+            </div>
+            <div style={{fontWeight:900,color:T.gold}}>{Array(r.rating).fill("â˜…").join("")}</div>
+          </div>
+          <div style={{fontSize:"0.88rem",color:T.text}}>{r.comentario}</div>
+        </Card>
+      ))}
+      <Modal show={showNew} onClose={()=>setShowNew(false)} title="â­� Nueva reseÃ±a">
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:8}}>Tu puntuaciÃ³n</div>
+          <div style={{display:"flex",gap:8}}>{[1,2,3,4,5].map(n=><button key={n} onClick={()=>setRating(n)} style={{fontSize:"1.8rem",background:"none",border:"none",cursor:"pointer",opacity:n<=rating?1:0.3}}>â˜…</button>)}</div>
+        </div>
+        <Input label="Comentario" value={comment} onChange={setComment} placeholder="CuÃ©ntanos tu experiencia..."/>
+        <Btn full onClick={submit}>âœ… Enviar (+10â­�)</Btn>
+      </Modal>
+    </div>
+  );
+}
+
+// CHAT
+function Chat({user,showToast}){
+  const [messages,setMessages]=useState([]);const [text,setText]=useState("");const [loading,setLoading]=useState(true);
+  const bottomRef=useRef(null);
+  useEffect(()=>{load();const iv=setInterval(load,8000);return()=>clearInterval(iv);},[]);
+  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"});},[messages]);
+  async function load(){setMessages(await dbGet(TB.mensajes,`?order=creado_en.asc&limit=50&select=*`)||[]);setLoading(false);}
+  async function send(){
+    if(!text.trim())return;
+    await dbPost(TB.mensajes,{contenido:text,usuario_id:user.id,autor_nombre:user.nombre,autor_avatar:user.avatar,autor_rol:user.rol});
+    setText("");SFX.click();load();
+  }
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease",display:"flex",flexDirection:"column",height:"calc(100vh - 200px)"}}>
+      <SectionHeader icon="ðŸ’¬" title="Chat" sub={user.rol!==ROLES.CLIENT?"Habla con tus clientes":"Habla con nosotros"}/>
+      <div style={{flex:1,overflowY:"auto",marginBottom:12}}>
+        {loading?<Spinner/>:messages.map(m=>{
+          const mine=m.usuario_id===user.id;
+          return(
+            <div key={m.id} style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:8}}>
+              {!mine&&<AvatarSVG av={m.autor_avatar} size={28}/>}
+              <div style={{maxWidth:"70%",marginLeft:mine?0:8}}>
+                {!mine&&<div style={{fontSize:"0.7rem",fontWeight:700,color:T.textSub,marginBottom:2,marginLeft:4}}>{m.autor_nombre}</div>}
+                <div style={{background:mine?T.gradClient:T.white,color:mine?T.white:T.text,padding:"9px 14px",borderRadius:mine?"16px 16px 4px 16px":"16px 16px 16px 4px",fontSize:"0.88rem",border:mine?"none":`1px solid ${T.g150}`}}>
+                  {m.contenido}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef}/>
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        <input value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Escribe un mensaje..."
+          style={{flex:1,padding:"10px 14px",borderRadius:50,border:`1.5px solid ${T.g200}`,background:T.white,fontSize:"0.88rem",outline:"none"}}/>
+        <button onClick={send} style={{width:44,height:44,borderRadius:"50%",background:T.gradClient,border:"none",cursor:"pointer",fontSize:"1.1rem"}}>ðŸ“¤</button>
+      </div>
+    </div>
+  );
+}
+
+// PERFIL
+function Perfil({user,setUser,onLogout,showToast}){
+  const [editing,setEditing]=useState(false);
+  const [form,setForm]=useState({nombre:user.nombre,avatar:user.avatar||0});
+  async function save(){
+    await dbPatch(TB.usuarios,`?${encodeURIComponent(U.id)}=eq.${user.id}`,{[U.nombre]:form.nombre,[U.avatar]:form.avatar});
+    setUser(u=>({...u,...form}));setEditing(false);showToast("âœ… Perfil actualizado");
+  }
+  const nivel=user.puntos>=1000?{label:"ðŸ’Ž VIP",col:T.blue}:user.puntos>=500?{label:"ðŸ¥‡ Gold",col:T.gold}:user.puntos>=200?{label:"ðŸ¥ˆ Silver",col:"#9E9E9E"}:{label:"ðŸ¥‰ Bronze",col:T.orange};
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <SectionHeader icon="ðŸ‘¤" title="Mi Perfil"/>
+      <Card style={{textAlign:"center",marginBottom:16}}>
+        <AvatarSVG av={form.avatar} size={72}/>
+        <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.3rem",color:T.g800,marginTop:10}}>{user.nombre}</div>
+        <div style={{fontSize:"0.82rem",color:T.textSub}}>{user.email}</div>
+        <div style={{marginTop:8}}><span style={{background:nivel.col,color:T.white,borderRadius:50,padding:"4px 14px",fontSize:"0.8rem",fontWeight:800}}>{nivel.label}</span></div>
+        {user.rol===ROLES.CLIENT&&<div style={{marginTop:12}}><div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.8rem",color:T.g700}}>â­� {user.puntos||0}</div><div style={{fontSize:"0.75rem",color:T.textSub}}>puntos acumulados</div></div>}
+      </Card>
+      {editing?(
+        <Card style={{marginBottom:16}}>
+          <Input label="Nombre" value={form.nombre} onChange={v=>setForm(f=>({...f,nombre:v}))}/>
+          <div style={{marginBottom:14}}>
+            <div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:8}}>Elige tu avatar</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+              {AVATARS.map((a,i)=><button key={i} onClick={()=>setForm(f=>({...f,avatar:i}))} style={{width:44,height:44,borderRadius:"50%",border:`2px solid ${form.avatar===i?T.g600:T.g200}`,background:form.avatar===i?T.g150:T.white,fontSize:"1.3rem",cursor:"pointer"}}>{a}</button>)}
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <Btn full onClick={save}>âœ… Guardar</Btn>
+            <Btn full col="ghost" onClick={()=>setEditing(false)}>Cancelar</Btn>
+          </div>
+        </Card>
+      ):<Btn full col="ghost" onClick={()=>setEditing(true)} style={{marginBottom:12}}>âœ�ï¸� Editar perfil</Btn>}
+      <Btn full col="red" onClick={onLogout}>ðŸšª Cerrar sesiÃ³n</Btn>
+    </div>
+  );
+}
+
+// NAV
+const NAV_CFG={
+  admin:[{id:"dashboard",icon:"ðŸ� ",label:"Inicio"},{id:"citas",icon:"ðŸ“…",label:"Citas"},{id:"clientes",icon:"ðŸ‘¥",label:"Clientes"},{id:"inventario",icon:"ðŸ“¦",label:"Stock"},{id:"caja",icon:"ðŸ’°",label:"Caja"},{id:"usuarios",icon:"ðŸ‘‘",label:"Usuarios"},{id:"perfil",icon:"ðŸ‘¤",label:"Perfil"}],
+  staff:[{id:"dashboard",icon:"ðŸ� ",label:"Inicio"},{id:"citas",icon:"ðŸ“…",label:"Citas"},{id:"clientes",icon:"ðŸ‘¥",label:"Clientes"},{id:"inventario",icon:"ðŸ“¦",label:"Stock"},{id:"caja",icon:"ðŸ’°",label:"Caja"},{id:"perfil",icon:"ðŸ‘¤",label:"Perfil"}],
+  cliente:[{id:"dashboard",icon:"ðŸ� ",label:"Inicio"},{id:"feed",icon:"ðŸ“±",label:"Feed"},{id:"tienda",icon:"ðŸ›�ï¸�",label:"Tienda"},{id:"juegos",icon:"ðŸŽ®",label:"Juegos"},{id:"retos",icon:"ðŸŽ¯",label:"Retos"},{id:"ranking",icon:"ðŸ�†",label:"Ranking"},{id:"perfil",icon:"ðŸ‘¤",label:"Perfil"}],
+};
+const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,cliente:T.gradClient};
+
+// APP ROOT
+export default function App(){
+  const [user,setUser]=useState(null);
+  const [page,setPage]=useState("dashboard");
+  const [toast,setToast]=useState({show:false,msg:""});
+  const [ptsPopup,setPtsPopup]=useState({show:false,pts:0});
+  const [musicOn,setMusicOn]=useState(false);
+
+  const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
+  const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
+  function toggleMusic(){globalMuted=!globalMuted;if(globalMuted){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}
+  const navTo=id=>{SFX.nav();setPage(id);};
+  const logout=()=>{setUser(null);setPage("dashboard");};
+
+  if(!user)return <Auth onLogin={u=>{setUser(u);setPage("dashboard");}} showToast={showToast}/>;
+
+  const role=user.rol||"cliente";
+  const nav=NAV_CFG[role]||NAV_CFG.cliente;
+  const grad=GRAD_ROLE[role]||GRAD_ROLE.cliente;
+  const ap=nav.find(n=>n.id===page)?page:"dashboard";
+  const sp={showToast,showPoints,user,setUser};
+  const isAdmin=role!==ROLES.CLIENT;
+
+  const pages={
+    dashboard:role===ROLES.CLIENT?<ClientDashboard user={user}/>:<DashboardAdmin user={user}/>,
+    citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
+    caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,
+    tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp}/>,retos:<Retos {...sp}/>,
+    ranking:<Ranking user={user}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
+    galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
+    reviews:<Reviews {...sp}/>,chat:<Chat user={user} showToast={showToast}/>,
+    cupones:<Cupones user={user} showToast={showToast}/>,
+  };
+
+  return(
+    <div style={{fontFamily:"'Nunito',sans-serif",background:T.g100,minHeight:"100vh",maxWidth:480,margin:"0 auto",paddingBottom:82,position:"relative"}}>
+      <style>{GLOBAL_CSS}</style>
+      <Particles/>
+      <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
+      <div style={{background:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:"0 4px 20px rgba(27,67,50,0.25)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.35rem",color:T.white}}>âœ‚ï¸� PeluquerIA</div>
+          {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <button onClick={toggleMusic} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"ðŸ”‡":"ðŸŽµ"}</button>
+
+          {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>â­� {user.puntos||0}</div>}
+          <div onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
+            <AvatarSVG av={user.avatar} size={32}/>
+          </div>
+        </div>
+      </div>
+      <div style={{padding:"18px 14px"}}>{pages[ap]||pages["dashboard"]}</div>
+      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:T.white,borderTop:`1.5px solid ${T.g150}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(27,67,50,0.08)"}}>
+        {nav.map(n=>(
+          <button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38}}>
+            <div style={{fontSize:"1.1rem",background:ap===n.id?grad:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?"0 3px 12px rgba(27,67,50,0.2)":"none"}}>{n.icon}</div>
+            <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?T.g600:T.textSub,transition:"color 0.2s"}}>{n.label}</span>
+          </button>
+        ))}
+      </div>
+      <Toast msg={toast.msg} show={toast.show}/>
+    </div>
+  );
 }
