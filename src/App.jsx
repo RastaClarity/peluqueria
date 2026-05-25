@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 
 const SUPA_URL = "https://uetuoxtfccrbymwlsssx.supabase.co";
-const SUPA_KEY = "sb_publissable_-ow7f5HJgbcDgXvI7tyIzw_vR3PnrfZ";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVldHVveHRmY2NyYnltd2xzc3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MjExMDIsImV4cCI6MjA5NTE5NzEwMn0.-A_cY0w1_V4UPeMXmFWStJ52xhWvHL5ecGtEEcBd1XA";
 
 async function db(table, method="GET", body=null, query="") {
   const url = `${SUPA_URL}/rest/v1/${table}${query}`;
