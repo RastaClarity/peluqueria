@@ -8,11 +8,20 @@ const supabase = SUPA_URL && SUPA_KEY ? createClient(SUPA_URL, SUPA_KEY) : null;
 async function db(table, method="GET", body=null, query="") {
   if (!SUPA_URL || !SUPA_KEY) return method === "GET" ? [] : false;
   const url = `${SUPA_URL}/rest/v1/${table}${query}`;
+  let authToken = SUPA_KEY;
+  try {
+    if (supabase) {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.access_token) authToken = data.session.access_token;
+    }
+  } catch (e) {
+    authToken = SUPA_KEY;
+  }
   const res = await fetch(url, {
     method,
     headers: {
       apikey: SUPA_KEY,
-      Authorization: `Bearer ${SUPA_KEY}`,
+      Authorization: `Bearer ${authToken}`,
       "Content-Type": "application/json",
       Prefer: method==="POST" ? "return=representation" : "return=minimal",
     },
@@ -113,7 +122,7 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
   const C={green:{bg:T.gradClient,sh:"rgba(64,145,108,0.35)"},dark:{bg:T.gradAdmin,sh:"rgba(27,67,50,0.35)"},pink:{bg:T.gradPink,sh:"rgba(233,30,140,0.3)"},gold:{bg:T.gradGold,sh:"rgba(255,183,3,0.35)"},red:{bg:"linear-gradient(135deg,#E53935,#EF5350)",sh:"rgba(229,57,53,0.3)"},ghost:{bg:"transparent",sh:"none"}};
   const c=C[col]||C.green;
-  return <button onClick={disabled?undefined:onClick} className="bp" style={{background:col==="ghost"?"transparent":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"none",borderRadius:14,padding:small?"7px 14px":"11px 20px",fontWeight:800,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"none":`0 4px 14px ${c.sh}`,transition:"all 0.18s ease",...sx}}>{children}</button>;
+  return <button type="button" onClick={disabled?undefined:onClick} className="bp" style={{background:col==="ghost"?"transparent":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"none",borderRadius:14,padding:small?"7px 14px":"11px 20px",fontWeight:800,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"none":`0 4px 14px ${c.sh}`,transition:"all 0.18s ease",...sx}}>{children}</button>;
 }
 function Card({children,style:sx={},onClick,hover=false}){
   return <div onClick={onClick} className={hover?"ch":""} style={{background:"#F5E6C8",borderRadius:18,padding:"16px",boxShadow:"0 4px 16px rgba(101,67,33,0.25)",border:`2px solid ${T.g400}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",...sx}}>{children}</div>;
@@ -195,49 +204,116 @@ function Auth({onLogin,showToast}){
   const [pass,setPass]=useState("");
   const [name,setName]=useState("");
   const [loading,setLoading]=useState(false);
+  const [authMsg,setAuthMsg]=useState("");
+
+  function notifyAuth(msg){
+    setAuthMsg(msg);
+    if(showToast) showToast(msg);
+    setTimeout(()=>setAuthMsg(""),4500);
+  }
+
+  function handleEnter(e){
+    if(e.key!=="Enter" || loading) return;
+    e.preventDefault();
+    if(mode==="login") handleLogin();
+    else handleRegister();
+  }
 
   async function handleLogin(){
-    if(!email||!pass){showToast("Rellena todos los campos");SFX.error();return;}
-    if(!supabase){showToast("Faltan las variables de entorno de Supabase");SFX.error();return;}
+    if(loading)return;
+    if(!email.trim()||!pass){notifyAuth("Rellena todos los campos");SFX.error();return;}
+    if(!supabase){notifyAuth("Faltan las variables de entorno de Supabase");SFX.error();return;}
+
     setLoading(true);
-    const cleanEmail=email.trim().toLowerCase();
-    const {data,error}=await supabase.auth.signInWithPassword({email:cleanEmail,password:pass});
-    if(error){setLoading(false);showToast("Email o contraseña incorrectos");SFX.error();return;}
-    let perfil=await getUserProfileByEmail(data.user?.email||cleanEmail);
-    if(!perfil){
-      perfil=await createUserProfile({nombre:data.user?.user_metadata?.nombre||cleanEmail.split("@")[0],email:cleanEmail});
+    setAuthMsg("Conectando con Supabase...");
+    try{
+      const cleanEmail=email.trim().toLowerCase();
+      const {data,error}=await supabase.auth.signInWithPassword({email:cleanEmail,password:pass});
+
+      if(error){
+        notifyAuth(error.message==="Invalid login credentials" ? "Email o contraseña incorrectos" : error.message || "No se pudo iniciar sesión");
+        SFX.error();
+        return;
+      }
+
+      const loginEmail=data.user?.email||cleanEmail;
+      let perfil=await getUserProfileByEmail(loginEmail);
+
+      if(!perfil){
+        perfil=await createUserProfile({
+          nombre:data.user?.user_metadata?.nombre||loginEmail.split("@")[0],
+          email:loginEmail
+        });
+      }
+
+      if(!perfil){
+        notifyAuth("Has iniciado sesión, pero no se pudo cargar tu perfil de usuario");
+        SFX.error();
+        return;
+      }
+
+      setAuthMsg("");
+      SFX.success();
+      onLogin(toAppUser(perfil));
+    }catch(err){
+      console.error("Login error:",err);
+      notifyAuth("Error de conexión al iniciar sesión");
+      SFX.error();
+    }finally{
+      setLoading(false);
     }
-    setLoading(false);
-    if(!perfil){showToast("No se pudo cargar tu perfil");SFX.error();return;}
-    SFX.success();
-    onLogin(toAppUser(perfil));
   }
 
   async function handleRegister(){
-    if(!email||!pass||!name){showToast("Rellena todos los campos");SFX.error();return;}
-    if(pass.length<6){showToast("La contraseña debe tener al menos 6 caracteres");SFX.error();return;}
-    if(!supabase){showToast("Faltan las variables de entorno de Supabase");SFX.error();return;}
+    if(loading)return;
+    if(!email.trim()||!pass||!name.trim()){notifyAuth("Rellena todos los campos");SFX.error();return;}
+    if(pass.length<6){notifyAuth("La contraseña debe tener al menos 6 caracteres");SFX.error();return;}
+    if(!supabase){notifyAuth("Faltan las variables de entorno de Supabase");SFX.error();return;}
+
     setLoading(true);
-    const cleanEmail=email.trim().toLowerCase();
-    const cleanName=name.trim();
-    const {data,error}=await supabase.auth.signUp({
-      email:cleanEmail,
-      password:pass,
-      options:{data:{nombre:cleanName}}
-    });
-    if(error){setLoading(false);showToast(error.message||"No se pudo registrar la cuenta");SFX.error();return;}
-    let perfil=await getUserProfileByEmail(cleanEmail);
-    if(!perfil){
-      perfil=await createUserProfile({nombre:cleanName,email:cleanEmail});
+    setAuthMsg("Creando cuenta...");
+    try{
+      const cleanEmail=email.trim().toLowerCase();
+      const cleanName=name.trim();
+
+      const {data,error}=await supabase.auth.signUp({
+        email:cleanEmail,
+        password:pass,
+        options:{data:{nombre:cleanName}}
+      });
+
+      if(error){
+        notifyAuth(error.message || "No se pudo registrar la cuenta");
+        SFX.error();
+        return;
+      }
+
+      let perfil=await getUserProfileByEmail(cleanEmail);
+      if(!perfil){
+        perfil=await createUserProfile({nombre:cleanName,email:cleanEmail});
+      }
+
+      if(!perfil){
+        notifyAuth("Cuenta creada, pero no se pudo crear el perfil");
+        SFX.error();
+        return;
+      }
+
+      setAuthMsg("");
+      SFX.success();
+      notifyAuth(`Bienvenido a ${BRAND.name}!`);
+      onLogin(toAppUser(perfil));
+    }catch(err){
+      console.error("Register error:",err);
+      notifyAuth("Error de conexión al registrar la cuenta");
+      SFX.error();
+    }finally{
+      setLoading(false);
     }
-    setLoading(false);
-    if(!perfil){showToast("Cuenta creada, pero no se pudo crear el perfil");SFX.error();return;}
-    SFX.success();showToast(`Bienvenido a ${BRAND.name}!`);
-    onLogin(toAppUser(perfil));
   }
 
   return(
-    <div style={{minHeight:"100vh",background:`linear-gradient(160deg,${T.g900} 0%,${T.g700} 50%,${T.g600} 100%)`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+    <div onKeyDown={handleEnter} style={{minHeight:"100vh",background:`linear-gradient(160deg,${T.g900} 0%,${T.g700} 50%,${T.g600} 100%)`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
       <style>{CSS}</style>
       <Particles/>
       <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:400}}>
@@ -248,13 +324,18 @@ function Auth({onLogin,showToast}){
           <div style={{color:"rgba(245,230,200,0.78)",fontSize:"0.78rem",marginTop:4,fontWeight:600}}>{BRAND.subtagline}</div>
         </div>
         <Card style={{padding:"28px 24px",animation:"popIn 0.4s ease",background:"#F5E6C8",border:"2px solid #8B4513"}}>
-          <div style={{display:"flex",background:T.g100,borderRadius:12,padding:4,marginBottom:22}}>
+          <div style={{display:"flex",background:T.g100,borderRadius:12,padding:4,marginBottom:16}}>
             {["login","register"].map(m=>(
-              <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"8px",borderRadius:10,border:"none",background:mode===m?T.white:"transparent",color:mode===m?T.g800:T.textSub,fontWeight:800,fontSize:"0.85rem",cursor:"pointer",transition:"all 0.2s"}}>
+              <button type="button" key={m} onClick={()=>{setMode(m);setAuthMsg("");}} style={{flex:1,padding:"8px",borderRadius:10,border:"none",background:mode===m?T.white:"transparent",color:mode===m?T.g800:T.textSub,fontWeight:800,fontSize:"0.85rem",cursor:"pointer",transition:"all 0.2s"}}>
                 {m==="login"?"Entrar":"Registrarse"}
               </button>
             ))}
           </div>
+          {authMsg&&(
+            <div style={{background:"#FFF8E1",border:`1.5px solid ${T.gold}`,borderRadius:12,padding:"10px 12px",marginBottom:14,color:T.g800,fontWeight:800,fontSize:"0.82rem",lineHeight:1.35,textAlign:"center"}}>
+              {authMsg}
+            </div>
+          )}
           {mode==="login"?(
             <div>
               <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
@@ -1214,7 +1295,12 @@ export default function App(){
   const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");};
 
   if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/></div>;
-  if(!user)return <Auth onLogin={u=>{setUser(u);setPage("dashboard");}} showToast={showToast}/>;
+  if(!user)return (
+    <>
+      <Auth onLogin={u=>{setUser(u);setPage("dashboard");}} showToast={showToast}/>
+      <Toast msg={toast.msg} show={toast.show}/>
+    </>
+  );
 
   const role=user.rol||"cliente";
   const nav=NAV_CFG[role]||NAV_CFG.cliente;
