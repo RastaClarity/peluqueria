@@ -718,7 +718,7 @@ function Tienda({user,setUser,showToast,showPoints}){
   }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🛍️" title="Tienda" sub={`Tienes ${currentUser.puntos||0} pts`}/>
+      <SectionHeader icon="🛍️" title="Tienda" sub={`Tienes ${user.puntos||0} pts`}/>
       <Card style={{background:T.gradGold,border:"none",marginBottom:16,padding:"14px 16px"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div style={{color:T.white}}><div style={{fontSize:"0.78rem",fontWeight:700,opacity:0.85}}>TUS PUNTOS</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem"}}>{user.puntos||0}</div></div>
@@ -1193,7 +1193,7 @@ function Perfil({user,setUser,onLogout,showToast}){
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800,marginTop:10}}>{user.nombre}</div>
         <div style={{fontSize:"0.82rem",color:T.textSub}}>{user.email}</div>
         <div style={{marginTop:8}}><Badge col="gold">{nivel}</Badge></div>
-        {user.rol===ROLES.CLIENT&&<div style={{marginTop:12}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.g700}}>{currentUser.puntos||0} pts</div></div>}
+        {user.rol===ROLES.CLIENT&&<div style={{marginTop:12}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.g700}}>{user.puntos||0} pts</div></div>}
       </Card>
       {editing?(
         <Card style={{marginBottom:16}}>
