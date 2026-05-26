@@ -532,14 +532,33 @@ async function getUserProfileByEmail(email){
   if(data) data.avatar_config=await getAvatarConfigForProfile(data);
   return data;
 }
-async function createUserProfile({nombre,email}){
+async function createUserProfile({nombre,email,password="",authId=null}){
   if(!supabase || !email) return null;
+
+  const perfil = {
+    nombre,
+    email: email.toLowerCase(),
+    password,
+    role: "client",
+    puntos: 0,
+    avatar: Math.floor(Math.random()*AVATARS.length),
+  };
+
+  // Si venimos de Supabase Auth, usamos el mismo UUID del usuario real.
+  // Si no, dejamos que la tabla genere el id con gen_random_uuid().
+  if(authId) perfil.id = authId;
+
   const {data,error}=await supabase
     .from("usuarios")
-    .insert({nombre,email:email.toLowerCase(),role:"client",puntos:0,avatar:Math.floor(Math.random()*AVATARS.length)})
+    .insert(perfil)
     .select("id,nombre,email,role,puntos,avatar,created_at")
     .maybeSingle();
-  if(error) return null;
+
+  if(error){
+    console.error("Error creando perfil en usuarios:", error);
+    return null;
+  }
+
   if(data){
     const cfg=normalizeAvatarConfig(null,data.avatar);
     data.avatar_config=cfg;
@@ -571,7 +590,7 @@ function Auth({onLogin,showToast}){
     if(error){setLoading(false);showAuthError(error.message || "Email o contraseña incorrectos");SFX.error();return;}
     let perfil=await getUserProfileByEmail(data.user?.email||cleanEmail);
     if(!perfil){
-      perfil=await createUserProfile({nombre:data.user?.user_metadata?.nombre||cleanEmail.split("@")[0],email:cleanEmail});
+      perfil=await createUserProfile({nombre:data.user?.user_metadata?.nombre||cleanEmail.split("@")[0],email:cleanEmail,password:pass,authId:data.user?.id});
     }
     setLoading(false);
     if(!perfil){showAuthError("No se pudo cargar tu perfil");SFX.error();return;}
@@ -594,7 +613,7 @@ function Auth({onLogin,showToast}){
     if(error){setLoading(false);showAuthError(error.message||"No se pudo registrar la cuenta");SFX.error();return;}
     let perfil=await getUserProfileByEmail(cleanEmail);
     if(!perfil){
-      perfil=await createUserProfile({nombre:cleanName,email:cleanEmail});
+      perfil=await createUserProfile({nombre:cleanName,email:cleanEmail,password:pass,authId:data.user?.id});
     }
     setLoading(false);
     if(!perfil){showAuthError("Cuenta creada, pero no se pudo crear el perfil");SFX.error();return;}
