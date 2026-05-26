@@ -40,17 +40,18 @@ const dbPost  = (t,b)    => db(t,"POST",b,"");
 const dbPatch = (t,q,b)  => db(t,"PATCH",b,q);
 
 const T = {
-  // Parchment/Pirate palette
-  g900:"#2C1810",g800:"#3D2314",g700:"#5C3317",g600:"#8B4513",
-  g500:"#A0522D",g400:"#CD853F",g300:"#DEB887",g200:"#F5DEB3",
-  g150:"#D4AA6E",g100:"#DDB97A",g50:"#E8C98A",
+  // Urban studio palette: más contraste, tarjetas claras y fondo oscuro cálido
+  g900:"#150B07",g800:"#24110A",g700:"#3A1E10",g600:"#6E3518",
+  g500:"#9A4F22",g400:"#C97934",g300:"#E1A85D",g200:"#F0D39B",
+  g150:"#F6E5BE",g100:"#E6C27A",g50:"#FFF4D6",
   pink:"#C0392B",gold:"#D4AF37",orange:"#E8871A",red:"#8B0000",blue:"#1A3A5C",
-  text:"#2C1810",textSub:"#8B4513",white:"#F5E6C8",
-  gradAdmin:"linear-gradient(135deg,#2C1810,#5C3317)",
-  gradStaff:"linear-gradient(135deg,#5C3317,#8B4513)",
-  gradClient:"linear-gradient(135deg,#8B4513,#CD853F)",
-  gradGold:"linear-gradient(135deg,#D4AF37,#E8871A)",
-  gradPink:"linear-gradient(135deg,#8B0000,#C0392B)",
+  ink:"#120806",panel:"#FFF1CE",panel2:"#FFE7B0",
+  text:"#1B0D07",textSub:"#6E3518",white:"#FFF2D4",
+  gradAdmin:"linear-gradient(135deg,#130906,#3A1E10 55%,#8B4513)",
+  gradStaff:"linear-gradient(135deg,#3A1E10,#8B4513 55%,#C97934)",
+  gradClient:"linear-gradient(135deg,#5C2B13,#B86A2E 55%,#E1A85D)",
+  gradGold:"linear-gradient(135deg,#B87912,#D4AF37 55%,#FFF1A8)",
+  gradPink:"linear-gradient(135deg,#5C0F0F,#B51F1F 55%,#F06A3B)",
 };
 
 const ROLES = { ADMIN:"admin", STAFF:"staff", CLIENT:"cliente" };
@@ -84,11 +85,14 @@ function playTone(freq,type="sine",dur=0.12,vol=0.15,delay=0){
   }catch(e){}
 }
 const SFX={
-  nav:()=>{playTone(520,"sine",0.08,0.1);playTone(660,"sine",0.08,0.08,0.06);},
-  click:()=>{playTone(440,"triangle",0.07,0.12);},
-  coins:()=>{[880,1047,1319].forEach((f,i)=>playTone(f,"sine",0.12,0.15,i*0.07));},
-  success:()=>{[523,659,784,1047].forEach((f,i)=>playTone(f,"sine",0.14,0.14,i*0.08));},
-  error:()=>{playTone(220,"sawtooth",0.15,0.12);playTone(180,"sawtooth",0.12,0.1,0.1);},
+  nav:()=>{playTone(520,"sine",0.075,0.09);playTone(720,"triangle",0.08,0.08,0.055);},
+  navBack:()=>{playTone(380,"triangle",0.07,0.08);playTone(300,"sine",0.08,0.06,0.05);},
+  tab:()=>{playTone(610,"triangle",0.055,0.075);playTone(760,"sine",0.055,0.055,0.04);},
+  click:()=>{playTone(455,"triangle",0.06,0.08);playTone(540,"sine",0.045,0.045,0.035);},
+  action:()=>{playTone(620,"triangle",0.07,0.08);playTone(820,"sine",0.07,0.06,0.05);},
+  coins:()=>{[880,1047,1319,1568].forEach((f,i)=>playTone(f,"sine",0.12,0.14,i*0.06));},
+  success:()=>{[523,659,784,1047].forEach((f,i)=>playTone(f,"sine",0.13,0.12,i*0.07));},
+  error:()=>{playTone(220,"sawtooth",0.14,0.11);playTone(180,"sawtooth",0.12,0.09,0.09);},
 };
 function startMusic(){
   if(musicPlaying)return;musicPlaying=true;let beat=0;
@@ -110,10 +114,10 @@ function startMusic(){
 function stopMusic(){musicPlaying=false;if(musicInterval){clearInterval(musicInterval);musicInterval=null;}}
 
 const CSS=`
-@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Bangers&display=swap');
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#CD853F;border-radius:4px}
-body{margin:0;background-color:#C8A96E;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(101,67,33,0.03) 2px,rgba(101,67,33,0.03) 4px),repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(101,67,33,0.02) 2px,rgba(101,67,33,0.02) 4px),linear-gradient(160deg,#D4A96A 0%,#C19A5B 30%,#B8924F 60%,#C4A060 100%)}
+body{margin:0;background-color:#160B07;background-image:radial-gradient(circle at 18% 10%,rgba(212,175,55,.18),transparent 28%),radial-gradient(circle at 90% 8%,rgba(192,57,43,.15),transparent 24%),radial-gradient(circle at 50% 110%,rgba(232,135,26,.22),transparent 38%),linear-gradient(160deg,#130906 0%,#2C1810 42%,#5C3317 100%)}
 input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes popIn{from{opacity:0;transform:scale(0.82)}to{opacity:1;transform:scale(1)}}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -123,25 +127,38 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes ptsFloat{0%{opacity:0;transform:translateY(0) scale(0.7)}20%{opacity:1;transform:translateY(-10px) scale(1.1)}80%{opacity:1;transform:translateY(-40px)}100%{opacity:0;transform:translateY(-60px) scale(0.9)}}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes logoPulse{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.04)}}
+@keyframes logoPulse{0%,100%{transform:translateY(0) scale(1) rotateX(0deg)}50%{transform:translateY(-7px) scale(1.05) rotateX(6deg)}}
 @keyframes bladeGlint{0%,100%{opacity:.35;transform:translateX(-20px) rotate(-18deg)}50%{opacity:.9;transform:translateX(20px) rotate(-18deg)}}
+@keyframes cardLift{0%{transform:translateY(8px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes softPop3d{0%{transform:scale(.96) rotateX(8deg);opacity:.75}100%{transform:scale(1) rotateX(0);opacity:1}}
+@keyframes wiggle3d{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(2deg) translateY(-2px)}}
+@keyframes shineLine{0%{left:-120%;opacity:0}25%{opacity:.35}60%{opacity:.22}100%{left:120%;opacity:0}}
+@keyframes hookMove{0%,100%{transform:translate(0,0) rotate(-8deg)}50%{transform:translate(10px,-8px) rotate(18deg)}}
+@keyframes dreadSwing{0%,100%{transform:rotate(0deg)}50%{transform:rotate(5deg)}}
+@keyframes dreadSwing2{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-6deg)}}
+@keyframes eyeBlink{0%,46%,100%{transform:scaleY(1)}48%,52%{transform:scaleY(.12)}}
+@keyframes mascotFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .bp:active{transform:scale(0.94)!important}
-.ch:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,67,50,0.15)!important}
+.ch:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 14px 34px rgba(20,8,4,0.32)!important}
+.studio-panel{position:relative;overflow:hidden}
+.studio-panel:after{content:"";position:absolute;top:0;bottom:0;width:80px;left:-120%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:shineLine 5.5s ease-in-out infinite}
+.icon3d{filter:drop-shadow(0 7px 8px rgba(0,0,0,.28));text-shadow:0 4px 8px rgba(0,0,0,.25);animation:wiggle3d 3.2s ease-in-out infinite}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
   const C={green:{bg:T.gradClient,sh:"rgba(64,145,108,0.35)"},dark:{bg:T.gradAdmin,sh:"rgba(27,67,50,0.35)"},pink:{bg:T.gradPink,sh:"rgba(233,30,140,0.3)"},gold:{bg:T.gradGold,sh:"rgba(255,183,3,0.35)"},red:{bg:"linear-gradient(135deg,#E53935,#EF5350)",sh:"rgba(229,57,53,0.3)"},ghost:{bg:"transparent",sh:"none"}};
   const c=C[col]||C.green;
-  return <button onClick={disabled?undefined:onClick} className="bp" style={{background:col==="ghost"?"transparent":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"none",borderRadius:14,padding:small?"7px 14px":"11px 20px",fontWeight:800,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"none":`0 4px 14px ${c.sh}`,transition:"all 0.18s ease",...sx}}>{children}</button>;
+  return <button onClick={disabled?undefined:(e)=>{col==="ghost"?SFX.click():SFX.action();onClick?.(e);}} className="bp" style={{background:col==="ghost"?"rgba(255,244,214,.72)":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"1px solid rgba(255,255,255,.22)",borderRadius:16,padding:small?"8px 14px":"12px 20px",fontWeight:900,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"0 6px 16px rgba(20,8,4,.12)":`0 8px 22px ${c.sh}`,transition:"all 0.18s ease",letterSpacing:".2px",...sx}}>{children}</button>;
 }
 function Card({children,style:sx={},onClick,hover=false}){
-  return <div onClick={onClick} className={hover?"ch":""} style={{background:"#F5E6C8",borderRadius:18,padding:"16px",boxShadow:"0 4px 16px rgba(101,67,33,0.25)",border:`2px solid ${T.g400}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",...sx}}>{children}</div>;
+  return <div onClick={onClick?(e)=>{SFX.click();onClick(e);}:undefined} className={`${hover?"ch":""} studio-panel`} style={{background:"linear-gradient(180deg,#FFF4D6 0%,#F6E5BE 100%)",borderRadius:20,padding:"16px",boxShadow:"0 12px 30px rgba(20,8,4,0.22), inset 0 1px 0 rgba(255,255,255,.55)",border:`2px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",animation:"cardLift .35s ease",...sx}}>{children}</div>;
 }
 function Input({label,value,onChange,type="text",placeholder="",style:sx={}}){
-  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.88rem",color:T.text,outline:"none",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
+  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:"#FFF8E5",fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
 }
 function Select({label,value,onChange,options=[]}){
-  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<select value={value} onChange={e=>onChange(e.target.value)} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.88rem",color:T.text,outline:"none"}}>{options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>;
+  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<select value={value} onChange={e=>onChange(e.target.value)} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:"#FFF8E5",fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}>{options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>;
 }
 function Badge({children,col="green"}){
   const C={green:{bg:T.g150,c:T.g700},pink:{bg:"#FCE4EC",c:T.pink},gold:{bg:"#FFF8E1",c:"#E65100"},red:{bg:"#FFEBEE",c:T.red},blue:{bg:"#E3F2FD",c:T.blue}};
@@ -161,9 +178,35 @@ function StatCard({icon,label,value,col="green"}){
   return <Card style={{background:c.bg,border:"none",padding:"14px 16px"}} hover><div style={{fontSize:"1.5rem",marginBottom:4}}>{icon}</div><div style={{fontSize:"0.72rem",fontWeight:700,color:T.textSub,marginBottom:2}}>{label}</div><div style={{fontWeight:900,fontSize:"1.4rem",color:c.ac}}>{value}</div></Card>;
 }
 const AVATARS=["🧑","👩","👨","👱","👴","👵","🧔","👩‍🦱","👨‍🦱","👩‍🦰","👨‍🦰","👩‍🦳"];
+const AVATAR_STYLES=[
+  {emoji:"🧑🏽‍🎤",name:"Rasta Neo",tag:"dreads doradas",bg:"linear-gradient(145deg,#3A1E10,#D4AF37)"},
+  {emoji:"👩🏽‍🎤",name:"Punk Queen",tag:"undercut rebelde",bg:"linear-gradient(145deg,#5C0F0F,#F06A3B)"},
+  {emoji:"🧔🏽‍♂️",name:"Barber Boss",tag:"barba pro",bg:"linear-gradient(145deg,#130906,#8B4513)"},
+  {emoji:"👨🏽‍🦱",name:"Afro Pop",tag:"volumen 3D",bg:"linear-gradient(145deg,#1A3A5C,#E1A85D)"},
+  {emoji:"👩🏽‍🦱",name:"Curl Star",tag:"rizos anime",bg:"linear-gradient(145deg,#6E3518,#FFF1A8)"},
+  {emoji:"🧑🏼‍🎨",name:"Color Splash",tag:"mechas fantasía",bg:"linear-gradient(145deg,#C0392B,#D4AF37)"},
+  {emoji:"🧑🏾‍🦱",name:"Dread Master",tag:"rastas largas",bg:"linear-gradient(145deg,#24110A,#9A4F22)"},
+  {emoji:"👱🏽‍♀️",name:"Blonde Blade",tag:"bob luminoso",bg:"linear-gradient(145deg,#D4AF37,#FFF4D6)"},
+  {emoji:"🧑🏻‍🎤",name:"Cyber Punk",tag:"neón urbano",bg:"linear-gradient(145deg,#150B07,#C0392B)"},
+  {emoji:"👩🏾‍🦳",name:"Silver Flow",tag:"plata premium",bg:"linear-gradient(145deg,#6E3518,#EDE1C8)"},
+  {emoji:"🧑🏽",name:"Fresh Cut",tag:"degradado limpio",bg:"linear-gradient(145deg,#3A1E10,#C97934)"},
+  {emoji:"👨🏾‍🎤",name:"Rock Fade",tag:"crestón punk",bg:"linear-gradient(145deg,#8B0000,#2C1810)"},
+];
 function Av({av=0,size=36}){
-  const idx=typeof av==="number"?av:0;
-  return <div style={{width:size,height:size,borderRadius:"50%",background:T.g150,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.55,border:`2px solid ${T.g300}`}}>{AVATARS[idx%AVATARS.length]}</div>;
+  const idx=Number.isFinite(Number(av))?Number(av):0;
+  const a=AVATAR_STYLES[idx%AVATAR_STYLES.length];
+  return <div title={a.name} style={{width:size,height:size,borderRadius:"50%",background:a.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.56,border:`2px solid rgba(255,244,214,.9)`,boxShadow:"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)",position:"relative",overflow:"hidden"}}>
+    <span style={{filter:"drop-shadow(0 4px 5px rgba(0,0,0,.35))",transform:"translateY(1px)"}}>{a.emoji}</span>
+    <span style={{position:"absolute",inset:2,borderRadius:"50%",border:"1px solid rgba(255,255,255,.25)"}}/>
+  </div>;
+}
+function CharacterCard({idx,selected,onPick,compact=false}){
+  const a=AVATAR_STYLES[idx%AVATAR_STYLES.length];
+  return <button type="button" onClick={()=>{SFX.tab();onPick(idx);}} style={{background:selected?"linear-gradient(180deg,#FFF4D6,#F6E5BE)":"rgba(255,244,214,.72)",border:`2px solid ${selected?T.gold:T.g200}`,borderRadius:18,padding:compact?8:10,cursor:"pointer",boxShadow:selected?"0 10px 24px rgba(212,175,55,.3)":"0 6px 16px rgba(20,8,4,.12)",textAlign:"center",transition:"all .18s ease"}}>
+    <div style={{display:"flex",justifyContent:"center",marginBottom:6}}><Av av={idx} size={compact?42:54}/></div>
+    <div style={{fontWeight:900,fontSize:compact?".7rem":".78rem",color:T.g800,lineHeight:1.05}}>{a.name}</div>
+    {!compact&&<div style={{fontSize:".66rem",fontWeight:800,color:T.textSub,marginTop:2}}>{a.tag}</div>}
+  </button>;
 }
 function Toast({msg,show}){if(!show)return null;return <div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",background:T.g800,color:T.white,padding:"12px 22px",borderRadius:50,fontWeight:700,fontSize:"0.88rem",zIndex:9999,whiteSpace:"nowrap",boxShadow:"0 6px 24px rgba(27,67,50,0.35)",animation:"toastIn 0.3s ease"}}>{msg}</div>;}
 function PtsPopup({pts,show}){if(!show||!pts)return null;return <div style={{position:"fixed",top:"35%",left:"50%",transform:"translateX(-50%)",zIndex:9999,animation:"ptsFloat 1.8s ease forwards",pointerEvents:"none"}}><div style={{background:T.gradGold,color:T.white,borderRadius:50,padding:"10px 24px",fontWeight:900,fontSize:"1.4rem",boxShadow:"0 6px 24px rgba(255,183,3,0.5)"}}>+{pts} pts</div></div>;}
@@ -179,6 +222,51 @@ function BrandLogo(){
       {[0,1,2,3,4].map(i=><span key={i} style={{position:"absolute",left:24+i*9,top:16,width:4,height:50,borderRadius:8,background:"linear-gradient(180deg,#F5E6C8,#8B4513)",transform:`rotate(${i%2===0?-12:12}deg)`,boxShadow:"0 2px 6px rgba(0,0,0,0.25)"}}/>)}
       <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:"2.3rem",filter:"drop-shadow(0 3px 3px rgba(0,0,0,0.45))"}}>✂️</div>
       <div style={{position:"absolute",left:18,right:18,bottom:15,height:2,background:"rgba(245,230,200,0.8)",animation:"bladeGlint 2.6s ease infinite"}}/>
+    </div>
+  );
+}
+
+
+function HeroMascot(){
+  return (
+    <div style={{width:"100%",maxWidth:360,margin:"0 auto 10px",position:"relative",animation:"mascotFloat 3.2s ease-in-out infinite"}}>
+      <div style={{position:"absolute",inset:"8% 6% auto 6%",height:210,background:"radial-gradient(circle at 50% 10%, rgba(255,255,255,.18), transparent 38%), linear-gradient(180deg, rgba(255,208,120,.15), rgba(255,255,255,0))",filter:"blur(16px)",zIndex:0}}/>
+      <svg viewBox="0 0 360 250" style={{width:"100%",height:"auto",display:"block",filter:"drop-shadow(0 18px 24px rgba(0,0,0,.28))",position:"relative",zIndex:1}}>
+        <ellipse cx="180" cy="222" rx="118" ry="16" fill="rgba(0,0,0,.25)" />
+        <g>
+          <path d="M88 78 C58 78, 46 110, 66 136 C86 161, 94 188, 110 207" fill="none" stroke="#342111" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing 2.6s ease-in-out infinite", transformOrigin:"110px 86px"}}/>
+          <path d="M112 52 C79 56, 67 88, 84 116 C97 137, 111 161, 123 188" fill="none" stroke="#4C2E17" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing2 2.8s ease-in-out infinite", transformOrigin:"120px 62px"}}/>
+          <path d="M242 52 C280 56, 292 88, 276 116 C262 137, 252 161, 236 188" fill="none" stroke="#4C2E17" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing 2.5s ease-in-out infinite", transformOrigin:"240px 62px"}}/>
+          <path d="M268 78 C300 78, 314 110, 293 136 C273 161, 266 188, 250 207" fill="none" stroke="#342111" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing2 2.7s ease-in-out infinite", transformOrigin:"252px 86px"}}/>
+          <path d="M148 40 C132 52, 125 67, 124 93" fill="none" stroke="#51321A" strokeWidth="16" strokeLinecap="round" style={{animation:"dreadSwing 2.4s ease-in-out infinite", transformOrigin:"140px 45px"}}/>
+          <path d="M212 40 C228 52, 235 67, 236 93" fill="none" stroke="#51321A" strokeWidth="16" strokeLinecap="round" style={{animation:"dreadSwing2 2.4s ease-in-out infinite", transformOrigin:"220px 45px"}}/>
+        </g>
+        <ellipse cx="180" cy="112" rx="74" ry="82" fill="#F0B37E" />
+        <path d="M106 105 C114 52, 144 28, 180 27 C218 27, 248 53, 255 104 C244 89, 225 78, 181 78 C137 78, 116 89, 106 105Z" fill="#20130B" />
+        <ellipse cx="150" cy="118" rx="22" ry="24" fill="#FFF" />
+        <ellipse cx="210" cy="118" rx="22" ry="24" fill="#FFF" />
+        <g style={{transformOrigin:"150px 118px", animation:"eyeBlink 4.8s ease-in-out infinite"}}>
+          <ellipse cx="150" cy="118" rx="13" ry="15" fill="#1A120C" />
+          <ellipse cx="146" cy="114" rx="4" ry="4.5" fill="#fff" />
+        </g>
+        <g style={{transformOrigin:"210px 118px", animation:"eyeBlink 5s ease-in-out infinite"}}>
+          <ellipse cx="210" cy="118" rx="13" ry="15" fill="#1A120C" />
+          <ellipse cx="206" cy="114" rx="4" ry="4.5" fill="#fff" />
+        </g>
+        <path d="M166 135 Q180 148 194 135" fill="none" stroke="#A55A45" strokeWidth="4" strokeLinecap="round" />
+        <path d="M148 164 C164 178, 196 178, 214 164" fill="none" stroke="#8B2F1C" strokeWidth="7" strokeLinecap="round" />
+        <path d="M157 168 C171 180, 191 180, 205 168" fill="#FFF2F2" opacity=".5" />
+        <path d="M173 131 C176 141, 176 148, 171 153" fill="none" stroke="#D28F65" strokeWidth="4" strokeLinecap="round" />
+        <ellipse cx="130" cy="138" rx="10" ry="7" fill="#E69C7F" opacity=".65" />
+        <ellipse cx="230" cy="138" rx="10" ry="7" fill="#E69C7F" opacity=".65" />
+        <g style={{animation:"hookMove 1.7s ease-in-out infinite", transformOrigin:"250px 130px"}}>
+          <path d="M255 148 C236 124, 214 114, 192 109" fill="none" stroke="#E2D6C2" strokeWidth="5" strokeLinecap="round" />
+          <path d="M255 148 q10 0 10 -10 q0 -8 -8 -8" fill="none" stroke="#E2D6C2" strokeWidth="5" strokeLinecap="round" />
+          <path d="M250 142 C236 126, 220 120, 206 116" fill="none" stroke="#7E4A28" strokeWidth="3" strokeLinecap="round" opacity=".55" />
+        </g>
+        <path d="M127 205 C146 193, 214 193, 233 205" fill="none" stroke="#FFD26B" strokeWidth="11" strokeLinecap="round" />
+        <path d="M118 213 C146 231, 215 231, 242 213" fill="#3A2016" />
+      </svg>
     </div>
   );
 }
@@ -273,14 +361,18 @@ function Auth({onLogin,showToast}){
     <div style={{minHeight:"100vh",background:`linear-gradient(160deg,${T.g900} 0%,${T.g700} 50%,${T.g600} 100%)`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
       <style>{CSS}</style>
       <Particles/>
-      <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:400}}>
-        <div style={{textAlign:"center",marginBottom:32}}>
-          <BrandLogo/>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.55rem",letterSpacing:"1px",color:T.white,textShadow:"0 4px 12px rgba(0,0,0,0.35)"}}>{BRAND.name}</div>
-          <div style={{color:T.g200,fontSize:"0.92rem",marginTop:5,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.8px"}}>{BRAND.tagline}</div>
-          <div style={{color:"rgba(245,230,200,0.78)",fontSize:"0.78rem",marginTop:4,fontWeight:600}}>{BRAND.subtagline}</div>
+      <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:460}}>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <HeroMascot/>
+          <div style={{fontFamily:"'Rubik Wet Paint','Bangers',cursive",fontSize:"3.35rem",lineHeight:.92,letterSpacing:"2px",color:"#FFD66B",textShadow:"0 4px 0 #4A1F0A, 0 10px 18px rgba(0,0,0,0.48)",transform:"rotate(-1deg)"}}>{BRAND.name}</div>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:10,padding:"7px 14px",background:"rgba(255,244,214,.1)",border:"1px solid rgba(255,214,107,.28)",borderRadius:999,backdropFilter:"blur(6px)"}}>
+            <span className="icon3d" style={{fontSize:"1.05rem"}}>🪮</span>
+            <span style={{color:T.g150,fontSize:"0.84rem",fontWeight:900,textTransform:"uppercase",letterSpacing:"1px"}}>{BRAND.tagline}</span>
+            <span className="icon3d" style={{fontSize:"1.05rem"}}>✂️</span>
+          </div>
+          <div style={{color:"rgba(245,230,200,0.88)",fontSize:"0.82rem",marginTop:7,fontWeight:700,maxWidth:320,marginInline:"auto"}}>{BRAND.subtagline}. Vibra de estudio urbano, look anime y rastas con estilo.</div>
         </div>
-        <Card style={{padding:"28px 24px",animation:"popIn 0.4s ease",background:"#F5E6C8",border:"2px solid #8B4513"}}>
+        <Card style={{padding:"28px 24px",animation:"softPop3d 0.42s ease",background:"linear-gradient(180deg,#FFF4D6 0%,#F7E0AE 100%)",border:"2px solid #C97934",boxShadow:"0 18px 40px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.75)"}}>
           <div style={{display:"flex",background:T.g100,borderRadius:12,padding:4,marginBottom:22}}>
             {["login","register"].map(m=>(
               <button key={m} onClick={()=>{setMode(m);setFormError("");}} style={{flex:1,padding:"8px",borderRadius:10,border:"none",background:mode===m?T.white:"transparent",color:mode===m?T.g800:T.textSub,fontWeight:800,fontSize:"0.85rem",cursor:"pointer",transition:"all 0.2s"}}>
@@ -358,7 +450,7 @@ function DashboardAdmin({user}){
 }
 
 // DASHBOARD CLIENTE
-function ClientDashboard({user}){
+function ClientDashboard({user,onNavigate}){
   const [proxCita,setProxCita]=useState(null);
   const [noticias,setNoticias]=useState([]);
   useEffect(()=>{
@@ -375,7 +467,7 @@ function ClientDashboard({user}){
   const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Gold":user.puntos>=200?"Silver":"Bronze";
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <Card style={{background:T.gradClient,border:"none",marginBottom:16,padding:"20px"}}>
+      <Card style={{background:"linear-gradient(135deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.4)",marginBottom:16,padding:"20px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div>
             <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.8rem",fontWeight:700}}>Hola de nuevo!</div>
@@ -401,10 +493,10 @@ function ClientDashboard({user}){
         </Card>
       )}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:18}}>
-        {[["📅","Cita"],["🛍️","Tienda"],["🎮","Jugar"]].map(([icon,lbl])=>(
-          <Card key={lbl} style={{textAlign:"center",padding:"14px 8px",background:T.g50}} hover>
-            <div style={{fontSize:"1.6rem"}}>{icon}</div>
-            <div style={{fontSize:"0.72rem",fontWeight:800,color:T.g700,marginTop:4}}>{lbl}</div>
+        {[["📅","Cita","citas"],["🛍️","Tienda","tienda"],["🎮","Jugar","juegos"]].map(([icon,lbl,id])=>(
+          <Card key={lbl} onClick={()=>onNavigate?.(id)} style={{textAlign:"center",padding:"14px 8px",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",minHeight:92}} hover>
+            <div className="icon3d" style={{fontSize:"2rem"}}>{icon}</div>
+            <div style={{fontSize:"0.75rem",fontWeight:900,color:T.g700,marginTop:6}}>{lbl}</div>
           </Card>
         ))}
       </div>
@@ -781,6 +873,24 @@ function Cupones({user,showToast}){
 const TODAY_KEY=()=>new Date().toISOString().split("T")[0];
 function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${uid}_${TODAY_KEY()}`)==="1";}
 function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
+function weekKey(){
+  const d=new Date();
+  const first=new Date(d.getFullYear(),0,1);
+  const week=Math.ceil((((d-first)/86400000)+first.getDay()+1)/7);
+  return `${d.getFullYear()}-W${String(week).padStart(2,"0")}`;
+}
+function saveLocalGameScore(gameId,user,score){
+  try{
+    const key=`leader_${gameId}_${weekKey()}`;
+    const list=JSON.parse(localStorage.getItem(key)||"[]");
+    const entry={user_id:user.id,nombre:user.nombre||"Jugador",avatar:user.avatar||0,score:Number(score)||0,created_at:new Date().toISOString()};
+    const next=[entry,...list].sort((a,b)=>b.score-a.score).slice(0,10);
+    localStorage.setItem(key,JSON.stringify(next));
+  }catch{}
+}
+function getLocalGameLeaderboard(gameId){
+  try{return JSON.parse(localStorage.getItem(`leader_${gameId}_${weekKey()}`)||"[]");}catch{return [];}
+}
 
 const SOPA_WORDS=["TIJERA","COLOR","BRILLO","CORTE","MECHAS","RIZOS","SECADOR"];
 function generateGrid(words){
@@ -953,42 +1063,63 @@ function TriviaGame({onWin}){
 
 function Juegos({user,setUser,showToast,showPoints}){
   const [activeGame,setActiveGame]=useState(null);
-  const GAMES=[{id:"sopa",icon:"🔤",title:"Sopa de Letras",desc:"Encuentra las palabras ocultas",pts:25},{id:"memoria",icon:"🧠",title:"Memoria",desc:"Encuentra todos los pares",pts:20},{id:"trivia",icon:"?",title:"Trivia Capilar",desc:"Demuestra tu conocimiento",pts:15}];
+  const [boardGame,setBoardGame]=useState("sopa");
+  const [boardTick,setBoardTick]=useState(0);
+  const GAMES=[
+    {id:"sopa",icon:"🔤",title:"Sopa 3D",desc:"Palabras ocultas",pts:25},
+    {id:"memoria",icon:"🧠",title:"Memoria Pro",desc:"Parejas rápidas",pts:20},
+    {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:15}
+  ];
   async function handleWin(gameId,pts){
     markPlayedToday(gameId,user.id);
+    saveLocalGameScore(gameId,user,pts);
+    dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,game_id:gameId,score:pts,week:weekKey()});
     const nuevos=(user.puntos||0)+pts;
     await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser(u=>({...u,puntos:nuevos}));showPoints(pts);SFX.coins();showToast(`+${pts} puntos!`);setActiveGame(null);
+    setUser(u=>({...u,puntos:nuevos}));setBoardTick(t=>t+1);showPoints(pts);SFX.coins();showToast(`+${pts} puntos!`);setActiveGame(null);
   }
   if(activeGame){
     const g=GAMES.find(x=>x.id===activeGame);
     return(
       <div style={{animation:"fadeSlide 0.4s ease"}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
-          <button onClick={()=>setActiveGame(null)} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,cursor:"pointer",fontWeight:900,fontSize:"1rem",color:T.g700}}>{"<"}</button>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.2rem",color:T.g800}}>{g?.icon} {g?.title}</div>
+          <button onClick={()=>{SFX.navBack();setActiveGame(null);}} style={{background:T.g150,border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",fontWeight:900,fontSize:"1rem",color:T.g700,boxShadow:"0 8px 18px rgba(20,8,4,.2)"}}>{"<"}</button>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}><span className="icon3d">{g?.icon}</span> {g?.title}</div>
         </div>
-        {activeGame==="sopa"&&<SopaLetras onWin={pts=>handleWin("sopa",pts)}/>}
-        {activeGame==="memoria"&&<MemoryGame onWin={pts=>handleWin("memoria",pts)}/>}
-        {activeGame==="trivia"&&<TriviaGame onWin={pts=>handleWin("trivia",pts)}/>}
+        {activeGame==="sopa"&&<SopaLetras onWin={pts=>handleWin("sopa",pts)}/>} 
+        {activeGame==="memoria"&&<MemoryGame onWin={pts=>handleWin("memoria",pts)}/>} 
+        {activeGame==="trivia"&&<TriviaGame onWin={pts=>handleWin("trivia",pts)}/>} 
       </div>
     );
   }
+  const lb=getLocalGameLeaderboard(boardGame);
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🎮" title="Juegos" sub="Gana puntos - 1 vez al dia por juego"/>
-      {GAMES.map(g=>{
-        const played=getPlayedToday(g.id,user.id);
-        return(
-          <Card key={g.id} style={{marginBottom:12,opacity:played?0.65:1}}>
-            <div style={{display:"flex",alignItems:"center",gap:14}}>
-              <div style={{fontSize:"2.2rem"}}>{g.icon}</div>
-              <div style={{flex:1}}><div style={{fontWeight:800}}>{g.title}</div><div style={{fontSize:"0.8rem",color:T.textSub}}>{g.desc}</div><div style={{fontSize:"0.75rem",color:T.orange,fontWeight:700,marginTop:2}}>Hasta +{g.pts} pts</div></div>
-              {played?<Badge col="green">Jugado hoy</Badge>:<Btn small onClick={()=>setActiveGame(g.id)}>Jugar</Btn>}
-            </div>
-          </Card>
-        );
-      })}
+      <SectionHeader icon="🎮" title="Arcade" sub="Juega, sube ranking y gana puntos"/>
+      <div style={{display:"grid",gridTemplateColumns:"1fr",gap:12,marginBottom:16}}>
+        {GAMES.map(g=>{
+          const played=getPlayedToday(g.id,user.id);
+          return(
+            <Card key={g.id} style={{opacity:played?0.68:1,background:played?"linear-gradient(180deg,#EBD8A8,#D7B777)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)",border:played?`1px solid ${T.g300}`:`2px solid ${T.gold}`}} hover>
+              <div style={{display:"flex",alignItems:"center",gap:14}}>
+                <div className="icon3d" style={{fontSize:"2.55rem"}}>{g.icon}</div>
+                <div style={{flex:1}}><div style={{fontWeight:900,fontSize:"1rem"}}>{g.title}</div><div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800}}>{g.desc}</div><div style={{fontSize:"0.75rem",color:T.orange,fontWeight:900,marginTop:2}}>🏅 Hasta +{g.pts} pts</div></div>
+                {played?<Badge col="green">✅ Hoy</Badge>:<Btn small col="gold" onClick={()=>setActiveGame(g.id)}>▶ Jugar</Btn>}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+      <Card style={{background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
+          <div><div style={{fontWeight:900}}>🏆 Top 10 semanal</div><div style={{fontSize:".72rem",opacity:.75,fontWeight:700}}>Ranking local de esta semana</div></div>
+          <div style={{fontWeight:900,color:T.gold}}>{weekKey()}</div>
+        </div>
+        <div style={{display:"flex",gap:6,marginBottom:12}}>
+          {GAMES.map(g=><button key={g.id} onClick={()=>{SFX.tab();setBoardGame(g.id);}} style={{flex:1,border:"none",borderRadius:12,padding:"8px 4px",background:boardGame===g.id?T.gradGold:"rgba(255,244,214,.18)",color:boardGame===g.id?T.g900:T.white,fontWeight:900,cursor:"pointer"}}>{g.icon}</button>)}
+        </div>
+        {lb.length===0?<div style={{fontSize:".82rem",fontWeight:800,opacity:.8,textAlign:"center",padding:"10px"}}>Sé el primero en marcar puntuación esta semana ✨</div>:lb.map((r,i)=><div key={`${r.user_id}-${i}-${boardTick}`} style={{display:"flex",alignItems:"center",gap:9,padding:"7px 0",borderBottom:i<lb.length-1?"1px solid rgba(255,244,214,.18)":"none"}}><div style={{width:28,fontWeight:900}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div><Av av={r.avatar} size={32}/><div style={{flex:1,fontWeight:900}}>{r.nombre}</div><div style={{color:T.gold,fontWeight:900}}>{r.score} pts</div></div>)}
+      </Card>
     </div>
   );
 }
@@ -1047,22 +1178,43 @@ function Retos({user,setUser,showToast,showPoints}){
 
 // RANKING
 function Ranking({user}){
-  const [lista,setLista]=useState([]);const [loading,setLoading]=useState(true);
+  const [lista,setLista]=useState([]);const [loading,setLoading]=useState(true);const [tab,setTab]=useState("global");
   useEffect(()=>{load();},[]);
-  async function load(){setLoading(true);setLista(await dbGet("usuarios","?role=eq.cliente&order=puntos.desc&limit=20&select=*")||[]);setLoading(false);}
-  const medals=["1","2","3"];
+  async function load(){
+    setLoading(true);
+    const data=await dbGet("usuarios","?or=(role.eq.cliente,role.eq.client,role.is.null)&order=puntos.desc&limit=50&select=*");
+    setLista(Array.isArray(data)?data:[]);setLoading(false);
+  }
+  function score(u){
+    if(tab==="semana") return Number(u.puntos_semana||u.weekly_points||u.puntos_week||0);
+    if(tab==="compras") return Number(u.puntos_compras||u.purchase_points||u.compras_puntos||0);
+    return Number(u.puntos||0);
+  }
+  const cfg={
+    global:{icon:"🏆",title:"Top general",sub:"Puntos acumulados"},
+    semana:{icon:"⚡",title:"Top semana",sub:"Se reinicia semanalmente si guardas puntos_semana"},
+    compras:{icon:"🛒",title:"Top compras",sub:"Puntos generados por compras"},
+  };
+  const ranked=[...lista].map(u=>({...u,score:score(u)})).sort((a,b)=>b.score-a.score).slice(0,10);
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🏆" title="Ranking" sub="Top clientes del mes"/>
-      {loading?<Spinner/>:lista.map((u,i)=>{
+      <SectionHeader icon="🏆" title="Rankings" sub="Top 10 estilo liga"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
+        {Object.entries(cfg).map(([id,c])=><button key={id} onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g200}`,background:tab===id?T.gradGold:"rgba(255,244,214,.82)",color:tab===id?T.g900:T.g700,borderRadius:16,padding:"9px 6px",fontWeight:900,cursor:"pointer",boxShadow:tab===id?"0 8px 20px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.12)"}}><div className="icon3d" style={{fontSize:"1.35rem"}}>{c.icon}</div><div style={{fontSize:".68rem"}}>{c.title}</div></button>)}
+      </div>
+      <Card style={{marginBottom:12,background:"linear-gradient(135deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}><div className="icon3d" style={{fontSize:"2.1rem"}}>{cfg[tab].icon}</div><div><div style={{fontWeight:900}}>{cfg[tab].title}</div><div style={{fontSize:".75rem",opacity:.78,fontWeight:700}}>{cfg[tab].sub}</div></div></div>
+      </Card>
+      {loading?<Spinner/>:ranked.length===0?<EmptyState icon="🏆" title="Sin datos" sub="Todavía no hay puntuaciones"/>:ranked.map((u,i)=>{
         const isMe=u.id===user.id;
+        const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`;
         return(
-          <Card key={u.id} style={{marginBottom:8,background:isMe?T.g100:T.white,border:isMe?`2px solid ${T.g400}`:`1px solid ${T.g150}`}}>
+          <Card key={u.id} style={{marginBottom:8,background:isMe?"linear-gradient(180deg,#FFF1A8,#F6E5BE)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:isMe?`2px solid ${T.gold}`:`1px solid ${T.g300}`}} hover>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",minWidth:32,textAlign:"center"}}>#{i+1}</div>
-              <Av av={u.avatar} size={38}/>
-              <div style={{flex:1}}><div style={{fontWeight:800}}>{u.nombre}{isMe?" (tu)":""}</div></div>
-              <div style={{fontWeight:900,color:T.orange}}>{u.puntos||0} pts</div>
+              <div className="icon3d" style={{fontSize:i<3?"1.7rem":"1.1rem",minWidth:38,textAlign:"center",fontWeight:900}}>{medal}</div>
+              <Av av={u.avatar} size={42}/>
+              <div style={{flex:1}}><div style={{fontWeight:900}}>{u.nombre||"Cliente"}{isMe?" · tú":""}</div><div style={{fontSize:".72rem",color:T.textSub,fontWeight:800}}>{AVATAR_STYLES[(u.avatar||0)%AVATAR_STYLES.length]?.name}</div></div>
+              <div style={{fontWeight:900,color:T.orange,fontSize:"1.02rem"}}>{u.score||0} pts</div>
             </div>
           </Card>
         );
@@ -1182,33 +1334,41 @@ function Perfil({user,setUser,onLogout,showToast}){
   const [form,setForm]=useState({nombre:user.nombre,avatar:user.avatar||0});
   async function save(){
     await dbPatch("usuarios",`?id=eq.${user.id}`,{nombre:form.nombre,avatar:form.avatar});
-    setUser(u=>({...u,...form}));setEditing(false);showToast("Perfil actualizado");
+    setUser(u=>({...u,...form}));setEditing(false);SFX.success();showToast("Perfil actualizado");
   }
   const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Gold":user.puntos>=200?"Silver":"Bronze";
+  const currentAvatar=AVATAR_STYLES[(form.avatar||0)%AVATAR_STYLES.length];
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="👤" title="Mi Perfil"/>
-      <Card style={{textAlign:"center",marginBottom:16}}>
-        <Av av={form.avatar} size={72}/>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800,marginTop:10}}>{user.nombre}</div>
-        <div style={{fontSize:"0.82rem",color:T.textSub}}>{user.email}</div>
-        <div style={{marginTop:8}}><Badge col="gold">{nivel}</Badge></div>
-        {user.rol===ROLES.CLIENT&&<div style={{marginTop:12}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.g700}}>{user.puntos||0} pts</div></div>}
+      <SectionHeader icon="🧬" title="Mi Personaje" sub="Crea tu estilo de cliente"/>
+      <Card style={{textAlign:"center",marginBottom:16,background:"linear-gradient(160deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.72)",color:T.white,padding:"22px 16px"}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:10}}><Av av={form.avatar} size={92}/></div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{user.nombre}</div>
+        <div style={{fontSize:"0.8rem",color:"rgba(255,244,214,.82)",fontWeight:800}}>{user.email}</div>
+        <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10,flexWrap:"wrap"}}>
+          <Badge col="gold">{nivel}</Badge>
+          <Badge col="green">{currentAvatar?.tag}</Badge>
+        </div>
+        {user.rol===ROLES.CLIENT&&<div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,244,214,.16)",border:"1px solid rgba(255,244,214,.35)",borderRadius:16,padding:"8px 14px"}}><span style={{fontSize:"1.4rem"}}>💎</span><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.white}}>{user.puntos||0} pts</div></div>}
       </Card>
       {editing?(
         <Card style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
+            <div><div style={{fontWeight:900,color:T.g800}}>Creador de personaje</div><div style={{fontSize:".78rem",color:T.textSub,fontWeight:700}}>Elige estilo, avatar y nombre</div></div>
+            <div className="icon3d" style={{fontSize:"2rem"}}>🎮</div>
+          </div>
           <Input label="Nombre" value={form.nombre} onChange={v=>setForm(f=>({...f,nombre:v}))}/>
           <div style={{marginBottom:14}}>
-            <div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:8}}>Elige tu avatar</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>{AVATARS.map((a,i)=><button key={i} onClick={()=>setForm(f=>({...f,avatar:i}))} style={{width:44,height:44,borderRadius:"50%",border:`2px solid ${form.avatar===i?T.g600:T.g200}`,background:form.avatar===i?T.g150:T.white,fontSize:"1.3rem",cursor:"pointer"}}>{a}</button>)}</div>
+            <div style={{fontSize:"0.8rem",fontWeight:900,color:T.g700,marginBottom:10}}>Estilos disponibles</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>{AVATAR_STYLES.map((a,i)=><CharacterCard key={i} idx={i} selected={Number(form.avatar)===i} onPick={(idx)=>setForm(f=>({...f,avatar:idx}))}/>)}</div>
           </div>
           <div style={{display:"flex",gap:8}}>
-            <Btn full onClick={save}>Guardar</Btn>
+            <Btn full onClick={save}>💾 Guardar</Btn>
             <Btn full col="ghost" onClick={()=>setEditing(false)}>Cancelar</Btn>
           </div>
         </Card>
-      ):<Btn full col="ghost" onClick={()=>setEditing(true)} style={{marginBottom:12}}>Editar perfil</Btn>}
-      <Btn full col="red" onClick={onLogout}>Cerrar sesion</Btn>
+      ):<Btn full col="gold" onClick={()=>setEditing(true)} style={{marginBottom:12}}>🎨 Editar personaje</Btn>}
+      <Btn full col="red" onClick={onLogout}>🚪 Cerrar sesión</Btn>
     </div>
   );
 }
@@ -1248,7 +1408,7 @@ export default function App(){
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
   function toggleMusic(){globalMuted=!globalMuted;if(globalMuted){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}
-  const navTo=id=>{SFX.nav();setPage(id);};
+  const navTo=id=>{id===page?SFX.tab():(id==="dashboard"?SFX.navBack():SFX.nav());setPage(id);};
   const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");};
 
   if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/></div>;
@@ -1268,7 +1428,7 @@ export default function App(){
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
   const pages={
-    dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser}/>:<DashboardAdmin user={currentUser}/>,
+    dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<DashboardAdmin user={currentUser}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,
     tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp}/>,retos:<Retos {...sp}/>,
@@ -1279,17 +1439,17 @@ export default function App(){
   };
 
   return(
-    <div style={{fontFamily:"'Crimson Text',serif",background:T.g100,minHeight:"100vh",maxWidth:480,margin:"0 auto",paddingBottom:82,position:"relative"}}>
+    <div style={{fontFamily:"'Crimson Text',serif",background:"linear-gradient(180deg,rgba(255,244,214,.09),rgba(255,244,214,.03)),linear-gradient(160deg,#2C1810,#5C3317)",minHeight:"100vh",maxWidth:480,margin:"0 auto",paddingBottom:82,position:"relative",boxShadow:"0 0 0 1px rgba(255,244,214,.12),0 0 70px rgba(0,0,0,.45)"}}>
       <style>{CSS}</style>
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
       <div style={{background:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:"0 4px 20px rgba(27,67,50,0.25)"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white}}>{BRAND.name}</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>✂️ {BRAND.name}</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button onClick={toggleMusic} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"Silenciar":"Sonido"}</button>
+          <button onClick={toggleMusic} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
           <div onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
             <Av av={currentUser.avatar} size={32}/>
