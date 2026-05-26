@@ -138,6 +138,8 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes dreadSwing2{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-6deg)}}
 @keyframes eyeBlink{0%,46%,100%{transform:scaleY(1)}48%,52%{transform:scaleY(.12)}}
 @keyframes mascotFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes bubblePop{0%{transform:scale(.9) translateY(8px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes helperBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 .bp:active{transform:scale(0.94)!important}
 .ch:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 14px 34px rgba(20,8,4,0.32)!important}
 .studio-panel{position:relative;overflow:hidden}
@@ -242,7 +244,7 @@ function HeroMascot(){
           <path d="M212 40 C228 52, 235 67, 236 93" fill="none" stroke="#51321A" strokeWidth="16" strokeLinecap="round" style={{animation:"dreadSwing2 2.4s ease-in-out infinite", transformOrigin:"220px 45px"}}/>
         </g>
         <ellipse cx="180" cy="112" rx="74" ry="82" fill="#F0B37E" />
-        <path d="M106 105 C114 52, 144 28, 180 27 C218 27, 248 53, 255 104 C244 89, 225 78, 181 78 C137 78, 116 89, 106 105Z" fill="#20130B" />
+        <path d="M110 106 C118 72, 140 52, 180 52 C220 52, 242 71, 250 106 C238 92, 220 84, 180 84 C140 84, 121 92, 110 106Z" fill="#2B180D" /><ellipse cx="180" cy="36" rx="22" ry="18" fill="#2B180D" /><path d="M166 39 C171 28, 190 28, 194 39" fill="none" stroke="#4C2E17" strokeWidth="6" strokeLinecap="round" />
         <ellipse cx="150" cy="118" rx="22" ry="24" fill="#FFF" />
         <ellipse cx="210" cy="118" rx="22" ry="24" fill="#FFF" />
         <g style={{transformOrigin:"150px 118px", animation:"eyeBlink 4.8s ease-in-out infinite"}}>
@@ -769,26 +771,26 @@ function SocialFeed({user,setUser,showToast,showPoints}){
     await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
     setUser(u=>({...u,puntos:nuevos}));showPoints(5);setNewPost("");SFX.success();load();
   }
-  async function likePost(post){
-    await dbPatch("publicaciones",`?id=eq.${post.id}`,{likes_count:(post.likes_count||0)+1});load();
-  }
+  async function likePost(post){ await dbPatch("publicaciones",`?id=eq.${post.id}`,{likes_count:(post.likes_count||0)+1});load(); }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="📱" title="Feed" sub="Comparte con la comunidad"/>
-      <Card style={{marginBottom:16}}>
-        <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Que te parece tu nuevo look?" rows={3} style={{width:"100%",border:`1.5px solid ${T.g200}`,borderRadius:12,padding:"10px",fontSize:"0.88rem",color:T.text,background:T.g50,resize:"none",outline:"none"}}/>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
-          <span style={{fontSize:"0.75rem",color:T.textSub}}>+5 pts por publicar</span>
-          <Btn small onClick={publish}>Publicar</Btn>
+      <SectionHeader icon="💬" title="Feed" sub="Comparte tu look con la comunidad"/>
+      <Card style={{marginBottom:16,background:'linear-gradient(180deg,#E9D9B7 0%,#DEC79A 100%)',border:`2px solid ${T.g300}`,boxShadow:'0 10px 24px rgba(20,8,4,.16)'}}>
+        <div style={{fontWeight:900,fontSize:'.92rem',color:T.g800,marginBottom:8}}>🖋️ Publica algo nuevo</div>
+        <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Cuenta cómo ha quedado tu nuevo look..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:'#F3E7CA',resize:"none",outline:"none",boxShadow:'inset 0 2px 8px rgba(20,8,4,.06)'}}/>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10,gap:8}}>
+          <span style={{fontSize:"0.8rem",color:T.g700,fontWeight:900}}>✨ +5 pts por publicar</span>
+          <Btn small col="dark" onClick={publish} style={{fontWeight:900,letterSpacing:'.4px'}}>📣 Publicar</Btn>
         </div>
       </Card>
       {loading?<Spinner/>:posts.map(p=>(
-        <Card key={p.id} style={{marginBottom:12}}>
-          {p.imagen_url&&<img src={p.imagen_url} alt="" style={{width:"100%",borderRadius:10,marginBottom:8,objectFit:"cover",maxHeight:200}}/>}
-          <div style={{fontSize:"0.9rem",color:T.text,lineHeight:1.5}}>{p.contenido}</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
-            <span style={{fontSize:"0.72rem",color:T.textSub}}>{new Date(p.created_at).toLocaleDateString("es-ES")}</span>
-            <button onClick={()=>likePost(p)} style={{background:"none",border:"none",cursor:"pointer",fontSize:"0.82rem",color:T.textSub,fontWeight:700}}>Me gusta {p.likes_count||0}</button>
+        <Card key={p.id} style={{marginBottom:12,background:'linear-gradient(180deg,#EFE0BE 0%,#E4CFAB 100%)',border:`1.5px solid ${T.g200}`,boxShadow:'0 8px 18px rgba(20,8,4,.12)'}}>
+          {p.imagen_url&&<img src={p.imagen_url} alt="" style={{width:"100%",borderRadius:14,marginBottom:10,objectFit:"cover",maxHeight:200}}/>}
+          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}><Av av={user.avatar} size={34}/><div style={{fontWeight:900,color:T.g800,fontSize:'.86rem'}}>{user.nombre || 'Cliente Rasta'}</div></div>
+          <div style={{fontSize:"0.93rem",fontWeight:700,color:T.text,lineHeight:1.55}}>{p.contenido}</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
+            <span style={{fontSize:"0.76rem",color:T.textSub,fontWeight:800}}>{new Date(p.created_at).toLocaleDateString("es-ES")}</span>
+            <button onClick={()=>likePost(p)} style={{background:'#F3E7CA',border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999}}>❤️ Me gusta {p.likes_count||0}</button>
           </div>
         </Card>
       ))}
@@ -890,6 +892,12 @@ function saveLocalGameScore(gameId,user,score){
 }
 function getLocalGameLeaderboard(gameId){
   try{return JSON.parse(localStorage.getItem(`leader_${gameId}_${weekKey()}`)||"[]");}catch{return [];}
+}
+function getMyBestScore(gameId,uid){
+  try{
+    const list=JSON.parse(localStorage.getItem(`leader_${gameId}_${weekKey()}`)||"[]");
+    return list.filter(x=>String(x.user_id)===String(uid)).sort((a,b)=>b.score-a.score)[0]?.score||0;
+  }catch{return 0;}
 }
 
 const SOPA_WORDS=["TIJERA","COLOR","BRILLO","CORTE","MECHAS","RIZOS","SECADOR"];
@@ -1061,6 +1069,116 @@ function TriviaGame({onWin}){
   );
 }
 
+
+function RastaRunnerGame({onWin}){
+  const [running,setRunning]=useState(false);
+  const [jumping,setJumping]=useState(false);
+  const [score,setScore]=useState(0);
+  const [obstacles,setObstacles]=useState([{x:100}]);
+  const [gameOver,setGameOver]=useState(false);
+  const scoreRef=useRef(0);
+  useEffect(()=>{scoreRef.current=score;},[score]);
+  useEffect(()=>{
+    if(!running) return;
+    const onKey=e=>{ if(e.code==='Space' || e.key==='ArrowUp'){ e.preventDefault(); doJump(); } };
+    window.addEventListener('keydown',onKey);
+    return ()=>window.removeEventListener('keydown',onKey);
+  },[running,jumping]);
+  function doJump(){
+    if(!running||jumping||gameOver) return;
+    SFX.tab();
+    setJumping(true);
+    setTimeout(()=>setJumping(false),540);
+  }
+  useEffect(()=>{
+    if(!running) return;
+    const timer=setInterval(()=>{
+      setScore(s=>s+1);
+      setObstacles(prev=>{
+        let next=prev.map(o=>({...o,x:o.x-6})).filter(o=>o.x>-15);
+        const last=next[next.length-1];
+        if(!last || last.x<55+Math.random()*35) next=[...next,{x:100+Math.random()*18}];
+        const hit=next.some(o=>o.x<26 && o.x>8 && !jumping);
+        if(hit){
+          clearInterval(timer);
+          setRunning(false);
+          setGameOver(true);
+          SFX.error();
+        }
+        return next;
+      });
+    },90);
+    return ()=>clearInterval(timer);
+  },[running,jumping]);
+  const pts=Math.max(6, Math.min(40, Math.floor(score/4)));
+  return <Card style={{background:'linear-gradient(180deg,#F0E3C1,#E4C88F)',border:`2px solid ${T.g300}`}}>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}><div style={{fontWeight:900,color:T.g800}}>🦖✂️ Rasta Runner</div><Badge col='gold'>Recorda y esquiva tijeras</Badge></div>
+    <div style={{position:'relative',height:180,borderRadius:18,overflow:'hidden',background:'linear-gradient(180deg,#DDEBFF,#FFF0C9 72%,#C7A25C 72%)',border:'2px solid rgba(62,35,18,.15)'}}>
+      <div style={{position:'absolute',left:0,right:0,bottom:28,height:4,background:'#6E3518'}}/>
+      <div style={{position:'absolute',left:12,bottom:jumping?74:32,fontSize:'2.2rem',transition:'bottom .18s ease'}}>{jumping?'🧑🏾‍🦱':'🧑🏾‍🦱'}</div>
+      <div style={{position:'absolute',left:8,bottom:8,fontSize:'.76rem',fontWeight:900,color:T.g700}}>Puntos: {score}</div>
+      {obstacles.map((o,i)=><div key={i} style={{position:'absolute',left:`${o.x}%`,bottom:22,fontSize:'1.6rem'}}>✂️</div>)}
+      {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.3)'}}><Btn col='gold' onClick={()=>{setScore(0);setObstacles([{x:100}]);setGameOver(false);setRunning(true)}}>▶ Empezar</Btn></div>}
+      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.52)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Buen intento!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Has logrado {score} de distancia · ganas {pts} pts</div><Btn col='gold' onClick={()=>onWin(pts)}>Cobrar puntos</Btn></div></div>}
+    </div>
+    <div style={{marginTop:10,fontSize:'.8rem',fontWeight:800,color:T.textSub}}>Toca <b>saltar</b> o pulsa espacio para esquivar las tijeras.</div>
+    {running && <div style={{marginTop:10}}><Btn full col='dark' onClick={doJump}>⤴️ Saltar</Btn></div>}
+  </Card>;
+}
+
+function PlatformJumpGame({onWin}){
+  const [lane,setLane]=useState(1);
+  const [rows,setRows]=useState([]);
+  const [running,setRunning]=useState(false);
+  const [score,setScore]=useState(0);
+  const [gameOver,setGameOver]=useState(false);
+  useEffect(()=>{
+    if(!running) return;
+    const onKey=e=>{
+      if(e.key==='ArrowLeft') setLane(l=>Math.max(0,l-1));
+      if(e.key==='ArrowRight') setLane(l=>Math.min(2,l+1));
+    };
+    window.addEventListener('keydown',onKey);
+    return ()=>window.removeEventListener('keydown',onKey);
+  },[running]);
+  useEffect(()=>{
+    if(!running) return;
+    const timer=setInterval(()=>{
+      setRows(prev=>{
+        let next=prev.map(r=>({...r,y:r.y+1}));
+        const touch=next.find(r=>r.y>=4);
+        if(touch){
+          const safe=touch.safeLane===lane;
+          if(safe){ setScore(s=>s+10); SFX.click(); }
+          else { setRunning(false); setGameOver(true); SFX.error(); }
+          next=next.filter(r=>r!==touch);
+        }
+        next=next.filter(r=>r.y<6);
+        if(next.length===0 || next[next.length-1].y>1){ next=[...next,{id:Math.random(),y:0,safeLane:Math.floor(Math.random()*3)}]; }
+        return next;
+      });
+    },420);
+    return ()=>clearInterval(timer);
+  },[running,lane]);
+  const pts=Math.max(8, Math.min(45, Math.floor(score/5)));
+  return <Card style={{background:'linear-gradient(180deg,#F0E3C1,#E4C88F)',border:`2px solid ${T.g300}`}}>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}><div style={{fontWeight:900,color:T.g800}}>🌤️ Dread Jump</div><Badge col='pink'>Plataformas rápidas</Badge></div>
+    <div style={{position:'relative',borderRadius:18,overflow:'hidden',background:'linear-gradient(180deg,#D8ECFF,#F7F1DA)',padding:12,border:'2px solid rgba(62,35,18,.15)'}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+        {Array.from({length:5}).map((_,ri)=>Array.from({length:3}).map((__,ci)=>{
+          const rowObj=rows.find(r=>r.y===ri && r.safeLane===ci);
+          const atPlayer=ri===4 && ci===lane;
+          return <div key={`${ri}-${ci}`} style={{height:28,borderRadius:12,background:rowObj?'linear-gradient(180deg,#B86A2E,#6E3518)':'rgba(255,255,255,.4)',border:atPlayer?'2px solid #C0392B':'1px solid rgba(60,30,12,.12)',display:'grid',placeItems:'center',fontSize:atPlayer?'1.25rem':'1rem'}}>{atPlayer?'🧑🏾‍🦱':rowObj?'🟫':''}</div>;
+        }))}
+      </div>
+      <div style={{display:'flex',justifyContent:'space-between',marginTop:10,fontWeight:900,fontSize:'.8rem',color:T.g700}}><span>Score: {score}</span><span>Cae en la plataforma marrón</span></div>
+      {!running && !gameOver && <div style={{marginTop:12}}><Btn full col='gold' onClick={()=>{setRows([{id:1,y:0,safeLane:1}]);setLane(1);setScore(0);setGameOver(false);setRunning(true);}}>▶ Empezar</Btn></div>}
+      {gameOver && <div style={{marginTop:12,textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Has conseguido {score} y ganas {pts} pts</div><Btn col='gold' onClick={()=>onWin(pts)}>Cobrar puntos</Btn></div>}
+      {running && <div style={{display:'flex',gap:8,marginTop:12}}><Btn full col='ghost' onClick={()=>setLane(l=>Math.max(0,l-1))}>⬅️</Btn><Btn full col='dark' onClick={()=>setLane(1)}>⏺️</Btn><Btn full col='ghost' onClick={()=>setLane(l=>Math.min(2,l+1))}>➡️</Btn></div>}
+    </div>
+  </Card>;
+}
+
 function Juegos({user,setUser,showToast,showPoints}){
   const [activeGame,setActiveGame]=useState(null);
   const [boardGame,setBoardGame]=useState("sopa");
@@ -1068,12 +1186,14 @@ function Juegos({user,setUser,showToast,showPoints}){
   const GAMES=[
     {id:"sopa",icon:"🔤",title:"Sopa 3D",desc:"Palabras ocultas",pts:25},
     {id:"memoria",icon:"🧠",title:"Memoria Pro",desc:"Parejas rápidas",pts:20},
-    {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:15}
+    {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:15},
+    {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Esquiva tijeras",pts:40},
+    {id:"jump",icon:"🌤️",title:"Dread Jump",desc:"Salta plataformas",pts:45}
   ];
   async function handleWin(gameId,pts){
     markPlayedToday(gameId,user.id);
     saveLocalGameScore(gameId,user,pts);
-    dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,game_id:gameId,score:pts,week:weekKey()});
+    try{ await dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,game_id:gameId,score:pts,week:weekKey()}); }catch{}
     const nuevos=(user.puntos||0)+pts;
     await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
     setUser(u=>({...u,puntos:nuevos}));setBoardTick(t=>t+1);showPoints(pts);SFX.coins();showToast(`+${pts} puntos!`);setActiveGame(null);
@@ -1086,24 +1206,27 @@ function Juegos({user,setUser,showToast,showPoints}){
           <button onClick={()=>{SFX.navBack();setActiveGame(null);}} style={{background:T.g150,border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",fontWeight:900,fontSize:"1rem",color:T.g700,boxShadow:"0 8px 18px rgba(20,8,4,.2)"}}>{"<"}</button>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}><span className="icon3d">{g?.icon}</span> {g?.title}</div>
         </div>
-        {activeGame==="sopa"&&<SopaLetras onWin={pts=>handleWin("sopa",pts)}/>} 
-        {activeGame==="memoria"&&<MemoryGame onWin={pts=>handleWin("memoria",pts)}/>} 
-        {activeGame==="trivia"&&<TriviaGame onWin={pts=>handleWin("trivia",pts)}/>} 
+        {activeGame==="sopa"&&<SopaLetras onWin={pts=>handleWin("sopa",pts)}/>}
+        {activeGame==="memoria"&&<MemoryGame onWin={pts=>handleWin("memoria",pts)}/>}
+        {activeGame==="trivia"&&<TriviaGame onWin={pts=>handleWin("trivia",pts)}/>}
+        {activeGame==="runner"&&<RastaRunnerGame onWin={pts=>handleWin("runner",pts)}/>}
+        {activeGame==="jump"&&<PlatformJumpGame onWin={pts=>handleWin("jump",pts)}/>}
       </div>
     );
   }
   const lb=getLocalGameLeaderboard(boardGame);
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🎮" title="Arcade" sub="Juega, sube ranking y gana puntos"/>
+      <SectionHeader icon="🎮" title="Arcade" sub="Juega, guarda récords y sube al top 10"/>
       <div style={{display:"grid",gridTemplateColumns:"1fr",gap:12,marginBottom:16}}>
         {GAMES.map(g=>{
           const played=getPlayedToday(g.id,user.id);
+          const best=getMyBestScore(g.id,user.id);
           return(
-            <Card key={g.id} style={{opacity:played?0.68:1,background:played?"linear-gradient(180deg,#EBD8A8,#D7B777)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)",border:played?`1px solid ${T.g300}`:`2px solid ${T.gold}`}} hover>
+            <Card key={g.id} style={{opacity:played?0.72:1,background:played?"linear-gradient(180deg,#EBD8A8,#D7B777)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)",border:played?`1px solid ${T.g300}`:`2px solid ${T.gold}`}} hover>
               <div style={{display:"flex",alignItems:"center",gap:14}}>
                 <div className="icon3d" style={{fontSize:"2.55rem"}}>{g.icon}</div>
-                <div style={{flex:1}}><div style={{fontWeight:900,fontSize:"1rem"}}>{g.title}</div><div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800}}>{g.desc}</div><div style={{fontSize:"0.75rem",color:T.orange,fontWeight:900,marginTop:2}}>🏅 Hasta +{g.pts} pts</div></div>
+                <div style={{flex:1}}><div style={{fontWeight:900,fontSize:"1rem"}}>{g.title}</div><div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800}}>{g.desc}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:4}}><span style={{fontSize:"0.75rem",color:T.orange,fontWeight:900}}>🏅 Hasta +{g.pts} pts</span><span style={{fontSize:"0.75rem",color:T.g700,fontWeight:900}}>📈 Récord: {best} pts</span></div></div>
                 {played?<Badge col="green">✅ Hoy</Badge>:<Btn small col="gold" onClick={()=>setActiveGame(g.id)}>▶ Jugar</Btn>}
               </div>
             </Card>
@@ -1112,11 +1235,11 @@ function Juegos({user,setUser,showToast,showPoints}){
       </div>
       <Card style={{background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
-          <div><div style={{fontWeight:900}}>🏆 Top 10 semanal</div><div style={{fontSize:".72rem",opacity:.75,fontWeight:700}}>Ranking local de esta semana</div></div>
+          <div><div style={{fontWeight:900}}>🏆 Top 10 semanal por juego</div><div style={{fontSize:".72rem",opacity:.75,fontWeight:700}}>Se actualiza y guarda el récord local de la semana</div></div>
           <div style={{fontWeight:900,color:T.gold}}>{weekKey()}</div>
         </div>
-        <div style={{display:"flex",gap:6,marginBottom:12}}>
-          {GAMES.map(g=><button key={g.id} onClick={()=>{SFX.tab();setBoardGame(g.id);}} style={{flex:1,border:"none",borderRadius:12,padding:"8px 4px",background:boardGame===g.id?T.gradGold:"rgba(255,244,214,.18)",color:boardGame===g.id?T.g900:T.white,fontWeight:900,cursor:"pointer"}}>{g.icon}</button>)}
+        <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:'wrap'}}>
+          {GAMES.map(g=><button key={g.id} onClick={()=>{SFX.tab();setBoardGame(g.id);}} style={{flex:'1 1 18%',border:"none",borderRadius:12,padding:"8px 4px",background:boardGame===g.id?T.gradGold:"rgba(255,244,214,.18)",color:boardGame===g.id?T.g900:T.white,fontWeight:900,cursor:"pointer"}} title={g.title}>{g.icon}</button>)}
         </div>
         {lb.length===0?<div style={{fontSize:".82rem",fontWeight:800,opacity:.8,textAlign:"center",padding:"10px"}}>Sé el primero en marcar puntuación esta semana ✨</div>:lb.map((r,i)=><div key={`${r.user_id}-${i}-${boardTick}`} style={{display:"flex",alignItems:"center",gap:9,padding:"7px 0",borderBottom:i<lb.length-1?"1px solid rgba(255,244,214,.18)":"none"}}><div style={{width:28,fontWeight:900}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div><Av av={r.avatar} size={32}/><div style={{flex:1,fontWeight:900}}>{r.nombre}</div><div style={{color:T.gold,fontWeight:900}}>{r.score} pts</div></div>)}
       </Card>
@@ -1380,6 +1503,29 @@ const NAV_CFG={
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,cliente:T.gradClient};
 
+const HELP_TEXTS={
+  dashboard:"Aquí ves tu resumen principal: puntos, próxima cita y accesos rápidos.",
+  feed:"En Feed puedes publicar tu look, dar me gusta y ganar puntos por participar.",
+  tienda:"Aquí canjeas tus puntos por premios, descuentos o regalos.",
+  juegos:"En Juegos tienes el arcade, los récords semanales y el top 10 de cada juego.",
+  retos:"Los retos te dan objetivos para ganar más puntos de forma divertida.",
+  ranking:"En Ranking comparas tu progreso con otros clientes.",
+  perfil:"En Perfil editas tu personaje, tu nombre y tu estilo.",
+  citas:"Aquí se gestionan las reservas y el calendario.",
+  clientes:"Sección para revisar fichas y datos de clientes.",
+  inventario:"Aquí controlas productos y stock.",
+  caja:"Sección para cobros e ingresos.",
+  usuarios:"Aquí un admin puede cambiar roles y permisos."
+};
+function HelperMascot({page}){
+  const [open,setOpen]=useState(false);
+  const text=HELP_TEXTS[page]||"Pulsa cualquier pestaña del menú para moverte por la app.";
+  return <div style={{position:'fixed',right:14,bottom:92,zIndex:120,maxWidth:250}}>
+    {open&&<div style={{marginBottom:10,background:'linear-gradient(180deg,#F0E3C1,#E2CAA0)',border:`2px solid ${T.g300}`,borderRadius:18,padding:'12px 14px',boxShadow:'0 14px 26px rgba(0,0,0,.22)',animation:'bubblePop .22s ease'}}><div style={{fontWeight:900,color:T.g800,marginBottom:5}}>💡 Ayuda de Rasta</div><div style={{fontSize:'.82rem',fontWeight:700,color:T.text,lineHeight:1.45}}>{text}</div></div>}
+    <button onClick={()=>{SFX.click();setOpen(v=>!v);}} style={{marginLeft:'auto',display:'block',width:62,height:62,borderRadius:'50%',border:`2px solid ${T.g300}`,background:'linear-gradient(180deg,#FFF4D6,#E6C27A)',boxShadow:'0 12px 24px rgba(0,0,0,.28)',cursor:'pointer',fontSize:'2rem',animation:'helperBob 2.6s ease-in-out infinite'}}>🧑🏾‍🦱</button>
+  </div>;
+}
+
 export default function App(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
@@ -1465,7 +1611,7 @@ export default function App(){
           </button>
         ))}
       </div>
-      <Toast msg={toast.msg} show={toast.show}/>
+      <HelperMascot page={ap}/><Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
 }
