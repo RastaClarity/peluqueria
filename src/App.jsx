@@ -25,16 +25,17 @@ const dbPost  = (t,b)    => db(t,"POST",b,"");
 const dbPatch = (t,q,b)  => db(t,"PATCH",b,q);
 
 const T = {
-  g900:"#1B4332",g800:"#1E4D2B",g700:"#2D6A4F",g600:"#40916C",
-  g500:"#52B788",g400:"#74C69D",g300:"#95D5B2",g200:"#B7E4C7",
-  g150:"#D8F3DC",g100:"#EAFAF0",g50:"#F2FBF5",
-  pink:"#E91E8C",gold:"#FFB703",orange:"#FB8500",red:"#E53935",blue:"#1565C0",
-  text:"#1B4332",textSub:"#52B788",white:"#FFFFFF",
-  gradAdmin:"linear-gradient(135deg,#1B4332,#2D6A4F)",
-  gradStaff:"linear-gradient(135deg,#2D6A4F,#40916C)",
-  gradClient:"linear-gradient(135deg,#40916C,#52B788)",
-  gradGold:"linear-gradient(135deg,#FFB703,#FB8500)",
-  gradPink:"linear-gradient(135deg,#E91E8C,#F48FB1)",
+  // Parchment/Pirate palette
+  g900:"#2C1810",g800:"#3D2314",g700:"#5C3317",g600:"#8B4513",
+  g500:"#A0522D",g400:"#CD853F",g300:"#DEB887",g200:"#F5DEB3",
+  g150:"#FAF0DC",g100:"#FDF6E3",g50:"#FFFEF9",
+  pink:"#C0392B",gold:"#D4AF37",orange:"#E8871A",red:"#8B0000",blue:"#1A3A5C",
+  text:"#2C1810",textSub:"#8B4513",white:"#FFFEF9",
+  gradAdmin:"linear-gradient(135deg,#2C1810,#5C3317)",
+  gradStaff:"linear-gradient(135deg,#5C3317,#8B4513)",
+  gradClient:"linear-gradient(135deg,#8B4513,#CD853F)",
+  gradGold:"linear-gradient(135deg,#D4AF37,#E8871A)",
+  gradPink:"linear-gradient(135deg,#8B0000,#C0392B)",
 };
 
 const ROLES = { ADMIN:"admin", STAFF:"staff", CLIENT:"cliente" };
@@ -81,11 +82,11 @@ function startMusic(){
 function stopMusic(){musicPlaying=false;if(musicInterval){clearInterval(musicInterval);musicInterval=null;}}
 
 const CSS=`
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=MedievalSharp&family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#74C69D;border-radius:4px}
-body{margin:0;background:#EAFAF0}
-input,select,button,textarea{font-family:'Nunito',sans-serif}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#CD853F;border-radius:4px}
+body{margin:0;background:#FDF6E3;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238B4513' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes popIn{from{opacity:0;transform:scale(0.82)}to{opacity:1;transform:scale(1)}}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes fadeSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -104,7 +105,7 @@ function Btn({children,onClick,col="green",full=false,small=false,disabled=false
   return <button onClick={disabled?undefined:onClick} className="bp" style={{background:col==="ghost"?"transparent":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"none",borderRadius:14,padding:small?"7px 14px":"11px 20px",fontWeight:800,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"none":`0 4px 14px ${c.sh}`,transition:"all 0.18s ease",...sx}}>{children}</button>;
 }
 function Card({children,style:sx={},onClick,hover=false}){
-  return <div onClick={onClick} className={hover?"ch":""} style={{background:T.white,borderRadius:18,padding:"16px",boxShadow:"0 2px 12px rgba(27,67,50,0.08)",border:`1px solid ${T.g150}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",...sx}}>{children}</div>;
+  return <div onClick={onClick} className={hover?"ch":""} style={{background:T.white,borderRadius:18,padding:"16px",boxShadow:"0 2px 12px rgba(27,67,50,0.08)",border:`1px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",...sx}}>{children}</div>;
 }
 function Input({label,value,onChange,type="text",placeholder="",style:sx={}}){
   return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.88rem",color:T.text,outline:"none",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
@@ -123,7 +124,7 @@ function Modal({show,onClose,title,children}){
 }
 function Spinner(){return <div style={{width:28,height:28,border:`3px solid ${T.g200}`,borderTop:`3px solid ${T.g600}`,borderRadius:"50%",animation:"spin 0.7s linear infinite",margin:"20px auto"}}/>;}
 function EmptyState({icon,title,sub}){return <div style={{textAlign:"center",padding:"40px 20px",color:T.textSub}}><div style={{fontSize:"2.8rem",marginBottom:10}}>{icon}</div><div style={{fontWeight:800,fontSize:"1rem",color:T.g700,marginBottom:6}}>{title}</div><div style={{fontSize:"0.83rem"}}>{sub}</div></div>;}
-function SectionHeader({icon,title,sub,action}){return <div style={{marginBottom:18,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.3rem",color:T.g800}}>{icon} {title}</div>{sub&&<div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2}}>{sub}</div>}</div>{action}</div>;}
+function SectionHeader({icon,title,sub,action}){return <div style={{marginBottom:18,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800}}>{icon} {title}</div>{sub&&<div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2}}>{sub}</div>}</div>{action}</div>;}
 function StatCard({icon,label,value,col="green"}){
   const C={green:{bg:T.g150,ac:T.g600},gold:{bg:"#FFF8E1",ac:T.orange},pink:{bg:"#FCE4EC",ac:T.pink},blue:{bg:"#E3F2FD",ac:T.blue}};
   const c=C[col]||C.green;
@@ -177,13 +178,13 @@ function Auth({onLogin,showToast}){
   }
 
   return(
-    <div style={{minHeight:"100vh",background:`linear-gradient(160deg,${T.g800} 0%,${T.g600} 60%,${T.g400} 100%)`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+    <div style={{minHeight:"100vh",background:`linear-gradient(160deg,${T.g900} 0%,${T.g700} 50%,${T.g600} 100%)`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
       <style>{CSS}</style>
       <Particles/>
       <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:400}}>
         <div style={{textAlign:"center",marginBottom:32}}>
-          <div style={{fontSize:"3.5rem",animation:"bounce 2s ease infinite"}}>*</div>
-          <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"2.4rem",color:T.white}}>PeluquerIA</div>
+          <div style={{fontSize:"3.5rem",animation:"bounce 2s ease infinite"}}>X</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.4rem",color:T.white}}>PeluquerIA</div>
           <div style={{color:T.g200,fontSize:"0.85rem",marginTop:4,fontWeight:600}}>Tu peluqueria inteligente</div>
         </div>
         <Card style={{padding:"28px 24px",animation:"popIn 0.4s ease"}}>
@@ -280,12 +281,12 @@ function ClientDashboard({user}){
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div>
             <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.8rem",fontWeight:700}}>Hola de nuevo!</div>
-            <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.4rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.4rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
             <div style={{marginTop:6}}><Badge col="gold">{nivel}</Badge></div>
           </div>
           <div style={{textAlign:"center"}}>
             <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.75)",fontWeight:700}}>TUS PUNTOS</div>
-            <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"2rem",color:T.white}}>{user.puntos||0}</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",color:T.white}}>{user.puntos||0}</div>
           </div>
         </div>
         <div style={{marginTop:14,height:8,background:"rgba(255,255,255,0.25)",borderRadius:50,overflow:"hidden"}}>
@@ -618,7 +619,7 @@ function Tienda({user,setUser,showToast,showPoints}){
       <SectionHeader icon="🛍️" title="Tienda" sub={`Tienes ${user.puntos||0} pts`}/>
       <Card style={{background:T.gradGold,border:"none",marginBottom:16,padding:"14px 16px"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div style={{color:T.white}}><div style={{fontSize:"0.78rem",fontWeight:700,opacity:0.85}}>TUS PUNTOS</div><div style={{fontFamily:"'Fredoka One',cursive",fontSize:"2rem"}}>{user.puntos||0}</div></div>
+          <div style={{color:T.white}}><div style={{fontSize:"0.78rem",fontWeight:700,opacity:0.85}}>TUS PUNTOS</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem"}}>{user.puntos||0}</div></div>
           <div style={{fontSize:"2.5rem"}}>🎁</div>
         </div>
       </Card>
@@ -665,7 +666,7 @@ function Cupones({user,showToast}){
       {loading?<Spinner/>:cupones.map(c=>(
         <Card key={c.id} style={{marginBottom:10,background:T.g50}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.2rem",color:T.g800}}>{c.codigo}</div><div style={{fontSize:"0.8rem",color:T.textSub}}>{c.servicio||"Cualquier servicio"}</div></div>
+            <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.2rem",color:T.g800}}>{c.codigo}</div><div style={{fontSize:"0.8rem",color:T.textSub}}>{c.servicio||"Cualquier servicio"}</div></div>
             <div style={{background:T.gradPink,color:T.white,borderRadius:12,padding:"8px 14px",fontWeight:900,fontSize:"1.1rem"}}>-{c.descuento}%</div>
           </div>
         </Card>
@@ -807,7 +808,7 @@ function Juegos({user,setUser,showToast,showPoints}){
       <div style={{animation:"fadeSlide 0.4s ease"}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
           <button onClick={()=>setActiveGame(null)} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,cursor:"pointer",fontWeight:900,fontSize:"1rem",color:T.g700}}>{"<"}</button>
-          <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.2rem",color:T.g800}}>{g?.icon} {g?.title}</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.2rem",color:T.g800}}>{g?.icon} {g?.title}</div>
         </div>
         {activeGame==="sopa"&&<SopaLetras onWin={pts=>handleWin("sopa",pts)}/>}
         {activeGame==="memoria"&&<MemoryGame onWin={pts=>handleWin("memoria",pts)}/>}
@@ -900,7 +901,7 @@ function Ranking({user}){
         return(
           <Card key={u.id} style={{marginBottom:8,background:isMe?T.g100:T.white,border:isMe?`2px solid ${T.g400}`:`1px solid ${T.g150}`}}>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.3rem",minWidth:32,textAlign:"center"}}>#{i+1}</div>
+              <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",minWidth:32,textAlign:"center"}}>#{i+1}</div>
               <Av av={u.avatar} size={38}/>
               <div style={{flex:1}}><div style={{fontWeight:800}}>{u.nombre}{isMe?" (tu)":""}</div></div>
               <div style={{fontWeight:900,color:T.orange}}>{u.puntos||0} pts</div>
@@ -1031,10 +1032,10 @@ function Perfil({user,setUser,onLogout,showToast}){
       <SectionHeader icon="👤" title="Mi Perfil"/>
       <Card style={{textAlign:"center",marginBottom:16}}>
         <Av av={form.avatar} size={72}/>
-        <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.3rem",color:T.g800,marginTop:10}}>{user.nombre}</div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800,marginTop:10}}>{user.nombre}</div>
         <div style={{fontSize:"0.82rem",color:T.textSub}}>{user.email}</div>
         <div style={{marginTop:8}}><Badge col="gold">{nivel}</Badge></div>
-        {user.rol===ROLES.CLIENT&&<div style={{marginTop:12}}><div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.8rem",color:T.g700}}>{user.puntos||0} pts</div></div>}
+        {user.rol===ROLES.CLIENT&&<div style={{marginTop:12}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.g700}}>{user.puntos||0} pts</div></div>}
       </Card>
       {editing?(
         <Card style={{marginBottom:16}}>
@@ -1095,13 +1096,13 @@ export default function App(){
   };
 
   return(
-    <div style={{fontFamily:"'Nunito',sans-serif",background:T.g100,minHeight:"100vh",maxWidth:480,margin:"0 auto",paddingBottom:82,position:"relative"}}>
+    <div style={{fontFamily:"'Crimson Text',serif",background:T.g100,minHeight:"100vh",maxWidth:480,margin:"0 auto",paddingBottom:82,position:"relative"}}>
       <style>{CSS}</style>
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
       <div style={{background:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:"0 4px 20px rgba(27,67,50,0.25)"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{fontFamily:"'Fredoka One',cursive",fontSize:"1.35rem",color:T.white}}>PeluquerIA</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white}}>PeluquerIA</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
