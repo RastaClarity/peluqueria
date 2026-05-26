@@ -702,44 +702,100 @@ function generateGrid(words){
 
 function SopaLetras({onWin}){
   const [{grid,placed}]=useState(()=>generateGrid(SOPA_WORDS));
-  const [found,setFound]=useState([]);const [selecting,setSelecting]=useState(false);const [selected,setSelected]=useState([]);const [wrong,setWrong]=useState(false);
+  const [found,setFound]=useState([]);
+  const [selected,setSelected]=useState([]);
+  const [start,setStart]=useState(null);
+  const [wrong,setWrong]=useState(false);
+  const isSelecting=useRef(false);
   const SIZE=10;
+
   function ck(r,c){return `${r}-${c}`;}
-  function startSel(r,c){setSelecting(true);setSelected([ck(r,c)]);setWrong(false);}
-  function contSel(r,c){
-    if(!selecting)return;
-    const [fr,fc]=selected[0].split("-").map(Number);
-    const dr=r-fr,dc=c-fc,len=Math.max(Math.abs(dr),Math.abs(dc));
-    if(len===0){setSelected([selected[0]]);return;}
-    if(dr!==0&&dc!==0&&Math.abs(dr)!==Math.abs(dc))return;
+
+  function getCells(r1,c1,r2,c2){
+    const dr=r2-r1,dc=c2-c1,len=Math.max(Math.abs(dr),Math.abs(dc));
+    if(len===0)return[ck(r1,c1)];
+    if(dr!==0&&dc!==0&&Math.abs(dr)!==Math.abs(dc))return[ck(r1,c1)];
     const sr=dr===0?0:dr/Math.abs(dr),sc=dc===0?0:dc/Math.abs(dc);
-    setSelected([...Array(len+1)].map((_,i)=>ck(fr+sr*i,fc+sc*i)));
+    return[...Array(len+1)].map((_,i)=>ck(r1+sr*i,c1+sc*i));
   }
-  function endSel(){
-    if(!selecting)return;setSelecting(false);
+
+  function handleStart(r,c){
+    isSelecting.current=true;
+    setStart({r,c});
+    setSelected([ck(r,c)]);
+    setWrong(false);
+  }
+
+  function handleMove(r,c){
+    if(!isSelecting.current||!start)return;
+    setSelected(getCells(start.r,start.c,r,c));
+  }
+
+  function handleEnd(){
+    if(!isSelecting.current)return;
+    isSelecting.current=false;
     for(const p of placed){
       if(p.cells.join(",")===selected.join(",")||[...p.cells].reverse().join(",")===selected.join(",")){
-        if(!found.includes(p.word)){const nf=[...found,p.word];setFound(nf);if(nf.length===placed.length)setTimeout(()=>onWin(nf.length*5),300);}
-        setSelected([]);return;
+        if(!found.includes(p.word)){
+          const nf=[...found,p.word];
+          setFound(nf);
+          if(nf.length===placed.length)setTimeout(()=>onWin(nf.length*5),300);
+        }
+        setSelected([]);setStart(null);return;
       }
     }
-    setWrong(true);setTimeout(()=>{setWrong(false);setSelected([]);},600);
+    setWrong(true);
+    setTimeout(()=>{setWrong(false);setSelected([]);setStart(null);},700);
   }
+
   const foundCells=new Set(found.flatMap(w=>placed.find(p=>p.word===w)?.cells||[]));
+
   return(
     <div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>{SOPA_WORDS.map(w=><Badge key={w} col={found.includes(w)?"green":"gold"}>{found.includes(w)?"OK ":""}{w}</Badge>)}</div>
-      <div style={{userSelect:"none",touchAction:"none",display:"inline-block",background:T.g50,borderRadius:12,padding:8,border:`1.5px solid ${T.g200}`}}>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+        {SOPA_WORDS.map(w=><Badge key={w} col={found.includes(w)?"green":"gold"}>{found.includes(w)?"OK ":""}{w}</Badge>)}
+      </div>
+      <div
+        style={{userSelect:"none",touchAction:"none",display:"inline-block",background:"#F5E6C8",borderRadius:12,padding:8,border:`2px solid ${T.g400}`,cursor:"crosshair"}}
+        onMouseLeave={handleEnd}
+      >
         {Array(SIZE).fill(null).map((_,r)=>(
           <div key={r} style={{display:"flex"}}>
             {Array(SIZE).fill(null).map((_,c)=>{
               const key=ck(r,c),isSel=selected.includes(key),isF=foundCells.has(key);
-              return <div key={c} onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);startSel(r,c);}} onPointerEnter={()=>contSel(r,c)} onPointerUp={endSel} style={{width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.75rem",fontWeight:800,cursor:"pointer",borderRadius:6,background:isF?T.g300:isSel?(wrong?"#FFCDD2":T.g150):"transparent",color:isF?T.g800:isSel?T.g700:T.text,border:isSel&&!wrong?`1.5px solid ${T.g400}`:"1.5px solid transparent",transition:"background 0.1s"}}>{grid[r][c]}</div>;
+              return(
+                <div key={c}
+                  onMouseDown={e=>{e.preventDefault();handleStart(r,c);}}
+                  onMouseEnter={()=>handleMove(r,c)}
+                  onMouseUp={handleEnd}
+                  onTouchStart={e=>{e.preventDefault();handleStart(r,c);}}
+                  onTouchMove={e=>{
+                    e.preventDefault();
+                    const t=e.touches[0];
+                    const el=document.elementFromPoint(t.clientX,t.clientY);
+                    if(el&&el.dataset.row&&el.dataset.col){
+                      handleMove(parseInt(el.dataset.row),parseInt(el.dataset.col));
+                    }
+                  }}
+                  onTouchEnd={e=>{e.preventDefault();handleEnd();}}
+                  data-row={r} data-col={c}
+                  style={{
+                    width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:"0.8rem",fontWeight:900,cursor:"crosshair",borderRadius:6,
+                    background:isF?"#8B4513":isSel?(wrong?"#FFCDD2":"#D4AF37"):"transparent",
+                    color:isF?"#F5E6C8":isSel?(wrong?"#8B0000":"#2C1810"):"#2C1810",
+                    border:isSel&&!wrong?`2px solid #8B4513`:"2px solid transparent",
+                    transition:"background 0.08s",
+                    fontFamily:"'Crimson Text',serif",
+                  }}>
+                  {grid[r][c]}
+                </div>
+              );
             })}
           </div>
         ))}
       </div>
-      <div style={{marginTop:8,fontSize:"0.78rem",color:T.textSub}}>Encontradas: {found.length}/{placed.length}</div>
+      <div style={{marginTop:8,fontSize:"0.85rem",color:T.textSub,fontWeight:700}}>Encontradas: {found.length}/{placed.length}</div>
     </div>
   );
 }
