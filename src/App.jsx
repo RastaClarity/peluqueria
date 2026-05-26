@@ -85,11 +85,11 @@ function playTone(freq,type="sine",dur=0.12,vol=0.15,delay=0){
   }catch(e){}
 }
 const SFX={
-  nav:()=>{playTone(520,"sine",0.075,0.09);playTone(720,"triangle",0.08,0.08,0.055);},
-  navBack:()=>{playTone(380,"triangle",0.07,0.08);playTone(300,"sine",0.08,0.06,0.05);},
-  tab:()=>{playTone(610,"triangle",0.055,0.075);playTone(760,"sine",0.055,0.055,0.04);},
-  click:()=>{playTone(455,"triangle",0.06,0.08);playTone(540,"sine",0.045,0.045,0.035);},
-  action:()=>{playTone(620,"triangle",0.07,0.08);playTone(820,"sine",0.07,0.06,0.05);},
+  nav:()=>{playTone(520,"sine",0.075,0.13);playTone(720,"triangle",0.08,0.11,0.055);},
+  navBack:()=>{playTone(380,"triangle",0.07,0.11);playTone(300,"sine",0.08,0.09,0.05);},
+  tab:()=>{playTone(610,"triangle",0.055,0.105);playTone(760,"sine",0.055,0.085,0.04);},
+  click:()=>{playTone(455,"triangle",0.06,0.11);playTone(540,"sine",0.045,0.075,0.035);},
+  action:()=>{playTone(620,"triangle",0.07,0.12);playTone(820,"sine",0.07,0.09,0.05);},
   coins:()=>{[880,1047,1319,1568].forEach((f,i)=>playTone(f,"sine",0.12,0.14,i*0.06));},
   success:()=>{[523,659,784,1047].forEach((f,i)=>playTone(f,"sine",0.13,0.12,i*0.07));},
   error:()=>{playTone(220,"sawtooth",0.14,0.11);playTone(180,"sawtooth",0.12,0.09,0.09);},
@@ -105,13 +105,35 @@ function startMusic(){
       const o=ctx.createOscillator(),g=ctx.createGain();
       o.connect(g);g.connect(ctx.destination);o.type="sine";o.frequency.value=f;
       g.gain.setValueAtTime(0,ctx.currentTime);
-      g.gain.linearRampToValueAtTime(0.035,ctx.currentTime+0.05);
+      g.gain.linearRampToValueAtTime(0.052,ctx.currentTime+0.05);
       g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.2);
       o.start(ctx.currentTime);o.stop(ctx.currentTime+1.3);beat++;
     }catch(e){}
   },600);
 }
 function stopMusic(){musicPlaying=false;if(musicInterval){clearInterval(musicInterval);musicInterval=null;}}
+
+let gameMusicInterval=null;
+const GAME_MUSIC={
+  sopa:[523,587,659,784],
+  memoria:[392,523,659,523],
+  trivia:[330,392,494,587],
+  runner:[262,330,392,523],
+  jump:[440,554,659,880],
+};
+function startGameMusic(gameId){
+  if(globalMuted)return;
+  stopGameMusic();
+  const notes=GAME_MUSIC[gameId]||GAME_MUSIC.sopa;
+  let i=0;
+  gameMusicInterval=setInterval(()=>{
+    if(globalMuted){stopGameMusic();return;}
+    playTone(notes[i%notes.length],"triangle",0.16,0.055,0);
+    playTone(notes[(i+2)%notes.length],"sine",0.2,0.028,0.08);
+    i++;
+  },480);
+}
+function stopGameMusic(){if(gameMusicInterval){clearInterval(gameMusicInterval);gameMusicInterval=null;}}
 
 const CSS=`
 @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Bangers&display=swap');
@@ -952,9 +974,9 @@ function getMyBestScore(gameId,uid){
   }catch{return 0;}
 }
 
-const SOPA_WORDS=["TIJERA","COLOR","BRILLO","CORTE","MECHAS","RIZOS","SECADOR"];
+const SOPA_WORDS=["TIJERA","NAVAJA","PEINE","COLOR","BRILLO","CORTE","MECHAS","RIZOS","SECADOR","GANCHILLO","RASTAS","BARBA"];
 function generateGrid(words){
-  const SIZE=10,grid=Array(SIZE).fill(null).map(()=>Array(SIZE).fill(""));
+  const SIZE=12,grid=Array(SIZE).fill(null).map(()=>Array(SIZE).fill(""));
   const placed=[],DIRS=[[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
   for(const word of words){
     let tries=0;
@@ -979,7 +1001,7 @@ function SopaLetras({onWin}){
   const [start,setStart]=useState(null);
   const [wrong,setWrong]=useState(false);
   const isSelecting=useRef(false);
-  const SIZE=10;
+  const SIZE=12;
 
   function ck(r,c){return `${r}-${c}`;}
 
@@ -1052,8 +1074,8 @@ function SopaLetras({onWin}){
                   onTouchEnd={e=>{e.preventDefault();handleEnd();}}
                   data-row={r} data-col={c}
                   style={{
-                    width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:"0.8rem",fontWeight:900,cursor:"crosshair",borderRadius:6,
+                    width:24,height:24,display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:"0.72rem",fontWeight:900,cursor:"crosshair",borderRadius:6,
                     background:isF?"#8B4513":isSel?(wrong?"#FFCDD2":"#D4AF37"):"transparent",
                     color:isF?"#F5E6C8":isSel?(wrong?"#8B0000":"#2C1810"):"#2C1810",
                     border:isSel&&!wrong?`2px solid #8B4513`:"2px solid transparent",
@@ -1067,31 +1089,70 @@ function SopaLetras({onWin}){
           </div>
         ))}
       </div>
-      <div style={{marginTop:8,fontSize:"0.85rem",color:T.textSub,fontWeight:700}}>Encontradas: {found.length}/{placed.length}</div>
+      <div style={{marginTop:10,fontSize:"0.82rem",color:T.textSub,fontWeight:800,lineHeight:1.45}}>Arrastra letras en línea recta: horizontal, vertical o diagonal. Encontradas: {found.length}/{placed.length}</div>
     </div>
   );
 }
 
-const MEMO_EMOJIS=["A","B","C","D","E","F","G","H"];
+
+const MEMO_ITEMS=[
+  {id:"tijera",emoji:"✂️",label:"Tijera"},
+  {id:"peine",emoji:"🪮",label:"Peine"},
+  {id:"secador",emoji:"🌬️",label:"Secador"},
+  {id:"navaja",emoji:"🪒",label:"Navaja"},
+  {id:"rastas",emoji:"〰️",label:"Rastas"},
+  {id:"color",emoji:"🎨",label:"Color"},
+  {id:"barba",emoji:"🧔",label:"Barba"},
+  {id:"brillo",emoji:"✨",label:"Brillo"},
+  {id:"champu",emoji:"🧴",label:"Champú"},
+  {id:"pinza",emoji:"📎",label:"Pinza"},
+  {id:"espejo",emoji:"🪞",label:"Espejo"},
+  {id:"ganchillo",emoji:"🪝",label:"Gancho"},
+];
 function MemoryGame({onWin}){
-  const [cards,setCards]=useState(()=>[...MEMO_EMOJIS,...MEMO_EMOJIS].map((e,i)=>({id:i,emoji:e,flipped:false,matched:false})).sort(()=>Math.random()-0.5));
-  const [flipped,setFlipped]=useState([]);const [moves,setMoves]=useState(0);const [lock,setLock]=useState(false);
+  const build=()=>[...MEMO_ITEMS,...MEMO_ITEMS].map((e,i)=>({id:i,pair:e.id,item:e,flipped:false,matched:false})).sort(()=>Math.random()-0.5);
+  const [cards,setCards]=useState(build);
+  const [flipped,setFlipped]=useState([]);
+  const [moves,setMoves]=useState(0);
+  const [lock,setLock]=useState(false);
+  function restart(){setCards(build());setFlipped([]);setMoves(0);setLock(false);}
   function flip(id){
-    if(lock)return;const card=cards.find(c=>c.id===id);if(!card||card.flipped||card.matched)return;
-    const nc=cards.map(c=>c.id===id?{...c,flipped:true}:c);const nf=[...flipped,id];setCards(nc);setFlipped(nf);
+    if(lock)return;
+    const card=cards.find(c=>c.id===id);
+    if(!card||card.flipped||card.matched)return;
+    SFX.click();
+    const nc=cards.map(c=>c.id===id?{...c,flipped:true}:c);
+    const nf=[...flipped,id];
+    setCards(nc);setFlipped(nf);
     if(nf.length===2){
-      setLock(true);setMoves(m=>m+1);const [a,b]=nf.map(fid=>nc.find(c=>c.id===fid));
+      setLock(true);setMoves(m=>m+1);
+      const [a,b]=nf.map(fid=>nc.find(c=>c.id===fid));
       setTimeout(()=>{
-        if(a.emoji===b.emoji){const m=nc.map(c=>nf.includes(c.id)?{...c,matched:true}:c);setCards(m);setFlipped([]);setLock(false);if(m.every(c=>c.matched))onWin(Math.max(20-moves,5));}
-        else{setCards(nc.map(c=>nf.includes(c.id)?{...c,flipped:false}:c));setFlipped([]);setLock(false);}
-      },900);
+        if(a.pair===b.pair){
+          const m=nc.map(c=>nf.includes(c.id)?{...c,matched:true}:c);
+          setCards(m);setFlipped([]);setLock(false);
+          if(m.every(c=>c.matched))onWin(Math.max(36-moves,8));
+        }else{
+          setCards(nc.map(c=>nf.includes(c.id)?{...c,flipped:false}:c));
+          setFlipped([]);setLock(false);
+        }
+      },760);
     }
   }
   return(
     <div>
-      <div style={{fontSize:"0.8rem",color:T.textSub,fontWeight:700,marginBottom:10}}>Movimientos: {moves}</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
-        {cards.map(c=><div key={c.id} onClick={()=>flip(c.id)} style={{height:60,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.4rem",fontWeight:900,cursor:"pointer",background:c.flipped||c.matched?T.g100:T.g600,color:c.flipped||c.matched?T.g800:T.g600,border:`2px solid ${c.matched?T.g400:T.g500}`,transition:"all 0.2s"}}>{(c.flipped||c.matched)?c.emoji:""}</div>)}
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#EFE0BE,#E2CAA0)",border:`1.5px solid ${T.g300}`}}>
+        <div style={{fontWeight:900,color:T.g800,marginBottom:4}}>🧠 Memoria Pro</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Encuentra las parejas. Ahora son 24 tarjetas con dibujos y utensilios de peluquería.</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
+          <span style={{fontSize:"0.82rem",color:T.g700,fontWeight:900}}>Movimientos: {moves}</span>
+          <Btn small col="ghost" onClick={restart}>🔁 Reiniciar</Btn>
+        </div>
+      </Card>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
+        {cards.map(c=><button key={c.id} onClick={()=>flip(c.id)} style={{height:66,borderRadius:14,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:"1.25rem",fontWeight:900,cursor:"pointer",background:c.flipped||c.matched?"linear-gradient(180deg,#FFF4D6,#E6C27A)":"linear-gradient(180deg,#6E3518,#24110A)",color:c.flipped||c.matched?T.g800:T.g600,border:`2px solid ${c.matched?T.gold:T.g500}`,transition:"all 0.2s",boxShadow:"0 6px 14px rgba(20,8,4,.18)"}}>
+          {(c.flipped||c.matched)?<><span>{c.item.emoji}</span><span style={{fontSize:".55rem",marginTop:2}}>{c.item.label}</span></>:<span style={{color:T.g200}}>?</span>}
+        </button>)}
       </div>
     </div>
   );
@@ -1122,7 +1183,7 @@ function TriviaGame({onWin}){
 }
 
 
-function RastaRunnerGame({onWin}){
+function RastaRunnerGame({onWin,user}){
   const [running,setRunning]=useState(false);
   const [jumping,setJumping]=useState(false);
   const [score,setScore]=useState(0);
@@ -1167,18 +1228,18 @@ function RastaRunnerGame({onWin}){
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}><div style={{fontWeight:900,color:T.g800}}>🦖✂️ Rasta Runner</div><Badge col='gold'>Recorda y esquiva tijeras</Badge></div>
     <div style={{position:'relative',height:180,borderRadius:18,overflow:'hidden',background:'linear-gradient(180deg,#DDEBFF,#FFF0C9 72%,#C7A25C 72%)',border:'2px solid rgba(62,35,18,.15)'}}>
       <div style={{position:'absolute',left:0,right:0,bottom:28,height:4,background:'#6E3518'}}/>
-      <div style={{position:'absolute',left:12,bottom:jumping?74:32,fontSize:'2.2rem',transition:'bottom .18s ease'}}>{jumping?'🧑🏾‍🦱':'🧑🏾‍🦱'}</div>
+      <div style={{position:'absolute',left:12,bottom:jumping?74:32,transition:'bottom .18s ease'}}><Av av={user?.avatar} size={42}/></div>
       <div style={{position:'absolute',left:8,bottom:8,fontSize:'.76rem',fontWeight:900,color:T.g700}}>Puntos: {score}</div>
       {obstacles.map((o,i)=><div key={i} style={{position:'absolute',left:`${o.x}%`,bottom:22,fontSize:'1.6rem'}}>✂️</div>)}
       {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.3)'}}><Btn col='gold' onClick={()=>{setScore(0);setObstacles([{x:100}]);setGameOver(false);setRunning(true)}}>▶ Empezar</Btn></div>}
-      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.52)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Buen intento!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Has logrado {score} de distancia · ganas {pts} pts</div><Btn col='gold' onClick={()=>onWin(pts)}>Cobrar puntos</Btn></div></div>}
+      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.52)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Buen intento!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Has logrado {score} de distancia · ganas {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={()=>{setScore(0);setObstacles([{x:100}]);setGameOver(false);setRunning(true);}}>🔁 Reintentar</Btn></div></div></div>}
     </div>
-    <div style={{marginTop:10,fontSize:'.8rem',fontWeight:800,color:T.textSub}}>Toca <b>saltar</b> o pulsa espacio para esquivar las tijeras.</div>
+    <div style={{marginTop:10,fontSize:'.8rem',fontWeight:800,color:T.textSub}}>Controles: toca el botón <b>Saltar</b>, pulsa espacio o flecha arriba. Puedes rejugar todas las veces; sólo cobras puntos una vez al día.</div>
     {running && <div style={{marginTop:10}}><Btn full col='dark' onClick={doJump}>⤴️ Saltar</Btn></div>}
   </Card>;
 }
 
-function PlatformJumpGame({onWin}){
+function PlatformJumpGame({onWin,user}){
   const [lane,setLane]=useState(1);
   const [rows,setRows]=useState([]);
   const [running,setRunning]=useState(false);
@@ -1220,12 +1281,12 @@ function PlatformJumpGame({onWin}){
         {Array.from({length:5}).map((_,ri)=>Array.from({length:3}).map((__,ci)=>{
           const rowObj=rows.find(r=>r.y===ri && r.safeLane===ci);
           const atPlayer=ri===4 && ci===lane;
-          return <div key={`${ri}-${ci}`} style={{height:28,borderRadius:12,background:rowObj?'linear-gradient(180deg,#B86A2E,#6E3518)':'rgba(255,255,255,.4)',border:atPlayer?'2px solid #C0392B':'1px solid rgba(60,30,12,.12)',display:'grid',placeItems:'center',fontSize:atPlayer?'1.25rem':'1rem'}}>{atPlayer?'🧑🏾‍🦱':rowObj?'🟫':''}</div>;
+          return <div key={`${ri}-${ci}`} style={{height:28,borderRadius:12,background:rowObj?'linear-gradient(180deg,#B86A2E,#6E3518)':'rgba(255,255,255,.4)',border:atPlayer?'2px solid #C0392B':'1px solid rgba(60,30,12,.12)',display:'grid',placeItems:'center',fontSize:atPlayer?'1.25rem':'1rem'}}>{atPlayer?<Av av={user?.avatar} size={24}/>:rowObj?'🟫':''}</div>;
         }))}
       </div>
-      <div style={{display:'flex',justifyContent:'space-between',marginTop:10,fontWeight:900,fontSize:'.8rem',color:T.g700}}><span>Score: {score}</span><span>Cae en la plataforma marrón</span></div>
+      <div style={{display:'flex',justifyContent:'space-between',marginTop:10,fontWeight:900,fontSize:'.8rem',color:T.g700,gap:8}}><span>Score: {score}</span><span>Controles: izquierda/derecha o botones. Cae en la plataforma marrón.</span></div>
       {!running && !gameOver && <div style={{marginTop:12}}><Btn full col='gold' onClick={()=>{setRows([{id:1,y:0,safeLane:1}]);setLane(1);setScore(0);setGameOver(false);setRunning(true);}}>▶ Empezar</Btn></div>}
-      {gameOver && <div style={{marginTop:12,textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Has conseguido {score} y ganas {pts} pts</div><Btn col='gold' onClick={()=>onWin(pts)}>Cobrar puntos</Btn></div>}
+      {gameOver && <div style={{marginTop:12,textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Has conseguido {score} y ganas {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={()=>{setRows([{id:1,y:0,safeLane:1}]);setLane(1);setScore(0);setGameOver(false);setRunning(true);}}>🔁 Reintentar</Btn></div></div>}
       {running && <div style={{display:'flex',gap:8,marginTop:12}}><Btn full col='ghost' onClick={()=>setLane(l=>Math.max(0,l-1))}>⬅️</Btn><Btn full col='dark' onClick={()=>setLane(1)}>⏺️</Btn><Btn full col='ghost' onClick={()=>setLane(l=>Math.min(2,l+1))}>➡️</Btn></div>}
     </div>
   </Card>;
@@ -1242,13 +1303,28 @@ function Juegos({user,setUser,showToast,showPoints}){
     {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Esquiva tijeras",pts:40},
     {id:"jump",icon:"🌤️",title:"Dread Jump",desc:"Salta plataformas",pts:45}
   ];
+  useEffect(()=>{
+    if(activeGame) startGameMusic(activeGame);
+    else stopGameMusic();
+    return ()=>stopGameMusic();
+  },[activeGame]);
   async function handleWin(gameId,pts){
-    markPlayedToday(gameId,user.id);
+    const alreadyPlayed=getPlayedToday(gameId,user.id);
     saveLocalGameScore(gameId,user,pts);
     try{ await dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,game_id:gameId,score:pts,week:weekKey()}); }catch{}
+    setBoardTick(t=>t+1);
+    if(alreadyPlayed){
+      SFX.success();
+      showToast(`Récord guardado. Los puntos de ${gameId} ya estaban cobrados hoy.`);
+      setActiveGame(null);
+      return;
+    }
+    markPlayedToday(gameId,user.id);
     const nuevos=(user.puntos||0)+pts;
     await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser(u=>({...u,puntos:nuevos}));setBoardTick(t=>t+1);showPoints(pts);SFX.coins();showToast(`+${pts} puntos!`);setActiveGame(null);
+    setUser(u=>({...u,puntos:nuevos}));
+    showPoints(pts);SFX.coins();showToast(`+${pts} puntos!`);
+    setActiveGame(null);
   }
   if(activeGame){
     const g=GAMES.find(x=>x.id===activeGame);
@@ -1261,8 +1337,8 @@ function Juegos({user,setUser,showToast,showPoints}){
         {activeGame==="sopa"&&<SopaLetras onWin={pts=>handleWin("sopa",pts)}/>}
         {activeGame==="memoria"&&<MemoryGame onWin={pts=>handleWin("memoria",pts)}/>}
         {activeGame==="trivia"&&<TriviaGame onWin={pts=>handleWin("trivia",pts)}/>}
-        {activeGame==="runner"&&<RastaRunnerGame onWin={pts=>handleWin("runner",pts)}/>}
-        {activeGame==="jump"&&<PlatformJumpGame onWin={pts=>handleWin("jump",pts)}/>}
+        {activeGame==="runner"&&<RastaRunnerGame user={user} onWin={pts=>handleWin("runner",pts)}/>}
+        {activeGame==="jump"&&<PlatformJumpGame user={user} onWin={pts=>handleWin("jump",pts)}/>}
       </div>
     );
   }
@@ -1279,7 +1355,7 @@ function Juegos({user,setUser,showToast,showPoints}){
               <div style={{display:"flex",alignItems:"center",gap:14}}>
                 <div className="icon3d" style={{fontSize:"2.55rem"}}>{g.icon}</div>
                 <div style={{flex:1}}><div style={{fontWeight:900,fontSize:"1rem"}}>{g.title}</div><div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800}}>{g.desc}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:4}}><span style={{fontSize:"0.75rem",color:T.orange,fontWeight:900}}>🏅 Hasta +{g.pts} pts</span><span style={{fontSize:"0.75rem",color:T.g700,fontWeight:900}}>📈 Récord: {best} pts</span></div></div>
-                {played?<Badge col="green">✅ Hoy</Badge>:<Btn small col="gold" onClick={()=>setActiveGame(g.id)}>▶ Jugar</Btn>}
+                <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>{played&&<Badge col="green">✅ Puntos hoy</Badge>}<Btn small col="gold" onClick={()=>setActiveGame(g.id)}>{played?"🔁 Rejugar":"▶ Jugar"}</Btn></div>
               </div>
             </Card>
           );
@@ -1605,7 +1681,7 @@ export default function App(){
 
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
-  function toggleMusic(){globalMuted=!globalMuted;if(globalMuted){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}
+  function toggleMusic(){globalMuted=!globalMuted;if(globalMuted){stopMusic();stopGameMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}
   const navTo=id=>{id===page?SFX.tab():(id==="dashboard"?SFX.navBack():SFX.nav());setPage(id);};
   const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");};
 
