@@ -55,6 +55,13 @@ const T = {
 
 const ROLES = { ADMIN:"admin", STAFF:"staff", CLIENT:"cliente" };
 
+function normalizeRole(value){
+  const role = String(value || "").trim().toLowerCase();
+  if(["admin","administrador","administrator"].includes(role)) return ROLES.ADMIN;
+  if(["staff","empleado","trabajador","worker"].includes(role)) return ROLES.STAFF;
+  return ROLES.CLIENT;
+}
+
 const BRAND = {
   name:"Rasta Cuts",
   tagline:"Cortes, rastas y estilo urbano",
@@ -177,7 +184,15 @@ function BrandLogo(){
 }
 
 function toAppUser(u){
-  return {id:u.id,nombre:u.nombre,email:u.email,rol:u.role||"cliente",puntos:u.puntos||0,avatar:u.avatar||0,fecha_registro:u.created_at};
+  return {
+    id:u.id,
+    nombre:u.nombre,
+    email:u.email,
+    rol:normalizeRole(u.role || u.rol),
+    puntos:u.puntos||0,
+    avatar:u.avatar||0,
+    fecha_registro:u.created_at
+  };
 }
 async function getUserProfileByEmail(email){
   if(!supabase || !email) return null;
@@ -703,7 +718,7 @@ function Tienda({user,setUser,showToast,showPoints}){
   }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🛍️" title="Tienda" sub={`Tienes ${user.puntos||0} pts`}/>
+      <SectionHeader icon="🛍️" title="Tienda" sub={`Tienes ${currentUser.puntos||0} pts`}/>
       <Card style={{background:T.gradGold,border:"none",marginBottom:16,padding:"14px 16px"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div style={{color:T.white}}><div style={{fontSize:"0.78rem",fontWeight:700,opacity:0.85}}>TUS PUNTOS</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem"}}>{user.puntos||0}</div></div>
@@ -1178,7 +1193,7 @@ function Perfil({user,setUser,onLogout,showToast}){
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800,marginTop:10}}>{user.nombre}</div>
         <div style={{fontSize:"0.82rem",color:T.textSub}}>{user.email}</div>
         <div style={{marginTop:8}}><Badge col="gold">{nivel}</Badge></div>
-        {user.rol===ROLES.CLIENT&&<div style={{marginTop:12}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.g700}}>{user.puntos||0} pts</div></div>}
+        {user.rol===ROLES.CLIENT&&<div style={{marginTop:12}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.g700}}>{currentUser.puntos||0} pts</div></div>}
       </Card>
       {editing?(
         <Card style={{marginBottom:16}}>
@@ -1244,22 +1259,23 @@ export default function App(){
     </>
   );
 
-  const role=user.rol||"cliente";
+  const role=normalizeRole(user.rol || user.role);
   const nav=NAV_CFG[role]||NAV_CFG.cliente;
   const grad=GRAD_ROLE[role]||GRAD_ROLE.cliente;
   const ap=nav.find(n=>n.id===page)?page:"dashboard";
-  const sp={showToast,showPoints,user,setUser};
+  const currentUser={...user,rol:role};
+  const sp={showToast,showPoints,user:currentUser,setUser};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
   const pages={
-    dashboard:role===ROLES.CLIENT?<ClientDashboard user={user}/>:<DashboardAdmin user={user}/>,
+    dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser}/>:<DashboardAdmin user={currentUser}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,
     tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp}/>,retos:<Retos {...sp}/>,
-    ranking:<Ranking user={user}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
+    ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
-    reviews:<Reviews {...sp}/>,chat:<Chat user={user} showToast={showToast}/>,
-    cupones:<Cupones user={user} showToast={showToast}/>,
+    reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
+    cupones:<Cupones user={currentUser} showToast={showToast}/>,
   };
 
   return(
@@ -1274,9 +1290,9 @@ export default function App(){
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <button onClick={toggleMusic} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"Silenciar":"Sonido"}</button>
-          {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{user.puntos||0} pts</div>}
+          {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
           <div onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
-            <Av av={user.avatar} size={32}/>
+            <Av av={currentUser.avatar} size={32}/>
           </div>
         </div>
       </div>
