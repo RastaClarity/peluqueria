@@ -1,26 +1,38 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = SUPA_URL && SUPA_KEY ? createClient(SUPA_URL, SUPA_KEY) : null;
+// Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
+// La anon key es pública en apps frontend; lo que nunca debe ponerse aquí es la service_role/secret key.
+const FALLBACK_SUPA_URL = "https://uetuoxtfccrbymwlsssx.supabase.co";
+const FALLBACK_SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVldHVveHRmY2NyYnltd2xzc3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MjExMDIsImV4cCI6MjA5NTE5NzEwMn0.-A_cY0w1_V4UPeMXmFWStJ52xhWvHL5ecGtEEcBd1XA";
+
+const SUPA_URL = (import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPA_URL).trim();
+const SUPA_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY || FALLBACK_SUPA_KEY).trim();
+const supabase = createClient(SUPA_URL, SUPA_KEY);
 
 async function db(table, method="GET", body=null, query="") {
-  if (!SUPA_URL || !SUPA_KEY) return method === "GET" ? [] : false;
   const url = `${SUPA_URL}/rest/v1/${table}${query}`;
+  let token = SUPA_KEY;
+  try {
+    const { data } = await supabase.auth.getSession();
+    token = data?.session?.access_token || SUPA_KEY;
+  } catch {}
+
   const res = await fetch(url, {
     method,
     headers: {
       apikey: SUPA_KEY,
-      Authorization: `Bearer ${SUPA_KEY}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       Prefer: method==="POST" ? "return=representation" : "return=minimal",
     },
     body: body ? JSON.stringify(body) : null,
   });
+
   if (method==="GET" || (method==="POST" && res.ok)) {
     try { return await res.json(); } catch { return []; }
   }
+
   return res.ok;
 }
 const dbGet   = (t,q="") => db(t,"GET",null,q);
@@ -195,28 +207,34 @@ function Auth({onLogin,showToast}){
   const [pass,setPass]=useState("");
   const [name,setName]=useState("");
   const [loading,setLoading]=useState(false);
+  const [formError,setFormError]=useState("");
+
+  function showAuthError(msg){
+    setFormError(msg);
+    showToast(msg);
+  }
 
   async function handleLogin(){
-    if(!email||!pass){showToast("Rellena todos los campos");SFX.error();return;}
-    if(!supabase){showToast("Faltan las variables de entorno de Supabase");SFX.error();return;}
+    if(!email||!pass){showAuthError("Rellena todos los campos");SFX.error();return;}
+    if(!supabase){showAuthError("No se pudo conectar con Supabase");SFX.error();return;}
     setLoading(true);
     const cleanEmail=email.trim().toLowerCase();
     const {data,error}=await supabase.auth.signInWithPassword({email:cleanEmail,password:pass});
-    if(error){setLoading(false);showToast("Email o contraseña incorrectos");SFX.error();return;}
+    if(error){setLoading(false);showAuthError(error.message || "Email o contraseña incorrectos");SFX.error();return;}
     let perfil=await getUserProfileByEmail(data.user?.email||cleanEmail);
     if(!perfil){
       perfil=await createUserProfile({nombre:data.user?.user_metadata?.nombre||cleanEmail.split("@")[0],email:cleanEmail});
     }
     setLoading(false);
-    if(!perfil){showToast("No se pudo cargar tu perfil");SFX.error();return;}
+    if(!perfil){showAuthError("No se pudo cargar tu perfil");SFX.error();return;}
     SFX.success();
     onLogin(toAppUser(perfil));
   }
 
   async function handleRegister(){
-    if(!email||!pass||!name){showToast("Rellena todos los campos");SFX.error();return;}
-    if(pass.length<6){showToast("La contraseña debe tener al menos 6 caracteres");SFX.error();return;}
-    if(!supabase){showToast("Faltan las variables de entorno de Supabase");SFX.error();return;}
+    if(!email||!pass||!name){showAuthError("Rellena todos los campos");SFX.error();return;}
+    if(pass.length<6){showAuthError("La contraseña debe tener al menos 6 caracteres");SFX.error();return;}
+    if(!supabase){showAuthError("No se pudo conectar con Supabase");SFX.error();return;}
     setLoading(true);
     const cleanEmail=email.trim().toLowerCase();
     const cleanName=name.trim();
@@ -225,13 +243,13 @@ function Auth({onLogin,showToast}){
       password:pass,
       options:{data:{nombre:cleanName}}
     });
-    if(error){setLoading(false);showToast(error.message||"No se pudo registrar la cuenta");SFX.error();return;}
+    if(error){setLoading(false);showAuthError(error.message||"No se pudo registrar la cuenta");SFX.error();return;}
     let perfil=await getUserProfileByEmail(cleanEmail);
     if(!perfil){
       perfil=await createUserProfile({nombre:cleanName,email:cleanEmail});
     }
     setLoading(false);
-    if(!perfil){showToast("Cuenta creada, pero no se pudo crear el perfil");SFX.error();return;}
+    if(!perfil){showAuthError("Cuenta creada, pero no se pudo crear el perfil");SFX.error();return;}
     SFX.success();showToast(`Bienvenido a ${BRAND.name}!`);
     onLogin(toAppUser(perfil));
   }
@@ -250,11 +268,16 @@ function Auth({onLogin,showToast}){
         <Card style={{padding:"28px 24px",animation:"popIn 0.4s ease",background:"#F5E6C8",border:"2px solid #8B4513"}}>
           <div style={{display:"flex",background:T.g100,borderRadius:12,padding:4,marginBottom:22}}>
             {["login","register"].map(m=>(
-              <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"8px",borderRadius:10,border:"none",background:mode===m?T.white:"transparent",color:mode===m?T.g800:T.textSub,fontWeight:800,fontSize:"0.85rem",cursor:"pointer",transition:"all 0.2s"}}>
+              <button key={m} onClick={()=>{setMode(m);setFormError("");}} style={{flex:1,padding:"8px",borderRadius:10,border:"none",background:mode===m?T.white:"transparent",color:mode===m?T.g800:T.textSub,fontWeight:800,fontSize:"0.85rem",cursor:"pointer",transition:"all 0.2s"}}>
                 {m==="login"?"Entrar":"Registrarse"}
               </button>
             ))}
           </div>
+          {formError&&(
+            <div style={{background:"#FFEBEE",border:"1.5px solid #8B0000",color:"#8B0000",borderRadius:12,padding:"10px 12px",fontWeight:800,fontSize:"0.82rem",marginBottom:14}}>
+              {formError}
+            </div>
+          )}
           {mode==="login"?(
             <div>
               <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
@@ -1214,7 +1237,12 @@ export default function App(){
   const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");};
 
   if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/></div>;
-  if(!user)return <Auth onLogin={u=>{setUser(u);setPage("dashboard");}} showToast={showToast}/>;
+  if(!user)return (
+    <>
+      <Auth onLogin={u=>{setUser(u);setPage("dashboard");}} showToast={showToast}/>
+      <Toast msg={toast.msg} show={toast.show}/>
+    </>
+  );
 
   const role=user.rol||"cliente";
   const nav=NAV_CFG[role]||NAV_CFG.cliente;
