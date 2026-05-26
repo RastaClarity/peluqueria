@@ -28,9 +28,9 @@ const T = {
   // Parchment/Pirate palette
   g900:"#2C1810",g800:"#3D2314",g700:"#5C3317",g600:"#8B4513",
   g500:"#A0522D",g400:"#CD853F",g300:"#DEB887",g200:"#F5DEB3",
-  g150:"#FAF0DC",g100:"#FDF6E3",g50:"#FFFEF9",
+  g150:"#D4AA6E",g100:"#DDB97A",g50:"#E8C98A",
   pink:"#C0392B",gold:"#D4AF37",orange:"#E8871A",red:"#8B0000",blue:"#1A3A5C",
-  text:"#2C1810",textSub:"#8B4513",white:"#FFFEF9",
+  text:"#2C1810",textSub:"#8B4513",white:"#F5E6C8",
   gradAdmin:"linear-gradient(135deg,#2C1810,#5C3317)",
   gradStaff:"linear-gradient(135deg,#5C3317,#8B4513)",
   gradClient:"linear-gradient(135deg,#8B4513,#CD853F)",
@@ -82,10 +82,10 @@ function startMusic(){
 function stopMusic(){musicPlaying=false;if(musicInterval){clearInterval(musicInterval);musicInterval=null;}}
 
 const CSS=`
-@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=MedievalSharp&family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#CD853F;border-radius:4px}
-body{margin:0;background:#FDF6E3;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238B4513' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+body{margin:0;background-color:#C8A96E;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(101,67,33,0.03) 2px,rgba(101,67,33,0.03) 4px),repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(101,67,33,0.02) 2px,rgba(101,67,33,0.02) 4px),linear-gradient(160deg,#D4A96A 0%,#C19A5B 30%,#B8924F 60%,#C4A060 100%)}
 input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes popIn{from{opacity:0;transform:scale(0.82)}to{opacity:1;transform:scale(1)}}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -105,7 +105,7 @@ function Btn({children,onClick,col="green",full=false,small=false,disabled=false
   return <button onClick={disabled?undefined:onClick} className="bp" style={{background:col==="ghost"?"transparent":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"none",borderRadius:14,padding:small?"7px 14px":"11px 20px",fontWeight:800,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"none":`0 4px 14px ${c.sh}`,transition:"all 0.18s ease",...sx}}>{children}</button>;
 }
 function Card({children,style:sx={},onClick,hover=false}){
-  return <div onClick={onClick} className={hover?"ch":""} style={{background:T.white,borderRadius:18,padding:"16px",boxShadow:"0 2px 12px rgba(27,67,50,0.08)",border:`1px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",...sx}}>{children}</div>;
+  return <div onClick={onClick} className={hover?"ch":""} style={{background:"#F5E6C8",borderRadius:18,padding:"16px",boxShadow:"0 4px 16px rgba(101,67,33,0.25)",border:`2px solid ${T.g400}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",...sx}}>{children}</div>;
 }
 function Input({label,value,onChange,type="text",placeholder="",style:sx={}}){
   return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.88rem",color:T.text,outline:"none",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
@@ -187,7 +187,7 @@ function Auth({onLogin,showToast}){
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.4rem",color:T.white}}>PeluquerIA</div>
           <div style={{color:T.g200,fontSize:"0.85rem",marginTop:4,fontWeight:600}}>Tu peluqueria inteligente</div>
         </div>
-        <Card style={{padding:"28px 24px",animation:"popIn 0.4s ease"}}>
+        <Card style={{padding:"28px 24px",animation:"popIn 0.4s ease",background:"#F5E6C8",border:"2px solid #8B4513"}}>
           <div style={{display:"flex",background:T.g100,borderRadius:12,padding:4,marginBottom:22}}>
             {["login","register"].map(m=>(
               <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"8px",borderRadius:10,border:"none",background:mode===m?T.white:"transparent",color:mode===m?T.g800:T.textSub,fontWeight:800,fontSize:"0.85rem",cursor:"pointer",transition:"all 0.2s"}}>
@@ -1114,11 +1114,11 @@ export default function App(){
         </div>
       </div>
       <div style={{padding:"18px 14px"}}>{pages[ap]||pages["dashboard"]}</div>
-      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:T.white,borderTop:`1.5px solid ${T.g150}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(27,67,50,0.08)"}}>
+      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#8B5E2F",borderTop:`2px solid ${T.g600}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(27,67,50,0.08)"}}>
         {nav.map(n=>(
           <button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38}}>
             <div style={{fontSize:"1.1rem",background:ap===n.id?grad:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?"0 3px 12px rgba(27,67,50,0.2)":"none"}}>{n.icon}</div>
-            <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?T.g600:T.textSub,transition:"color 0.2s"}}>{n.label}</span>
+            <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?"#F5E6C8":"#DEB887",transition:"color 0.2s"}}>{n.label}</span>
           </button>
         ))}
       </div>
