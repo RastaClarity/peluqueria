@@ -560,11 +560,11 @@ async function getUserProfileByEmail(email){
   if(data) data.avatar_config=await getAvatarConfigForProfile(data);
   return data;
 }
-async function createUserProfile({nombre,email,password=""}){
+async function createUserProfile({nombre,email}){
   if(!supabase || !email) return null;
   const {data,error}=await supabase
     .from("usuarios")
-    .insert({nombre,email:email.toLowerCase(),password,role:"client",puntos:0,avatar:Math.floor(Math.random()*AVATARS.length)})
+    .insert({nombre,email:email.toLowerCase(),role:"client",puntos:0,avatar:Math.floor(Math.random()*AVATARS.length)})
     .select("id,nombre,email,role,puntos,avatar,created_at")
     .maybeSingle();
   if(error){ console.error("Error creando perfil en usuarios:", error); return null; }
@@ -599,7 +599,7 @@ function Auth({onLogin,showToast}){
     if(error){setLoading(false);showAuthError(error.message || "Email o contraseña incorrectos");SFX.error();return;}
     let perfil=await getUserProfileByEmail(data.user?.email||cleanEmail);
     if(!perfil){
-      perfil=await createUserProfile({nombre:data.user?.user_metadata?.nombre||cleanEmail.split("@")[0],email:cleanEmail,password:pass});
+      perfil=await createUserProfile({nombre:data.user?.user_metadata?.nombre||cleanEmail.split("@")[0],email:cleanEmail});
     }
     setLoading(false);
     if(!perfil){showAuthError("No se pudo cargar tu perfil");SFX.error();return;}
@@ -622,7 +622,7 @@ function Auth({onLogin,showToast}){
     if(error){setLoading(false);showAuthError(error.message||"No se pudo registrar la cuenta");SFX.error();return;}
     let perfil=await getUserProfileByEmail(cleanEmail);
     if(!perfil){
-      perfil=await createUserProfile({nombre:cleanName,email:cleanEmail,password:pass});
+      perfil=await createUserProfile({nombre:cleanName,email:cleanEmail});
     }
     setLoading(false);
     if(!perfil){showAuthError("Cuenta creada, pero no se pudo crear el perfil");SFX.error();return;}
@@ -1094,7 +1094,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
 // FORO
 function Foro({user,showToast}){
   const [topics,setTopics]=useState([]);
-  const [replies,setReplies]=useState({});
+  const [repliesMap,setRepliesMap]=useState({});
   const [loading,setLoading]=useState(true);
   const [title,setTitle]=useState("");
   const [body,setBody]=useState("");
@@ -1107,56 +1107,60 @@ function Foro({user,showToast}){
 
   async function load(){
     setLoading(true);
-    const [rawTopics,users]=await Promise.all([
+    const [raw,users,replies]=await Promise.all([
       dbGet("publicaciones","?tipo=eq.foro&order=created_at.desc&limit=40&select=*"),
-      dbGet("usuarios","?select=id,nombre,role,puntos,avatar,visitas")
+      dbGet("usuarios","?select=id,nombre,role,puntos,avatar,visitas"),
+      dbGet("foro_respuestas","?order=created_at.asc&limit=500&select=*")
     ]);
-    const cleanTopics=Array.isArray(rawTopics)?rawTopics:[];
-    setTopics(cleanTopics);
+    const safeTopics=Array.isArray(raw)?raw:[];
+    const grouped={};
+    (Array.isArray(replies)?replies:[]).forEach(r=>{
+      const key=String(r.tema_id);
+      if(!grouped[key]) grouped[key]=[];
+      grouped[key].push(r);
+    });
+    setTopics(safeTopics);
     setProfiles(Array.isArray(users)?users:[]);
-
-    if(cleanTopics.length){
-      const ids=cleanTopics.map(t=>t.id).filter(Boolean).join(",");
-      const rawReplies=ids?await dbGet("foro_respuestas",`?publicacion_id=in.(${ids})&order=created_at.asc&select=*`):[];
-      const grouped={};
-      (Array.isArray(rawReplies)?rawReplies:[]).forEach(r=>{
-        const k=String(r.publicacion_id);
-        if(!grouped[k]) grouped[k]=[];
-        grouped[k].push(r);
-      });
-      setReplies(grouped);
-    }else{
-      setReplies({});
-    }
+    setRepliesMap(grouped);
     setLoading(false);
   }
 
   function authorOf(item){return profiles.find(u=>String(u.id)===String(item.autor_id))||user;}
-  function replyCount(id){return (replies[String(id)]||[]).length;}
+  function getReplies(id){return repliesMap[String(id)]||[];}
 
   async function createTopic(){
-    if(!title.trim()||!body.trim()){showToast("Pon título y texto");SFX.error();return;}
-    const res=await dbPost("publicaciones",{titulo:title.trim(),contenido:body.trim(),autor_id:user.id,tipo:"foro",likes_count:0});
-    if(!res){showToast("No se pudo crear el tema. Revisa la tabla publicaciones.");SFX.error();return;}
-    setTitle("");setBody("");SFX.success();showToast("Tema creado");load();
+    if(!title.trim()||!body.trim()){showToast("Pon título y texto");return;}
+    const created=await dbPost("publicaciones",{titulo:title.trim(),contenido:body.trim(),autor_id:user.id,tipo:"foro",likes_count:0});
+    setTitle("");setBody("");SFX.success();showToast("Tema creado");
+    if(Array.isArray(created)&&created[0]) setActive(created[0]);
+    load();
   }
 
   async function addReply(topic){
     if(!reply.trim())return;
-    const res=await dbPost("foro_respuestas",{publicacion_id:topic.id,autor_id:user.id,contenido:reply.trim()});
-    if(!res){showToast("No se pudo responder. Ejecuta el SQL de foro_respuestas.");SFX.error();return;}
-    setReply("");SFX.success();showToast("Respuesta publicada");await load();setActive(topic);
+    await dbPost("foro_respuestas",{
+      tema_id:topic.id,
+      autor_id:user.id,
+      autor_nombre:user.nombre,
+      autor_avatar:user.avatar,
+      autor_avatar_config:user.avatarConfig||user.avatar_config||null,
+      contenido:reply.trim()
+    });
+    setReply("");
+    SFX.success();
+    showToast("Respuesta publicada");
+    await load();
+    setActive(a=>a?{...a,_tick:Date.now()}:topic);
   }
 
   async function vote(topic){
-    await dbPatch("publicaciones",`?id=eq.${topic.id}`,{likes_count:(topic.likes_count||0)+1});
-    const updated={...topic,likes_count:(topic.likes_count||0)+1};
-    setActive(updated);load();
+    const nextLikes=(topic.likes_count||0)+1;
+    await dbPatch("publicaciones",`?id=eq.${topic.id}`,{likes_count:nextLikes});
+    setTopics(ts=>ts.map(t=>t.id===topic.id?{...t,likes_count:nextLikes}:t));
+    setActive(a=>a?.id===topic.id?{...a,likes_count:nextLikes}:a);
   }
 
   const shown=active||null;
-  const shownReplies=shown?(replies[String(shown.id)]||[]):[];
-
   return <div style={{animation:"fadeSlide .4s ease"}}>
     <SectionHeader icon="🗣️" title="Foro Rasta" sub="Temas, dudas, votaciones y conversación entre clientes"/>
     {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
@@ -1165,26 +1169,16 @@ function Foro({user,showToast}){
       <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Escribe tu duda, idea o propuesta..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:'#F3E7CA',resize:"none",outline:"none"}}/>
       <div style={{marginTop:10}}><Btn full col="gold" onClick={createTopic}>➕ Crear tema</Btn></div>
     </Card>}
-
     {shown? <div>
       <Btn small col="ghost" onClick={()=>setActive(null)} style={{marginBottom:10}}>← Volver al foro</Btn>
       <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
-        <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:8,cursor:"pointer"}} onClick={()=>setSelectedProfile(authorOf(shown))}>
-          <Av av={authorOf(shown).avatar} config={authorOf(shown).avatarConfig} size={36}/>
-          <div><div style={{fontWeight:900,color:T.g800,fontSize:".86rem"}}>{authorOf(shown).nombre||"Usuario"}</div><div style={{fontSize:".7rem",fontWeight:800,color:T.textSub}}>Autor del tema</div></div>
-        </div>
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>{shown.titulo||"Tema del foro"}</div>
         <div style={{fontSize:".9rem",fontWeight:700,lineHeight:1.5,whiteSpace:'pre-wrap',marginTop:8}}>{shown.contenido}</div>
-        <div style={{display:"flex",justifyContent:"space-between",marginTop:12,alignItems:"center"}}><Badge col="blue">{shownReplies.length} respuestas</Badge><Btn small col="gold" onClick={()=>vote(shown)}>👍 Votar {shown.likes_count||0}</Btn></div>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:12,alignItems:"center"}}><Badge col="blue">{getReplies(shown.id).length} respuestas</Badge><Btn small col="gold" onClick={()=>vote(shown)}>👍 Votar {shown.likes_count||0}</Btn></div>
       </Card>
-
-      {shownReplies.map(r=>{const a=authorOf(r);return <Card key={r.id} style={{marginBottom:8,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}>
-        <div onClick={()=>setSelectedProfile(a)} style={{display:"flex",gap:8,alignItems:"center",marginBottom:6,cursor:"pointer"}}><Av av={a.avatar} config={a.avatarConfig} size={30}/><b>{a.nombre||"Usuario"}</b></div>
-        <div style={{fontSize:".86rem",fontWeight:700,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div>
-      </Card>})}
-
+      {getReplies(shown.id).map(r=><Card key={r.id} style={{marginBottom:8,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}><div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6,cursor:"pointer"}} onClick={()=>setSelectedProfile({id:r.autor_id,nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,puntos:0})}><Av av={r.autor_avatar} config={r.autor_avatar_config} size={30}/><b>{r.autor_nombre||"Usuario"}</b></div><div style={{fontSize:".86rem",fontWeight:700,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div></Card>)}
       <Card><textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder="Responder al tema..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:'#F3E7CA',resize:"none"}}/><div style={{marginTop:8}}><Btn full onClick={()=>addReply(shown)}>Responder</Btn></div></Card>
-    </div> : loading?<Spinner/>:topics.length===0?<EmptyState icon="🗣️" title="Foro vacío" sub="Sé el primero en abrir un tema."/>:topics.map(t=>{const a=authorOf(t);return <Card key={t.id} hover onClick={()=>setActive(t)} style={{marginBottom:10}}><div style={{display:"flex",gap:10,alignItems:"center"}}><Av av={a.avatar} config={a.avatarConfig} size={36}/><div style={{flex:1}}><div style={{fontWeight:900,color:T.g800}}>{t.titulo||t.contenido?.slice(0,48)||"Tema"}</div><div style={{fontSize:".75rem",fontWeight:800,color:T.textSub}}>{a.nombre||"Usuario"} · 👍 {t.likes_count||0} · 💬 {replyCount(t.id)}</div></div></div></Card>;})}
+    </div> : loading?<Spinner/>:topics.length===0?<EmptyState icon="🗣️" title="Foro vacío" sub="Sé el primero en abrir un tema."/>:topics.map(t=>{const a=authorOf(t);return <Card key={t.id} hover onClick={()=>setActive(t)} style={{marginBottom:10}}><div style={{display:"flex",gap:10,alignItems:"center"}}><Av av={a.avatar} config={a.avatar_config||a.avatarConfig} size={36}/><div style={{flex:1}}><div style={{fontWeight:900,color:T.g800}}>{t.titulo||t.contenido?.slice(0,48)||"Tema"}</div><div style={{fontSize:".75rem",fontWeight:800,color:T.textSub}}>{a.nombre||"Usuario"} · 👍 {t.likes_count||0} · 💬 {getReplies(t.id).length}</div></div></div></Card>;})}
     <PublicProfileModal profile={selectedProfile} onClose={()=>setSelectedProfile(null)}/>
   </div>;
 }
@@ -1999,7 +1993,7 @@ export default function App(){
       if(sessionUser?.email){
         let perfil=await getUserProfileByEmail(sessionUser.email);
         if(!perfil){
-          perfil=await createUserProfile({nombre:sessionUser.user_metadata?.nombre||sessionUser.email.split("@")[0],email:sessionUser.email,password:""});
+          perfil=await createUserProfile({nombre:sessionUser.user_metadata?.nombre||sessionUser.email.split("@")[0],email:sessionUser.email});
         }
         if(perfil) setUser(toAppUser(perfil));
       }
