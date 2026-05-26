@@ -195,6 +195,34 @@ function Modal({show,onClose,title,children}){
 }
 function Spinner(){return <div style={{width:28,height:28,border:`3px solid ${T.g200}`,borderTop:`3px solid ${T.g600}`,borderRadius:"50%",animation:"spin 0.7s linear infinite",margin:"20px auto"}}/>;}
 function EmptyState({icon,title,sub}){return <div style={{textAlign:"center",padding:"40px 20px",color:T.textSub}}><div style={{fontSize:"2.8rem",marginBottom:10}}>{icon}</div><div style={{fontWeight:800,fontSize:"1rem",color:T.g700,marginBottom:6}}>{title}</div><div style={{fontSize:"0.83rem"}}>{sub}</div></div>;}
+function PublicProfileModal({profile,onClose}){
+  if(!profile)return null;
+  const cfg=normalizeAvatarConfig(profile.avatar_config||profile.avatarConfig,profile.avatar);
+  const pts=Number(profile.puntos||0);
+  const nivel=pts>=1000?"VIP":pts>=500?"Gold":pts>=200?"Silver":"Bronze";
+  return <Modal show={!!profile} onClose={onClose} title="Perfil público">
+    <div style={{textAlign:"center"}}>
+      <div style={{display:"flex",justifyContent:"center",marginBottom:10}}><Av av={profile.avatar} config={cfg} size={96}/></div>
+      <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",color:T.g800}}>{profile.nombre||"Cliente Rasta"}</div>
+      <div style={{display:"flex",justifyContent:"center",gap:8,flexWrap:"wrap",marginTop:10}}>
+        <Badge col="gold">{nivel}</Badge><Badge col="green">{pts} pts</Badge>
+      </div>
+      <Card style={{marginTop:14,textAlign:"left",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+        <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🎭 Estilo</div>
+        <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub}}>{avatarStyleName(cfg)}</div>
+      </Card>
+      <Card style={{marginTop:10,textAlign:"left",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
+        <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🏆 Resumen público</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
+          <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Puntos</div></div>
+          <div><div style={{fontSize:"1.4rem"}}>🔥</div><b>{profile.visitas||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Visitas</div></div>
+          <div><div style={{fontSize:"1.4rem"}}>🎮</div><b>{profile.records||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Récords</div></div>
+        </div>
+      </Card>
+    </div>
+  </Modal>;
+}
+
 function SectionHeader({icon,title,sub,action}){return <div style={{marginBottom:18,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800}}>{icon} {title}</div>{sub&&<div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2}}>{sub}</div>}</div>{action}</div>;}
 function StatCard({icon,label,value,col="green"}){
   const C={green:{bg:T.g150,ac:T.g600},gold:{bg:"#FFF8E1",ac:T.orange},pink:{bg:"#FCE4EC",ac:T.pink},blue:{bg:"#E3F2FD",ac:T.blue}};
@@ -712,6 +740,16 @@ function ClientDashboard({user,onNavigate}){
   const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Gold":user.puntos>=200?"Silver":"Bronze";
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <Card style={{marginBottom:16,background:"linear-gradient(160deg,#FFF4D6,#E9D9B7 55%,#D4AF37)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",gap:12,alignItems:"center"}}>
+          <div className="icon3d" style={{fontSize:"2.4rem"}}>🧑🏾‍🦱</div>
+          <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>Bienvenido a Rasta Cuts</div><div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Reserva, juega, gana puntos, lee anuncios oficiales y entra al foro para hablar con la comunidad.</div></div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginTop:12}}>
+          <Btn small col="gold" onClick={()=>onNavigate?.("feed")}>📌 Ver tablón</Btn>
+          <Btn small col="dark" onClick={()=>onNavigate?.("foro")}>🗣️ Ir al foro</Btn>
+        </div>
+      </Card>
       <Card style={{background:"linear-gradient(135deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.4)",marginBottom:16,padding:"20px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div>
@@ -1002,43 +1040,153 @@ function AdminUsuarios({user,showToast}){
   );
 }
 
-// FEED
+// FEED / TABLON
 function SocialFeed({user,setUser,showToast,showPoints}){
-  const [posts,setPosts]=useState([]);const [newPost,setNewPost]=useState("");const [loading,setLoading]=useState(true);
+  const [posts,setPosts]=useState([]);const [newPost,setNewPost]=useState("");const [loading,setLoading]=useState(true);const [profiles,setProfiles]=useState([]);const [selectedProfile,setSelectedProfile]=useState(null);
+  const canPost=normalizeRole(user.rol||user.role)!==ROLES.CLIENT;
   useEffect(()=>{load();},[]);
-  async function load(){setLoading(true);setPosts(await dbGet("publicaciones","?order=created_at.desc&limit=20&select=*")||[]);setLoading(false);}
+  async function load(){
+    setLoading(true);
+    const [raw,users]=await Promise.all([
+      dbGet("publicaciones","?tipo=neq.foro&order=created_at.desc&limit=30&select=*"),
+      dbGet("usuarios","?select=id,nombre,role,puntos,avatar,visitas")
+    ]);
+    setPosts(Array.isArray(raw)?raw:[]);setProfiles(Array.isArray(users)?users:[]);setLoading(false);
+  }
+  function authorOf(post){return profiles.find(u=>String(u.id)===String(post.autor_id))||user;}
   async function publish(){
+    if(!canPost){showToast("Solo admin y staff pueden publicar en el tablón");SFX.error();return;}
     if(!newPost.trim())return;
-    await dbPost("publicaciones",{contenido:newPost,autor_id:user.id,tipo:"post",likes_count:0});
-    const nuevos=(user.puntos||0)+5;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser(u=>({...u,puntos:nuevos}));showPoints(5);setNewPost("");SFX.success();load();
+    await dbPost("publicaciones",{contenido:newPost.trim(),autor_id:user.id,tipo:"anuncio",likes_count:0});
+    setNewPost("");SFX.success();showToast("Anuncio publicado");load();
   }
   async function likePost(post){ await dbPatch("publicaciones",`?id=eq.${post.id}`,{likes_count:(post.likes_count||0)+1});load(); }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="💬" title="Feed" sub="Comparte tu look con la comunidad"/>
+      <SectionHeader icon="📌" title="Tablón de anuncios" sub="Noticias, promociones y avisos oficiales de la tienda"/>
       <Card style={{marginBottom:16,background:'linear-gradient(180deg,#E9D9B7 0%,#DEC79A 100%)',border:`2px solid ${T.g300}`,boxShadow:'0 10px 24px rgba(20,8,4,.16)'}}>
-        <div style={{fontWeight:900,fontSize:'.92rem',color:T.g800,marginBottom:8}}>🖋️ Publica algo nuevo</div>
-        <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Cuenta cómo ha quedado tu nuevo look..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:'#F3E7CA',resize:"none",outline:"none",boxShadow:'inset 0 2px 8px rgba(20,8,4,.06)'}}/>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10,gap:8}}>
-          <span style={{fontSize:"0.8rem",color:T.g700,fontWeight:900}}>✨ +5 pts por publicar</span>
-          <Btn small col="dark" onClick={publish} style={{fontWeight:900,letterSpacing:'.4px'}}>📣 Publicar</Btn>
-        </div>
-      </Card>
-      {loading?<Spinner/>:posts.map(p=>(
-        <Card key={p.id} style={{marginBottom:12,background:'linear-gradient(180deg,#EFE0BE 0%,#E4CFAB 100%)',border:`1.5px solid ${T.g200}`,boxShadow:'0 8px 18px rgba(20,8,4,.12)'}}>
-          {p.imagen_url&&<img src={p.imagen_url} alt="" style={{width:"100%",borderRadius:14,marginBottom:10,objectFit:"cover",maxHeight:200}}/>}
-          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}><Av av={user.avatar} config={user.avatarConfig} size={34}/><div style={{fontWeight:900,color:T.g800,fontSize:'.86rem'}}>{user.nombre || 'Cliente Rasta'}</div></div>
-          <div style={{fontSize:"0.93rem",fontWeight:700,color:T.text,lineHeight:1.55}}>{p.contenido}</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
-            <span style={{fontSize:"0.76rem",color:T.textSub,fontWeight:800}}>{new Date(p.created_at).toLocaleDateString("es-ES")}</span>
-            <button onClick={()=>likePost(p)} style={{background:'#F3E7CA',border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999}}>❤️ Me gusta {p.likes_count||0}</button>
+        <div style={{fontWeight:900,fontSize:'.92rem',color:T.g800,marginBottom:8}}>📣 Nuevo anuncio</div>
+        {canPost? <>
+          <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Escribe una promoción, aviso, norma, actualización o evento..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:'#F3E7CA',resize:"none",outline:"none",boxShadow:'inset 0 2px 8px rgba(20,8,4,.06)'}}/>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10,gap:8}}>
+            <span style={{fontSize:"0.8rem",color:T.g700,fontWeight:900}}>Solo admin/staff pueden publicar y comentar aquí</span>
+            <Btn small col="dark" onClick={publish} style={{fontWeight:900,letterSpacing:'.4px'}}>📌 Publicar</Btn>
           </div>
-        </Card>
-      ))}
+        </> : <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Este feed ahora funciona como tablón oficial. Puedes leer anuncios y dar me gusta; para debatir o abrir temas usa la pestaña Foro.</div>}
+      </Card>
+      {loading?<Spinner/>:posts.length===0?<EmptyState icon="📌" title="Sin anuncios" sub="Cuando el equipo publique novedades aparecerán aquí."/>:posts.map(p=>{
+        const a=authorOf(p);
+        return <Card key={p.id} style={{marginBottom:12,background:'linear-gradient(180deg,#EFE0BE 0%,#E4CFAB 100%)',border:`1.5px solid ${T.g200}`,boxShadow:'0 8px 18px rgba(20,8,4,.12)'}}>
+          {p.imagen_url&&<img src={p.imagen_url} alt="" style={{width:"100%",borderRadius:14,marginBottom:10,objectFit:"cover",maxHeight:200}}/>}
+          <div onClick={()=>setSelectedProfile(a)} style={{display:'flex',alignItems:'center',gap:10,marginBottom:8,cursor:'pointer'}}><Av av={a.avatar} config={a.avatarConfig} size={34}/><div><div style={{fontWeight:900,color:T.g800,fontSize:'.86rem'}}>{a.nombre || 'Equipo Rasta'}</div><div style={{fontSize:'.68rem',fontWeight:800,color:T.textSub,textTransform:'uppercase'}}>{normalizeRole(a.role||a.rol)==='client'?'cliente':normalizeRole(a.role||a.rol)}</div></div></div>
+          <div style={{fontSize:"0.93rem",fontWeight:700,color:T.text,lineHeight:1.55,whiteSpace:'pre-wrap'}}>{p.contenido}</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
+            <span style={{fontSize:"0.76rem",color:T.textSub,fontWeight:800}}>{p.created_at?new Date(p.created_at).toLocaleDateString("es-ES"):""}</span>
+            <button onClick={()=>likePost(p)} style={{background:'#F3E7CA',border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999}}>❤️ {p.likes_count||0}</button>
+          </div>
+        </Card>;
+      })}
+      <PublicProfileModal profile={selectedProfile} onClose={()=>setSelectedProfile(null)}/>
     </div>
   );
+}
+
+// FORO
+function Foro({user,showToast}){
+  const [topics,setTopics]=useState([]);
+  const [replies,setReplies]=useState({});
+  const [loading,setLoading]=useState(true);
+  const [title,setTitle]=useState("");
+  const [body,setBody]=useState("");
+  const [active,setActive]=useState(null);
+  const [reply,setReply]=useState("");
+  const [selectedProfile,setSelectedProfile]=useState(null);
+  const [profiles,setProfiles]=useState([]);
+
+  useEffect(()=>{load();},[]);
+
+  async function load(){
+    setLoading(true);
+    const [rawTopics,users]=await Promise.all([
+      dbGet("publicaciones","?tipo=eq.foro&order=created_at.desc&limit=40&select=*"),
+      dbGet("usuarios","?select=id,nombre,role,puntos,avatar,visitas")
+    ]);
+    const cleanTopics=Array.isArray(rawTopics)?rawTopics:[];
+    setTopics(cleanTopics);
+    setProfiles(Array.isArray(users)?users:[]);
+
+    if(cleanTopics.length){
+      const ids=cleanTopics.map(t=>t.id).filter(Boolean).join(",");
+      const rawReplies=ids?await dbGet("foro_respuestas",`?publicacion_id=in.(${ids})&order=created_at.asc&select=*`):[];
+      const grouped={};
+      (Array.isArray(rawReplies)?rawReplies:[]).forEach(r=>{
+        const k=String(r.publicacion_id);
+        if(!grouped[k]) grouped[k]=[];
+        grouped[k].push(r);
+      });
+      setReplies(grouped);
+    }else{
+      setReplies({});
+    }
+    setLoading(false);
+  }
+
+  function authorOf(item){return profiles.find(u=>String(u.id)===String(item.autor_id))||user;}
+  function replyCount(id){return (replies[String(id)]||[]).length;}
+
+  async function createTopic(){
+    if(!title.trim()||!body.trim()){showToast("Pon título y texto");SFX.error();return;}
+    const res=await dbPost("publicaciones",{titulo:title.trim(),contenido:body.trim(),autor_id:user.id,tipo:"foro",likes_count:0});
+    if(!res){showToast("No se pudo crear el tema. Revisa la tabla publicaciones.");SFX.error();return;}
+    setTitle("");setBody("");SFX.success();showToast("Tema creado");load();
+  }
+
+  async function addReply(topic){
+    if(!reply.trim())return;
+    const res=await dbPost("foro_respuestas",{publicacion_id:topic.id,autor_id:user.id,contenido:reply.trim()});
+    if(!res){showToast("No se pudo responder. Ejecuta el SQL de foro_respuestas.");SFX.error();return;}
+    setReply("");SFX.success();showToast("Respuesta publicada");await load();setActive(topic);
+  }
+
+  async function vote(topic){
+    await dbPatch("publicaciones",`?id=eq.${topic.id}`,{likes_count:(topic.likes_count||0)+1});
+    const updated={...topic,likes_count:(topic.likes_count||0)+1};
+    setActive(updated);load();
+  }
+
+  const shown=active||null;
+  const shownReplies=shown?(replies[String(shown.id)]||[]):[];
+
+  return <div style={{animation:"fadeSlide .4s ease"}}>
+    <SectionHeader icon="🗣️" title="Foro Rasta" sub="Temas, dudas, votaciones y conversación entre clientes"/>
+    {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+      <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Abrir nuevo tema</div>
+      <Input label="Título" value={title} onChange={setTitle} placeholder="Ej: ¿Qué cuidados necesita una rasta nueva?"/>
+      <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Escribe tu duda, idea o propuesta..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:'#F3E7CA',resize:"none",outline:"none"}}/>
+      <div style={{marginTop:10}}><Btn full col="gold" onClick={createTopic}>➕ Crear tema</Btn></div>
+    </Card>}
+
+    {shown? <div>
+      <Btn small col="ghost" onClick={()=>setActive(null)} style={{marginBottom:10}}>← Volver al foro</Btn>
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+        <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:8,cursor:"pointer"}} onClick={()=>setSelectedProfile(authorOf(shown))}>
+          <Av av={authorOf(shown).avatar} config={authorOf(shown).avatarConfig} size={36}/>
+          <div><div style={{fontWeight:900,color:T.g800,fontSize:".86rem"}}>{authorOf(shown).nombre||"Usuario"}</div><div style={{fontSize:".7rem",fontWeight:800,color:T.textSub}}>Autor del tema</div></div>
+        </div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>{shown.titulo||"Tema del foro"}</div>
+        <div style={{fontSize:".9rem",fontWeight:700,lineHeight:1.5,whiteSpace:'pre-wrap',marginTop:8}}>{shown.contenido}</div>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:12,alignItems:"center"}}><Badge col="blue">{shownReplies.length} respuestas</Badge><Btn small col="gold" onClick={()=>vote(shown)}>👍 Votar {shown.likes_count||0}</Btn></div>
+      </Card>
+
+      {shownReplies.map(r=>{const a=authorOf(r);return <Card key={r.id} style={{marginBottom:8,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}>
+        <div onClick={()=>setSelectedProfile(a)} style={{display:"flex",gap:8,alignItems:"center",marginBottom:6,cursor:"pointer"}}><Av av={a.avatar} config={a.avatarConfig} size={30}/><b>{a.nombre||"Usuario"}</b></div>
+        <div style={{fontSize:".86rem",fontWeight:700,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div>
+      </Card>})}
+
+      <Card><textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder="Responder al tema..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:'#F3E7CA',resize:"none"}}/><div style={{marginTop:8}}><Btn full onClick={()=>addReply(shown)}>Responder</Btn></div></Card>
+    </div> : loading?<Spinner/>:topics.length===0?<EmptyState icon="🗣️" title="Foro vacío" sub="Sé el primero en abrir un tema."/>:topics.map(t=>{const a=authorOf(t);return <Card key={t.id} hover onClick={()=>setActive(t)} style={{marginBottom:10}}><div style={{display:"flex",gap:10,alignItems:"center"}}><Av av={a.avatar} config={a.avatarConfig} size={36}/><div style={{flex:1}}><div style={{fontWeight:900,color:T.g800}}>{t.titulo||t.contenido?.slice(0,48)||"Tema"}</div><div style={{fontSize:".75rem",fontWeight:800,color:T.textSub}}>{a.nombre||"Usuario"} · 👍 {t.likes_count||0} · 💬 {replyCount(t.id)}</div></div></div></Card>;})}
+    <PublicProfileModal profile={selectedProfile} onClose={()=>setSelectedProfile(null)}/>
+  </div>;
 }
 
 // TIENDA
@@ -1598,7 +1746,7 @@ function Retos({user,setUser,showToast,showPoints}){
 
 // RANKING
 function Ranking({user}){
-  const [lista,setLista]=useState([]);const [loading,setLoading]=useState(true);const [tab,setTab]=useState("global");
+  const [lista,setLista]=useState([]);const [loading,setLoading]=useState(true);const [tab,setTab]=useState("global");const [selectedProfile,setSelectedProfile]=useState(null);
   useEffect(()=>{load();},[]);
   async function load(){
     setLoading(true);
@@ -1638,7 +1786,7 @@ function Ranking({user}){
         const isMe=u.id===user.id;
         const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`;
         return(
-          <Card key={u.id} style={{marginBottom:8,background:isMe?"linear-gradient(180deg,#FFF1A8,#F6E5BE)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:isMe?`2px solid ${T.gold}`:`1px solid ${T.g300}`}} hover>
+          <Card key={u.id} onClick={()=>setSelectedProfile(u)} style={{marginBottom:8,background:isMe?"linear-gradient(180deg,#FFF1A8,#F6E5BE)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:isMe?`2px solid ${T.gold}`:`1px solid ${T.g300}`}} hover>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <div className="icon3d" style={{fontSize:i<3?"1.7rem":"1.1rem",minWidth:38,textAlign:"center",fontWeight:900}}>{medal}</div>
               <Av av={u.avatar} config={u.avatar_config||u.avatarConfig} size={42}/>
@@ -1648,6 +1796,7 @@ function Ranking({user}){
           </Card>
         );
       })}
+      <PublicProfileModal profile={selectedProfile} onClose={()=>setSelectedProfile(null)}/>
     </div>
   );
 }
@@ -1804,15 +1953,16 @@ function Perfil({user,setUser,onLogout,showToast}){
 }
 
 const NAV_CFG={
-  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"caja",icon:"💰",label:"Caja"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"caja",icon:"💰",label:"Caja"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"feed",icon:"📱",label:"Feed"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"juegos",icon:"🎮",label:"Juegos"},{id:"retos",icon:"🎯",label:"Retos"},{id:"ranking",icon:"🏆",label:"Ranking"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"juegos",icon:"🎮",label:"Juegos"},{id:"ranking",icon:"🏆",label:"Ranking"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
 
 const HELP_TEXTS={
   dashboard:"Aquí ves tu resumen principal: puntos, próxima cita y accesos rápidos.",
-  feed:"En Feed puedes publicar tu look, dar me gusta y ganar puntos por participar.",
+  feed:"El tablón es para anuncios oficiales de la tienda. Los clientes leen y reaccionan; admin y staff publican.",
+  foro:"En el Foro puedes abrir temas, responder, votar ideas y hablar con otros usuarios.",
   tienda:"Aquí canjeas tus puntos por premios, descuentos o regalos.",
   juegos:"En Juegos tienes el arcade, los récords semanales y el top 10 de cada juego.",
   retos:"Los retos te dan objetivos para ganar más puntos de forma divertida.",
@@ -1883,7 +2033,7 @@ export default function App(){
   const pages={
     dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<DashboardAdmin user={currentUser}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
-    caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,
+    caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
