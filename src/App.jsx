@@ -231,43 +231,70 @@ function BrandLogo(){
 
 function HeroMascot(){
   return (
-    <div style={{width:"100%",maxWidth:360,margin:"0 auto 10px",position:"relative",animation:"mascotFloat 3.2s ease-in-out infinite"}}>
-      <div style={{position:"absolute",inset:"8% 6% auto 6%",height:210,background:"radial-gradient(circle at 50% 10%, rgba(255,255,255,.18), transparent 38%), linear-gradient(180deg, rgba(255,208,120,.15), rgba(255,255,255,0))",filter:"blur(16px)",zIndex:0}}/>
-      <svg viewBox="0 0 360 250" style={{width:"100%",height:"auto",display:"block",filter:"drop-shadow(0 18px 24px rgba(0,0,0,.28))",position:"relative",zIndex:1}}>
-        <ellipse cx="180" cy="222" rx="118" ry="16" fill="rgba(0,0,0,.25)" />
+    <div style={{width:"100%",maxWidth:370,margin:"0 auto 10px",position:"relative",animation:"mascotFloat 3.2s ease-in-out infinite"}}>
+      <div style={{position:"absolute",inset:"4% 5% auto 5%",height:230,background:"radial-gradient(circle at 50% 18%, rgba(255,214,107,.36), transparent 34%), radial-gradient(circle at 50% 50%, rgba(255,255,255,.16), transparent 46%)",filter:"blur(20px)",zIndex:0}}/>
+      <svg viewBox="0 0 360 265" style={{width:"100%",height:"auto",display:"block",filter:"drop-shadow(0 18px 24px rgba(0,0,0,.28))",position:"relative",zIndex:1}}>
+        <ellipse cx="180" cy="236" rx="120" ry="16" fill="rgba(0,0,0,.24)" />
+
         <g>
-          <path d="M88 78 C58 78, 46 110, 66 136 C86 161, 94 188, 110 207" fill="none" stroke="#342111" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing 2.6s ease-in-out infinite", transformOrigin:"110px 86px"}}/>
-          <path d="M112 52 C79 56, 67 88, 84 116 C97 137, 111 161, 123 188" fill="none" stroke="#4C2E17" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing2 2.8s ease-in-out infinite", transformOrigin:"120px 62px"}}/>
-          <path d="M242 52 C280 56, 292 88, 276 116 C262 137, 252 161, 236 188" fill="none" stroke="#4C2E17" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing 2.5s ease-in-out infinite", transformOrigin:"240px 62px"}}/>
-          <path d="M268 78 C300 78, 314 110, 293 136 C273 161, 266 188, 250 207" fill="none" stroke="#342111" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing2 2.7s ease-in-out infinite", transformOrigin:"252px 86px"}}/>
-          <path d="M148 40 C132 52, 125 67, 124 93" fill="none" stroke="#51321A" strokeWidth="16" strokeLinecap="round" style={{animation:"dreadSwing 2.4s ease-in-out infinite", transformOrigin:"140px 45px"}}/>
-          <path d="M212 40 C228 52, 235 67, 236 93" fill="none" stroke="#51321A" strokeWidth="16" strokeLinecap="round" style={{animation:"dreadSwing2 2.4s ease-in-out infinite", transformOrigin:"220px 45px"}}/>
+          <path d="M76 92 C48 102, 44 132, 61 157 C76 179, 90 193, 108 220" fill="none" stroke="#2B180D" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing 2.5s ease-in-out infinite", transformOrigin:"92px 100px"}}/>
+          <path d="M95 64 C63 75, 55 103, 69 130 C84 158, 104 178, 121 206" fill="none" stroke="#402413" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing2 2.9s ease-in-out infinite", transformOrigin:"108px 76px"}}/>
+          <path d="M118 50 C98 62, 92 84, 100 110 C108 136, 117 161, 126 188" fill="none" stroke="#5A3118" strokeWidth="15" strokeLinecap="round" style={{animation:"dreadSwing 2.6s ease-in-out infinite", transformOrigin:"126px 64px"}}/>
+          <path d="M284 92 C312 102, 316 132, 299 157 C284 179, 270 193, 252 220" fill="none" stroke="#2B180D" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing2 2.5s ease-in-out infinite", transformOrigin:"268px 100px"}}/>
+          <path d="M265 64 C297 75, 305 103, 291 130 C276 158, 256 178, 239 206" fill="none" stroke="#402413" strokeWidth="18" strokeLinecap="round" style={{animation:"dreadSwing 2.9s ease-in-out infinite", transformOrigin:"252px 76px"}}/>
+          <path d="M242 50 C262 62, 268 84, 260 110 C252 136, 243 161, 234 188" fill="none" stroke="#5A3118" strokeWidth="15" strokeLinecap="round" style={{animation:"dreadSwing2 2.6s ease-in-out infinite", transformOrigin:"234px 64px"}}/>
         </g>
-        <ellipse cx="180" cy="112" rx="74" ry="82" fill="#F0B37E" />
-        <path d="M110 106 C118 72, 140 52, 180 52 C220 52, 242 71, 250 106 C238 92, 220 84, 180 84 C140 84, 121 92, 110 106Z" fill="#2B180D" /><ellipse cx="180" cy="36" rx="22" ry="18" fill="#2B180D" /><path d="M166 39 C171 28, 190 28, 194 39" fill="none" stroke="#4C2E17" strokeWidth="6" strokeLinecap="round" />
-        <ellipse cx="150" cy="118" rx="22" ry="24" fill="#FFF" />
-        <ellipse cx="210" cy="118" rx="22" ry="24" fill="#FFF" />
-        <g style={{transformOrigin:"150px 118px", animation:"eyeBlink 4.8s ease-in-out infinite"}}>
-          <ellipse cx="150" cy="118" rx="13" ry="15" fill="#1A120C" />
-          <ellipse cx="146" cy="114" rx="4" ry="4.5" fill="#fff" />
+
+        <g>
+          <path d="M148 30 C144 16, 154 7, 168 11 C177 14, 183 23, 180 34" fill="none" stroke="#4C2E17" strokeWidth="11" strokeLinecap="round" />
+          <path d="M180 34 C174 17, 181 6, 197 8 C211 10, 219 23, 214 38" fill="none" stroke="#2F1A0E" strokeWidth="11" strokeLinecap="round" />
+          <path d="M159 35 C162 25, 173 21, 180 29 C187 21, 198 25, 201 35" fill="none" stroke="#7A4523" strokeWidth="7" strokeLinecap="round" />
+          <ellipse cx="180" cy="40" rx="27" ry="15" fill="#2B180D" />
+          <path d="M167 42 C171 36, 177 34, 180 39 C183 34, 189 36, 193 42" fill="none" stroke="#8B5A2B" strokeWidth="4" strokeLinecap="round" />
+          <path d="M155 50 C145 60, 138 76, 138 92" fill="none" stroke="#4C2E17" strokeWidth="13" strokeLinecap="round" style={{animation:"dreadSwing2 2.8s ease-in-out infinite", transformOrigin:"148px 53px"}}/>
+          <path d="M205 50 C215 60, 222 76, 222 92" fill="none" stroke="#4C2E17" strokeWidth="13" strokeLinecap="round" style={{animation:"dreadSwing 2.8s ease-in-out infinite", transformOrigin:"212px 53px"}}/>
         </g>
-        <g style={{transformOrigin:"210px 118px", animation:"eyeBlink 5s ease-in-out infinite"}}>
-          <ellipse cx="210" cy="118" rx="13" ry="15" fill="#1A120C" />
-          <ellipse cx="206" cy="114" rx="4" ry="4.5" fill="#fff" />
+
+        <ellipse cx="180" cy="122" rx="75" ry="84" fill="#F0B37E" />
+        <path d="M106 108 C112 63, 140 42, 180 42 C220 42, 248 63, 254 108 C238 90, 219 79, 180 79 C141 79, 122 90, 106 108Z" fill="#23140B" />
+        <path d="M118 105 C132 87, 151 80, 180 80 C209 80, 228 87, 242 105" fill="none" stroke="#6F3A1D" strokeWidth="4" opacity=".35" />
+
+        <ellipse cx="149" cy="126" rx="23" ry="24" fill="#FFF" />
+        <ellipse cx="211" cy="126" rx="23" ry="24" fill="#FFF" />
+        <path d="M128 101 C138 92, 150 89, 160 94" fill="none" stroke="#28170D" strokeWidth="5" strokeLinecap="round" />
+        <path d="M200 94 C210 89, 222 92, 232 101" fill="none" stroke="#28170D" strokeWidth="5" strokeLinecap="round" />
+        <g style={{transformOrigin:"149px 126px", animation:"eyeBlink 4.8s ease-in-out infinite"}}>
+          <ellipse cx="149" cy="126" rx="13" ry="15" fill="#17110D" />
+          <ellipse cx="145" cy="121" rx="4" ry="4.5" fill="#fff" />
         </g>
-        <path d="M166 135 Q180 148 194 135" fill="none" stroke="#A55A45" strokeWidth="4" strokeLinecap="round" />
-        <path d="M148 164 C164 178, 196 178, 214 164" fill="none" stroke="#8B2F1C" strokeWidth="7" strokeLinecap="round" />
-        <path d="M157 168 C171 180, 191 180, 205 168" fill="#FFF2F2" opacity=".5" />
-        <path d="M173 131 C176 141, 176 148, 171 153" fill="none" stroke="#D28F65" strokeWidth="4" strokeLinecap="round" />
-        <ellipse cx="130" cy="138" rx="10" ry="7" fill="#E69C7F" opacity=".65" />
-        <ellipse cx="230" cy="138" rx="10" ry="7" fill="#E69C7F" opacity=".65" />
-        <g style={{animation:"hookMove 1.7s ease-in-out infinite", transformOrigin:"250px 130px"}}>
-          <path d="M255 148 C236 124, 214 114, 192 109" fill="none" stroke="#E2D6C2" strokeWidth="5" strokeLinecap="round" />
-          <path d="M255 148 q10 0 10 -10 q0 -8 -8 -8" fill="none" stroke="#E2D6C2" strokeWidth="5" strokeLinecap="round" />
-          <path d="M250 142 C236 126, 220 120, 206 116" fill="none" stroke="#7E4A28" strokeWidth="3" strokeLinecap="round" opacity=".55" />
+        <g style={{transformOrigin:"211px 126px", animation:"eyeBlink 5s ease-in-out infinite"}}>
+          <ellipse cx="211" cy="126" rx="13" ry="15" fill="#17110D" />
+          <ellipse cx="207" cy="121" rx="4" ry="4.5" fill="#fff" />
         </g>
-        <path d="M127 205 C146 193, 214 193, 233 205" fill="none" stroke="#FFD26B" strokeWidth="11" strokeLinecap="round" />
-        <path d="M118 213 C146 231, 215 231, 242 213" fill="#3A2016" />
+
+        <path d="M173 138 C176 149, 176 156, 171 161" fill="none" stroke="#CF8B61" strokeWidth="4" strokeLinecap="round" />
+        <path d="M166 145 Q180 154 194 145" fill="none" stroke="#A55A45" strokeWidth="4" strokeLinecap="round" />
+        <path d="M147 173 C164 188, 196 188, 214 173" fill="none" stroke="#8B2F1C" strokeWidth="7" strokeLinecap="round" />
+        <path d="M156 177 C170 189, 191 189, 205 177" fill="#FFF2F2" opacity=".45" />
+        <ellipse cx="129" cy="146" rx="10" ry="7" fill="#E69C7F" opacity=".62" />
+        <ellipse cx="231" cy="146" rx="10" ry="7" fill="#E69C7F" opacity=".62" />
+
+        <g style={{animation:"hookMove 1.7s ease-in-out infinite", transformOrigin:"252px 140px"}}>
+          <path d="M257 158 C238 132, 214 121, 192 116" fill="none" stroke="#E2D6C2" strokeWidth="5" strokeLinecap="round" />
+          <path d="M257 158 q10 0 10 -10 q0 -8 -8 -8" fill="none" stroke="#E2D6C2" strokeWidth="5" strokeLinecap="round" />
+          <path d="M252 151 C239 135, 223 129, 209 123" fill="none" stroke="#7E4A28" strokeWidth="3" strokeLinecap="round" opacity=".55" />
+        </g>
+
+        <path d="M118 218 C142 201, 219 201, 242 218" fill="#2E1B12" />
+        <path d="M130 212 C150 198, 210 198, 230 212" fill="none" stroke="#FFD26B" strokeWidth="11" strokeLinecap="round" />
+        <path d="M126 222 C149 234, 211 234, 234 222" fill="none" stroke="#3E2117" strokeWidth="8" strokeLinecap="round" />
+
+        <g opacity=".9">
+          <circle cx="86" cy="74" r="4" fill="rgba(255,214,107,.78)" />
+          <circle cx="270" cy="65" r="3.5" fill="rgba(255,214,107,.7)" />
+          <circle cx="292" cy="108" r="3" fill="rgba(255,255,255,.45)" />
+          <circle cx="70" cy="127" r="3" fill="rgba(255,255,255,.42)" />
+        </g>
       </svg>
     </div>
   );
