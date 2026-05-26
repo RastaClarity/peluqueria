@@ -1,9 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { createClient } from "@supabase/supabase-js";
 
-const SUPA_URL = "https://uetuoxtfccrbymwlsssx.supabase.co";
-const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVldHVveHRmY2NyYnltd2xzc3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MjExMDIsImV4cCI6MjA5NTE5NzEwMn0.-A_cY0w1_V4UPeMXmFWStJ52xhWvHL5ecGtEEcBd1XA";
+const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = SUPA_URL && SUPA_KEY ? createClient(SUPA_URL, SUPA_KEY) : null;
 
 async function db(table, method="GET", body=null, query="") {
+  if (!SUPA_URL || !SUPA_KEY) return method === "GET" ? [] : false;
   const url = `${SUPA_URL}/rest/v1/${table}${query}`;
   const res = await fetch(url, {
     method,
@@ -39,6 +42,12 @@ const T = {
 };
 
 const ROLES = { ADMIN:"admin", STAFF:"staff", CLIENT:"cliente" };
+
+const BRAND = {
+  name:"Rasta Cuts",
+  tagline:"Cortes, rastas y estilo urbano",
+  subtagline:"Reserva, juega y gana recompensas",
+};
 
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
 const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
@@ -95,6 +104,8 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes ptsFloat{0%{opacity:0;transform:translateY(0) scale(0.7)}20%{opacity:1;transform:translateY(-10px) scale(1.1)}80%{opacity:1;transform:translateY(-40px)}100%{opacity:0;transform:translateY(-60px) scale(0.9)}}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes logoPulse{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.04)}}
+@keyframes bladeGlint{0%,100%{opacity:.35;transform:translateX(-20px) rotate(-18deg)}50%{opacity:.9;transform:translateX(20px) rotate(-18deg)}}
 .bp:active{transform:scale(0.94)!important}
 .ch:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,67,50,0.15)!important}
 `;
@@ -138,8 +149,43 @@ function Av({av=0,size=36}){
 function Toast({msg,show}){if(!show)return null;return <div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",background:T.g800,color:T.white,padding:"12px 22px",borderRadius:50,fontWeight:700,fontSize:"0.88rem",zIndex:9999,whiteSpace:"nowrap",boxShadow:"0 6px 24px rgba(27,67,50,0.35)",animation:"toastIn 0.3s ease"}}>{msg}</div>;}
 function PtsPopup({pts,show}){if(!show||!pts)return null;return <div style={{position:"fixed",top:"35%",left:"50%",transform:"translateX(-50%)",zIndex:9999,animation:"ptsFloat 1.8s ease forwards",pointerEvents:"none"}}><div style={{background:T.gradGold,color:T.white,borderRadius:50,padding:"10px 24px",fontWeight:900,fontSize:"1.4rem",boxShadow:"0 6px 24px rgba(255,183,3,0.5)"}}>+{pts} pts</div></div>;}
 function Particles(){
-  const items=["X","~","*","o","+","@"];
-  return <div style={{position:"fixed",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:0}}>{[...Array(8)].map((_,i)=><div key={i} style={{position:"absolute",left:`${10+i*11}%`,bottom:"-10%",fontSize:"1.1rem",opacity:0.08,animation:`floatUp ${14+i*2}s linear ${i*1.8}s infinite`}}>{items[i%items.length]}</div>)}</div>;
+  const items=["✂","〰","◆","✦","•","⟡"];
+  return <div style={{position:"fixed",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:0}}>{[...Array(10)].map((_,i)=><div key={i} style={{position:"absolute",left:`${6+i*10}%`,bottom:"-10%",fontSize:i%3===0?"1.35rem":"1rem",opacity:0.1,animation:`floatUp ${13+i*2}s linear ${i*1.4}s infinite`}}>{items[i%items.length]}</div>)}</div>;
+}
+function BrandLogo(){
+  return (
+    <div style={{width:94,height:94,margin:"0 auto 14px",position:"relative",animation:"logoPulse 2.4s ease infinite"}}>
+      <div style={{position:"absolute",inset:0,borderRadius:"50%",background:"linear-gradient(135deg,#1F120B,#5C3317 52%,#D4AF37)",boxShadow:"0 10px 30px rgba(0,0,0,0.35)",border:"3px solid rgba(245,230,200,0.7)"}}/>
+      <div style={{position:"absolute",inset:8,borderRadius:"50%",border:"2px solid rgba(212,175,55,0.55)"}}/>
+      {[0,1,2,3,4].map(i=><span key={i} style={{position:"absolute",left:24+i*9,top:16,width:4,height:50,borderRadius:8,background:"linear-gradient(180deg,#F5E6C8,#8B4513)",transform:`rotate(${i%2===0?-12:12}deg)`,boxShadow:"0 2px 6px rgba(0,0,0,0.25)"}}/>)}
+      <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:"2.3rem",filter:"drop-shadow(0 3px 3px rgba(0,0,0,0.45))"}}>✂️</div>
+      <div style={{position:"absolute",left:18,right:18,bottom:15,height:2,background:"rgba(245,230,200,0.8)",animation:"bladeGlint 2.6s ease infinite"}}/>
+    </div>
+  );
+}
+
+function toAppUser(u){
+  return {id:u.id,nombre:u.nombre,email:u.email,rol:u.role||"cliente",puntos:u.puntos||0,avatar:u.avatar||0,fecha_registro:u.created_at};
+}
+async function getUserProfileByEmail(email){
+  if(!supabase || !email) return null;
+  const {data,error}=await supabase
+    .from("usuarios")
+    .select("id,nombre,email,role,puntos,avatar,created_at")
+    .eq("email", email.toLowerCase())
+    .maybeSingle();
+  if(error) return null;
+  return data;
+}
+async function createUserProfile({nombre,email}){
+  if(!supabase || !email) return null;
+  const {data,error}=await supabase
+    .from("usuarios")
+    .insert({nombre,email:email.toLowerCase(),role:"cliente",puntos:0,avatar:Math.floor(Math.random()*AVATARS.length)})
+    .select("id,nombre,email,role,puntos,avatar,created_at")
+    .maybeSingle();
+  if(error) return null;
+  return data;
 }
 
 // AUTH
@@ -152,29 +198,42 @@ function Auth({onLogin,showToast}){
 
   async function handleLogin(){
     if(!email||!pass){showToast("Rellena todos los campos");SFX.error();return;}
+    if(!supabase){showToast("Faltan las variables de entorno de Supabase");SFX.error();return;}
     setLoading(true);
-    const all=await dbGet("usuarios","?select=*");
+    const cleanEmail=email.trim().toLowerCase();
+    const {data,error}=await supabase.auth.signInWithPassword({email:cleanEmail,password:pass});
+    if(error){setLoading(false);showToast("Email o contraseña incorrectos");SFX.error();return;}
+    let perfil=await getUserProfileByEmail(data.user?.email||cleanEmail);
+    if(!perfil){
+      perfil=await createUserProfile({nombre:data.user?.user_metadata?.nombre||cleanEmail.split("@")[0],email:cleanEmail});
+    }
     setLoading(false);
-    if(!all){showToast("Error de conexion");SFX.error();return;}
-    const found=all.filter(u=>(u.email||"").toLowerCase()===email.toLowerCase()&&u.password===pass);
-    if(found.length===0){showToast("Email o contrasena incorrectos");SFX.error();return;}
+    if(!perfil){showToast("No se pudo cargar tu perfil");SFX.error();return;}
     SFX.success();
-    const u=found[0];
-    onLogin({id:u.id,nombre:u.nombre,email:u.email,rol:u.role||"cliente",puntos:u.puntos||0,avatar:u.avatar||0,fecha_registro:u.created_at});
+    onLogin(toAppUser(perfil));
   }
 
   async function handleRegister(){
     if(!email||!pass||!name){showToast("Rellena todos los campos");SFX.error();return;}
+    if(pass.length<6){showToast("La contraseña debe tener al menos 6 caracteres");SFX.error();return;}
+    if(!supabase){showToast("Faltan las variables de entorno de Supabase");SFX.error();return;}
     setLoading(true);
-    const all=await dbGet("usuarios","?select=id,email")||[];
-    const exists=all.filter(u=>(u.email||"").toLowerCase()===email.toLowerCase());
-    if(exists.length>0){setLoading(false);showToast("Ese email ya esta registrado");SFX.error();return;}
-    const newU=await dbPost("usuarios",{nombre:name,email,password:pass,role:"cliente",puntos:0,avatar:Math.floor(Math.random()*AVATARS.length)});
+    const cleanEmail=email.trim().toLowerCase();
+    const cleanName=name.trim();
+    const {data,error}=await supabase.auth.signUp({
+      email:cleanEmail,
+      password:pass,
+      options:{data:{nombre:cleanName}}
+    });
+    if(error){setLoading(false);showToast(error.message||"No se pudo registrar la cuenta");SFX.error();return;}
+    let perfil=await getUserProfileByEmail(cleanEmail);
+    if(!perfil){
+      perfil=await createUserProfile({nombre:cleanName,email:cleanEmail});
+    }
     setLoading(false);
-    if(!newU||newU.length===0){showToast("Error al registrar");SFX.error();return;}
-    SFX.success();showToast("Bienvenido a PeluquerIA!");
-    const u=newU[0];
-    onLogin({id:u.id,nombre:u.nombre,email:u.email,rol:u.role||"cliente",puntos:0,avatar:u.avatar||0,fecha_registro:u.created_at});
+    if(!perfil){showToast("Cuenta creada, pero no se pudo crear el perfil");SFX.error();return;}
+    SFX.success();showToast(`Bienvenido a ${BRAND.name}!`);
+    onLogin(toAppUser(perfil));
   }
 
   return(
@@ -183,9 +242,10 @@ function Auth({onLogin,showToast}){
       <Particles/>
       <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:400}}>
         <div style={{textAlign:"center",marginBottom:32}}>
-          <div style={{fontSize:"3.5rem",animation:"bounce 2s ease infinite"}}>X</div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.4rem",color:T.white}}>PeluquerIA</div>
-          <div style={{color:T.g200,fontSize:"0.85rem",marginTop:4,fontWeight:600}}>Tu peluqueria inteligente</div>
+          <BrandLogo/>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.55rem",letterSpacing:"1px",color:T.white,textShadow:"0 4px 12px rgba(0,0,0,0.35)"}}>{BRAND.name}</div>
+          <div style={{color:T.g200,fontSize:"0.92rem",marginTop:5,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.8px"}}>{BRAND.tagline}</div>
+          <div style={{color:"rgba(245,230,200,0.78)",fontSize:"0.78rem",marginTop:4,fontWeight:600}}>{BRAND.subtagline}</div>
         </div>
         <Card style={{padding:"28px 24px",animation:"popIn 0.4s ease",background:"#F5E6C8",border:"2px solid #8B4513"}}>
           <div style={{display:"flex",background:T.g100,borderRadius:12,padding:4,marginBottom:22}}>
@@ -198,14 +258,14 @@ function Auth({onLogin,showToast}){
           {mode==="login"?(
             <div>
               <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
-              <Input label="Contrasena" value={pass} onChange={setPass} type="password" placeholder="••••••••"/>
+              <Input label="Contraseña" value={pass} onChange={setPass} type="password" placeholder="••••••••"/>
               <Btn full col="dark" onClick={handleLogin} disabled={loading}>{loading?"Entrando...":"Entrar"}</Btn>
             </div>
           ):(
             <div>
               <Input label="Nombre completo" value={name} onChange={setName} placeholder="Tu nombre"/>
               <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
-              <Input label="Contrasena" value={pass} onChange={setPass} type="password" placeholder="Minimo 6 caracteres"/>
+              <Input label="Contraseña" value={pass} onChange={setPass} type="password" placeholder="Mínimo 6 caracteres"/>
               <Btn full col="green" onClick={handleRegister} disabled={loading}>{loading?"Registrando...":"Crear cuenta"}</Btn>
             </div>
           )}
@@ -538,11 +598,15 @@ function Caja({showToast}){
 }
 
 // ADMIN USUARIOS
-function AdminUsuarios({showToast}){
+function AdminUsuarios({user,showToast}){
+  const canManageUsers=user?.rol===ROLES.ADMIN;
   const [users,setUsers]=useState([]);const [loading,setLoading]=useState(true);
-  useEffect(()=>{load();},[]);
+  useEffect(()=>{if(canManageUsers) load(); else setLoading(false);},[canManageUsers]);
   async function load(){setLoading(true);setUsers(await dbGet("usuarios","?order=nombre.asc&select=*")||[]);setLoading(false);}
-  async function changeRole(id,rol){await dbPatch("usuarios",`?id=eq.${id}`,{role:rol});showToast("Rol actualizado");load();}
+  async function changeRole(id,rol){if(!canManageUsers)return;await dbPatch("usuarios",`?id=eq.${id}`,{role:rol});showToast("Rol actualizado");load();}
+  if(!canManageUsers){
+    return <EmptyState icon="🔒" title="Solo administradores" sub="Esta sección permite cambiar roles y gestionar usuarios."/>;
+  }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="👑" title="Usuarios" sub={`${users.length} usuarios`}/>
@@ -1124,13 +1188,32 @@ export default function App(){
   const [toast,setToast]=useState({show:false,msg:""});
   const [ptsPopup,setPtsPopup]=useState({show:false,pts:0});
   const [musicOn,setMusicOn]=useState(false);
+  const [checkingSession,setCheckingSession]=useState(true);
+
+  useEffect(()=>{
+    async function restoreSession(){
+      if(!supabase){setCheckingSession(false);return;}
+      const {data}=await supabase.auth.getSession();
+      const sessionUser=data.session?.user;
+      if(sessionUser?.email){
+        let perfil=await getUserProfileByEmail(sessionUser.email);
+        if(!perfil){
+          perfil=await createUserProfile({nombre:sessionUser.user_metadata?.nombre||sessionUser.email.split("@")[0],email:sessionUser.email});
+        }
+        if(perfil) setUser(toAppUser(perfil));
+      }
+      setCheckingSession(false);
+    }
+    restoreSession();
+  },[]);
 
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
   function toggleMusic(){globalMuted=!globalMuted;if(globalMuted){stopMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}
   const navTo=id=>{SFX.nav();setPage(id);};
-  const logout=()=>{setUser(null);setPage("dashboard");};
+  const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");};
 
+  if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/></div>;
   if(!user)return <Auth onLogin={u=>{setUser(u);setPage("dashboard");}} showToast={showToast}/>;
 
   const role=user.rol||"cliente";
@@ -1138,7 +1221,7 @@ export default function App(){
   const grad=GRAD_ROLE[role]||GRAD_ROLE.cliente;
   const ap=nav.find(n=>n.id===page)?page:"dashboard";
   const sp={showToast,showPoints,user,setUser};
-  const isAdmin=role!==ROLES.CLIENT;
+  const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
   const pages={
     dashboard:role===ROLES.CLIENT?<ClientDashboard user={user}/>:<DashboardAdmin user={user}/>,
@@ -1158,7 +1241,7 @@ export default function App(){
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
       <div style={{background:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:"0 4px 20px rgba(27,67,50,0.25)"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white}}>PeluquerIA</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white}}>{BRAND.name}</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
