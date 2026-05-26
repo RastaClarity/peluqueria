@@ -54,7 +54,7 @@ const T = {
   gradPink:"linear-gradient(135deg,#5C0F0F,#B51F1F 55%,#F06A3B)",
 };
 
-const ROLES = { ADMIN:"admin", STAFF:"staff", CLIENT:"cliente" };
+const ROLES = { ADMIN:"admin", STAFF:"staff", CLIENT:"client" };
 
 function normalizeRole(value){
   const role = String(value || "").trim().toLowerCase();
@@ -536,7 +536,7 @@ async function createUserProfile({nombre,email}){
   if(!supabase || !email) return null;
   const {data,error}=await supabase
     .from("usuarios")
-    .insert({nombre,email:email.toLowerCase(),role:"cliente",puntos:0,avatar:Math.floor(Math.random()*AVATARS.length)})
+    .insert({nombre,email:email.toLowerCase(),role:"client",puntos:0,avatar:Math.floor(Math.random()*AVATARS.length)})
     .select("id,nombre,email,role,puntos,avatar,created_at")
     .maybeSingle();
   if(error) return null;
@@ -660,7 +660,7 @@ function DashboardAdmin({user}){
       const today=new Date().toISOString().split("T")[0];
       const [citas,clientes,ventas,stock]=await Promise.all([
         dbGet("citas",`?fecha=gte.${today}&select=*`),
-        dbGet("usuarios","?role=eq.cliente&select=id"),
+        dbGet("usuarios","?role=eq.client&select=id"),
         dbGet("facturas",`?fecha=gte.${today}&select=total`),
         dbGet("inventario","?stock=lte.5&select=id"),
       ]);
@@ -846,7 +846,7 @@ function Clientes({showToast}){
   const [historial,setHistorial]=useState([]);
   const [loading,setLoading]=useState(true);
   useEffect(()=>{load();},[]);
-  async function load(){setLoading(true);setClientes(await dbGet("usuarios","?role=eq.cliente&order=nombre.asc&select=*")||[]);setLoading(false);}
+  async function load(){setLoading(true);setClientes(await dbGet("usuarios","?role=eq.client&order=nombre.asc&select=*")||[]);setLoading(false);}
   async function selectCliente(c){setSelected(c);setHistorial(await dbGet("citas",`?usuario_id=eq.${c.id}&order=fecha.desc&limit=10&select=*`)||[]);}
   const filtered=clientes.filter(c=>(c.nombre||"").toLowerCase().includes(search.toLowerCase())||(c.email||"").toLowerCase().includes(search.toLowerCase()));
   return(
@@ -990,8 +990,8 @@ function AdminUsuarios({user,showToast}){
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <Av av={u.avatar} size={40}/>
             <div style={{flex:1}}><div style={{fontWeight:800,fontSize:"0.9rem"}}>{u.nombre}</div><div style={{fontSize:"0.75rem",color:T.textSub}}>{u.email}</div></div>
-            <select value={u.role||"cliente"} onChange={e=>changeRole(u.id,e.target.value)} style={{padding:"5px 8px",borderRadius:8,border:`1.5px solid ${T.g300}`,background:T.g50,fontSize:"0.78rem",fontWeight:700,cursor:"pointer"}}>
-              <option value="cliente">Cliente</option>
+            <select value={u.role||"client"} onChange={e=>changeRole(u.id,e.target.value)} style={{padding:"5px 8px",borderRadius:8,border:`1.5px solid ${T.g300}`,background:T.g50,fontSize:"0.78rem",fontWeight:700,cursor:"pointer"}}>
+              <option value="client">Cliente</option>
               <option value="staff">Staff</option>
               <option value="admin">Admin</option>
             </select>
@@ -1806,9 +1806,9 @@ function Perfil({user,setUser,onLogout,showToast}){
 const NAV_CFG={
   admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"caja",icon:"💰",label:"Caja"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
   staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"caja",icon:"💰",label:"Caja"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  cliente:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"feed",icon:"📱",label:"Feed"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"juegos",icon:"🎮",label:"Juegos"},{id:"retos",icon:"🎯",label:"Retos"},{id:"ranking",icon:"🏆",label:"Ranking"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"feed",icon:"📱",label:"Feed"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"juegos",icon:"🎮",label:"Juegos"},{id:"retos",icon:"🎯",label:"Retos"},{id:"ranking",icon:"🏆",label:"Ranking"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
-const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,cliente:T.gradClient};
+const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
 
 const HELP_TEXTS={
   dashboard:"Aquí ves tu resumen principal: puntos, próxima cita y accesos rápidos.",
@@ -1873,8 +1873,8 @@ export default function App(){
   );
 
   const role=normalizeRole(user.rol || user.role);
-  const nav=NAV_CFG[role]||NAV_CFG.cliente;
-  const grad=GRAD_ROLE[role]||GRAD_ROLE.cliente;
+  const nav=NAV_CFG[role]||NAV_CFG.client;
+  const grad=GRAD_ROLE[role]||GRAD_ROLE.client;
   const ap=nav.find(n=>n.id===page)?page:"dashboard";
   const currentUser={...user,rol:role};
   const sp={showToast,showPoints,user:currentUser,setUser};
