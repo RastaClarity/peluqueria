@@ -802,34 +802,44 @@ function ClientDashboard({user,onNavigate}){
 }
 
 
-// NOTICIAS RSS + CURIOSIDADES
+// ACTUALIDAD MAGAZINE + COMUNIDAD
 const NEWS_CATEGORIES=[
-  {id:"todo",label:"Todo",icon:"🌍"},
-  {id:"actualidad",label:"Actualidad",icon:"📰"},
-  {id:"zaragoza",label:"Zaragoza",icon:"📍"},
-  {id:"videojuegos",label:"Juegos",icon:"🎮"},
-  {id:"tecnologia",label:"Tecnología",icon:"💻"},
-  {id:"curiosidades",label:"Curiosidades",icon:"💡"},
+  {id:"todo",label:"Selección editorial",short:"Selección",icon:"✨",desc:"lo mejor para leer hoy"},
+  {id:"curiosidades",label:"Curiosidades",short:"Curiosidades",icon:"💡",desc:"datos rápidos y sorprendentes"},
+  {id:"rural",label:"Vida rural",short:"Rural",icon:"🌾",desc:"campo, granjas y producto local"},
+  {id:"comer",label:"Comer bien",short:"Comer",icon:"🍽️",desc:"bares, restaurantes y gastronomía"},
+  {id:"sitios",label:"Sitios con encanto",short:"Sitios",icon:"🏞️",desc:"planes, rutas y lugares bonitos"},
+  {id:"estilo",label:"Pelo & rastas",short:"Estilo",icon:"✂️",desc:"peluquería, barbería y cuidado"},
+  {id:"negocios",label:"Negocios locales",short:"Negocios",icon:"💼",desc:"ideas, emprender y comercio cercano"},
 ];
-
+const CATEGORY_COLORS={
+  todo:{accent:"#D4AF37",bg:"linear-gradient(135deg,#FFF4D6,#F6E5BE)",dark:"#6E3518"},
+  curiosidades:{accent:"#7B3FA1",bg:"linear-gradient(135deg,#EFE3FF,#FFF4D6)",dark:"#3C2258"},
+  rural:{accent:"#65762C",bg:"linear-gradient(135deg,#EEF1CF,#FFF4D6)",dark:"#3D471A"},
+  comer:{accent:"#C97934",bg:"linear-gradient(135deg,#FFE7B0,#FFF4D6)",dark:"#6E3518"},
+  sitios:{accent:"#2F6B42",bg:"linear-gradient(135deg,#E9F5DE,#FFF4D6)",dark:"#214E31"},
+  estilo:{accent:"#8B0000",bg:"linear-gradient(135deg,#FCE4EC,#FFF4D6)",dark:"#5C0F0F"},
+  negocios:{accent:"#1A3A5C",bg:"linear-gradient(135deg,#E3F2FD,#FFF4D6)",dark:"#10263F"},
+};
 const DAILY_CURIOSITIES=[
-  {title:"El pelo no crece igual en todo el mundo",text:"La genética, la alimentación, el descanso y el cuidado del cuero cabelludo influyen en el ritmo de crecimiento."},
-  {title:"Las rastas no son solo estética",text:"Han aparecido en culturas muy distintas durante siglos y suelen estar ligadas a identidad, espiritualidad o pertenencia."},
-  {title:"La barba puede tener varios tonos",text:"Es normal que barba, cejas y cabello no tengan exactamente el mismo color, incluso en una misma persona."},
-  {title:"El cuero cabelludo también se cuida",text:"Un buen lavado, hidratación y evitar tirones constantes ayuda más que muchos productos milagro."},
-  {title:"El degradado depende de la transición",text:"Un fade limpio no es solo rapar: lo importante es que no se noten saltos bruscos entre longitudes."},
-  {title:"La tijera da textura",text:"La máquina ayuda a definir, pero la tijera permite controlar volumen, caída y movimiento con más precisión."},
-  {title:"No todos los cabellos secan igual",text:"El pelo rizado, afro o con rastas puede retener más humedad y necesita más tiempo de secado."},
-  {title:"Un buen corte también es mantenimiento",text:"Repasar contornos y puntas a tiempo puede alargar mucho la vida de un estilo."},
-  {title:"La imagen también comunica",text:"Un peinado puede cambiar cómo te perciben antes incluso de hablar."},
-  {title:"Las tendencias vuelven",text:"Muchos cortes modernos son versiones nuevas de estilos que ya fueron populares hace décadas."},
+  {title:"Las rastas necesitan secado real",text:"Después de lavar, lo importante no es solo que se vean secas por fuera: si queda humedad dentro, pueden coger mal olor. Mejor secar con calma y sin prisas.",tag:"Rastas"},
+  {title:"Un fade bueno se nota al crecer",text:"Un degradado bien hecho no solo queda limpio el primer día: al crecer durante la semana mantiene mejor la forma y evita saltos raros.",tag:"Barbería"},
+  {title:"Un bar pequeño también puede ser marca",text:"Una carta corta, buen producto y una historia clara pueden hacer que un sitio de pueblo o barrio sea más recordable que un local enorme sin alma.",tag:"Negocio"},
+  {title:"El producto local vende historia",text:"Un queso, un aceite, unos huevos o una conserva no son solo comida: también son zona, oficio, familia, paisaje y confianza.",tag:"Rural"},
+  {title:"Los sitios bonitos enganchan más si son útiles",text:"Una ruta gana mucho si incluye dónde aparcar, dónde comer cerca y cuánto se tarda de verdad. Esa es la diferencia entre noticia y guía útil.",tag:"Planes"},
+  {title:"La textura manda más que la moda",text:"Un corte que respeta la textura natural suele quedar mejor que copiar una tendencia que no encaja con tu pelo.",tag:"Estilo"},
+  {title:"Comer bien también es descubrir barrio",text:"Muchas veces el sitio más interesante no es el más famoso, sino el bar pequeño donde hay buen producto y clientela de siempre.",tag:"Comer"},
+  {title:"El campo también es negocio moderno",text:"Pequeñas granjas, huertos, obradores, venta directa y turismo rural pueden tener mucha fuerza si se cuentan bien y se mueven con una marca clara.",tag:"Rural"},
+  {title:"El mantenimiento vende más que el cambio radical",text:"Muchos clientes no necesitan cambiar de estilo, sino mantenerlo bien: contornos, hidratación, limpieza y forma.",tag:"Marketing"},
+  {title:"Un buen resumen no cuenta todo",text:"Para una noticia en una app, lo ideal es despertar interés, dar contexto rápido y mandar a la fuente original si quieres leer más.",tag:"Lectura"},
 ];
-
 const NEWS_FALLBACK=[
-  {id:"fallback-local",title:"Actualidad en preparación",summary:"Si alguna fuente RSS falla, la app mantiene este bloque vivo mientras vuelve la conexión.",url:"https://www.google.com/search?q=noticias+actualidad",source:"Actualidad",category:"actualidad",date:new Date().toISOString(),image:""},
-  {id:"fallback-curio",title:"Curiosidad del día: el cabello cambia con la rutina",summary:"Estrés, sueño, alimentación, clima y productos pueden influir en cómo se ve el pelo de una semana a otra.",url:"https://www.google.com/search?q=curiosidades+cabello",source:"Rasta Cuts",category:"curiosidades",date:new Date().toISOString(),image:""},
+  {id:"fallback-sitios-1",title:"Sitios con encanto para guardar y visitar sin complicarse",summary:"Miradores, pueblos bonitos, rutas cortas y paradas con buen ambiente. Una sección pensada para encontrar planes reales, no solo titulares.",url:"https://www.google.com/search?q=sitios+con+encanto+Arag%C3%B3n+Navarra+rutas+pueblos+bonitos",image:"",source:"Selección",category:"sitios",date:new Date().toISOString()},
+  {id:"fallback-comer-1",title:"Bares y restaurantes con producto local que merecen ficha",summary:"Ideas para descubrir sitios donde comer bien: tapas, menús, cocina de cercanía, terrazas y lugares con historia.",url:"https://www.google.com/search?q=bares+restaurantes+producto+local+Zaragoza+Navarra+Arag%C3%B3n",image:"",source:"Selección",category:"comer",date:new Date().toISOString()},
+  {id:"fallback-rural-1",title:"Pequeñas granjas, huertos y negocios de pueblo con futuro",summary:"Campo, agricultura, venta directa, obradores y proyectos rurales contados desde una mirada útil e inspiradora.",url:"https://www.google.com/search?q=agricultura+granjas+negocios+rurales+Arag%C3%B3n+Navarra",image:"",source:"Selección rural",category:"rural",date:new Date().toISOString()},
+  {id:"fallback-estilo-1",title:"Rastas, barba y corte: mantenimiento que se nota",summary:"Consejos e ideas de estilo para que el pelo, la barba o las rastas no dependan solo del primer día de peluquería.",url:"https://www.google.com/search?q=cuidados+rastas+barba+corte+pelo",image:"",source:"Selección estilo",category:"estilo",date:new Date().toISOString()},
+  {id:"fallback-negocios-1",title:"Ideas de negocio local que pueden inspirar a pequeños comercios",summary:"Marketing sencillo, comunidad, reservas, fidelización y contenido útil para que un negocio pequeño parezca más vivo y cercano.",url:"https://www.google.com/search?q=ideas+negocio+local+peque%C3%B1o+comercio+marketing",image:"",source:"Selección negocios",category:"negocios",date:new Date().toISOString()},
 ];
-
 function getDailyCuriosity(){
   const day=Math.floor(Date.now()/86400000);
   return DAILY_CURIOSITIES[day%DAILY_CURIOSITIES.length];
@@ -837,41 +847,148 @@ function getDailyCuriosity(){
 function formatNewsDate(date){
   try{return new Date(date).toLocaleDateString("es-ES",{day:"2-digit",month:"short"});}catch{return "";}
 }
+function categoryInfo(id){return NEWS_CATEGORIES.find(c=>c.id===id)||NEWS_CATEGORIES[0];}
+function categoryVisual(id){return CATEGORY_COLORS[id]||CATEGORY_COLORS.todo;}
 async function fetchNews(category="todo"){
   const res=await fetch(`/api/news?category=${encodeURIComponent(category)}`);
   const data=await res.json();
   const items=Array.isArray(data.news)?data.news:[];
   return items.length?items:NEWS_FALLBACK;
 }
-function NewsCard({item,compact=false,featured=false}){
-  const openNews=()=>{
-    SFX.click();
-    if(item?.url) window.open(item.url,"_blank","noopener,noreferrer");
-  };
-  const category=NEWS_CATEGORIES.find(c=>c.id===item?.category);
+function trimSummary(text=""){
+  const clean=String(text||"").replace(/\s+/g," ").trim();
+  if(!clean)return "Resumen breve no disponible. Pulsa para leer la fuente original.";
+  return clean.length>185?`${clean.slice(0,182).trim()}...`:clean;
+}
+function newsIconFor(cat){return categoryInfo(cat).icon;}
+function safeAvatarJson(cfg){try{return cfg?JSON.parse(JSON.stringify(cfg)):null;}catch{return null;}}
+async function grantNewsPoints({user,setUser,showToast,showPoints,eventKey,points,description}){
+  if(!user?.id||!points)return false;
+  try{
+    const {error:evError}=await supabase.from("news_point_events").insert({usuario_id:String(user.id),event_key:eventKey,puntos:points,descripcion:description});
+    if(evError){
+      if(String(evError.code)==="23505") return false;
+      console.warn("news_point_events error",evError);
+      return false;
+    }
+    const nuevos=(user.puntos||0)+points;
+    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    setUser?.(u=>({...u,puntos:nuevos}));
+    showPoints?.(points);SFX.coins();showToast?.(`${description} +${points} pts`);
+    return true;
+  }catch(e){console.warn("No se pudieron dar puntos de actualidad",e);return false;}
+}
+function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
+  const openNews=()=>{SFX.click();onOpen?.(item);};
+  const cat=categoryInfo(item?.category);
+  const visual=categoryVisual(item?.category);
   const hasImage=Boolean(item?.image);
-  return <Card onClick={openNews} hover style={{marginBottom:compact?9:12,padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF7E0,#F6E5BE)",border:`2px solid ${featured?T.gold:T.g300}`,boxShadow:featured?"0 16px 38px rgba(212,175,55,.22), inset 0 1px 0 rgba(255,255,255,.55)":"0 12px 30px rgba(20,8,4,0.20), inset 0 1px 0 rgba(255,255,255,.55)"}}>
-    {!compact&&(
-      hasImage?
-        <div style={{height:featured?154:124,backgroundImage:`linear-gradient(180deg,rgba(20,8,4,.08),rgba(20,8,4,.35)), url(${item.image})`,backgroundSize:"cover",backgroundPosition:"center"}}/>
-        :<div style={{height:featured?118:82,display:"grid",placeItems:"center",background:"radial-gradient(circle at 20% 20%,rgba(212,175,55,.35),transparent 30%),linear-gradient(135deg,#24110A,#6E3518 62%,#D4AF37)",color:T.white}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:featured?"2rem":"1.5rem",letterSpacing:.4}}>Actualidad</div>
+  const title=item?.title||"Contenido destacado";
+  const summary=trimSummary(item?.summary);
+  const imageBlock=hasImage?(
+    <div style={{width:compact?84:"100%",height:compact?90:featured?184:138,flex:"0 0 auto",backgroundImage:`linear-gradient(180deg,rgba(20,8,4,.02),rgba(20,8,4,.36)), url(${item.image})`,backgroundSize:"cover",backgroundPosition:"center",borderRadius:compact?18:"20px 20px 0 0",border:compact?`1px solid rgba(255,244,214,.65)`:"none"}}/>
+  ):(
+    <div style={{width:compact?84:"100%",height:compact?90:featured?150:112,flex:"0 0 auto",display:"grid",placeItems:"center",background:`radial-gradient(circle at 20% 20%,rgba(255,255,255,.32),transparent 34%),${visual.bg}`,borderRadius:compact?18:"20px 20px 0 0",border:compact?`1px solid ${T.g300}`:"none"}}>
+      <div style={{textAlign:"center"}}><div style={{fontSize:compact?"2rem":"3rem",filter:"drop-shadow(0 6px 8px rgba(0,0,0,.20))"}}>{cat.icon}</div>{!compact&&<div style={{fontWeight:950,color:visual.dark,fontSize:".74rem",letterSpacing:".5px",textTransform:"uppercase"}}>{cat.short}</div>}</div>
+    </div>
+  );
+  return <Card onClick={openNews} hover style={{marginBottom:compact?10:14,padding:compact?12:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF9E9 0%,#F5E0B8 100%)",border:`2px solid ${featured?T.gold:T.g300}`,boxShadow:featured?"0 18px 42px rgba(20,8,4,.28), inset 0 1px 0 rgba(255,255,255,.68)":"0 10px 24px rgba(20,8,4,.18), inset 0 1px 0 rgba(255,255,255,.55)"}}>
+    <div style={{display:compact?"flex":"block",gap:12,alignItems:"stretch"}}>
+      {imageBlock}
+      <div style={{padding:compact?0:"14px 15px 15px",minWidth:0,flex:1}}>
+        <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
+          <span style={{background:visual.accent,color:"#FFF8E5",borderRadius:50,padding:"3px 9px",fontSize:".66rem",fontWeight:950,letterSpacing:".25px"}}>{cat.icon} {cat.short}</span>
+          <span style={{background:"rgba(255,244,214,.82)",color:T.g700,border:`1px solid ${T.g200}`,borderRadius:50,padding:"3px 8px",fontSize:".66rem",fontWeight:900}}>{item?.source||"Fuente"}</span>
+          {!compact&&<span style={{fontSize:".68rem",fontWeight:900,color:T.textSub,marginLeft:"auto"}}>{formatNewsDate(item?.date)}</span>}
         </div>
-    )}
-    <div style={{padding:compact?"12px 13px":"14px"}}>
-      <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center",marginBottom:8}}>
-        <Badge col="gold">{item?.source||"Fuente"}</Badge>
-        <Badge col="blue">{category?.icon||"📰"} {category?.label||item?.category||"Noticia"}</Badge>
-        <span style={{fontSize:".7rem",fontWeight:900,color:T.textSub,marginLeft:"auto"}}>{formatNewsDate(item?.date)}</span>
-      </div>
-      <div style={{fontWeight:900,color:T.g800,fontSize:featured?"1.05rem":compact?".88rem":"1rem",lineHeight:1.18,display:"-webkit-box",WebkitLineClamp:compact?2:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{item?.title||"Noticia"}</div>
-      {item?.summary&&<div style={{fontSize:compact?".76rem":".82rem",fontWeight:700,color:T.textSub,lineHeight:1.34,marginTop:7,display:"-webkit-box",WebkitLineClamp:compact?2:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{item.summary}</div>}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10,gap:10}}>
-        <div style={{height:3,flex:1,borderRadius:50,background:"linear-gradient(90deg,#D4AF37,rgba(212,175,55,0))"}}/>
-        <div style={{fontSize:".76rem",fontWeight:900,color:T.g700,whiteSpace:"nowrap"}}>Leer original ↗</div>
+        <div style={{fontWeight:950,color:T.g900,fontSize:featured?"1.18rem":compact?".92rem":"1rem",lineHeight:1.16,letterSpacing:"-.15px",display:"-webkit-box",WebkitLineClamp:compact?2:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{title}</div>
+        <div style={{fontSize:compact?".76rem":".84rem",fontWeight:750,color:T.textSub,lineHeight:1.38,marginTop:7,display:"-webkit-box",WebkitLineClamp:compact?2:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{summary}</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginTop:10}}>
+          <span style={{fontSize:".72rem",fontWeight:900,color:visual.accent}}>Abrir debate y fuente</span>
+          <div style={{display:"flex",gap:6,alignItems:"center"}}>
+            <span style={{fontSize:".7rem",fontWeight:950,color:T.g700}}>👍 {stats?.likes||0}</span>
+            <span style={{fontSize:".7rem",fontWeight:950,color:T.g700}}>💬 {stats?.comments||0}</span>
+            <span style={{width:30,height:30,borderRadius:12,display:"grid",placeItems:"center",background:visual.accent,color:"#FFF8E5",fontWeight:950,boxShadow:"0 6px 14px rgba(20,8,4,.22)"}}>↗</span>
+          </div>
+        </div>
       </div>
     </div>
   </Card>;
+}
+function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChanged}){
+  const [comments,setComments]=useState([]);
+  const [likes,setLikes]=useState(0);
+  const [liked,setLiked]=useState(false);
+  const [text,setText]=useState("");
+  const [loading,setLoading]=useState(false);
+  const cat=categoryInfo(item?.category);
+  const visual=categoryVisual(item?.category);
+  useEffect(()=>{if(item)load();},[item?.id]);
+  async function load(){
+    if(!item?.id)return;
+    try{
+      const [{data:cs},{data:ls},{data:mine}]=await Promise.all([
+        supabase.from("news_comments").select("*").eq("news_id",String(item.id)).order("created_at",{ascending:true}),
+        supabase.from("news_likes").select("id",{count:"exact"}).eq("news_id",String(item.id)),
+        supabase.from("news_likes").select("id").eq("news_id",String(item.id)).eq("usuario_id",String(user.id)).maybeSingle()
+      ]);
+      setComments(Array.isArray(cs)?cs:[]);setLikes(Array.isArray(ls)?ls.length:0);setLiked(Boolean(mine));
+    }catch(e){console.warn(e);}
+  }
+  async function like(){
+    if(!item?.id||liked)return;
+    setLoading(true);
+    try{
+      const {error}=await supabase.from("news_likes").insert({news_id:String(item.id),news_title:item.title,news_url:item.url,news_category:item.category,usuario_id:String(user.id),usuario_nombre:user.nombre});
+      if(error){showToast?.("Ya habías marcado esta noticia o falta ejecutar el SQL.");setLoading(false);return;}
+      setLiked(true);setLikes(n=>n+1);onChanged?.(item.id,"like");
+      await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_like:${item.id}`,points:2,description:"Primer like en esta noticia"});
+    }finally{setLoading(false);}
+  }
+  async function sendComment(){
+    const clean=text.trim();
+    if(!clean){showToast?.("Escribe un comentario");return;}
+    setLoading(true);
+    try{
+      const hadComment=comments.some(c=>String(c.usuario_id)===String(user.id));
+      const row={news_id:String(item.id),news_title:item.title,news_url:item.url,news_category:item.category,usuario_id:String(user.id),usuario_nombre:user.nombre,usuario_avatar:user.avatar||0,usuario_avatar_config:safeAvatarJson(user.avatarConfig||user.avatar_config),contenido:clean};
+      const {data,error}=await supabase.from("news_comments").insert(row).select("*").single();
+      if(error){showToast?.("No se pudo comentar. Revisa que hayas ejecutado el SQL de actualidad.");setLoading(false);return;}
+      setComments(c=>[...c,data]);setText("");onChanged?.(item.id,"comment");SFX.success();showToast?.("Comentario publicado");
+      if(!hadComment){
+        await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_comment:${item.id}`,points:5,description:"Primer comentario en esta noticia"});
+        const {data:mine}=await supabase.from("news_comments").select("news_id").eq("usuario_id",String(user.id));
+        const distinct=new Set((mine||[]).map(x=>String(x.news_id))).size;
+        if(distinct>=3) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_3",points:15,description:"Has comentado 3 noticias distintas"});
+        if(distinct>=10) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_10",points:35,description:"Has comentado 10 noticias distintas"});
+      }
+    }finally{setLoading(false);}
+  }
+  if(!item)return null;
+  return <Modal show={!!item} onClose={onClose} title="Detalle de actualidad">
+    <div>
+      <div style={{background:`radial-gradient(circle at 15% 10%,rgba(255,255,255,.22),transparent 35%),${visual.bg}`,border:`2px solid ${visual.accent}`,borderRadius:22,padding:14,marginBottom:12}}>
+        <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}><Badge col="gold">{cat.icon} {cat.label}</Badge><Badge col="green">{item.source||"Fuente"}</Badge></div>
+        <div style={{fontWeight:950,color:T.g900,fontSize:"1.2rem",lineHeight:1.18}}>{item.title}</div>
+        <div style={{fontSize:".86rem",fontWeight:750,color:T.textSub,lineHeight:1.42,marginTop:8}}>{trimSummary(item.summary)}</div>
+        <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
+          <Btn small col="gold" onClick={()=>window.open(item.url,"_blank","noopener,noreferrer")}>Leer fuente original ↗</Btn>
+          <Btn small col={liked?"ghost":"dark"} disabled={loading||liked} onClick={like}>{liked?"👍 Te gusta":"👍 Me gusta"}</Btn>
+        </div>
+        <div style={{display:"flex",gap:10,marginTop:10,fontSize:".75rem",fontWeight:900,color:T.g700}}><span>👍 {likes}</span><span>💬 {comments.length}</span><span>{formatNewsDate(item.date)}</span></div>
+      </div>
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF8E5,#F6E5BE)"}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:7}}>Unirse al hilo</div>
+        <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Comenta algo útil: recomendación, experiencia, sitio parecido, opinión o dato que ayude a otros." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"11px 12px",background:"#FFF8E5",resize:"none",outline:"none",fontSize:".9rem",fontWeight:750,color:T.text}}/>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginTop:9}}><div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>+5 pts por tu primer comentario en esta noticia. Bonos al comentar 3 y 10 noticias distintas.</div><Btn small onClick={sendComment} disabled={loading}>Comentar</Btn></div>
+      </Card>
+      <div style={{fontWeight:950,color:T.g800,margin:"4px 0 10px"}}>Comentarios</div>
+      {comments.length===0?<EmptyState icon="💬" title="Sin comentarios todavía" sub="Sé el primero en abrir el hilo."/>:comments.map(c=><Card key={c.id} style={{marginBottom:9,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}>
+        <div style={{display:"flex",gap:9,alignItems:"center",marginBottom:7}}><Av av={c.usuario_avatar||0} config={c.usuario_avatar_config} size={32}/><div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{c.usuario_nombre||"Usuario"}</div><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{formatNewsDate(c.created_at)}</div></div></div>
+        <div style={{fontSize:".88rem",fontWeight:750,color:T.text,lineHeight:1.45,whiteSpace:"pre-wrap"}}>{c.contenido}</div>
+      </Card>)}
+    </div>
+  </Modal>;
 }
 function ActualidadMini({onNavigate}){
   const [items,setItems]=useState([]);
@@ -881,110 +998,130 @@ function ActualidadMini({onNavigate}){
     let alive=true;
     async function load(){
       setLoading(true);
-      try{
-        const list=await fetchNews("todo");
-        if(alive)setItems(list.slice(0,3));
-      }catch(e){
-        if(alive)setItems(NEWS_FALLBACK);
-      }finally{
-        if(alive)setLoading(false);
-      }
+      try{const list=await fetchNews("todo");if(alive)setItems(list.slice(0,3));}
+      catch(e){if(alive)setItems(NEWS_FALLBACK);}
+      finally{if(alive)setLoading(false);}
     }
-    load();
-    return()=>{alive=false;};
+    load();return()=>{alive=false;};
   },[]);
   const first=items[0];
   const rest=items.slice(1,3);
-  return <Card style={{marginBottom:16,padding:0,overflow:"hidden",background:"linear-gradient(160deg,#FFF7E0,#F6E5BE 58%,#E6C27A)",border:`2px solid ${T.g300}`}}>
-    <div style={{padding:"16px 16px 12px",background:"linear-gradient(135deg,rgba(36,17,10,.08),rgba(212,175,55,.16))"}}>
+  return <Card style={{marginBottom:16,padding:0,overflow:"hidden",background:"linear-gradient(160deg,#FFF8E5,#F6E5BE 62%,#E6C27A)",border:`2px solid ${T.g300}`}}>
+    <div style={{padding:"16px",background:"radial-gradient(circle at 8% 10%,rgba(212,175,55,.30),transparent 30%),linear-gradient(135deg,rgba(36,17,10,.08),rgba(255,244,214,.58))"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
         <div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>📰 Actualidad</div>
-          <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Titulares de hoy, enlaces originales y una curiosidad diaria</div>
+          <div style={{fontSize:".72rem",fontWeight:950,color:T.g600,letterSpacing:".5px",textTransform:"uppercase"}}>Magazine de comunidad</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800,lineHeight:1}}>📰 Actualidad</div>
+          <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.32}}>Curiosidades, rural, comer, sitios, estilo y negocios. Para leer, comentar y guardar ideas.</div>
         </div>
-        <Btn small col="ghost" onClick={()=>onNavigate?.("noticias")}>Ver actualidad</Btn>
+        <Btn small col="ghost" onClick={()=>onNavigate?.("noticias")}>Ver más</Btn>
       </div>
     </div>
-    <div style={{padding:"12px 16px 4px"}}>
-      <div style={{background:"linear-gradient(180deg,rgba(255,248,225,.92),rgba(246,229,190,.86))",border:`1px dashed ${T.g400}`,borderRadius:17,padding:12,marginBottom:12}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-          <span style={{fontSize:"1.15rem"}}>💡</span>
-          <div style={{fontWeight:900,color:T.g800,fontSize:".9rem"}}>{curiosity.title}</div>
-        </div>
-        <div style={{fontSize:".78rem",fontWeight:700,color:T.textSub,lineHeight:1.35}}>{curiosity.text}</div>
+    <div style={{padding:"12px 14px 6px"}}>
+      <div style={{display:"flex",gap:10,alignItems:"flex-start",background:"rgba(255,248,225,.78)",border:`1px dashed ${T.g400}`,borderRadius:18,padding:12,marginBottom:12}}>
+        <div style={{fontSize:"1.45rem",lineHeight:1}}>💡</div>
+        <div><div style={{fontWeight:950,color:T.g800,fontSize:".9rem"}}>{curiosity.title}</div><div style={{fontSize:".78rem",fontWeight:750,color:T.textSub,lineHeight:1.35,marginTop:3}}>{curiosity.text}</div></div>
       </div>
       {loading?<Spinner/>:<>
-        {first&&<NewsCard item={first} compact featured/>}
-        {rest.map(n=><NewsCard key={n.id} item={n} compact/>)}
-      </>}
+        {first&&<NewsCard item={first} compact featured onOpen={()=>onNavigate?.("noticias")}/>} 
+        {rest.map(n=><NewsCard key={n.id} item={n} compact onOpen={()=>onNavigate?.("noticias")}/>)}</>}
     </div>
   </Card>;
 }
-function Noticias({showToast}){
+function Noticias({user,setUser,showToast,showPoints}){
   const [category,setCategory]=useState("todo");
   const [items,setItems]=useState([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
+  const [selected,setSelected]=useState(null);
+  const [stats,setStats]=useState({});
   const curiosity=getDailyCuriosity();
-
   useEffect(()=>{
     let alive=true;
     async function load(){
       setLoading(true);setError("");
-      try{
-        const list=await fetchNews(category);
-        if(alive)setItems(list);
-      }catch(e){
-        const fallback=category==="todo"?NEWS_FALLBACK:NEWS_FALLBACK.filter(n=>n.category===category);
-        if(alive){setItems(fallback.length?fallback:NEWS_FALLBACK);setError("No se han podido cargar algunas fuentes RSS.");}
-      }finally{
-        if(alive)setLoading(false);
-      }
+      try{const list=await fetchNews(category);if(alive){setItems(list);loadStats(list);}}
+      catch(e){const fallback=category==="todo"?NEWS_FALLBACK:NEWS_FALLBACK.filter(n=>n.category===category);if(alive){const final=fallback.length?fallback:NEWS_FALLBACK;setItems(final);loadStats(final);setError("No se han podido cargar todas las fuentes. Te dejo una selección de respaldo.");}}
+      finally{if(alive)setLoading(false);}
     }
-    load();
-    return()=>{alive=false;};
+    load();return()=>{alive=false;};
   },[category]);
-
-  function reload(){
-    SFX.action();
-    showToast?.("Actualizando actualidad...");
-    setLoading(true);
-    fetchNews(category).then(list=>{setItems(list);setError("");}).catch(()=>setError("No se han podido actualizar ahora.")).finally(()=>setLoading(false));
+  async function loadStats(list=items){
+    const ids=[...new Set((list||[]).map(n=>String(n.id)).filter(Boolean))];
+    if(!ids.length)return;
+    try{
+      const [{data:cs},{data:ls}]=await Promise.all([
+        supabase.from("news_comments").select("news_id").in("news_id",ids),
+        supabase.from("news_likes").select("news_id").in("news_id",ids)
+      ]);
+      const next={};ids.forEach(id=>next[id]={comments:0,likes:0});
+      (cs||[]).forEach(c=>{const id=String(c.news_id);next[id]={...(next[id]||{}),comments:(next[id]?.comments||0)+1,likes:next[id]?.likes||0};});
+      (ls||[]).forEach(l=>{const id=String(l.news_id);next[id]={...(next[id]||{}),likes:(next[id]?.likes||0)+1,comments:next[id]?.comments||0};});
+      setStats(next);
+    }catch(e){console.warn("stats actualidad",e);}
   }
-
+  function reload(){
+    SFX.action();showToast?.("Actualizando selección...");setLoading(true);
+    fetchNews(category).then(list=>{setItems(list);setError("");loadStats(list);}).catch(()=>setError("No se han podido actualizar ahora.")).finally(()=>setLoading(false));
+  }
+  function bumpStat(newsId,type){
+    setStats(s=>({...s,[newsId]:{comments:(s[newsId]?.comments||0)+(type==="comment"?1:0),likes:(s[newsId]?.likes||0)+(type==="like"?1:0)}}));
+  }
   const featured=items[0];
   const rest=items.slice(1);
+  const active=categoryInfo(category);
   return <div style={{animation:"fadeSlide .35s ease"}}>
-    <Card style={{marginBottom:14,padding:0,overflow:"hidden",background:"linear-gradient(135deg,#24110A,#6E3518 60%,#D4AF37)",border:"2px solid rgba(255,244,214,.55)",color:T.white}}>
-      <div style={{padding:"18px 16px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start"}}>
+    <Card style={{marginBottom:14,padding:0,overflow:"hidden",background:"linear-gradient(135deg,#1B0D07,#3A1E10 58%,#9A4F22)",border:"2px solid rgba(255,244,214,.55)",color:T.white}}>
+      <div style={{padding:"18px 16px",position:"relative"}}>
+        <div style={{position:"absolute",right:-30,top:-28,fontSize:"7rem",opacity:.08,transform:"rotate(-8deg)"}}>📰</div>
+        <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",position:"relative",zIndex:1}}>
           <div>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>📰 Actualidad</div>
-            <div style={{fontSize:".86rem",fontWeight:800,opacity:.88,lineHeight:1.35,marginTop:6}}>Titulares actualizados, curiosidades y acceso directo a la fuente original.</div>
+            <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".65px",textTransform:"uppercase",color:"rgba(255,244,214,.75)"}}>Magazine curado</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1}}>Actualidad útil</div>
+            <div style={{fontSize:".86rem",fontWeight:800,opacity:.9,lineHeight:1.35,marginTop:6}}>Un rincón para descubrir cosas cercanas: curiosidades, vida rural, comida, sitios con encanto, pelo, rastas y negocios locales. Lee, comenta, guarda hilos y gana puntos sin convertirlo en un periódico pesado.</div>
           </div>
           <Btn small col="gold" onClick={reload}>Actualizar</Btn>
         </div>
-      </div>
-    </Card>
-    <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:10,marginBottom:10}}>
-      {NEWS_CATEGORIES.map(c=>(
-        <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{whiteSpace:"nowrap",border:`2px solid ${category===c.id?T.gold:T.g300}`,background:category===c.id?T.gradGold:"rgba(255,244,214,.74)",color:category===c.id?T.g900:T.g700,borderRadius:50,padding:"8px 12px",fontWeight:900,cursor:"pointer",boxShadow:category===c.id?"0 8px 18px rgba(212,175,55,.25)":"0 5px 12px rgba(20,8,4,.1)"}}>{c.icon} {c.label}</button>
-      ))}
-    </div>
-    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
-      <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-        <div style={{fontSize:"1.8rem",lineHeight:1}}>💡</div>
-        <div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.25rem",color:T.g800}}>Curiosidad del día</div>
-          <div style={{fontWeight:900,color:T.g800,marginTop:3}}>{curiosity.title}</div>
-          <div style={{fontSize:".84rem",fontWeight:700,lineHeight:1.38,color:T.textSub,marginTop:4}}>{curiosity.text}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:14,position:"relative",zIndex:1}}>
+          {["Sin ruido político","Comentarios con puntos","Contenido para guardar"].map(t=><div key={t} style={{background:"rgba(255,244,214,.12)",border:"1px solid rgba(255,244,214,.22)",borderRadius:14,padding:"8px 6px",textAlign:"center",fontSize:".68rem",fontWeight:900}}>{t}</div>)}
         </div>
       </div>
     </Card>
-    {error&&<Card style={{marginBottom:12,background:"#FFF0E5",border:"2px solid #E8871A"}}><div style={{fontWeight:900,color:T.g800}}>Aviso</div><div style={{fontSize:".82rem",fontWeight:700,color:T.textSub}}>{error}</div></Card>}
-    {loading?<Spinner/>:items.length===0?<EmptyState icon="📰" title="Sin actualidad ahora" sub="Prueba otra categoría o actualiza en unos minutos."/>:<>
-      {featured&&<NewsCard item={featured} featured/>}
-      {rest.map(n=><NewsCard key={n.id} item={n}/>)}</>}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(2, minmax(0,1fr))",gap:8,marginBottom:12}}>
+      {NEWS_CATEGORIES.map(c=>{
+        const selectedCat=category===c.id,visual=categoryVisual(c.id);
+        return <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{border:`2px solid ${selectedCat?visual.accent:T.g300}`,background:selectedCat?visual.bg:"rgba(255,244,214,.72)",color:selectedCat?T.g900:T.g700,borderRadius:18,padding:"10px 11px",fontWeight:950,cursor:"pointer",boxShadow:selectedCat?"0 10px 22px rgba(20,8,4,.18)":"0 5px 12px rgba(20,8,4,.1)",textAlign:"left"}}>
+          <div style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:"1.18rem"}}>{c.icon}</span><span style={{fontSize:".82rem"}}>{c.short}</span></div>
+          <div style={{fontSize:".64rem",fontWeight:800,opacity:.72,marginTop:2,lineHeight:1.15}}>{c.desc}</div>
+        </button>;
+      })}
+    </div>
+    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF8E5,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+      <div style={{display:"flex",gap:11,alignItems:"flex-start"}}>
+        <div style={{width:48,height:48,borderRadius:18,display:"grid",placeItems:"center",background:categoryVisual("curiosidades").bg,fontSize:"1.6rem",boxShadow:"inset 0 1px 0 rgba(255,255,255,.7)"}}>💡</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:".72rem",fontWeight:950,color:T.g600,textTransform:"uppercase",letterSpacing:".45px"}}>Curiosidad del día · {curiosity.tag}</div>
+          <div style={{fontWeight:950,color:T.g900,marginTop:3,lineHeight:1.15}}>{curiosity.title}</div>
+          <div style={{fontSize:".84rem",fontWeight:750,lineHeight:1.38,color:T.textSub,marginTop:5}}>{curiosity.text}</div>
+        </div>
+      </div>
+    </Card>
+    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F6E5BE,#E6C27A)",border:`2px solid ${T.g300}`}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
+        <div><div style={{fontSize:"1.35rem"}}>👍</div><div style={{fontWeight:950,color:T.g800}}>+2</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub}}>primer like</div></div>
+        <div><div style={{fontSize:"1.35rem"}}>💬</div><div style={{fontWeight:950,color:T.g800}}>+5</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub}}>primer comentario</div></div>
+        <div><div style={{fontSize:"1.35rem"}}>🔥</div><div style={{fontWeight:950,color:T.g800}}>+15/+35</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub}}>hitos de lectura</div></div>
+      </div>
+    </Card>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,margin:"6px 2px 12px"}}>
+      <div><div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div><div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>Abre una noticia para ver la fuente, comentar y seguir el hilo desde tu perfil.</div></div>
+      <Badge col="gold">{items.length||0} ideas</Badge>
+    </div>
+    {error&&<Card style={{marginBottom:12,background:"#FFF0E5",border:"2px solid #E8871A"}}><div style={{fontWeight:950,color:T.g800}}>Aviso</div><div style={{fontSize:".82rem",fontWeight:750,color:T.textSub}}>{error}</div></Card>}
+    {loading?<Spinner/>:items.length===0?<EmptyState icon="📰" title="No hay selección ahora" sub="Prueba otra categoría o actualiza en unos minutos."/>:<>
+      {featured&&<NewsCard item={featured} featured stats={stats[String(featured.id)]} onOpen={setSelected}/>} 
+      {rest.map(n=><NewsCard key={n.id} item={n} stats={stats[String(n.id)]} onOpen={setSelected}/>)}</>}
+    <NewsDetailModal item={selected} user={user} setUser={setUser} showToast={showToast} showPoints={showPoints} onClose={()=>setSelected(null)} onChanged={bumpStat}/>
   </div>;
 }
 
@@ -2090,6 +2227,40 @@ function Chat({user,showToast}){
   );
 }
 
+
+function PerfilNewsActivity({user}){
+  const [items,setItems]=useState([]);
+  const [likes,setLikes]=useState([]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{load();},[user.id]);
+  async function load(){
+    setLoading(true);
+    try{
+      const [{data:cs},{data:ls}]=await Promise.all([
+        supabase.from("news_comments").select("*").eq("usuario_id",String(user.id)).order("created_at",{ascending:false}).limit(8),
+        supabase.from("news_likes").select("*").eq("usuario_id",String(user.id)).order("created_at",{ascending:false}).limit(8)
+      ]);
+      setItems(Array.isArray(cs)?cs:[]);setLikes(Array.isArray(ls)?ls:[]);
+    }catch(e){setItems([]);setLikes([]);}finally{setLoading(false);}
+  }
+  const total=items.length+likes.length;
+  return <Card style={{marginBottom:16,background:"linear-gradient(180deg,#FFF8E5,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:10}}>
+      <div><div style={{fontWeight:950,color:T.g800}}>📰 Mi actividad en Actualidad</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Tus comentarios y likes quedan aquí para seguir los hilos.</div></div>
+      <Badge col="gold">{total}</Badge>
+    </div>
+    {loading?<Spinner/>:total===0?<div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.4}}>Todavía no has comentado ni dado like en Actualidad. Abre una noticia, aporta algo útil y empieza a sumar puntos.</div>:<>
+      {items.length>0&&<div style={{fontWeight:950,color:T.g800,fontSize:".86rem",margin:"4px 0 8px"}}>Comentarios recientes</div>}
+      {items.map(c=><div key={c.id} onClick={()=>c.news_url&&window.open(c.news_url,"_blank","noopener,noreferrer")} style={{background:"rgba(255,244,214,.72)",border:`1px solid ${T.g200}`,borderRadius:14,padding:"9px 10px",marginBottom:8,cursor:c.news_url?"pointer":"default"}}>
+        <div style={{fontWeight:950,color:T.g800,fontSize:".82rem",lineHeight:1.18}}>{c.news_title||"Noticia"}</div>
+        <div style={{fontSize:".76rem",fontWeight:750,color:T.textSub,lineHeight:1.35,marginTop:4,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>“{c.contenido}”</div>
+      </div>)}
+      {likes.length>0&&<div style={{fontWeight:950,color:T.g800,fontSize:".86rem",margin:"10px 0 8px"}}>Últimos likes</div>}
+      {likes.slice(0,4).map(l=><div key={l.id} onClick={()=>l.news_url&&window.open(l.news_url,"_blank","noopener,noreferrer")} style={{fontSize:".78rem",fontWeight:850,color:T.textSub,background:"rgba(255,244,214,.48)",borderRadius:12,padding:"7px 9px",marginBottom:6,cursor:l.news_url?"pointer":"default"}}>👍 {l.news_title||"Noticia"}</div>)}
+    </>}
+  </Card>;
+}
+
 // PERFIL
 function Perfil({user,setUser,onLogout,showToast}){
   const [editing,setEditing]=useState(false);
@@ -2117,6 +2288,7 @@ function Perfil({user,setUser,onLogout,showToast}){
         </div>
         {user.rol===ROLES.CLIENT&&<div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,244,214,.16)",border:"1px solid rgba(255,244,214,.35)",borderRadius:16,padding:"8px 14px"}}><span style={{fontSize:"1.4rem"}}>💎</span><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.white}}>{user.puntos||0} pts</div></div>}
       </Card>
+      <PerfilNewsActivity user={user}/>
       {editing?(
         <Card style={{marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
@@ -2145,7 +2317,7 @@ const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
 
 const HELP_TEXTS={
   dashboard:"Aquí ves tu resumen principal: puntos, próxima cita y accesos rápidos.",
-  noticias:"Aquí tienes actualidad actualizada por RSS, curiosidades diarias y enlaces directos a las fuentes originales.",
+  noticias:"Magazine de comunidad: lee noticias útiles, comenta, da likes y gana puntos por participar sin ruido político.",
   feed:"El tablón es para anuncios oficiales de la tienda. Los clientes leen y reaccionan; admin y staff publican.",
   foro:"En el Foro puedes abrir temas, responder, votar ideas y hablar con otros usuarios.",
   tienda:"Aquí canjeas tus puntos por premios, descuentos o regalos.",
@@ -2219,7 +2391,7 @@ export default function App(){
     dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<DashboardAdmin user={currentUser}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
-    noticias:<Noticias showToast={showToast}/>,
+    noticias:<Noticias {...sp}/>,
     tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
