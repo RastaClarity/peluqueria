@@ -2488,10 +2488,137 @@ function PerfilNewsActivity({user}){
       {likes.slice(0,4).map(l=><div key={l.id} onClick={()=>l.news_url&&window.open(l.news_url,"_blank","noopener,noreferrer")} style={{fontSize:".78rem",fontWeight:850,color:T.textSub,background:"rgba(255,244,214,.48)",borderRadius:12,padding:"7px 9px",marginBottom:6,cursor:l.news_url?"pointer":"default"}}>👍 {l.news_title||"Noticia"}</div>)}
     </>}
   </Card>;
+
+}
+
+// MISIONES Y TROFEOS
+const MISSION_DEFS=[
+  {key:"daily_game",period:"day",icon:"🎮",title:"Una partida al día",desc:"Guarda una partida de Arcade hoy",goal:1,points:3,type:"gamesToday"},
+  {key:"daily_news_comment",period:"day",icon:"💬",title:"Opina en Actualidad",desc:"Comenta una noticia hoy",goal:1,points:3,type:"commentsToday"},
+  {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy",goal:1,points:1,type:"likesToday"},
+  {key:"weekly_arcade_3",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 3 partidas esta semana",goal:3,points:8,type:"gamesWeek"},
+  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana",goal:5,points:10,type:"commentsWeek"},
+  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana",goal:3,points:8,type:"mixedWeek"},
+];
+const TROPHY_DEFS=[
+  {key:"first_game",icon:"🎮",title:"Primer arcade",desc:"Guarda tu primera partida",condition:s=>s.gamesAll>=1},
+  {key:"first_comment",icon:"💬",title:"Primera opinión",desc:"Deja tu primer comentario en Actualidad",condition:s=>s.commentsAll>=1},
+  {key:"news_liker",icon:"👍",title:"Buen radar",desc:"Da 5 likes a contenidos útiles",condition:s=>s.likesAll>=5},
+  {key:"weekly_player",icon:"🔥",title:"Semana activa",desc:"Guarda 3 partidas en una misma semana",condition:s=>s.gamesWeek>=3},
+  {key:"commentator",icon:"🗣️",title:"Voz de la comunidad",desc:"Acumula 5 comentarios en Actualidad",condition:s=>s.commentsAll>=5},
+  {key:"stitch_apprentice",icon:"🪝",title:"Aprendiz del gancho",desc:"Guarda 3 partidas de Gancho Ninja",condition:s=>s.stitchAll>=3},
+  {key:"category_explorer",icon:"🧭",title:"Explorador de temas",desc:"Comenta en 3 categorías distintas",condition:s=>s.categoriesAll>=3},
+  {key:"arcade_regular",icon:"🏆",title:"Cliente de arcade",desc:"Guarda 15 partidas en total",condition:s=>s.gamesAll>=15},
+];
+function startOfDayISO(){const d=new Date();d.setHours(0,0,0,0);return d.toISOString();}
+function startOfWeekISO(){const d=new Date();const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);d.setHours(0,0,0,0);return d.toISOString();}
+function missionPeriodKey(def){return def.period==="week"?weekKey():TODAY_KEY();}
+function countUnique(arr,field){return new Set((arr||[]).map(x=>x?.[field]).filter(Boolean)).size;}
+function missionValue(def,stats){
+  if(def.type==="mixedWeek") return Math.min(1,stats.gamesWeek)*1+Math.min(1,stats.commentsWeek)*1+Math.min(1,stats.likesWeek)*1;
+  return Number(stats[def.type]||0);
+}
+function clampPct(v,g){return Math.max(0,Math.min(100,(Number(v||0)/Math.max(1,g))*100));}
+async function safeList(table,query){try{const r=await dbGet(table,query);return Array.isArray(r)?r:[];}catch{return [];}}
+function MissionCard({m,value,claimed,onClaim}){
+  const done=value>=m.goal;
+  const pct=clampPct(value,m.goal);
+  return <Card style={{marginBottom:10,padding:12,background:done?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"linear-gradient(180deg,#FFF4D6,#F5E6C8)",border:`2px solid ${done?T.gold:T.g200}`}}>
+    <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+      <div style={{width:42,height:42,borderRadius:16,display:"grid",placeItems:"center",fontSize:"1.35rem",background:done?T.gradGold:"rgba(255,244,214,.82)",boxShadow:"0 8px 16px rgba(20,8,4,.14)"}}>{m.icon}</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"baseline"}}><div style={{fontWeight:950,color:T.g800,lineHeight:1.1}}>{m.title}</div><div style={{fontWeight:950,color:done?T.orange:T.g600,fontSize:".82rem"}}>+{m.points} pts</div></div>
+        <div style={{fontSize:".78rem",fontWeight:750,color:T.textSub,marginTop:3}}>{m.desc}</div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:".72rem",fontWeight:900,color:T.g700,marginTop:8}}><span>Progreso</span><span>{Math.min(value,m.goal)}/{m.goal}</span></div>
+        <div style={{height:8,background:"rgba(110,53,24,.16)",borderRadius:999,overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:`${pct}%`,background:done?T.gradGold:T.gradClient,borderRadius:999,transition:"width .3s ease"}}/></div>
+      </div>
+    </div>
+    {claimed?<div style={{marginTop:9,fontSize:".78rem",fontWeight:900,color:T.g700,background:"rgba(255,244,214,.72)",borderRadius:12,padding:"8px 10px"}}>Reclamado</div>
+      :done?<div style={{marginTop:9}}><Btn full small col="gold" onClick={onClaim}>Reclamar +{m.points}</Btn></div>
+      :<div style={{marginTop:9,fontSize:".76rem",fontWeight:800,color:T.textSub}}>Completa el objetivo para reclamarlo.</div>}
+  </Card>;
+}
+function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
+  const [loading,setLoading]=useState(true);
+  const [stats,setStats]=useState({});
+  const [claimed,setClaimed]=useState({});
+  const [trophies,setTrophies]=useState({});
+  const [tab,setTab]=useState("missions");
+  useEffect(()=>{load();},[user?.id]);
+  async function load(){
+    if(!user?.id)return;
+    setLoading(true);
+    const uid=encodeURIComponent(String(user.id));
+    const day=startOfDayISO(),week=startOfWeekISO();
+    const [gamesAll,gamesToday,gamesWeek,commentsAll,commentsToday,commentsWeek,likesAll,likesToday,likesWeek,claims,trophyRows]=await Promise.all([
+      safeList("game_scores",`?usuario_id=eq.${uid}&select=game_id,score,created_at`),
+      safeList("game_scores",`?usuario_id=eq.${uid}&created_at=gte.${day}&select=game_id,score,created_at`),
+      safeList("game_scores",`?usuario_id=eq.${uid}&created_at=gte.${week}&select=game_id,score,created_at`),
+      safeList("news_comments",`?usuario_id=eq.${uid}&select=news_category,created_at`),
+      safeList("news_comments",`?usuario_id=eq.${uid}&created_at=gte.${day}&select=news_category,created_at`),
+      safeList("news_comments",`?usuario_id=eq.${uid}&created_at=gte.${week}&select=news_category,created_at`),
+      safeList("news_likes",`?usuario_id=eq.${uid}&select=news_category,created_at`),
+      safeList("news_likes",`?usuario_id=eq.${uid}&created_at=gte.${day}&select=news_category,created_at`),
+      safeList("news_likes",`?usuario_id=eq.${uid}&created_at=gte.${week}&select=news_category,created_at`),
+      safeList("user_mission_claims",`?usuario_id=eq.${uid}&select=mission_key,period_key`),
+      safeList("user_trophies",`?usuario_id=eq.${uid}&select=trophy_key`),
+    ]);
+    const nextStats={
+      gamesAll:gamesAll.length,gamesToday:gamesToday.length,gamesWeek:gamesWeek.length,
+      commentsAll:commentsAll.length,commentsToday:commentsToday.length,commentsWeek:commentsWeek.length,
+      likesAll:likesAll.length,likesToday:likesToday.length,likesWeek:likesWeek.length,
+      stitchAll:(gamesAll||[]).filter(g=>g.game_id==="stitch").length,
+      categoriesAll:countUnique(commentsAll,"news_category"),
+    };
+    const c={};(claims||[]).forEach(x=>{c[`${x.mission_key}_${x.period_key}`]=true;});
+    const tr={};(trophyRows||[]).forEach(x=>{tr[x.trophy_key]=true;});
+    setStats(nextStats);setClaimed(c);setTrophies(tr);setLoading(false);
+    unlockTrophies(nextStats,tr);
+  }
+  async function unlockTrophies(nextStats,current){
+    for(const t of TROPHY_DEFS){
+      if(current[t.key])continue;
+      if(!t.condition(nextStats))continue;
+      try{
+        const {error}=await supabase.from("user_trophies").insert({usuario_id:String(user.id),trophy_key:t.key,titulo:t.title,descripcion:t.desc,icono:t.icon});
+        if(!error){setTrophies(v=>({...v,[t.key]:true}));showToast?.(`Trofeo desbloqueado: ${t.title}`);SFX.success();}
+      }catch{}
+    }
+  }
+  async function claimMission(m){
+    const period=missionPeriodKey(m);
+    const key=`${m.key}_${period}`;
+    if(claimed[key])return;
+    const value=missionValue(m,stats);
+    if(value<m.goal){showToast?.("Todavía falta progreso para este objetivo");return;}
+    try{
+      const {error}=await supabase.from("user_mission_claims").insert({usuario_id:String(user.id),mission_key:m.key,period_key:period,puntos:m.points});
+      if(error){showToast?.("Objetivo ya reclamado o no disponible");return;}
+      const nuevos=(user.puntos||0)+m.points;
+      await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+      setUser?.(u=>({...u,puntos:nuevos}));
+      setClaimed(v=>({...v,[key]:true}));
+      showPoints?.(m.points);SFX.coins();showToast?.(`Objetivo reclamado: +${m.points} pts`);
+    }catch{showToast?.("No se pudo reclamar el objetivo");}
+  }
+  const unlockedCount=Object.values(trophies).filter(Boolean).length;
+  const available=MISSION_DEFS.filter(m=>missionValue(m,stats)>=m.goal&&!claimed[`${m.key}_${missionPeriodKey(m)}`]).length;
+  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${available?T.gold:T.g300}`}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:12}}>
+      <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🎯 Objetivos y trofeos</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Motivos claros para volver cada día sin regalar puntos infinitos.</div></div>
+      <Badge col={available?"gold":"green"}>{available} listos</Badge>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+      <button onClick={()=>setTab("missions")} style={{border:`2px solid ${tab==="missions"?T.gold:T.g200}`,borderRadius:14,padding:"9px 10px",fontWeight:950,cursor:"pointer",background:tab==="missions"?T.gradGold:"rgba(255,244,214,.72)",color:tab==="missions"?T.g900:T.g700}}>Objetivos</button>
+      <button onClick={()=>setTab("trophies")} style={{border:`2px solid ${tab==="trophies"?T.gold:T.g200}`,borderRadius:14,padding:"9px 10px",fontWeight:950,cursor:"pointer",background:tab==="trophies"?T.gradGold:"rgba(255,244,214,.72)",color:tab==="trophies"?T.g900:T.g700}}>Trofeos {unlockedCount}/{TROPHY_DEFS.length}</button>
+    </div>
+    {loading?<Spinner/>:tab==="missions"?<div>{MISSION_DEFS.map(m=><MissionCard key={m.key} m={m} value={missionValue(m,stats)} claimed={!!claimed[`${m.key}_${missionPeriodKey(m)}`]} onClaim={()=>claimMission(m)}/>)}</div>
+      :<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{TROPHY_DEFS.map(t=>{const on=!!trophies[t.key];return <div key={t.key} style={{border:`2px solid ${on?T.gold:T.g200}`,borderRadius:18,padding:12,background:on?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"rgba(255,244,214,.58)",opacity:on?1:.55,textAlign:"center"}}><div style={{fontSize:"2rem",filter:on?"drop-shadow(0 6px 8px rgba(212,175,55,.35))":"grayscale(1)"}}>{t.icon}</div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem",lineHeight:1.1}}>{t.title}</div><div style={{fontSize:".7rem",fontWeight:800,color:T.textSub,marginTop:4,lineHeight:1.25}}>{t.desc}</div></div>})}</div>}
+  </Card>;
 }
 
 // PERFIL
-function Perfil({user,setUser,onLogout,showToast}){
+function Perfil({user,setUser,onLogout,showToast,showPoints}){
   const [editing,setEditing]=useState(false);
   const [form,setForm]=useState({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});
   useEffect(()=>{setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});},[user.id,user.nombre,user.avatar,user.avatarConfig]);
@@ -2517,6 +2644,7 @@ function Perfil({user,setUser,onLogout,showToast}){
         </div>
         {user.rol===ROLES.CLIENT&&<div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,244,214,.16)",border:"1px solid rgba(255,244,214,.35)",borderRadius:16,padding:"8px 14px"}}><span style={{fontSize:"1.4rem"}}>💎</span><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.white}}>{user.puntos||0} pts</div></div>}
       </Card>
+      <ObjetivosTrofeos user={user} setUser={setUser} showToast={showToast} showPoints={showPoints}/>
       <PerfilNewsActivity user={user}/>
       {editing?(
         <Card style={{marginBottom:16}}>
