@@ -748,6 +748,8 @@ function ClientDashboard({user,onNavigate}){
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginTop:12}}>
           <Btn small col="gold" onClick={()=>onNavigate?.("feed")}>📌 Ver tablón</Btn>
           <Btn small col="dark" onClick={()=>onNavigate?.("foro")}>🗣️ Ir al foro</Btn>
+          <Btn small col="ghost" onClick={()=>onNavigate?.("noticias")}>📰 Actualidad</Btn>
+          <Btn small col="pink" onClick={()=>onNavigate?.("juegos")}>🎮 Jugar</Btn>
         </div>
       </Card>
       <Card style={{background:"linear-gradient(135deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.4)",marginBottom:16,padding:"20px",color:T.white}}>
@@ -783,6 +785,7 @@ function ClientDashboard({user,onNavigate}){
           </Card>
         ))}
       </div>
+      <ActualidadMini onNavigate={onNavigate}/>
       {noticias.length>0&&(
         <div>
           <div style={{fontWeight:800,color:T.g800,marginBottom:10}}>Novedades</div>
@@ -796,6 +799,193 @@ function ClientDashboard({user,onNavigate}){
       )}
     </div>
   );
+}
+
+
+// NOTICIAS RSS + CURIOSIDADES
+const NEWS_CATEGORIES=[
+  {id:"todo",label:"Todo",icon:"🌍"},
+  {id:"actualidad",label:"Actualidad",icon:"📰"},
+  {id:"zaragoza",label:"Zaragoza",icon:"📍"},
+  {id:"videojuegos",label:"Juegos",icon:"🎮"},
+  {id:"tecnologia",label:"Tecnología",icon:"💻"},
+  {id:"curiosidades",label:"Curiosidades",icon:"💡"},
+];
+
+const DAILY_CURIOSITIES=[
+  {title:"El pelo no crece igual en todo el mundo",text:"La genética, la alimentación, el descanso y el cuidado del cuero cabelludo influyen en el ritmo de crecimiento."},
+  {title:"Las rastas no son solo estética",text:"Han aparecido en culturas muy distintas durante siglos y suelen estar ligadas a identidad, espiritualidad o pertenencia."},
+  {title:"La barba puede tener varios tonos",text:"Es normal que barba, cejas y cabello no tengan exactamente el mismo color, incluso en una misma persona."},
+  {title:"El cuero cabelludo también se cuida",text:"Un buen lavado, hidratación y evitar tirones constantes ayuda más que muchos productos milagro."},
+  {title:"El degradado depende de la transición",text:"Un fade limpio no es solo rapar: lo importante es que no se noten saltos bruscos entre longitudes."},
+  {title:"La tijera da textura",text:"La máquina ayuda a definir, pero la tijera permite controlar volumen, caída y movimiento con más precisión."},
+  {title:"No todos los cabellos secan igual",text:"El pelo rizado, afro o con rastas puede retener más humedad y necesita más tiempo de secado."},
+  {title:"Un buen corte también es mantenimiento",text:"Repasar contornos y puntas a tiempo puede alargar mucho la vida de un estilo."},
+  {title:"La imagen también comunica",text:"Un peinado puede cambiar cómo te perciben antes incluso de hablar."},
+  {title:"Las tendencias vuelven",text:"Muchos cortes modernos son versiones nuevas de estilos que ya fueron populares hace décadas."},
+];
+
+const NEWS_FALLBACK=[
+  {id:"fallback-local",title:"Actualidad en preparación",summary:"Si alguna fuente RSS falla, la app mantiene este bloque vivo mientras vuelve la conexión.",url:"https://www.google.com/search?q=noticias+actualidad",source:"Actualidad",category:"actualidad",date:new Date().toISOString(),image:""},
+  {id:"fallback-curio",title:"Curiosidad del día: el cabello cambia con la rutina",summary:"Estrés, sueño, alimentación, clima y productos pueden influir en cómo se ve el pelo de una semana a otra.",url:"https://www.google.com/search?q=curiosidades+cabello",source:"Rasta Cuts",category:"curiosidades",date:new Date().toISOString(),image:""},
+];
+
+function getDailyCuriosity(){
+  const day=Math.floor(Date.now()/86400000);
+  return DAILY_CURIOSITIES[day%DAILY_CURIOSITIES.length];
+}
+function formatNewsDate(date){
+  try{return new Date(date).toLocaleDateString("es-ES",{day:"2-digit",month:"short"});}catch{return "";}
+}
+async function fetchNews(category="todo"){
+  const res=await fetch(`/api/news?category=${encodeURIComponent(category)}`);
+  const data=await res.json();
+  const items=Array.isArray(data.news)?data.news:[];
+  return items.length?items:NEWS_FALLBACK;
+}
+function NewsCard({item,compact=false,featured=false}){
+  const openNews=()=>{
+    SFX.click();
+    if(item?.url) window.open(item.url,"_blank","noopener,noreferrer");
+  };
+  const category=NEWS_CATEGORIES.find(c=>c.id===item?.category);
+  const hasImage=Boolean(item?.image);
+  return <Card onClick={openNews} hover style={{marginBottom:compact?9:12,padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF7E0,#F6E5BE)",border:`2px solid ${featured?T.gold:T.g300}`,boxShadow:featured?"0 16px 38px rgba(212,175,55,.22), inset 0 1px 0 rgba(255,255,255,.55)":"0 12px 30px rgba(20,8,4,0.20), inset 0 1px 0 rgba(255,255,255,.55)"}}>
+    {!compact&&(
+      hasImage?
+        <div style={{height:featured?154:124,backgroundImage:`linear-gradient(180deg,rgba(20,8,4,.08),rgba(20,8,4,.35)), url(${item.image})`,backgroundSize:"cover",backgroundPosition:"center"}}/>
+        :<div style={{height:featured?118:82,display:"grid",placeItems:"center",background:"radial-gradient(circle at 20% 20%,rgba(212,175,55,.35),transparent 30%),linear-gradient(135deg,#24110A,#6E3518 62%,#D4AF37)",color:T.white}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:featured?"2rem":"1.5rem",letterSpacing:.4}}>Actualidad</div>
+        </div>
+    )}
+    <div style={{padding:compact?"12px 13px":"14px"}}>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center",marginBottom:8}}>
+        <Badge col="gold">{item?.source||"Fuente"}</Badge>
+        <Badge col="blue">{category?.icon||"📰"} {category?.label||item?.category||"Noticia"}</Badge>
+        <span style={{fontSize:".7rem",fontWeight:900,color:T.textSub,marginLeft:"auto"}}>{formatNewsDate(item?.date)}</span>
+      </div>
+      <div style={{fontWeight:900,color:T.g800,fontSize:featured?"1.05rem":compact?".88rem":"1rem",lineHeight:1.18,display:"-webkit-box",WebkitLineClamp:compact?2:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{item?.title||"Noticia"}</div>
+      {item?.summary&&<div style={{fontSize:compact?".76rem":".82rem",fontWeight:700,color:T.textSub,lineHeight:1.34,marginTop:7,display:"-webkit-box",WebkitLineClamp:compact?2:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{item.summary}</div>}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10,gap:10}}>
+        <div style={{height:3,flex:1,borderRadius:50,background:"linear-gradient(90deg,#D4AF37,rgba(212,175,55,0))"}}/>
+        <div style={{fontSize:".76rem",fontWeight:900,color:T.g700,whiteSpace:"nowrap"}}>Leer original ↗</div>
+      </div>
+    </div>
+  </Card>;
+}
+function ActualidadMini({onNavigate}){
+  const [items,setItems]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const curiosity=getDailyCuriosity();
+  useEffect(()=>{
+    let alive=true;
+    async function load(){
+      setLoading(true);
+      try{
+        const list=await fetchNews("todo");
+        if(alive)setItems(list.slice(0,3));
+      }catch(e){
+        if(alive)setItems(NEWS_FALLBACK);
+      }finally{
+        if(alive)setLoading(false);
+      }
+    }
+    load();
+    return()=>{alive=false;};
+  },[]);
+  const first=items[0];
+  const rest=items.slice(1,3);
+  return <Card style={{marginBottom:16,padding:0,overflow:"hidden",background:"linear-gradient(160deg,#FFF7E0,#F6E5BE 58%,#E6C27A)",border:`2px solid ${T.g300}`}}>
+    <div style={{padding:"16px 16px 12px",background:"linear-gradient(135deg,rgba(36,17,10,.08),rgba(212,175,55,.16))"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+        <div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>📰 Actualidad</div>
+          <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Titulares de hoy, enlaces originales y una curiosidad diaria</div>
+        </div>
+        <Btn small col="ghost" onClick={()=>onNavigate?.("noticias")}>Ver actualidad</Btn>
+      </div>
+    </div>
+    <div style={{padding:"12px 16px 4px"}}>
+      <div style={{background:"linear-gradient(180deg,rgba(255,248,225,.92),rgba(246,229,190,.86))",border:`1px dashed ${T.g400}`,borderRadius:17,padding:12,marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+          <span style={{fontSize:"1.15rem"}}>💡</span>
+          <div style={{fontWeight:900,color:T.g800,fontSize:".9rem"}}>{curiosity.title}</div>
+        </div>
+        <div style={{fontSize:".78rem",fontWeight:700,color:T.textSub,lineHeight:1.35}}>{curiosity.text}</div>
+      </div>
+      {loading?<Spinner/>:<>
+        {first&&<NewsCard item={first} compact featured/>}
+        {rest.map(n=><NewsCard key={n.id} item={n} compact/>)}
+      </>}
+    </div>
+  </Card>;
+}
+function Noticias({showToast}){
+  const [category,setCategory]=useState("todo");
+  const [items,setItems]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState("");
+  const curiosity=getDailyCuriosity();
+
+  useEffect(()=>{
+    let alive=true;
+    async function load(){
+      setLoading(true);setError("");
+      try{
+        const list=await fetchNews(category);
+        if(alive)setItems(list);
+      }catch(e){
+        const fallback=category==="todo"?NEWS_FALLBACK:NEWS_FALLBACK.filter(n=>n.category===category);
+        if(alive){setItems(fallback.length?fallback:NEWS_FALLBACK);setError("No se han podido cargar algunas fuentes RSS.");}
+      }finally{
+        if(alive)setLoading(false);
+      }
+    }
+    load();
+    return()=>{alive=false;};
+  },[category]);
+
+  function reload(){
+    SFX.action();
+    showToast?.("Actualizando actualidad...");
+    setLoading(true);
+    fetchNews(category).then(list=>{setItems(list);setError("");}).catch(()=>setError("No se han podido actualizar ahora.")).finally(()=>setLoading(false));
+  }
+
+  const featured=items[0];
+  const rest=items.slice(1);
+  return <div style={{animation:"fadeSlide .35s ease"}}>
+    <Card style={{marginBottom:14,padding:0,overflow:"hidden",background:"linear-gradient(135deg,#24110A,#6E3518 60%,#D4AF37)",border:"2px solid rgba(255,244,214,.55)",color:T.white}}>
+      <div style={{padding:"18px 16px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start"}}>
+          <div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>📰 Actualidad</div>
+            <div style={{fontSize:".86rem",fontWeight:800,opacity:.88,lineHeight:1.35,marginTop:6}}>Titulares actualizados, curiosidades y acceso directo a la fuente original.</div>
+          </div>
+          <Btn small col="gold" onClick={reload}>Actualizar</Btn>
+        </div>
+      </div>
+    </Card>
+    <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:10,marginBottom:10}}>
+      {NEWS_CATEGORIES.map(c=>(
+        <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{whiteSpace:"nowrap",border:`2px solid ${category===c.id?T.gold:T.g300}`,background:category===c.id?T.gradGold:"rgba(255,244,214,.74)",color:category===c.id?T.g900:T.g700,borderRadius:50,padding:"8px 12px",fontWeight:900,cursor:"pointer",boxShadow:category===c.id?"0 8px 18px rgba(212,175,55,.25)":"0 5px 12px rgba(20,8,4,.1)"}}>{c.icon} {c.label}</button>
+      ))}
+    </div>
+    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+      <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+        <div style={{fontSize:"1.8rem",lineHeight:1}}>💡</div>
+        <div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.25rem",color:T.g800}}>Curiosidad del día</div>
+          <div style={{fontWeight:900,color:T.g800,marginTop:3}}>{curiosity.title}</div>
+          <div style={{fontSize:".84rem",fontWeight:700,lineHeight:1.38,color:T.textSub,marginTop:4}}>{curiosity.text}</div>
+        </div>
+      </div>
+    </Card>
+    {error&&<Card style={{marginBottom:12,background:"#FFF0E5",border:"2px solid #E8871A"}}><div style={{fontWeight:900,color:T.g800}}>Aviso</div><div style={{fontSize:".82rem",fontWeight:700,color:T.textSub}}>{error}</div></Card>}
+    {loading?<Spinner/>:items.length===0?<EmptyState icon="📰" title="Sin actualidad ahora" sub="Prueba otra categoría o actualiza en unos minutos."/>:<>
+      {featured&&<NewsCard item={featured} featured/>}
+      {rest.map(n=><NewsCard key={n.id} item={n}/>)}</>}
+  </div>;
 }
 
 // CITAS
@@ -1947,14 +2137,15 @@ function Perfil({user,setUser,onLogout,showToast}){
 }
 
 const NAV_CFG={
-  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"juegos",icon:"🎮",label:"Juegos"},{id:"ranking",icon:"🏆",label:"Ranking"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"noticias",icon:"📰",label:"Actualidad"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"noticias",icon:"📰",label:"Actualidad"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"noticias",icon:"📰",label:"Actualidad"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"juegos",icon:"🎮",label:"Juegos"},{id:"ranking",icon:"🏆",label:"Ranking"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
 
 const HELP_TEXTS={
   dashboard:"Aquí ves tu resumen principal: puntos, próxima cita y accesos rápidos.",
+  noticias:"Aquí tienes actualidad actualizada por RSS, curiosidades diarias y enlaces directos a las fuentes originales.",
   feed:"El tablón es para anuncios oficiales de la tienda. Los clientes leen y reaccionan; admin y staff publican.",
   foro:"En el Foro puedes abrir temas, responder, votar ideas y hablar con otros usuarios.",
   tienda:"Aquí canjeas tus puntos por premios, descuentos o regalos.",
@@ -2028,6 +2219,7 @@ export default function App(){
     dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<DashboardAdmin user={currentUser}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
+    noticias:<Noticias showToast={showToast}/>,
     tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
