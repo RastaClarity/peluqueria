@@ -2513,20 +2513,58 @@ function Perfil({user,setUser,onLogout,showToast}){
   );
 }
 
+
+function Comunidad(props){
+  const {initialTab="feed",showToast}=props;
+  const [sub,setSub]=useState(initialTab||"feed");
+  useEffect(()=>{setSub(initialTab||"feed");},[initialTab]);
+  const tabs=[
+    {id:"feed",icon:"📌",label:"Tablón",sub:"Anuncios oficiales, promociones y novedades de la tienda."},
+    {id:"foro",icon:"🗣️",label:"Foro",sub:"Temas abiertos, dudas, votaciones y conversación entre usuarios."},
+    {id:"noticias",icon:"📰",label:"Actualidad",sub:"Curiosidades, rural, comida, sitios, peluquería y negocios locales."},
+  ];
+  const active=tabs.find(t=>t.id===sub)||tabs[0];
+  return <div style={{animation:"fadeSlide .32s ease"}}>
+    <Card style={{marginBottom:14,background:"linear-gradient(160deg,#24110A,#5C3317 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.6)",color:T.white,padding:"18px 16px"}}>
+      <div style={{display:"flex",gap:12,alignItems:"center",justifyContent:"space-between"}}>
+        <div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",lineHeight:1}}>Comunidad</div>
+          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.82)",lineHeight:1.35}}>Un solo sitio para leer, participar y volver a tus hilos sin perderte entre pestañas.</div>
+        </div>
+        <div className="icon3d" style={{fontSize:"2.1rem"}}>🌐</div>
+      </div>
+    </Card>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+      {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setSub(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.82)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
+        <div style={{fontSize:"1.28rem",lineHeight:1}}>{t.icon}</div>
+        <div style={{fontSize:".75rem",marginTop:3}}>{t.label}</div>
+      </button>)}
+    </div>
+    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px"}}>
+      <div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div>
+      <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{active.sub}</div>
+    </Card>
+    {sub==="feed"&&<SocialFeed {...props}/>} 
+    {sub==="foro"&&<Foro {...props}/>} 
+    {sub==="noticias"&&<Noticias {...props}/>} 
+  </div>;
+}
+
 const NAV_CFG={
-  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"noticias",icon:"📰",label:"Actualidad"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"noticias",icon:"📰",label:"Actualidad"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"noticias",icon:"📰",label:"Actualidad"},{id:"feed",icon:"📌",label:"Tablón"},{id:"foro",icon:"🗣️",label:"Foro"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"juegos",icon:"🎮",label:"Juegos"},{id:"ranking",icon:"🏆",label:"Ranking"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
 
 const HELP_TEXTS={
   dashboard:"Aquí ves tu resumen principal: puntos, próxima cita y accesos rápidos.",
+  comunidad:"Aquí están el Tablón, el Foro y Actualidad: lee anuncios, abre temas, comenta noticias y vuelve a tus hilos.",
   noticias:"Magazine de comunidad: lee noticias útiles, comenta, da likes y gana puntos por participar sin ruido político.",
   feed:"El tablón es para anuncios oficiales de la tienda. Los clientes leen y reaccionan; admin y staff publican.",
   foro:"En el Foro puedes abrir temas, responder, votar ideas y hablar con otros usuarios.",
   tienda:"Aquí canjeas tus puntos por premios, descuentos o regalos.",
-  juegos:"En Juegos tienes el arcade, los récords semanales y el top 10 de cada juego.",
+  juegos:"En Arcade tienes juegos diarios, récords y retos para ganar puntos sin romper la economía.",
   retos:"Los retos te dan objetivos para ganar más puntos de forma divertida.",
   ranking:"En Ranking comparas tu progreso con otros clientes.",
   perfil:"En Perfil editas tu personaje, tu nombre y tu estilo.",
@@ -2539,15 +2577,23 @@ const HELP_TEXTS={
 function HelperMascot({page}){
   const [open,setOpen]=useState(false);
   const text=HELP_TEXTS[page]||"Pulsa cualquier pestaña del menú para moverte por la app.";
-  return <div style={{position:'fixed',right:14,bottom:92,zIndex:120,maxWidth:250}}>
-    {open&&<div style={{marginBottom:10,background:'linear-gradient(180deg,#F0E3C1,#E2CAA0)',border:`2px solid ${T.g300}`,borderRadius:18,padding:'12px 14px',boxShadow:'0 14px 26px rgba(0,0,0,.22)',animation:'bubblePop .22s ease'}}><div style={{fontWeight:900,color:T.g800,marginBottom:5}}>💡 Ayuda de Rasta</div><div style={{fontSize:'.82rem',fontWeight:700,color:T.text,lineHeight:1.45}}>{text}</div></div>}
-    <button onClick={()=>{SFX.click();setOpen(v=>!v);}} style={{marginLeft:'auto',display:'block',width:62,height:62,borderRadius:'50%',border:`2px solid ${T.g300}`,background:'linear-gradient(180deg,#FFF4D6,#E6C27A)',boxShadow:'0 12px 24px rgba(0,0,0,.28)',cursor:'pointer',fontSize:'2rem',animation:'helperBob 2.6s ease-in-out infinite'}}>🧑🏾‍🦱</button>
-  </div>;
+  return <Card style={{marginTop:16,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px",boxShadow:"0 8px 20px rgba(20,8,4,.16)"}}>
+    <button onClick={()=>{SFX.click();setOpen(v=>!v);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:"transparent",border:"none",cursor:"pointer",padding:0,textAlign:"left"}}>
+      <div style={{width:46,height:46,borderRadius:"50%",display:"grid",placeItems:"center",background:"linear-gradient(180deg,#FFF4D6,#E6C27A)",border:`2px solid ${T.g300}`,boxShadow:"0 8px 16px rgba(20,8,4,.18)",fontSize:"1.65rem"}}>🧑🏾‍🦱</div>
+      <div style={{flex:1}}>
+        <div style={{fontWeight:950,color:T.g800}}>Ayuda rápida</div>
+        <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>{open?"Toca para ocultar la ayuda":"Toca para ver qué puedes hacer aquí"}</div>
+      </div>
+      <div style={{fontSize:"1.2rem",fontWeight:900,color:T.g700}}>{open?"−":"+"}</div>
+    </button>
+    {open&&<div style={{marginTop:10,borderTop:`1px solid ${T.g200}`,paddingTop:10,fontSize:".84rem",fontWeight:800,color:T.text,lineHeight:1.45,animation:"bubblePop .22s ease"}}>{text}</div>}
+  </Card>;
 }
 
 export default function App(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
+  const [communityTab,setCommunityTab]=useState("feed");
   const [toast,setToast]=useState({show:false,msg:""});
   const [ptsPopup,setPtsPopup]=useState({show:false,pts:0});
   const [musicOn,setMusicOn]=useState(false);
@@ -2573,7 +2619,13 @@ export default function App(){
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
   function toggleMusic(){globalMuted=!globalMuted;if(globalMuted){stopMusic();stopGameMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}
-  const navTo=id=>{id===page?SFX.tab():(id==="dashboard"?SFX.navBack():SFX.nav());setPage(id);};
+  const navTo=id=>{
+    const communityMap={feed:"feed",foro:"foro",noticias:"noticias",comunidad:communityTab||"feed"};
+    const target=communityMap[id]?"comunidad":id;
+    if(communityMap[id]) setCommunityTab(communityMap[id]);
+    target===page?SFX.tab():(target==="dashboard"?SFX.navBack():SFX.nav());
+    setPage(target);
+  };
   const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");};
 
   if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/></div>;
@@ -2587,7 +2639,7 @@ export default function App(){
   const role=normalizeRole(user.rol || user.role);
   const nav=NAV_CFG[role]||NAV_CFG.client;
   const grad=GRAD_ROLE[role]||GRAD_ROLE.client;
-  const ap=nav.find(n=>n.id===page)?page:"dashboard";
+  const ap=page;
   const currentUser={...user,rol:role};
   const sp={showToast,showPoints,user:currentUser,setUser};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
@@ -2596,7 +2648,7 @@ export default function App(){
     dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<DashboardAdmin user={currentUser}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
-    noticias:<Noticias {...sp}/>,
+    noticias:<Noticias {...sp}/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
     tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
@@ -2622,7 +2674,10 @@ export default function App(){
           </div>
         </div>
       </div>
-      <div style={{padding:"18px 14px"}}>{pages[ap]||pages["dashboard"]}</div>
+      <div style={{padding:"18px 14px"}}>
+        {pages[ap]||pages["dashboard"]}
+        <HelperMascot page={ap}/>
+      </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#8B5E2F",borderTop:`2px solid ${T.g600}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(27,67,50,0.08)"}}>
         {nav.map(n=>(
           <button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38}}>
@@ -2631,7 +2686,7 @@ export default function App(){
           </button>
         ))}
       </div>
-      <HelperMascot page={ap}/><Toast msg={toast.msg} show={toast.show}/>
+      <Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
 }
