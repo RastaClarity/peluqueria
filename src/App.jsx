@@ -265,10 +265,12 @@ const AVATAR_OPTIONS={
   brows:["soft","strong","angry","thin"],
   eyes:["anime","sleepy","sharp","round"],
   facial:["none","moustache","goatee","beard","full"],
-  accessory:["none","earring","glasses","bandana","cap","piercing"],
-  bg:["gold","dark","red","blue","paper"]
+  accessory:["none","earring","glasses","bandana","cap","piercing","capBlack","capGold","glassesGold","bandanaGreen","crown","hoopGold"],
+  bg:["gold","dark","red","blue","paper","studio","street","royal"],
+  frame:["none","bronze","gold","neon","legend"],
+  aura:["none","warm","flame","ocean","vip"]
 };
-const DEFAULT_AVATAR_CONFIG={skin:2,hair:"dreadsLong",hairColor:0,face:"oval",eyes:"anime",eyeColor:0,brows:"strong",facial:"none",accessory:"earring",bg:"gold"};
+const DEFAULT_AVATAR_CONFIG={skin:2,hair:"dreadsLong",hairColor:0,face:"oval",eyes:"anime",eyeColor:0,brows:"strong",facial:"none",accessory:"earring",bg:"gold",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {skin:2,hair:"dreadsLong",hairColor:0,face:"oval",eyes:"anime",eyeColor:0,brows:"strong",facial:"goatee",accessory:"earring",bg:"gold"},
   {skin:1,hair:"dreadsBun",hairColor:1,face:"sharp",eyes:"sharp",eyeColor:3,brows:"strong",facial:"none",accessory:"bandana",bg:"red"},
@@ -285,7 +287,7 @@ const AVATAR_PRESETS=[
 ];
 const AVATAR_LABELS={
   skin:"Piel",hair:"Peinado",hairColor:"Color pelo",face:"Cara",eyes:"Ojos",eyeColor:"Color ojos",brows:"Cejas",facial:"Barba/bigote",accessory:"Complemento",bg:"Fondo",
-  oval:"Ovalada",round:"Redonda",sharp:"Anime",square:"Cuadrada",dreadsLong:"Rastas largas",dreadsBun:"Nudo rasta",dreadsTop:"Rastas arriba",afro:"Afro",punk:"Punk",fade:"Degradado",bob:"Bob",soft:"Suaves",strong:"Marcadas",angry:"Intensas",thin:"Finas",anime:"Anime",sleepy:"Relajados",none:"Nada",moustache:"Bigote",goatee:"Perilla",beard:"Barba",full:"Barba completa",earring:"Pendiente",glasses:"Gafas",bandana:"Bandana",cap:"Gorra",piercing:"Piercing",gold:"Dorado",dark:"Oscuro",red:"Rojo",blue:"Azul",paper:"Papiro"
+  oval:"Ovalada",round:"Redonda",sharp:"Anime",square:"Cuadrada",dreadsLong:"Rastas largas",dreadsBun:"Nudo rasta",dreadsTop:"Rastas arriba",afro:"Afro",punk:"Punk",fade:"Degradado",bob:"Bob",soft:"Suaves",strong:"Marcadas",angry:"Intensas",thin:"Finas",anime:"Anime",sleepy:"Relajados",none:"Nada",moustache:"Bigote",goatee:"Perilla",beard:"Barba",full:"Barba completa",earring:"Pendiente",glasses:"Gafas",bandana:"Bandana",cap:"Gorra",piercing:"Piercing",capBlack:"Gorra negra",capGold:"Gorra dorada",glassesGold:"Gafas doradas",bandanaGreen:"Bandana verde",crown:"Corona barber",hoopGold:"Aros dorados",gold:"Dorado",dark:"Oscuro",red:"Rojo",blue:"Azul",paper:"Papiro",studio:"Estudio",street:"Calle",royal:"VIP",bronze:"Bronce",neon:"Neón",legend:"Leyenda",warm:"Brillo cálido",flame:"Aura fuego",ocean:"Aura mar",vip:"Aura VIP"
 };
 function safeJsonParse(value){
   if(!value) return null;
@@ -306,9 +308,11 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   if(!AVATAR_OPTIONS.facial.includes(cfg.facial)) cfg.facial="none";
   if(!AVATAR_OPTIONS.accessory.includes(cfg.accessory)) cfg.accessory="none";
   if(!AVATAR_OPTIONS.bg.includes(cfg.bg)) cfg.bg="gold";
+  if(!AVATAR_OPTIONS.frame.includes(cfg.frame)) cfg.frame="none";
+  if(!AVATAR_OPTIONS.aura.includes(cfg.aura)) cfg.aura="none";
   return cfg;
 }
-function avatarStyleName(cfg){return `${AVATAR_LABELS[cfg.hair]||"Estilo"} · ${AVATAR_LABELS[cfg.facial]||"sin barba"}`;}
+function avatarStyleName(cfg){return `${AVATAR_LABELS[cfg.hair]||"Estilo"} · ${AVATAR_LABELS[cfg.accessory]||"sin extra"}`;}
 function avatarStorageKey(user){return `avatar_config_${String(user?.email||user?.id||"anon").toLowerCase()}`;}
 function getLocalAvatarConfig(user, legacyAvatar=0){return normalizeAvatarConfig(localStorage.getItem(avatarStorageKey(user)), legacyAvatar);}
 function setLocalAvatarConfig(user, cfg){try{localStorage.setItem(avatarStorageKey(user),JSON.stringify(cfg));}catch{}}
@@ -341,9 +345,31 @@ function randomAvatarConfig(){
   return {skin:Math.floor(Math.random()*AVATAR_OPTIONS.skin.length),hair:pick(AVATAR_OPTIONS.hair),hairColor:Math.floor(Math.random()*AVATAR_OPTIONS.hairColor.length),face:pick(AVATAR_OPTIONS.face),eyes:pick(AVATAR_OPTIONS.eyes),eyeColor:Math.floor(Math.random()*AVATAR_OPTIONS.eyeColor.length),brows:pick(AVATAR_OPTIONS.brows),facial:pick(AVATAR_OPTIONS.facial),accessory:pick(AVATAR_OPTIONS.accessory),bg:pick(AVATAR_OPTIONS.bg)};
 }
 function bgGradient(bg){
-  const b={gold:"linear-gradient(145deg,#3A1E10,#D4AF37)",dark:"linear-gradient(145deg,#130906,#8B4513)",red:"linear-gradient(145deg,#5C0F0F,#F06A3B)",blue:"linear-gradient(145deg,#1A3A5C,#E1A85D)",paper:"linear-gradient(145deg,#6E3518,#FFF4D6)"};
+  const b={gold:"linear-gradient(145deg,#3A1E10,#D4AF37)",dark:"linear-gradient(145deg,#130906,#8B4513)",red:"linear-gradient(145deg,#5C0F0F,#F06A3B)",blue:"linear-gradient(145deg,#1A3A5C,#E1A85D)",paper:"linear-gradient(145deg,#6E3518,#FFF4D6)",studio:"linear-gradient(145deg,#24110A,#9A4F22 58%,#FFF4D6)",street:"linear-gradient(145deg,#120806,#1A3A5C 58%,#C97934)",royal:"linear-gradient(145deg,#150B07,#8B0000 45%,#D4AF37)"};
   return b[bg]||b.gold;
 }
+
+const COSMETIC_CATALOG_FALLBACK=[
+  {item_key:"cap_black",nombre:"Gorra negra Rasta Cuts",descripcion:"Gorra urbana mejor encajada para el avatar.",categoria:"gorras",slot:"accessory",valor:"capBlack",puntos_precio:120,rareza:"comun",activo:true},
+  {item_key:"cap_gold",nombre:"Gorra dorada",descripcion:"Accesorio premium con brillo dorado.",categoria:"gorras",slot:"accessory",valor:"capGold",puntos_precio:260,rareza:"raro",activo:true},
+  {item_key:"glasses_gold",nombre:"Gafas doradas",descripcion:"Gafas estilo barber con marco dorado.",categoria:"gafas",slot:"accessory",valor:"glassesGold",puntos_precio:180,rareza:"raro",activo:true},
+  {item_key:"bandana_green",nombre:"Bandana verde",descripcion:"Detalle verde para looks rasta más marcados.",categoria:"extras",slot:"accessory",valor:"bandanaGreen",puntos_precio:160,rareza:"comun",activo:true},
+  {item_key:"crown_barber",nombre:"Corona barber",descripcion:"Recompensa especial para perfiles con estilo leyenda.",categoria:"extras",slot:"accessory",valor:"crown",puntos_precio:700,rareza:"epico",activo:true},
+  {item_key:"frame_bronze",nombre:"Marco bronce",descripcion:"Marco de perfil desbloqueable.",categoria:"marcos",slot:"frame",valor:"bronze",puntos_precio:100,rareza:"comun",activo:true},
+  {item_key:"frame_gold",nombre:"Marco dorado",descripcion:"Marco brillante para destacar tu personaje.",categoria:"marcos",slot:"frame",valor:"gold",puntos_precio:350,rareza:"raro",activo:true},
+  {item_key:"frame_neon",nombre:"Marco neón",descripcion:"Marco urbano para destacar en la comunidad.",categoria:"marcos",slot:"frame",valor:"neon",puntos_precio:520,rareza:"epico",activo:true},
+  {item_key:"aura_warm",nombre:"Brillo cálido",descripcion:"Aura suave alrededor del avatar.",categoria:"auras",slot:"aura",valor:"warm",puntos_precio:220,rareza:"raro",activo:true},
+  {item_key:"aura_flame",nombre:"Aura fuego",descripcion:"Efecto intenso para perfiles activos.",categoria:"auras",slot:"aura",valor:"flame",puntos_precio:650,rareza:"epico",activo:true},
+  {item_key:"bg_studio",nombre:"Fondo estudio",descripcion:"Fondo de barber shop para el avatar.",categoria:"fondos",slot:"bg",valor:"studio",puntos_precio:200,rareza:"comun",activo:true},
+  {item_key:"bg_street",nombre:"Fondo calle",descripcion:"Fondo urbano para perfiles de comunidad.",categoria:"fondos",slot:"bg",valor:"street",puntos_precio:280,rareza:"raro",activo:true},
+  {item_key:"bg_royal",nombre:"Fondo VIP",descripcion:"Fondo legendario para perfiles premium.",categoria:"fondos",slot:"bg",valor:"royal",puntos_precio:900,rareza:"legendario",activo:true},
+];
+function rarityLabel(r){return {comun:"Común",raro:"Raro",epico:"Épico",legendario:"Legendario"}[r]||"Especial";}
+function rarityColor(r){return {comun:"green",raro:"blue",epico:"pink",legendario:"gold"}[r]||"green";}
+function cosmeticPatch(item){return item?.slot?{[item.slot]:item.valor}:{};}
+function ownedCosmeticKey(user){return `owned_cosmetics_${String(user?.id||user?.email||"anon")}`;}
+function localOwnedCosmetics(user){try{return JSON.parse(localStorage.getItem(ownedCosmeticKey(user))||"[]");}catch{return []}}
+function saveLocalOwnedCosmetics(user,keys){try{localStorage.setItem(ownedCosmeticKey(user),JSON.stringify([...new Set(keys)]));}catch{}}
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
   const skin=AVATAR_OPTIONS.skin[cfg.skin],hair=AVATAR_OPTIONS.hairColor[cfg.hairColor],eye=AVATAR_OPTIONS.eyeColor[cfg.eyeColor];
@@ -363,8 +389,14 @@ function AvatarFigure({config,size=80,animated=false}){
     {cfg.hair==="bob"&&<path d="M18 55 C18 30 31 16 50 16 C69 16 82 30 82 55 C82 75 72 89 66 96 C63 75 37 75 34 96 C28 89 18 75 18 55Z" fill={hair}/>} 
     <path d={facePath} fill={skin}/>
     {(cfg.hair==="dreadsLong"||cfg.hair==="dreadsBun"||cfg.hair==="dreadsTop"||cfg.hair==="fade")&&<path d="M19 48 C25 28 36 20 50 20 C64 20 75 28 81 48 C67 39 33 39 19 48Z" fill={hair}/>} 
-    {cfg.accessory==="bandana"&&<path d="M21 43 C33 36 67 36 79 43 L77 50 C62 44 38 44 23 50Z" fill="#C0392B"/>}
-    {cfg.accessory==="cap"&&<g><path d="M20 43 C29 25 71 25 80 43 L77 51 C62 43 38 43 23 51Z" fill="#1A3A5C"/><path d="M66 43 C80 44 89 48 92 53" fill="none" stroke="#1A3A5C" strokeWidth="7" strokeLinecap="round"/></g>}
+    {cfg.accessory==="bandana"&&<path d="M19 43 C32 34 68 34 81 43 L78 52 C61 45 39 45 22 52Z" fill="#C0392B"/>}
+    {cfg.accessory==="bandanaGreen"&&<path d="M19 43 C32 34 68 34 81 43 L78 52 C61 45 39 45 22 52Z" fill="#2F6B42"/>}
+    {(cfg.accessory==="cap"||cfg.accessory==="capBlack"||cfg.accessory==="capGold")&&<g>
+      <path d="M18 42 C26 24 38 16 50 16 C62 16 74 24 82 42 L80 53 C64 44 36 44 20 53Z" fill={cfg.accessory==="capGold"?"#D4AF37":cfg.accessory==="capBlack"?"#17110D":"#1A3A5C"}/>
+      <path d="M63 43 C77 43 90 48 94 55" fill="none" stroke={cfg.accessory==="capGold"?"#D4AF37":cfg.accessory==="capBlack"?"#17110D":"#1A3A5C"} strokeWidth="8" strokeLinecap="round"/>
+      <path d="M29 37 C38 31 62 31 72 37" stroke="rgba(255,255,255,.28)" strokeWidth="3" strokeLinecap="round" fill="none"/>
+    </g>}
+    {cfg.accessory==="crown"&&<g><path d="M27 40 L34 24 L44 38 L51 21 L59 38 L70 24 L75 40 Z" fill="#D4AF37"/><path d="M27 40 L75 40" stroke="#FFF1A8" strokeWidth="4" strokeLinecap="round"/></g>}
     <path d={cfg.brows==="angry"?"M31 42 L44 46 M56 46 L69 42":cfg.brows==="thin"?"M31 42 Q38 39 44 41 M56 41 Q63 39 69 42":"M30 42 Q38 37 45 41 M55 41 Q62 37 70 42"} stroke="#24140C" strokeWidth={cfg.brows==="thin"?2:4} strokeLinecap="round" fill="none"/>
     <ellipse cx="38" cy="55" rx={eyeRx} ry={eyeRy} fill="#fff"/>
     <ellipse cx="62" cy="55" rx={eyeRx} ry={eyeRy} fill="#fff"/>
@@ -377,13 +409,17 @@ function AvatarFigure({config,size=80,animated=false}){
     {cfg.facial==="full"&&<path d="M25 66 C29 98 71 98 75 66 C67 91 33 91 25 66Z" fill={hair} opacity=".82"/>}
     <path d="M39 78 C47 85 55 85 63 78" stroke="#8B2F1C" strokeWidth="3" strokeLinecap="round" fill="none"/>
     {cfg.accessory==="earring"&&<g><circle cx="20" cy="64" r="3" fill="#FFD66B"/><circle cx="80" cy="64" r="3" fill="#FFD66B"/></g>}
-    {cfg.accessory==="glasses"&&<g stroke="#1A120C" strokeWidth="2.5" fill="none"><circle cx="38" cy="55" r="10"/><circle cx="62" cy="55" r="10"/><path d="M48 55 L52 55"/></g>}
+    {cfg.accessory==="hoopGold"&&<g stroke="#FFD66B" strokeWidth="2.5" fill="none"><circle cx="20" cy="64" r="5"/><circle cx="80" cy="64" r="5"/></g>}
+    {(cfg.accessory==="glasses"||cfg.accessory==="glassesGold")&&<g stroke={cfg.accessory==="glassesGold"?"#D4AF37":"#1A120C"} strokeWidth="2.7" fill="none"><circle cx="38" cy="55" r="10"/><circle cx="62" cy="55" r="10"/><path d="M48 55 L52 55"/></g>}
     {cfg.accessory==="piercing"&&<circle cx="57" cy="71" r="2.2" fill="#D4AF37"/>}
   </svg>;
 }
 function Av({av=0,config=null,size=36}){
   const cfg=normalizeAvatarConfig(config,av);
-  return <div title={avatarStyleName(cfg)} style={{width:size,height:size,borderRadius:"50%",background:bgGradient(cfg.bg),display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid rgba(255,244,214,.9)`,boxShadow:"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)",position:"relative",overflow:"hidden"}}>
+  const frame={none:`2px solid rgba(255,244,214,.9)`,bronze:`3px solid #C97934`,gold:`3px solid #D4AF37`,neon:`3px solid #5FD7FF`,legend:`3px solid #FFF1A8`}[cfg.frame]||`2px solid rgba(255,244,214,.9)`;
+  const aura={none:"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)",warm:"0 0 22px rgba(212,175,55,.45), 0 8px 18px rgba(20,8,4,.28)",flame:"0 0 26px rgba(240,106,59,.55), 0 8px 18px rgba(20,8,4,.28)",ocean:"0 0 26px rgba(95,215,255,.45), 0 8px 18px rgba(20,8,4,.28)",vip:"0 0 30px rgba(255,241,168,.7), 0 8px 18px rgba(20,8,4,.28)"}[cfg.aura]||"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)";
+  return <div title={avatarStyleName(cfg)} style={{width:size,height:size,borderRadius:"50%",background:bgGradient(cfg.bg),display:"flex",alignItems:"center",justifyContent:"center",border:frame,boxShadow:aura,position:"relative",overflow:"hidden"}}>
+    {cfg.aura!=="none"&&<span style={{position:"absolute",inset:3,borderRadius:"50%",background:"radial-gradient(circle at 35% 18%,rgba(255,255,255,.28),transparent 42%)",pointerEvents:"none"}}/>}
     <AvatarFigure config={cfg} size={size*1.14}/>
   </div>;
 }
@@ -401,16 +437,19 @@ function PickerButton({active,children,onClick}){
 function ColorDot({color,active,onClick}){
   return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:32,height:32,borderRadius:"50%",background:color,border:`3px solid ${active?T.gold:"rgba(255,244,214,.9)"}`,boxShadow:active?"0 0 0 3px rgba(212,175,55,.25)":"0 4px 10px rgba(20,8,4,.18)",cursor:"pointer"}}/>;
 }
-function AvatarEditor({form,setForm}){
+function AvatarEditor({form,setForm,ownedKeys=[]}){
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
-  const patch=(key,value)=>setForm(f=>({...f,avatarConfig:normalizeAvatarConfig({...cfg,[key]:value},f.avatar)}));
+  const premiumKeys=new Set(ownedKeys||[]);
+  const isLocked=(slot,value)=>COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slot&&c.valor===value&&!premiumKeys.has(c.item_key));
+  const patch=(key,value)=>{if(isLocked(key,value))return;setForm(f=>({...f,avatarConfig:normalizeAvatarConfig({...cfg,[key]:value},f.avatar)}));};
   const randomize=()=>setForm(f=>({...f,avatarConfig:randomAvatarConfig(),avatar:Math.floor(Math.random()*AVATAR_PRESETS.length)}));
   const preset=(idx)=>setForm(f=>({...f,avatar:idx,avatarConfig:normalizeAvatarConfig(AVATAR_PRESETS[idx],idx)}));
+  const basicAccessories=AVATAR_OPTIONS.accessory.filter(v=>!["capBlack","capGold","glassesGold","bandanaGreen","crown","hoopGold"].includes(v));
   return <div>
     <Card style={{textAlign:"center",background:"linear-gradient(160deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.72)",color:T.white,marginBottom:12}}>
-      <div style={{display:"flex",justifyContent:"center",marginBottom:8}}><Av av={form.avatar} config={cfg} size={108}/></div>
+      <div style={{display:"flex",justifyContent:"center",marginBottom:8}}><Av av={form.avatar} config={cfg} size={126}/></div>
       <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{AVATAR_LABELS[cfg.hair]} · {AVATAR_LABELS[cfg.accessory]}</div>
-      <div style={{fontSize:".78rem",fontWeight:800,opacity:.86}}>Tu personaje será el jugador en Runner y Jump</div>
+      <div style={{fontSize:".78rem",fontWeight:800,opacity:.86}}>El personaje usa accesorios mejor ajustados y marcos desbloqueables.</div>
       <div style={{marginTop:10}}><Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn></div>
     </Card>
     <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🎭 Presets rápidos</div>
@@ -425,10 +464,13 @@ function AvatarEditor({form,setForm}){
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.eyes.map(v=><PickerButton key={v} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.brows.map(v=><PickerButton key={v} active={cfg.brows===v} onClick={()=>patch("brows",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
     <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.eyeColor.map((c,i)=><ColorDot key={c} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
-    <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🧔 Barba y extras</div>
+    <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🧔 Barba y extras básicos</div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.facial.map(v=><PickerButton key={v} active={cfg.facial===v} onClick={()=>patch("facial",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.accessory.map(v=><PickerButton key={v} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8,marginBottom:14}}>{AVATAR_OPTIONS.bg.map(v=><PickerButton key={v} active={cfg.bg===v} onClick={()=>patch("bg",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{basicAccessories.map(v=><PickerButton key={v} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+    <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🖼️ Fondos y marcos desbloqueables</div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.bg.map(v=><PickerButton key={v} active={cfg.bg===v} onClick={()=>patch("bg",v)}>{isLocked("bg",v)?"🔒 ":""}{AVATAR_LABELS[v]}</PickerButton>)}</div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.frame.map(v=><PickerButton key={v} active={cfg.frame===v} onClick={()=>patch("frame",v)}>{isLocked("frame",v)?"🔒 ":""}{AVATAR_LABELS[v]||v}</PickerButton>)}</div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>{AVATAR_OPTIONS.aura.map(v=><PickerButton key={v} active={cfg.aura===v} onClick={()=>patch("aura",v)}>{isLocked("aura",v)?"🔒 ":""}{AVATAR_LABELS[v]||v}</PickerButton>)}</div>
   </div>;
 }
 function Toast({msg,show}){if(!show)return null;return <div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",background:T.g800,color:T.white,padding:"12px 22px",borderRadius:50,fontWeight:700,fontSize:"0.88rem",zIndex:9999,whiteSpace:"nowrap",boxShadow:"0 6px 24px rgba(27,67,50,0.35)",animation:"toastIn 0.3s ease"}}>{msg}</div>;}
@@ -2617,11 +2659,70 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
   </Card>;
 }
 
+
+function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPoints}){
+  const [items,setItems]=useState(COSMETIC_CATALOG_FALLBACK);
+  const [owned,setOwned]=useState([]);
+  const [cat,setCat]=useState("todos");
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{load();},[user.id]);
+  async function load(){
+    setLoading(true);
+    let catalog=COSMETIC_CATALOG_FALLBACK;
+    try{
+      const {data,error}=await supabase.from("avatar_cosmetics").select("*").eq("activo",true).order("puntos_precio",{ascending:true});
+      if(!error && data?.length) catalog=data;
+    }catch{}
+    let keys=localOwnedCosmetics(user);
+    try{
+      const {data,error}=await supabase.from("user_cosmetics").select("item_key").eq("usuario_id",String(user.id));
+      if(!error && data){keys=[...new Set([...keys,...data.map(x=>x.item_key)])];saveLocalOwnedCosmetics(user,keys);}
+    }catch{}
+    setItems(catalog);setOwned(keys);setLoading(false);
+  }
+  async function unlock(item){
+    if(owned.includes(item.item_key)){apply(item);return;}
+    if((user.puntos||0)<Number(item.puntos_precio||0)){showToast?.("No tienes puntos suficientes");SFX.error();return;}
+    const nuevos=(user.puntos||0)-Number(item.puntos_precio||0);
+    try{
+      await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+      await supabase.from("user_cosmetics").upsert({usuario_id:String(user.id),item_key:item.item_key,created_at:new Date().toISOString()},{onConflict:"usuario_id,item_key"});
+    }catch{}
+    const keys=[...new Set([...owned,item.item_key])];
+    saveLocalOwnedCosmetics(user,keys);setOwned(keys);setUser?.(u=>({...u,puntos:nuevos}));showPoints?.(0);SFX.coins();showToast?.(`${item.nombre} desbloqueado`);
+    apply(item,true);
+  }
+  async function apply(item,skipToast=false){
+    const cfg=normalizeAvatarConfig({...currentConfig,...cosmeticPatch(item)},user.avatar);
+    await saveAvatarConfigForUser(user,cfg);
+    setUser?.(u=>({...u,avatarConfig:cfg,avatar_config:cfg}));
+    onApply?.(cfg);
+    if(!skipToast){SFX.success();showToast?.(`${item.nombre} aplicado`);}
+  }
+  const cats=[{id:"todos",label:"Todo"},{id:"gorras",label:"Gorras"},{id:"gafas",label:"Gafas"},{id:"marcos",label:"Marcos"},{id:"auras",label:"Auras"},{id:"fondos",label:"Fondos"},{id:"extras",label:"Extras"}];
+  const shown=items.filter(i=>cat==="todos"||i.categoria===cat);
+  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:10}}>
+      <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🧢 Tienda de estilo</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Canjea puntos por cosméticos del perfil. Se desbloquean para siempre.</div></div>
+      <Badge col="gold">{user.puntos||0} pts</Badge>
+    </div>
+    <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:8}}>{cats.map(c=><button key={c.id} onClick={()=>setCat(c.id)} style={{whiteSpace:"nowrap",border:`2px solid ${cat===c.id?T.gold:T.g200}`,background:cat===c.id?T.gradGold:"rgba(255,244,214,.8)",borderRadius:999,padding:"7px 12px",fontWeight:950,color:cat===c.id?T.g900:T.g700,cursor:"pointer"}}>{c.label}</button>)}</div>
+    {loading?<Spinner/>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{shown.map(item=>{const has=owned.includes(item.item_key);const active=normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;return <div key={item.item_key} style={{background:active?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"rgba(255,244,214,.72)",border:`2px solid ${active?T.gold:T.g200}`,borderRadius:18,padding:10,boxShadow:"0 8px 18px rgba(20,8,4,.1)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:6,alignItems:"center",marginBottom:8}}><Badge col={rarityColor(item.rareza)}>{rarityLabel(item.rareza)}</Badge><b style={{color:T.orange,fontSize:".78rem"}}>{item.puntos_precio} pts</b></div>
+      <div style={{display:"flex",justifyContent:"center",margin:"4px 0 8px"}}><Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(item)}} size={68}/></div>
+      <div style={{fontWeight:950,color:T.g800,fontSize:".84rem",lineHeight:1.1}}>{item.nombre}</div>
+      <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub,lineHeight:1.25,minHeight:34,marginTop:4}}>{item.descripcion}</div>
+      <div style={{marginTop:9}}>{has?<Btn full small col={active?"ghost":"gold"} onClick={()=>apply(item)}>{active?"Equipado":"Equipar"}</Btn>:<Btn full small col="gold" onClick={()=>unlock(item)}>Desbloquear</Btn>}</div>
+    </div>})}</div>}
+  </Card>;
+}
+
 // PERFIL
 function Perfil({user,setUser,onLogout,showToast,showPoints}){
   const [editing,setEditing]=useState(false);
+  const [ownedCosmetics,setOwnedCosmetics]=useState(localOwnedCosmetics(user));
   const [form,setForm]=useState({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});
-  useEffect(()=>{setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});},[user.id,user.nombre,user.avatar,user.avatarConfig]);
+  useEffect(()=>{setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});setOwnedCosmetics(localOwnedCosmetics(user));},[user.id,user.nombre,user.avatar,user.avatarConfig]);
   async function save(){
     const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
     await dbPatch("usuarios",`?id=eq.${user.id}`,{nombre:form.nombre,avatar:form.avatar});
@@ -2645,6 +2746,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
         {user.rol===ROLES.CLIENT&&<div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,244,214,.16)",border:"1px solid rgba(255,244,214,.35)",borderRadius:16,padding:"8px 14px"}}><span style={{fontSize:"1.4rem"}}>💎</span><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.white}}>{user.puntos||0} pts</div></div>}
       </Card>
       <ObjetivosTrofeos user={user} setUser={setUser} showToast={showToast} showPoints={showPoints}/>
+      <AvatarCosmeticShop user={user} setUser={setUser} currentConfig={cfg} onApply={(newCfg)=>{setForm(f=>({...f,avatarConfig:newCfg}));setOwnedCosmetics(localOwnedCosmetics(user));}} showToast={showToast} showPoints={showPoints}/>
       <PerfilNewsActivity user={user}/>
       {editing?(
         <Card style={{marginBottom:16}}>
@@ -2653,7 +2755,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
             <div className="icon3d" style={{fontSize:"2rem"}}>🎮</div>
           </div>
           <Input label="Nombre" value={form.nombre} onChange={v=>setForm(f=>({...f,nombre:v}))}/>
-          <AvatarEditor form={form} setForm={setForm}/>
+          <AvatarEditor form={form} setForm={setForm} ownedKeys={ownedCosmetics}/>
           <div style={{display:"flex",gap:8,marginTop:12}}>
             <Btn full onClick={save}>💾 Guardar personaje</Btn>
             <Btn full col="ghost" onClick={()=>setEditing(false)}>Cancelar</Btn>
