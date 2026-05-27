@@ -953,7 +953,7 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
       const {error}=await supabase.from("news_likes").insert({news_id:String(item.id),news_title:item.title,news_url:item.url,news_category:item.category,usuario_id:String(user.id),usuario_nombre:user.nombre});
       if(error){showToast?.("Ya habías marcado esta noticia o falta ejecutar el SQL.");setLoading(false);return;}
       setLiked(true);setLikes(n=>n+1);onChanged?.(item.id,"like");
-      await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_like:${item.id}`,points:2,description:"Primer like en esta noticia"});
+      await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_like:${item.id}`,points:1,description:"Primer like en esta noticia"});
     }finally{setLoading(false);}
   }
   async function sendComment(){
@@ -967,11 +967,11 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
       if(error){showToast?.("No se pudo comentar. Revisa que hayas ejecutado el SQL de actualidad.");setLoading(false);return;}
       setComments(c=>[...c,data]);setText("");onChanged?.(item.id,"comment");SFX.success();showToast?.("Comentario publicado");
       if(!hadComment){
-        await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_comment:${item.id}`,points:5,description:"Primer comentario en esta noticia"});
+        await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_comment:${item.id}`,points:3,description:"Primer comentario en esta noticia"});
         const {data:mine}=await supabase.from("news_comments").select("news_id").eq("usuario_id",String(user.id));
         const distinct=new Set((mine||[]).map(x=>String(x.news_id))).size;
-        if(distinct>=3) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_3",points:15,description:"Has comentado 3 noticias distintas"});
-        if(distinct>=10) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_10",points:35,description:"Has comentado 10 noticias distintas"});
+        if(distinct>=3) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_3",points:8,description:"Has comentado 3 noticias distintas"});
+        if(distinct>=10) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_10",points:20,description:"Has comentado 10 noticias distintas"});
       }
     }finally{setLoading(false);}
   }
@@ -1598,6 +1598,17 @@ function Cupones({user,showToast}){
 const TODAY_KEY=()=>new Date().toISOString().split("T")[0];
 function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${uid}_${TODAY_KEY()}`)==="1";}
 function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
+const GAME_DAILY_REWARDS={stitch:15,runner:12,jump:12,memoria:15,sopa:15,trivia:8};
+const GAME_DAILY_CAP=45;
+function dailyGamePointsKey(uid){return `game_points_total_${uid}_${TODAY_KEY()}`;}
+function getDailyGamePointsTotal(uid){return Number(localStorage.getItem(dailyGamePointsKey(uid))||0);}
+function addDailyGamePointsTotal(uid,pts){const next=getDailyGamePointsTotal(uid)+(Number(pts)||0);localStorage.setItem(dailyGamePointsKey(uid),String(next));return next;}
+function gameRewardFor(gameId,score,uid){
+  const maxReward=GAME_DAILY_REWARDS[gameId]||10;
+  const performance=Math.max(0,Number(score)||0);
+  const remaining=Math.max(0,GAME_DAILY_CAP-getDailyGamePointsTotal(uid));
+  return Math.min(maxReward,performance,remaining);
+}
 function weekKey(){
   const d=new Date();
   const first=new Date(d.getFullYear(),0,1);
@@ -1942,7 +1953,7 @@ function RastaRunnerGame({onWin,user}){
       <div style={{position:'absolute',right:10,bottom:8,fontSize:'.72rem',fontWeight:900,color:T.g700}}>Toca la pista para saltar</div>
       {obstacles.map((o,i)=><div key={o.id||i} style={{position:'absolute',left:`${o.x}%`,bottom:22,fontSize:'1.45rem',filter:'drop-shadow(0 3px 4px rgba(0,0,0,.22))'}}>✂️</div>)}
       {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.42)',padding:18}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:10}}>Velocidad rebajada, saltos más largos y menos tijeras.</div><Btn col='gold' onClick={resetAndStart}>▶ Empezar suave</Btn></div></div>}
-      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.52)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Buen intento!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Distancia {score} · ganas {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div></div>}
+      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.52)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Buen intento!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Distancia {score} · récord {pts}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div></div>}
     </div>
     <div style={{marginTop:10,fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45}}>Controles: toca la pantalla, botón Saltar, espacio o flecha arriba. Ahora el ritmo es más cómodo para móvil.</div>
     {running && <div style={{marginTop:10}}><Btn full col='dark' onClick={doJump}>⤴️ Saltar</Btn></div>}
@@ -1998,7 +2009,7 @@ function PlatformJumpGame({onWin,user}){
       </div>
       <div style={{display:'flex',justifyContent:'space-between',marginTop:10,fontWeight:900,fontSize:'.8rem',color:T.g700,gap:8,lineHeight:1.35}}><span>Score: {score}</span><span>Toca columna, usa botones o flechas. Cae en la plataforma marrón.</span></div>
       {!running && !gameOver && <div style={{marginTop:12}}><Btn full col='gold' onClick={resetAndStart}>▶ Empezar suave</Btn></div>}
-      {gameOver && <div style={{marginTop:12,textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Has conseguido {score} y ganas {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div>}
+      {gameOver && <div style={{marginTop:12,textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Has conseguido {score} · récord {pts}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div>}
       {running && <div style={{display:'flex',gap:8,marginTop:12}}><Btn full col='ghost' onClick={()=>move(-1)}>⬅️ Izq.</Btn><Btn full col='dark' onClick={()=>setLane(1)}>Centro</Btn><Btn full col='ghost' onClick={()=>move(1)}>Der. ➡️</Btn></div>}
     </div>
   </Card>;
@@ -2020,7 +2031,7 @@ function DreadStitchGame({onWin,user}){
   const statsTotal=hits+misses+badHits;
   const liveAccuracy=statsTotal?Math.round((hits/statsTotal)*100):100;
   const minHits=Math.min(5+Math.floor(round/2),9);
-  const earnedPts=completed>0?Math.min(55,Math.max(10,completed*9+Math.round(lastAccuracy/10))):0;
+  const earnedPts=completed>0?Math.min(100,Math.max(10,completed*12+Math.round(lastAccuracy/5))):0;
 
   function clearRoundStats(){
     setTargets([]);setHits(0);setMisses(0);setBadHits(0);setTime(14);
@@ -2108,7 +2119,7 @@ function DreadStitchGame({onWin,user}){
       <div style={{display:'flex',alignItems:'center',gap:8,fontWeight:900,color:T.g800}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={36}/> Gancho Ninja</div>
       <Badge col={liveAccuracy>=80?'green':'gold'}>{liveAccuracy}% precisión</Badge>
     </div>
-    <div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45,marginBottom:10}}>Cada rasta es un objetivo. Cose las rastas sueltas <b>〰️</b> y evita las tijeras <b>✂️</b>. Si la rasta queda por debajo del 80%, pierdes y se acaba la partida. Si supera el 80%, pasas a la siguiente rasta. Los puntos reales se guardan solo al terminar y solo cuentan una vez al día.</div>
+    <div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45,marginBottom:10}}>Cada rasta es un objetivo. Cose las rastas sueltas <b>〰️</b> y evita las tijeras <b>✂️</b>. Si la rasta queda por debajo del 80%, pierdes y se acaba la partida. Si supera el 80%, pasas a la siguiente rasta. Los puntos reales se guardan solo al terminar, cuentan una vez al día y tienen tope para no romper la tienda.</div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:10,textAlign:'center'}}>
       <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.68rem',color:T.textSub}}>Objetivo</div>#{round}</div>
       <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.68rem',color:T.textSub}}>Completadas</div>{completed}</div>
@@ -2124,7 +2135,7 @@ function DreadStitchGame({onWin,user}){
       <div style={{position:'absolute',top:38,left:12,right:12,zIndex:2,height:7,borderRadius:999,background:'rgba(255,244,214,.18)',overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(100,(hits/minHits)*100)}%`,background:'linear-gradient(90deg,#D4AF37,#FFF1A8)',transition:'width .2s ease'}}/></div>
       {targets.map(t=><button key={t.id} onClick={e=>{e.stopPropagation();hitAt(e.clientX,e.clientY);}} style={{position:'absolute',left:`${t.x}%`,top:`${t.y}%`,transform:'translate(-50%,-50%)',width:54,height:54,borderRadius:'50%',border:'2px solid rgba(255,244,214,.8)',background:t.kind==='good'?'linear-gradient(180deg,#FFF4D6,#D4AF37)':'linear-gradient(180deg,#FFEBEE,#C0392B)',boxShadow:'0 10px 20px rgba(0,0,0,.28)',fontSize:'1.65rem',display:'grid',placeItems:'center',cursor:'pointer'}}>{t.kind==='good'?'〰️':'✂️'}</button>)}
       {!running && !finished && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,244,214,.16)',padding:16}}><div style={{textAlign:'center',color:T.white,maxWidth:300}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.55rem',marginBottom:8}}>Cose una rasta tras otra</div><div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,marginBottom:12}}>Mantén cada objetivo por encima del 80% para seguir jugando.</div><Btn col='gold' onClick={reset}>▶ Empezar</Btn></div></div>}
-      {finished && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(20,8,4,.72)',padding:16}}><div style={{textAlign:'center',color:T.white,maxWidth:300}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.55rem'}}>{completed>0?'Partida terminada':'Rasta fallida'}</div><div style={{fontWeight:900,margin:'8px 0'}}>Última precisión {lastAccuracy}% · {completed} rastas completadas</div><div style={{fontSize:'.82rem',fontWeight:800,opacity:.85,marginBottom:12}}>{resultMsg}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}>{earnedPts>0&&<Btn col='gold' onClick={()=>onWin(earnedPts)}>Guardar récord · {earnedPts} pts</Btn>}<Btn col='ghost' onClick={reset}>🔁 Reintentar</Btn></div></div></div>}
+      {finished && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(20,8,4,.72)',padding:16}}><div style={{textAlign:'center',color:T.white,maxWidth:300}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.55rem'}}>{completed>0?'Partida terminada':'Rasta fallida'}</div><div style={{fontWeight:900,margin:'8px 0'}}>Última precisión {lastAccuracy}% · {completed} rastas completadas</div><div style={{fontSize:'.82rem',fontWeight:800,opacity:.85,marginBottom:12}}>{resultMsg}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}>{earnedPts>0&&<Btn col='gold' onClick={()=>onWin(earnedPts)}>Guardar récord · {earnedPts}</Btn>}<Btn col='ghost' onClick={reset}>🔁 Reintentar</Btn></div></div></div>}
     </div>
   </Card>;
 }
@@ -2134,22 +2145,24 @@ function Juegos({user,setUser,showToast,showPoints}){
   const [boardGame,setBoardGame]=useState("sopa");
   const [boardTick,setBoardTick]=useState(0);
   const GAMES=[
-    {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Cose rastas con precisión",pts:55},
-    {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Esquiva tijeras en modo fácil",pts:40},
-    {id:"jump",icon:"🌤️",title:"Dread Jump",desc:"Plataformas con ritmo suave",pts:45},
-    {id:"memoria",icon:"🧠",title:"Memoria Pro",desc:"12 parejas, dificultad buena",pts:36},
-    {id:"sopa",icon:"🔤",title:"Sopa diaria",desc:"Sopa 14x14 que cambia cada día",pts:35},
-    {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:15}
+    {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Cose rastas con precisión",pts:GAME_DAILY_REWARDS.stitch},
+    {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Esquiva tijeras en modo fácil",pts:GAME_DAILY_REWARDS.runner},
+    {id:"jump",icon:"🌤️",title:"Dread Jump",desc:"Plataformas con ritmo suave",pts:GAME_DAILY_REWARDS.jump},
+    {id:"memoria",icon:"🧠",title:"Memoria Pro",desc:"12 parejas, dificultad buena",pts:GAME_DAILY_REWARDS.memoria},
+    {id:"sopa",icon:"🔤",title:"Sopa diaria",desc:"Sopa 14x14 que cambia cada día",pts:GAME_DAILY_REWARDS.sopa},
+    {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:GAME_DAILY_REWARDS.trivia}
   ];
   useEffect(()=>{
     if(activeGame) startGameMusic(activeGame);
     else stopGameMusic();
     return ()=>stopGameMusic();
   },[activeGame]);
-  async function handleWin(gameId,pts){
+  async function handleWin(gameId,score){
     const alreadyPlayed=getPlayedToday(gameId,user.id);
-    saveLocalGameScore(gameId,user,pts);
-    try{ await dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,usuario_avatar_config:user.avatarConfig||user.avatar_config||null,game_id:gameId,score:pts,week:weekKey()}); }catch{}
+    const rawScore=Math.max(0,Number(score)||0);
+    const reward=gameRewardFor(gameId,rawScore,user.id);
+    saveLocalGameScore(gameId,user,rawScore);
+    try{ await dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,usuario_avatar_config:user.avatarConfig||user.avatar_config||null,game_id:gameId,score:rawScore,week:weekKey()}); }catch{}
     setBoardTick(t=>t+1);
     if(alreadyPlayed){
       SFX.success();
@@ -2158,10 +2171,17 @@ function Juegos({user,setUser,showToast,showPoints}){
       return;
     }
     markPlayedToday(gameId,user.id);
-    const nuevos=(user.puntos||0)+pts;
+    if(reward<=0){
+      SFX.success();
+      showToast(`Récord guardado. Límite diario de ${GAME_DAILY_CAP} pts alcanzado.`);
+      setActiveGame(null);
+      return;
+    }
+    addDailyGamePointsTotal(user.id,reward);
+    const nuevos=(user.puntos||0)+reward;
     await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
     setUser(u=>({...u,puntos:nuevos}));
-    showPoints(pts);SFX.coins();showToast(`+${pts} puntos!`);
+    showPoints(reward);SFX.coins();showToast(`+${reward} puntos reales!`);
     setActiveGame(null);
   }
   if(activeGame){
@@ -2187,7 +2207,11 @@ function Juegos({user,setUser,showToast,showPoints}){
       <SectionHeader icon="🎮" title="Rasta Arcade" sub="Arcade táctil con avatar propio, sopas diarias y récords semanales"/>
       <Card style={{marginBottom:14,background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
         <div style={{fontWeight:900,marginBottom:6}}>🎧 Modo juego agradable</div>
-        <div style={{fontSize:".82rem",fontWeight:800,opacity:.86,lineHeight:1.45}}>Los runners van más suaves, pero Memoria y Sopa mantienen dificultad real. La sopa cambia a diario, los controles son táctiles y siempre juegas con tu avatar de perfil.</div>
+        <div style={{fontSize:".82rem",fontWeight:800,opacity:.86,lineHeight:1.45}}>Los runners van más suaves, pero Memoria y Sopa mantienen dificultad real. Los récords pueden ser altos, pero los puntos reales están limitados para que los premios sigan teniendo valor.</div>
+      </Card>
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:900,color:T.g800,marginBottom:6}}>⚖️ Economía diaria equilibrada</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Cada juego solo da puntos reales una vez al día. Máximo por juego: 8–15 pts. Límite diario total de Arcade: {GAME_DAILY_CAP} pts. Puedes rejugar para mejorar récords sin romper la tienda.</div>
       </Card>
       <div style={{display:"grid",gridTemplateColumns:"1fr",gap:12,marginBottom:16}}>
         {GAMES.map(g=>{
@@ -2197,7 +2221,7 @@ function Juegos({user,setUser,showToast,showPoints}){
             <Card key={g.id} style={{opacity:played?0.72:1,background:played?"linear-gradient(180deg,#EBD8A8,#D7B777)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)",border:played?`1px solid ${T.g300}`:`2px solid ${T.gold}`}} hover>
               <div style={{display:"flex",alignItems:"center",gap:14}}>
                 <div className="icon3d" style={{fontSize:"2.55rem"}}>{g.icon}</div>
-                <div style={{flex:1}}><div style={{fontWeight:900,fontSize:"1rem"}}>{g.title}</div><div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800}}>{g.desc}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:4}}><span style={{fontSize:"0.75rem",color:T.orange,fontWeight:900}}>🏅 Hasta +{g.pts} pts</span><span style={{fontSize:"0.75rem",color:T.g700,fontWeight:900}}>📈 Récord: {best} pts</span></div></div>
+                <div style={{flex:1}}><div style={{fontWeight:900,fontSize:"1rem"}}>{g.title}</div><div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800}}>{g.desc}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:4}}><span style={{fontSize:"0.75rem",color:T.orange,fontWeight:900}}>🏅 Máx. +{g.pts} pts reales/día</span><span style={{fontSize:"0.75rem",color:T.g700,fontWeight:900}}>📈 Récord: {best}</span></div></div>
                 <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>{played&&<Badge col="green">✅ Puntos hoy</Badge>}<Btn small col="gold" onClick={()=>setActiveGame(g.id)}>{played?"🔁 Rejugar":"▶ Jugar"}</Btn></div>
               </div>
             </Card>
@@ -2212,7 +2236,7 @@ function Juegos({user,setUser,showToast,showPoints}){
         <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:'wrap'}}>
           {GAMES.map(g=><button key={g.id} onClick={()=>{SFX.tab();setBoardGame(g.id);}} style={{flex:'1 1 18%',border:"none",borderRadius:12,padding:"8px 4px",background:boardGame===g.id?T.gradGold:"rgba(255,244,214,.18)",color:boardGame===g.id?T.g900:T.white,fontWeight:900,cursor:"pointer"}} title={g.title}>{g.icon}</button>)}
         </div>
-        {lb.length===0?<div style={{fontSize:".82rem",fontWeight:800,opacity:.8,textAlign:"center",padding:"10px"}}>Sé el primero en marcar puntuación esta semana ✨</div>:lb.map((r,i)=><div key={`${r.user_id}-${i}-${boardTick}`} style={{display:"flex",alignItems:"center",gap:9,padding:"7px 0",borderBottom:i<lb.length-1?"1px solid rgba(255,244,214,.18)":"none"}}><div style={{width:28,fontWeight:900}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div><Av av={r.avatar} config={r.avatar_config||r.avatarConfig} size={32}/><div style={{flex:1,fontWeight:900}}>{r.nombre}</div><div style={{color:T.gold,fontWeight:900}}>{r.score} pts</div></div>)}
+        {lb.length===0?<div style={{fontSize:".82rem",fontWeight:800,opacity:.8,textAlign:"center",padding:"10px"}}>Sé el primero en marcar puntuación esta semana ✨</div>:lb.map((r,i)=><div key={`${r.user_id}-${i}-${boardTick}`} style={{display:"flex",alignItems:"center",gap:9,padding:"7px 0",borderBottom:i<lb.length-1?"1px solid rgba(255,244,214,.18)":"none"}}><div style={{width:28,fontWeight:900}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div><Av av={r.avatar} config={r.avatar_config||r.avatarConfig} size={32}/><div style={{flex:1,fontWeight:900}}>{r.nombre}</div><div style={{color:T.gold,fontWeight:900}}>{r.score}</div></div>)}
       </Card>
     </div>
   );
