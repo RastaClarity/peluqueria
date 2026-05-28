@@ -2411,7 +2411,67 @@ function GachaSlotsGame({onWin}){
 }
 
 
-function Juegos({user,setUser,showToast,showPoints}){
+
+function ArcadeInfoPanel({onOpenGacha}){
+  const [open,setOpen]=useState(false);
+  return <div style={{marginBottom:14}}>
+    <div style={{
+      background:"#FFF8E6",
+      border:`1px solid ${T.g200}`,
+      borderRadius:22,
+      padding:"13px 14px",
+      boxShadow:"0 8px 20px rgba(20,8,4,.10)",
+      color:T.text
+    }}>
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10}}>
+        <div style={{fontSize:".88rem",fontWeight:850,lineHeight:1.42,color:T.g800}}>
+          Este es el espacio para jugar, mejorar récords y conseguir puntos diarios para avanzar en recompensas, avatar y descuentos de la tienda.
+        </div>
+        <button
+          onClick={()=>{SFX.tab();setOpen(v=>!v);}}
+          style={{
+            border:`1px solid ${T.g200}`,
+            background:"#FFFFFF",
+            borderRadius:999,
+            padding:"7px 11px",
+            fontWeight:900,
+            color:T.g800,
+            cursor:"pointer",
+            whiteSpace:"nowrap",
+            boxShadow:"0 4px 10px rgba(20,8,4,.08)"
+          }}
+        >
+          {open?"Cerrar":"Detalles"}
+        </button>
+      </div>
+
+      <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:10}}>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>récord semanal</span>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>puntos diarios</span>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>premios y avatar</span>
+      </div>
+
+      {open&&<div style={{
+        marginTop:12,
+        borderTop:`1px solid ${T.g200}`,
+        paddingTop:11,
+        animation:"fadeSlide .22s ease"
+      }}>
+        <div style={{display:"grid",gap:8,fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.42}}>
+          <div>Los récords sirven para competir y volver a intentarlo. Los puntos reales, en cambio, se cobran de forma limitada para que la tienda y los desbloqueos sigan teniendo valor.</div>
+          <div>Cada juego puede entregar puntos una vez al día. Después puedes rejugar para mejorar marca, pero no para farmear puntos sin límite.</div>
+          <div>El Gacha Barber es la máquina de premios: casi siempre no toca nada, pero puede soltar recompensas raras si juntas tres símbolos iguales.</div>
+        </div>
+        <div style={{marginTop:11,display:"flex",justifyContent:"flex-start"}}>
+          <Btn small col="gold" onClick={onOpenGacha}>🎰 Abrir Gacha Barber</Btn>
+        </div>
+      </div>}
+    </div>
+  </div>;
+}
+
+
+function Juegos({user,setUser,showToast,showPoints,setHelperPage}){
   const [activeGame,setActiveGame]=useState(null);
   const [boardGame,setBoardGame]=useState("sopa");
   const [boardTick,setBoardTick]=useState(0);
@@ -2429,6 +2489,11 @@ function Juegos({user,setUser,showToast,showPoints}){
     else stopGameMusic();
     return ()=>stopGameMusic();
   },[activeGame]);
+
+  useEffect(()=>{
+    setHelperPage?.(activeGame?`game_${activeGame}`:"arcade");
+    return ()=>setHelperPage?.(null);
+  },[activeGame,setHelperPage]);
   async function handleWin(gameId,score){
     const alreadyPlayed=getPlayedToday(gameId,user.id);
     const rawScore=Math.max(0,Number(score)||0);
@@ -2478,17 +2543,14 @@ function Juegos({user,setUser,showToast,showPoints}){
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="🎮" title="Rasta Arcade" sub="Arcade táctil con avatar propio, sopas diarias y récords semanales"/>
-      <Card style={{marginBottom:14,background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
-        <div style={{fontWeight:900,marginBottom:6}}>🎧 Modo juego agradable</div>
-        <div style={{fontSize:".82rem",fontWeight:800,opacity:.86,lineHeight:1.45}}>Los runners van más suaves, pero Memoria y Sopa mantienen dificultad real. Los récords pueden ser altos, pero los puntos reales están limitados para que los premios sigan teniendo valor.</div>
-      </Card>
+      <ArcadeInfoPanel onOpenGacha={()=>setActiveGame("gacha")}/>
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#2A0E05,#6E3518 58%,#D4AF37)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
         <div style={{position:"absolute",right:-18,top:-24,fontSize:"7rem",opacity:.13,transform:"rotate(-12deg)"}}>🎰</div>
         <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:14}}>
           <div className="icon3d" style={{fontSize:"3rem"}}>🎰</div>
           <div style={{flex:1}}>
             <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",lineHeight:1}}>Gacha Barber</div>
-            <div style={{fontSize:".82rem",fontWeight:850,opacity:.88,lineHeight:1.35}}>Nuevo juego: tira la máquina, junta 3 símbolos y busca el ticket dorado. Premio gordo extremadamente raro.</div>
+            <div style={{fontSize:".82rem",fontWeight:850,opacity:.88,lineHeight:1.35}}>Máquina de premios: junta 3 símbolos iguales. Lo normal es no ganar; el ticket dorado es el premio raro.</div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
               <Badge col="gold">50 pts máx.</Badge>
               <Badge col="pink">1/5000 ticket</Badge>
@@ -2496,10 +2558,6 @@ function Juegos({user,setUser,showToast,showPoints}){
           </div>
           <Btn small col="gold" onClick={()=>setActiveGame("gacha")}>▶ Jugar</Btn>
         </div>
-      </Card>
-      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
-        <div style={{fontWeight:900,color:T.g800,marginBottom:6}}>⚖️ Economía diaria equilibrada</div>
-        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Cada juego solo da puntos reales una vez al día. Máximo por juego: 8–15 pts. Límite diario total de Arcade: {GAME_DAILY_CAP} pts. Puedes rejugar para mejorar récords sin romper la tienda. El Gacha Barber es especial: puede dar hasta 50 pts, pero casi siempre da 0.</div>
       </Card>
       <div style={{display:"grid",gridTemplateColumns:"1fr",gap:12,marginBottom:16}}>
         {GAMES.map(g=>{
@@ -3389,95 +3447,243 @@ function LoginHelperAvatar({size=46,speaking=false}={}){
 
 const HELP_TIPS = {
   dashboard:[
-    "Empieza por el tablón si quieres ver anuncios rápidos, o entra al foro para hablar con la comunidad.",
-    "Tus puntos suben con juegos, primeras interacciones y misiones. La idea es volver cada día, no conseguirlo todo en una tarde.",
-    "Actualidad funciona como magazine: curiosidades, rural, sitios, comida, estilo y negocios.",
-    "La barra inferior tiene lo principal: Inicio, Arcade, Tienda, Comunidad y Perfil."
+    "Ey, mi gente. Aquí tienes el campamento base: entrar a jugar, mirar novedades, pasar por la comunidad o revisar tu perfil sin perderte por los menús.",
+    "Si vienes con prisa, tira de los botones grandes. Si vienes con calma, date una vuelta por Actualidad; siempre hay alguna historia curiosa, rural o de buen comer.",
+    "Los puntos son como cuidar unas rastas: poquito a poco, con constancia y sin tirones raros.",
+    "Consejo de tienda: juega, comenta con cabeza y vuelve mañana. El buen flow se desbloquea por costumbre, no por machacar botones como loco."
   ],
   arcade:[
-    "En Arcade intenta jugar una vez al día: los premios buenos deberían salir por constancia, no por farmear sin parar.",
-    "Los récords sirven para picarte, pero los puntos reales deben estar limitados para que la economía no se rompa.",
-    "Si un juego se siente demasiado rápido, lo ideal es bajar velocidad antes que subir puntos.",
-    "Los juegos deben sentirse fáciles de empezar y difíciles de dominar."
+    "Bienvenido al Arcade, brother. Aquí se juega por récord, por pique sano y por puntos para avatares, premios o descuentos.",
+    "Puedes rejugar para mejorar marca, pero los puntos reales no son barra libre. Si no, la tienda acaba más desplumada que un peine viejo.",
+    "Cada juego tiene su truco. Si dudas, tócame y te explico la jugada antes de que las tijeras te hagan un corte gratis.",
+    "Para jugar con flow: una partida, buen ritmo y sin ponerse nervioso. Como en reggae: tempo firme y cabeza fría."
+  ],
+  game_stitch:[
+    "Gancho Ninja va de precisión. Cose las rastas buenas, evita tijeras y no te emociones con el dedo, que aquí el pulso manda.",
+    "Objetivo claro: llegar a 100 puntos. Si juntas 20 tijeras, se acabó la ronda, mi pana.",
+    "Para pasar necesitas 81 aciertos o más. Menos de eso y esa rasta queda como hecha en una tormenta.",
+    "Si sale el ticket dorado, píllalo. Suma +5 y aparece poco, como aparcar bien a la primera en día de mercado."
+  ],
+  game_runner:[
+    "Rasta Runner es correr y saltar sin comerte las tijeras. Fácil de entender, peligroso cuando sube el ritmo.",
+    "Toca una vez para saltar. Toca dos veces para doble salto. Mantén pulsado un poco para alargarlo, pero no flotas como en One Piece.",
+    "El truco es no saltar tarde. Las tijeras no perdonan, y este rasta no hace injertos de emergencia.",
+    "Cuanta más distancia aguantes, mejor récord. Los puntos reales se cobran una vez al día, así la cosa mantiene valor."
+  ],
+  game_jump:[
+    "Rasta Jump es recoger herramientas y aguantar cuando la velocidad empieza a ponerse seria.",
+    "Peines, ganchillos y objetos de peluquería son tu tesoro. Las tijeras mal cogidas son el villano del capítulo.",
+    "Al principio parece paseo rural; luego se acelera y toca moverse con reflejos de tripulación pirata.",
+    "Mira el patrón, no persigas todo. A veces dejar pasar un objeto salva la partida."
+  ],
+  game_gacha:[
+    "Gacha Barber es la máquina de premios. Tiras, salen símbolos y si juntas tres iguales puede caer premio.",
+    "El ticket dorado es el tesoro grande: 50 puntos, pero sale rarísimo. Nivel encontrar el One Piece en la primera isla.",
+    "Lo normal es sacar 0. No te enfades; está pensado para emoción, no para imprimir puntos.",
+    "Cuando suene la máquina, deja que entre el rollo casino-reggae: una tirada, una sonrisa y seguimos."
+  ],
+  game_memoria:[
+    "Memoria Pro es de mirar bien, no de darle a lo loco. Aquí gana quien tiene calma de peluquero con cita complicada.",
+    "Encuentra parejas y no pierdas el hilo. Si te aceleras, el tablero te peina hacia atrás.",
+    "Buen juego para descansar de los reflejos. Ponte un tema tranquilo y trabaja la cabeza.",
+    "Repetir mejora récord, pero los puntos diarios solo se cobran una vez. Flow justo para todos."
+  ],
+  game_sopa:[
+    "La Sopa diaria es para buscar palabras sin presión. Ideal para jugar con café, perro al lado y cero estrés.",
+    "Cada día debería sentirse distinta. Si ves una palabra de peluquería, estilo o comunidad, márcala sin miedo.",
+    "Este juego es más de calma rural que de arcade loco. Aquí gana el ojo fino.",
+    "Completar la sopa guarda marca y puede dar puntos si aún no los cobraste hoy."
+  ],
+  game_trivia:[
+    "Trivia Barber es para aprender y picarse un poco. Pelo, estilo, rastas y cuidados con preguntas rápidas.",
+    "No pulses por impulso. Lee bien, que una respuesta rápida mal dada corta más que tijera sin afilar.",
+    "Esto puede servir para enseñar consejos reales de la tienda sin parecer clase aburrida.",
+    "Buen sitio para meter preguntas nuevas con el tiempo: cortes, cuidados, productos y cultura de la casa."
   ],
   tienda:[
-    "La tienda debe ser visual: pocos textos, recompensas claras y cosas que apetezca desbloquear.",
-    "Los cosméticos premium deberían verse como siluetas hasta que alcances el nivel o los puntos necesarios.",
-    "No conviene regalar demasiados puntos: si todo se desbloquea rápido, la gente deja de volver.",
-    "Los premios buenos funcionan mejor si se ven en una línea de progreso tipo pase."
+    "La tienda es la vitrina. Aquí los puntos tienen que oler a recompensa buena, no a saldo sin control.",
+    "Un descuento bien puesto vale más que veinte premios confusos. Claro, bonito y fácil de canjear.",
+    "Los cosméticos deberían apetecer antes de desbloquearlos. Silueta, misterio y premio: ahí está el pique.",
+    "Consejo de rasta: no llenes esto de texto. Que se vea limpio, como escaparate recién montado."
   ],
   comunidad:[
-    "Comunidad junta Tablón, Foro y Actualidad para que el menú del móvil no se llene de pestañas.",
-    "El tablón debería ser más oficial; el foro, más libre; y actualidad, más revista.",
-    "Comentar noticias o temas puede dar puntos solo la primera vez o por objetivos concretos.",
-    "Si alguien comenta en un hilo, sería buena idea guardar ese hilo en su perfil para que pueda volver."
+    "Comunidad es la plaza del pueblo digital: tablón para avisos, foro para hablar y actualidad para leer algo con sentido.",
+    "Aquí no hace falta gritar. Buen comentario, buen like y buen debate. Flow de barrio, no gallinero.",
+    "Si alguien participa en un hilo, debería poder volver fácil desde su perfil. La conversación no se abandona en mitad del camino.",
+    "Para animarse: un poco de reggae, una noticia curiosa y a comentar con respeto."
   ],
   noticias:[
-    "Actualidad debe rotar cada día y evitar política pesada si no aporta a la comunidad.",
-    "Las categorías buenas para esta app son: Curiosidades, Rural, Comer, Sitios, Estilo y Negocios.",
-    "Las noticias deberían abrir debate dentro de la app y también dejar ir a la fuente original.",
-    "Una buena portada enseña destacado, categorías y pocas tarjetas bien elegidas."
+    "Actualidad debe parecer revista, no teletexto. Pocas tarjetas buenas, categorías claras y cero ruido pesado.",
+    "Curiosidades, rural, comer, sitios, estilo y negocios: ese es el mapa. Política densa, a remar lejos.",
+    "Cada noticia puede abrir debate dentro de la app y también mandar a la fuente original.",
+    "Si sale un sitio bonito o un bar con buena pinta, guárdalo. Eso también es comunidad."
   ],
   perfil:[
-    "El perfil debe ser compacto: resumen, editor, camino de recompensas y logros en pestañas.",
-    "El editor de personaje funciona mejor con miniaturas visuales, no solo nombres de peinados.",
-    "Los puntos pueden funcionar como XP para subir nivel y desbloquear siluetas.",
-    "Guarda el personaje después de cambiar look para que se vea igual en juegos, comentarios y perfil."
+    "Perfil es tu guarida: avatar, nivel, recompensas, logros y tu rastro dentro de la app.",
+    "El editor tiene que ser visual. Ver el peinado antes de elegirlo, como creador de personaje de videojuego.",
+    "Los puntos funcionan mejor como progreso. Subes nivel, desbloqueas siluetas y el avatar va cogiendo personalidad.",
+    "Guarda el look cuando te guste. No queremos que el rasta salga al foro con la gorra atravesada, mi hermano."
   ],
   foro:[
-    "En el foro interesa premiar calidad: abrir tema útil, responder bien o recibir likes, no spamear.",
-    "Las votaciones pueden servir para encuestas de la tienda, peinados, eventos o ideas nuevas.",
-    "Si el foro crece, habrá que añadir moderación para admin y staff.",
-    "Los hilos con actividad deberían volver arriba, como una comunidad real."
+    "El foro es para conversaciones con sustancia: preguntas, ideas, votaciones y temas de la comunidad.",
+    "Premia calidad, no spam. Un buen comentario vale más que diez mensajes escritos con el peine en la boca.",
+    "Las encuestas pueden servir para elegir eventos, peinados, promos o ideas de la tienda.",
+    "Si el hilo se mueve, que vuelva arriba. Así la conversación respira."
   ],
   feed:[
-    "El feed puede quedar como tablón oficial: anuncios, novedades, promociones y avisos del staff.",
-    "Los clientes pueden leer y reaccionar; admin y staff publican para mantener orden.",
-    "Un tablón limpio da sensación de negocio serio y no de chat descontrolado.",
-    "Los posts importantes deberían poder fijarse arriba."
+    "El tablón es la voz oficial: novedades, promos, avisos y cosas importantes de la tienda.",
+    "El cliente lee y reacciona; staff y admin publican. Ordenado, limpio y sin convertirlo en chat loco.",
+    "Un aviso bien puesto evita veinte preguntas repetidas. Eso es magia sin IA, mi pana.",
+    "Los posts importantes deberían poder fijarse arriba como cartel de barbería."
   ]
 };
 
+const RASTA_GENERAL_TIPS=[
+  "Chiste rápido: si la app se lía, no la peines a contrapelo; toca al rasta y vamos paso a paso.",
+  "Si hoy no toca premio, mañana se vuelve. Hasta las rastas buenas necesitan tiempo.",
+  "Rollo rural: menos correr, más hacer las cosas bien. Una app bonita también se cultiva.",
+  "Si esto fuera anime, ahora estaríamos en el arco de entrenamiento. Paciencia, mejora y siguiente nivel.",
+  "Regla de oro: que el usuario entienda lo justo en pantalla, y lo demás se lo cuenta el rasta cuando lo toque.",
+  "Una buena comunidad se cuida como un huerto: agua justa, paciencia y nada de malas hierbas.",
+  "Si vas a farmear puntos, hazlo con estilo. Aquí no se viene a romper la tienda, se viene a darle vida.",
+  "No corras más que las tijeras, mi pana. A veces el mejor movimiento es esperar medio segundo."
+];
+
+const RASTA_RARE_CULTURE_TIPS=[
+  "Pure Negga tiene una voz celestial. Ponte un tema suyo de fondo y prueba otra partida con calma.",
+  "Morodo es de esos nombres que hay que tener ubicados si te gusta el reggae en España. Búscalo en YouTube cuando tengas un rato.",
+  "Fyahbwoy entra perfecto para jugar con energía sin perder el flow.",
+  "Rapsusklei tiene letras para escucharlas sin prisa, de esas que pegan con una tarde tranquila.",
+  "Hoy te vendría bien un tema reggae de fondo y una vuelta por Comunidad. Plan sencillo, pero funciona.",
+  "Esto también va de tripulación, como en One Piece: cada usuario que aporta algo bueno suma al barco.",
+  "El ticket dorado del Gacha es casi tesoro de isla final. No esperes encontrarlo en la primera tirada.",
+  "Una partida, un tema tranquilo y a seguir. A veces el buen ritmo arregla más que tocar veinte botones.",
+  "Todo usuario tiene su arco de entrenamiento antes de dominar el Gancho Ninja.",
+  "Si la tienda fuera una isla, los puntos serían el mapa. No los gastes sin mirar la ruta.",
+  "Un poco de reggae, una noticia curiosa y una partida corta. Esa mezcla sí tiene buen rollo.",
+  "Si vas a escuchar algo mientras juegas, mejor algo con flow que te deje pensar, no música que te acelere las tijeras.",
+  "Rapsusklei pega para esas tardes de pensar un poco y no correr tanto. Buena compañía para leer Actualidad.",
+  "Morodo tiene ese rollo de raíz que entra bien cuando quieres bajar revoluciones.",
+  "Pure Negga de fondo y a editar el avatar con calma. Hay combinaciones que piden paciencia.",
+  "Fyahbwoy para entrar al Arcade con energía, pero sin jugar como si te persiguiera la Guardia Civil.",
+  "Si esta comunidad fuera una tripulación, el foro sería la cubierta donde se habla antes de zarpar.",
+  "Un buen avatar es como una buena rasta: si lo fuerzas, se nota raro; si lo cuidas, queda con personalidad.",
+  "Plan de domingo: una vuelta por pueblos, comer bien y luego una partida rápida. No suena mal.",
+  "El Gacha es como buscar una seta buena: puede salir, pero no vayas al monte contando con llenar la cesta.",
+  "Si vas de ruta, guarda los sitios interesantes. Actualidad puede acabar dando planes mejores que un mapa doblado.",
+  "El foro sin respeto es como una barbería sin espejo: algo falla desde el principio.",
+  "Una buena promo no grita; se entiende rápido y deja ganas de volver.",
+  "Si esto fuese anime, el entrenamiento de hoy sería no gastar todos los puntos en la primera recompensa bonita.",
+  "El ticket dorado no se persigue con rabia. Se saluda si aparece y se sigue jugando si no.",
+  "Los peines ordenan el pelo; los buenos menús ordenan la app. Todo en su sitio y sin saturar.",
+  "Una app con comunidad necesita ritmo: novedades, juego, conversación y algún premio que pique.",
+  "Si escuchas reggae mientras pruebas la app, mejor. Hay bugs que se miran con otra paciencia.",
+  "Cuidar una comunidad es como cuidar un huerto: si riegas demasiado, se pudre; si no riegas nada, se seca.",
+  "One Piece no va solo de tesoros; va de nakamas. Aquí la idea es que la gente vuelva por la comunidad.",
+  "Una buena noticia local vale más que veinte titulares que no le importan a nadie.",
+  "Si un juego se siente injusto, no es difícil: está mal afinado. El reto tiene que enganchar, no castigar.",
+  "El mejor descuento es el que se entiende en tres segundos y se canjea sin preguntar diez veces.",
+  "A veces el plan bueno es simple: corte limpio, música tranquila y una app que no te maree.",
+  "No todo tiene que dar puntos. Algunas cosas tienen que dar ganas de quedarse.",
+  "La estética rural bien llevada no es poner paja en todo: es que se sienta cercano, útil y con oficio.",
+  "Una comunidad pequeña con buen ambiente gana a una grande llena de ruido.",
+  "Si el avatar te representa, vuelves más. Los juegos enganchan, pero la identidad engancha mucho más.",
+  "Los buenos rankings pican sin humillar. Competir sí, pero con flow.",
+  "Un tema de reggae, un café y revisar comentarios: plan de gestor de comunidad con paz mental.",
+  "Si Rasta Cuts fuera una isla, el Arcade sería la taberna, el Foro la plaza y el Perfil tu camarote.",
+  "Lo bonito de una app no es solo que funcione; es que parezca que alguien la cuida."
+];
+
+const RASTA_RARE_CHANCE=1/42;
+
+function pickRastaUnique(pool,storageKey,recentLimit=18){
+  const list=(pool||[]).filter(Boolean);
+  if(!list.length)return "";
+  try{
+    const raw=localStorage.getItem(storageKey);
+    const recent=raw?JSON.parse(raw):[];
+    let available=list.filter(t=>!recent.includes(t));
+    if(!available.length)available=list;
+    const picked=available[Math.floor(Math.random()*available.length)];
+    const next=[picked,...recent.filter(t=>t!==picked)].slice(0,Math.min(recentLimit,Math.max(1,list.length-1)));
+    localStorage.setItem(storageKey,JSON.stringify(next));
+    return picked;
+  }catch{
+    return list[Math.floor(Math.random()*list.length)];
+  }
+}
+
 function helperPageKey(page){
+  if(HELP_TIPS[page]) return page;
   if(page==="dashboard")return "dashboard";
-  if(page==="arcade")return "arcade";
+  if(page==="arcade"||page==="juegos")return "arcade";
   if(page==="tienda")return "tienda";
   if(page==="perfil")return "perfil";
   if(page==="foro")return "foro";
   if(page==="feed")return "feed";
   if(page==="noticias")return "noticias";
   if(page==="comunidad")return "comunidad";
-  return HELP_TIPS[page]?"page":"dashboard";
+  return "dashboard";
 }
 function helperMood(page){
   if(page==="dashboard")return "welcome";
-  if(page==="arcade")return "arcade";
+  if(page==="arcade"||String(page).startsWith("game_"))return "arcade";
   if(page==="noticias"||page==="comunidad"||page==="feed"||page==="foro")return "noticias";
   if(page==="perfil")return "success";
   return "idle";
 }
 function helperTitle(page){
-  if(page==="arcade")return "Consejo de juego";
-  if(page==="tienda")return "Consejo de premios";
-  if(page==="perfil")return "Consejo de perfil";
-  if(page==="comunidad"||page==="foro"||page==="feed")return "Consejo de comunidad";
-  if(page==="noticias")return "Consejo de actualidad";
-  return "Consejo del rasta";
+  if(page==="game_stitch")return "Rasta al gancho";
+  if(page==="game_runner")return "Rasta Runner te avisa";
+  if(page==="game_jump")return "Salta con flow";
+  if(page==="game_gacha")return "La máquina del rasta";
+  if(page==="game_memoria")return "Memoria con calma";
+  if(page==="game_sopa")return "Sopa del día";
+  if(page==="game_trivia")return "Trivia con estilo";
+  if(page==="arcade"||page==="juegos")return "Rasta Arcade";
+  if(page==="tienda")return "Rasta en tienda";
+  if(page==="perfil")return "Tu estilo, mi pana";
+  if(page==="comunidad"||page==="foro"||page==="feed")return "Rasta comunidad";
+  if(page==="noticias")return "Rasta magazine";
+  return "Rasta al habla";
 }
+
 function HelperMascot({page}){
   const [open,setOpen]=useState(false);
   const [hovered,setHovered]=useState(false);
   const key=helperPageKey(page);
-  const baseText=HELP_TEXTS[page]||"Pulsa cualquier pestaña del menú para moverte por la app.";
-  const tips=[baseText,...(HELP_TIPS[key]||HELP_TIPS.dashboard)];
+  const tips=[...(HELP_TIPS[key]||HELP_TIPS.dashboard),...RASTA_GENERAL_TIPS];
   const [tipIndex,setTipIndex]=useState(0);
+  const [currentTip,setCurrentTip]=useState(tips[0]||"");
+  const [rareTip,setRareTip]=useState(null);
   const active=open||hovered;
   const mood=helperMood(page);
+  const shownTip=rareTip || currentTip || tips[0] || "";
+  const recentKey=`rasta_tip_history_${key}`;
 
-  useEffect(()=>{setTipIndex(0);},[page]);
+  function nextRastaTip(forceRare=false){
+    const shouldRare=forceRare || Math.random()<RASTA_RARE_CHANCE;
+    if(shouldRare){
+      const rare=pickRastaUnique(RASTA_RARE_CULTURE_TIPS,"rasta_rare_culture_history",28);
+      setRareTip(rare);
+      return;
+    }
+    setRareTip(null);
+    const picked=pickRastaUnique(tips,recentKey,Math.min(12,Math.max(1,tips.length-1)));
+    setCurrentTip(picked);
+    const index=tips.indexOf(picked);
+    setTipIndex(index>=0?index:(v=>(v+1)%tips.length));
+  }
+
+  useEffect(()=>{
+    setTipIndex(0);
+    setRareTip(null);
+    setCurrentTip(pickRastaUnique(tips,`rasta_tip_history_${key}`,Math.min(12,Math.max(1,tips.length-1)))||tips[0]||"");
+  },[page]);
+
   useEffect(()=>{
     if(!active)return;
-    const id=setInterval(()=>setTipIndex(v=>(v+1)%tips.length),4700);
+    const id=setInterval(()=>nextRastaTip(false),5200);
     return()=>clearInterval(id);
   },[active,page,tips.length]);
 
@@ -3523,16 +3729,17 @@ function HelperMascot({page}){
             animation:"bubblePop .22s ease",
             zIndex:3
           }}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:6}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:4}}>
               <div style={{fontWeight:950,color:T.g800,fontSize:".88rem"}}>{helperTitle(page)}</div>
               <button onClick={closeBubble} style={{border:"none",background:"transparent",color:T.textSub,fontWeight:900,cursor:"pointer",fontSize:"1rem",padding:0}}>×</button>
             </div>
-            <div style={{fontSize:".84rem",fontWeight:800,color:T.text,lineHeight:1.45}}>{tips[tipIndex]}</div>
+            <div style={{fontSize:".66rem",fontWeight:900,color:T.orange,letterSpacing:".04em",textTransform:"uppercase",marginBottom:6}}>{rareTip?"el rasta recomienda":"flow de tienda · comunidad"}</div>
+            <div style={{fontSize:".84rem",fontWeight:800,color:T.text,lineHeight:1.45}}>{shownTip}</div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10,gap:10}}>
               <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                {tips.map((_,i)=><span key={i} style={{width:7,height:7,borderRadius:"50%",background:i===tipIndex?T.g500:"#E7DAB2",display:"block"}} />)}
+                {tips.map((_,i)=><span key={i} style={{width:7,height:7,borderRadius:"50%",background:!rareTip&&i===tipIndex?T.g500:"#E7DAB2",display:"block"}} />)}
               </div>
-              <button onClick={(e)=>{e.stopPropagation();setTipIndex(v=>(v+1)%tips.length);}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"4px 10px",fontWeight:900,cursor:"pointer"}}>Otro tip</button>
+              <button onClick={(e)=>{e.stopPropagation();nextRastaTip(false);}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"4px 10px",fontWeight:900,cursor:"pointer"}}>Otro tip</button>
             </div>
             <div style={{
               position:"absolute",
@@ -3595,6 +3802,7 @@ export default function App(){
   const [ptsPopup,setPtsPopup]=useState({show:false,pts:0});
   const [musicOn,setMusicOn]=useState(false);
   const [checkingSession,setCheckingSession]=useState(true);
+  const [helperPage,setHelperPage]=useState(null);
 
   useEffect(()=>{
     async function restoreSession(){
@@ -3617,6 +3825,7 @@ export default function App(){
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
   function toggleMusic(){globalMuted=!globalMuted;if(globalMuted){stopMusic();stopGameMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}
   const navTo=id=>{
+    setHelperPage(null);
     const communityMap={feed:"feed",foro:"foro",noticias:"noticias",comunidad:communityTab||"feed"};
     const target=communityMap[id]?"comunidad":id;
     if(communityMap[id]) setCommunityTab(communityMap[id]);
@@ -3646,7 +3855,7 @@ export default function App(){
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
-    tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp}/>,retos:<Retos {...sp}/>,
+    tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp} setHelperPage={setHelperPage}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
@@ -3673,7 +3882,7 @@ export default function App(){
       </div>
       <div style={{padding:"18px 14px"}}>
         {pages[ap]||pages["dashboard"]}
-        <HelperMascot page={ap}/>
+        <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
       </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#8B5E2F",borderTop:`2px solid ${T.g600}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(27,67,50,0.08)"}}>
         {nav.map(n=>(
