@@ -225,9 +225,23 @@ function Spinner(){return <div style={{width:28,height:28,border:`3px solid ${T.
 function EmptyState({icon,title,sub}){return <div style={{textAlign:"center",padding:"40px 20px",color:T.textSub}}><div style={{fontSize:"2.8rem",marginBottom:10}}>{icon}</div><div style={{fontWeight:800,fontSize:"1rem",color:T.g700,marginBottom:6}}>{title}</div><div style={{fontSize:"0.83rem"}}>{sub}</div></div>;}
 function PublicProfileModal({profile,onClose}){
   if(!profile)return null;
+  const hidden=isPrivateProfile(profile);
   const cfg=normalizeAvatarConfig(profile.avatar_config||profile.avatarConfig,profile.avatar);
   const pts=Number(profile.puntos||0);
   const nivel=pts>=1000?"VIP":pts>=500?"Gold":pts>=200?"Silver":"Bronze";
+  if(hidden){
+    return <Modal show={!!profile} onClose={onClose} title="Perfil privado">
+      <div style={{textAlign:"center",padding:"8px 0 4px"}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:12}}><IncognitoAvatar size={104}/></div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",color:T.g800}}>xxxxxx</div>
+        <div style={{display:"inline-flex",marginTop:8}}><Badge col="blue">Modo incógnito</Badge></div>
+        <Card style={{marginTop:14,textAlign:"left",background:"linear-gradient(180deg,#E6CF9B,#D8BE87)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:6}}>🕶️ Perfil oculto</div>
+          <div style={{fontSize:".88rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Este usuario ha elegido no mostrar su nombre, avatar ni datos públicos. En rankings y comentarios aparecerá como xxxxxx.</div>
+        </Card>
+      </div>
+    </Modal>;
+  }
   return <Modal show={!!profile} onClose={onClose} title="Perfil público">
     <div style={{textAlign:"center"}}>
       <div style={{display:"flex",justifyContent:"center",marginBottom:10}}><Av av={profile.avatar} config={cfg} size={96}/></div>
@@ -783,8 +797,64 @@ function HeroMascot(){
   );
 }
 
+
+function privacyStorageKey(user){return `privacy_${String(user?.email||user?.id||"anon").toLowerCase()}`;}
+function localPrivacy(user){
+  try{
+    const saved=JSON.parse(localStorage.getItem(privacyStorageKey(user))||"{}");
+    return {perfil_publico:saved.perfil_publico!==false,modo_incognito:!!saved.modo_incognito};
+  }catch{return {perfil_publico:true,modo_incognito:false};}
+}
+function normalizePrivacy(user={}){
+  const local=localPrivacy(user);
+  const publico=user.perfil_publico===undefined&&user.profile_public===undefined?local.perfil_publico:(user.perfil_publico!==false && user.profile_public!==false);
+  const incognito=user.modo_incognito===undefined&&user.incognito_mode===undefined?local.modo_incognito:(!!user.modo_incognito || !!user.incognito_mode);
+  return {perfil_publico:publico,modo_incognito:incognito};
+}
+function isSameUser(a,b){return !!(a&&b) && String(a.id||a.usuario_id||a.email||"").toLowerCase()===String(b.id||b.usuario_id||b.email||"").toLowerCase();}
+function isPrivateProfile(profile,currentUser=null){
+  const p=normalizePrivacy(profile||{});
+  if(currentUser && isSameUser(profile,currentUser)) return false;
+  return p.perfil_publico===false || p.modo_incognito===true;
+}
+function publicName(profile,currentUser=null){return isPrivateProfile(profile,currentUser)?"xxxxxx":(profile?.nombre||profile?.usuario_nombre||profile?.autor_nombre||"Usuario");}
+function publicRoleLabel(profile,currentUser=null){return isPrivateProfile(profile,currentUser)?"modo incógnito":(normalizeRole(profile?.role||profile?.rol)==='client'?'cliente':normalizeRole(profile?.role||profile?.rol));}
+function saveLocalPrivacy(user,privacy){try{localStorage.setItem(privacyStorageKey(user),JSON.stringify(normalizePrivacy(privacy)));}catch{}}
+async function loadPrivacyForUser(profile){
+  const base=normalizePrivacy(profile);
+  if(!profile?.id) return base;
+  try{
+    const {data,error}=await supabase.from("usuarios").select("perfil_publico,modo_incognito").eq("id",String(profile.id)).maybeSingle();
+    if(!error && data){
+      const merged={perfil_publico:data.perfil_publico!==false,modo_incognito:!!data.modo_incognito};
+      saveLocalPrivacy(profile,merged);
+      return merged;
+    }
+  }catch{}
+  return base;
+}
+async function savePrivacyForUser(user,privacy){
+  const clean=normalizePrivacy(privacy);
+  saveLocalPrivacy(user,clean);
+  try{await supabase.from("usuarios").update(clean).eq("id",String(user.id));}catch{}
+  return clean;
+}
+function IncognitoAvatar({size=40}){
+  return <div style={{width:size,height:size,borderRadius:"50%",background:"linear-gradient(145deg,#050505,#242424)",border:"2px solid rgba(240,224,184,.55)",display:"grid",placeItems:"center",boxShadow:"0 8px 18px rgba(0,0,0,.32)",overflow:"hidden",flexShrink:0}}>
+    <svg viewBox="0 0 100 100" width={size*.8} height={size*.8} aria-hidden="true">
+      <circle cx="50" cy="34" r="18" fill="#0A0A0A" stroke="#3A3A3A" strokeWidth="3"/>
+      <path d="M20 92 C24 66 36 55 50 55 C64 55 76 66 80 92Z" fill="#050505" stroke="#3A3A3A" strokeWidth="3"/>
+      <rect x="18" y="28" width="64" height="9" rx="5" fill="#111" stroke="#444" strokeWidth="2"/>
+    </svg>
+  </div>;
+}
+function PublicAvatar({profile,currentUser=null,size=40}){
+  return isPrivateProfile(profile,currentUser)?<IncognitoAvatar size={size}/>:<Av av={profile?.avatar||profile?.usuario_avatar||profile?.autor_avatar||0} config={profile?.avatar_config||profile?.avatarConfig||profile?.usuario_avatar_config||profile?.autor_avatar_config} size={size}/>;
+}
+
 function toAppUser(u){
   const avatarConfig=normalizeAvatarConfig(u.avatar_config || u.avatarConfig, u.avatar);
+  const privacy=normalizePrivacy(u);
   return {
     id:u.id,
     nombre:u.nombre,
@@ -794,6 +864,8 @@ function toAppUser(u){
     avatar:u.avatar||0,
     avatarConfig,
     avatar_config:avatarConfig,
+    perfil_publico:privacy.perfil_publico,
+    modo_incognito:privacy.modo_incognito,
     fecha_registro:u.created_at
   };
 }
@@ -805,7 +877,10 @@ async function getUserProfileByEmail(email){
     .eq("email", email.toLowerCase())
     .maybeSingle();
   if(error) return null;
-  if(data) data.avatar_config=await getAvatarConfigForProfile(data);
+  if(data){
+    data.avatar_config=await getAvatarConfigForProfile(data);
+    Object.assign(data, await loadPrivacyForUser(data));
+  }
   return data;
 }
 async function createUserProfile({nombre,email}){
@@ -819,7 +894,10 @@ async function createUserProfile({nombre,email}){
   if(data){
     const cfg=normalizeAvatarConfig(null,data.avatar);
     data.avatar_config=cfg;
+    data.perfil_publico=true;
+    data.modo_incognito=false;
     await saveAvatarConfigForUser(data,cfg);
+    saveLocalPrivacy(data,{perfil_publico:true,modo_incognito:false});
   }
   return data;
 }
@@ -1327,7 +1405,7 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
       </Card>
       <div style={{fontWeight:950,color:T.g800,margin:"4px 0 10px"}}>Comentarios</div>
       {comments.length===0?<EmptyState icon="💬" title="Sin comentarios todavía" sub="Sé el primero en abrir el hilo."/>:comments.map(c=><Card key={c.id} style={{marginBottom:9,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}>
-        <div style={{display:"flex",gap:9,alignItems:"center",marginBottom:7}}><Av av={c.usuario_avatar||0} config={c.usuario_avatar_config} size={32}/><div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{c.usuario_nombre||"Usuario"}</div><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{formatNewsDate(c.created_at)}</div></div></div>
+        <div style={{display:"flex",gap:9,alignItems:"center",marginBottom:7}}><PublicAvatar profile={{...c,nombre:c.usuario_nombre,avatar:c.usuario_avatar,avatar_config:c.usuario_avatar_config,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito}} size={32}/><div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{publicName({nombre:c.usuario_nombre,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito})}</div><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{formatNewsDate(c.created_at)}</div></div></div>
         <div style={{fontSize:".88rem",fontWeight:750,color:T.text,lineHeight:1.45,whiteSpace:"pre-wrap"}}>{c.contenido}</div>
       </Card>)}
     </div>
@@ -1706,7 +1784,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
     setLoading(true);
     const [raw,users]=await Promise.all([
       dbGet("publicaciones","?tipo=neq.foro&order=created_at.desc&limit=30&select=*"),
-      dbGet("usuarios","?select=id,nombre,role,puntos,avatar,visitas")
+      dbGet("usuarios","?select=*")
     ]);
     setPosts(Array.isArray(raw)?raw:[]);setProfiles(Array.isArray(users)?users:[]);setLoading(false);
   }
@@ -1735,7 +1813,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
         const a=authorOf(p);
         return <Card key={p.id} style={{marginBottom:12,background:'linear-gradient(180deg,#EFE0BE 0%,#E4CFAB 100%)',border:`1.5px solid ${T.g200}`,boxShadow:'0 8px 18px rgba(20,8,4,.12)'}}>
           {p.imagen_url&&<img src={p.imagen_url} alt="" style={{width:"100%",borderRadius:14,marginBottom:10,objectFit:"cover",maxHeight:200}}/>}
-          <div onClick={()=>setSelectedProfile(a)} style={{display:'flex',alignItems:'center',gap:10,marginBottom:8,cursor:'pointer'}}><Av av={a.avatar} config={a.avatarConfig} size={34}/><div><div style={{fontWeight:900,color:T.g800,fontSize:'.86rem'}}>{a.nombre || 'Equipo Rasta'}</div><div style={{fontSize:'.68rem',fontWeight:800,color:T.textSub,textTransform:'uppercase'}}>{normalizeRole(a.role||a.rol)==='client'?'cliente':normalizeRole(a.role||a.rol)}</div></div></div>
+          <div onClick={()=>setSelectedProfile(a)} style={{display:'flex',alignItems:'center',gap:10,marginBottom:8,cursor:'pointer'}}><PublicAvatar profile={a} size={34}/><div><div style={{fontWeight:900,color:T.g800,fontSize:'.86rem'}}>{publicName(a)}</div><div style={{fontSize:'.68rem',fontWeight:800,color:T.textSub,textTransform:'uppercase'}}>{publicRoleLabel(a)}</div></div></div>
           <div style={{fontSize:"0.93rem",fontWeight:700,color:T.text,lineHeight:1.55,whiteSpace:'pre-wrap'}}>{p.contenido}</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
             <span style={{fontSize:"0.76rem",color:T.textSub,fontWeight:800}}>{p.created_at?new Date(p.created_at).toLocaleDateString("es-ES"):""}</span>
@@ -1766,7 +1844,7 @@ function Foro({user,showToast}){
     setLoading(true);
     const [raw,users,replies]=await Promise.all([
       dbGet("publicaciones","?tipo=eq.foro&order=created_at.desc&limit=40&select=*"),
-      dbGet("usuarios","?select=id,nombre,role,puntos,avatar,visitas"),
+      dbGet("usuarios","?select=*"),
       dbGet("foro_respuestas","?order=created_at.asc&limit=500&select=*")
     ]);
     const safeTopics=Array.isArray(raw)?raw:[];
@@ -1833,9 +1911,9 @@ function Foro({user,showToast}){
         <div style={{fontSize:".9rem",fontWeight:700,lineHeight:1.5,whiteSpace:'pre-wrap',marginTop:8}}>{shown.contenido}</div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:12,alignItems:"center"}}><Badge col="blue">{getReplies(shown.id).length} respuestas</Badge><Btn small col="gold" onClick={()=>vote(shown)}>👍 Votar {shown.likes_count||0}</Btn></div>
       </Card>
-      {getReplies(shown.id).map(r=><Card key={r.id} style={{marginBottom:8,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}><div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6,cursor:"pointer"}} onClick={()=>setSelectedProfile({id:r.autor_id,nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,puntos:0})}><Av av={r.autor_avatar} config={r.autor_avatar_config} size={30}/><b>{r.autor_nombre||"Usuario"}</b></div><div style={{fontSize:".86rem",fontWeight:700,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div></Card>)}
+      {getReplies(shown.id).map(r=><Card key={r.id} style={{marginBottom:8,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}><div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6,cursor:"pointer"}} onClick={()=>setSelectedProfile({id:r.autor_id,nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,puntos:0})}><PublicAvatar profile={{nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,perfil_publico:r.perfil_publico,modo_incognito:r.modo_incognito}} size={30}/><b>{publicName({nombre:r.autor_nombre,perfil_publico:r.perfil_publico,modo_incognito:r.modo_incognito})}</b></div><div style={{fontSize:".86rem",fontWeight:700,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div></Card>)}
       <Card><textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder="Responder al tema..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:T.g150,resize:"none"}}/><div style={{marginTop:8}}><Btn full onClick={()=>addReply(shown)}>Responder</Btn></div></Card>
-    </div> : loading?<Spinner/>:topics.length===0?<EmptyState icon="🗣️" title="Foro vacío" sub="Sé el primero en abrir un tema."/>:topics.map(t=>{const a=authorOf(t);return <Card key={t.id} hover onClick={()=>setActive(t)} style={{marginBottom:10}}><div style={{display:"flex",gap:10,alignItems:"center"}}><Av av={a.avatar} config={a.avatar_config||a.avatarConfig} size={36}/><div style={{flex:1}}><div style={{fontWeight:900,color:T.g800}}>{t.titulo||t.contenido?.slice(0,48)||"Tema"}</div><div style={{fontSize:".75rem",fontWeight:800,color:T.textSub}}>{a.nombre||"Usuario"} · 👍 {t.likes_count||0} · 💬 {getReplies(t.id).length}</div></div></div></Card>;})}
+    </div> : loading?<Spinner/>:topics.length===0?<EmptyState icon="🗣️" title="Foro vacío" sub="Sé el primero en abrir un tema."/>:topics.map(t=>{const a=authorOf(t);return <Card key={t.id} hover onClick={()=>setActive(t)} style={{marginBottom:10}}><div style={{display:"flex",gap:10,alignItems:"center"}}><PublicAvatar profile={a} size={36}/><div style={{flex:1}}><div style={{fontWeight:900,color:T.g800}}>{t.titulo||t.contenido?.slice(0,48)||"Tema"}</div><div style={{fontSize:".75rem",fontWeight:800,color:T.textSub}}>{publicName(a)} · 👍 {t.likes_count||0} · 💬 {getReplies(t.id).length}</div></div></div></Card>;})}
     <PublicProfileModal profile={selectedProfile} onClose={()=>setSelectedProfile(null)}/>
   </div>;
 }
@@ -1938,7 +2016,8 @@ function saveLocalGameScore(gameId,user,score){
   try{
     const key=`leader_${gameId}_${weekKey()}`;
     const list=JSON.parse(localStorage.getItem(key)||"[]");
-    const entry={user_id:user.id,nombre:user.nombre||"Jugador",avatar:user.avatar||0,avatar_config:user.avatarConfig||user.avatar_config||null,score:Number(score)||0,created_at:new Date().toISOString()};
+    const privacy=normalizePrivacy(user);
+    const entry={user_id:user.id,nombre:user.nombre||"Jugador",avatar:user.avatar||0,avatar_config:user.avatarConfig||user.avatar_config||null,perfil_publico:privacy.perfil_publico,modo_incognito:privacy.modo_incognito,score:Number(score)||0,created_at:new Date().toISOString()};
     const next=[entry,...list].sort((a,b)=>b.score-a.score).slice(0,10);
     localStorage.setItem(key,JSON.stringify(next));
   }catch{}
@@ -2647,7 +2726,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage}){
         <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:'wrap'}}>
           {GAMES.map(g=><button key={g.id} onClick={()=>{SFX.tab();setBoardGame(g.id);}} style={{flex:'1 1 18%',border:"none",borderRadius:12,padding:"8px 4px",background:boardGame===g.id?T.gradGold:"rgba(255,244,214,.18)",color:boardGame===g.id?T.g900:T.white,fontWeight:900,cursor:"pointer"}} title={g.title}>{g.icon}</button>)}
         </div>
-        {lb.length===0?<div style={{fontSize:".82rem",fontWeight:800,opacity:.8,textAlign:"center",padding:"10px"}}>Sé el primero en marcar puntuación esta semana ✨</div>:lb.map((r,i)=><div key={`${r.user_id}-${i}-${boardTick}`} style={{display:"flex",alignItems:"center",gap:9,padding:"7px 0",borderBottom:i<lb.length-1?"1px solid rgba(255,244,214,.18)":"none"}}><div style={{width:28,fontWeight:900}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div><Av av={r.avatar} config={r.avatar_config||r.avatarConfig} size={32}/><div style={{flex:1,fontWeight:900}}>{r.nombre}</div><div style={{color:T.gold,fontWeight:900}}>{r.score}</div></div>)}
+        {lb.length===0?<div style={{fontSize:".82rem",fontWeight:800,opacity:.8,textAlign:"center",padding:"10px"}}>Sé el primero en marcar puntuación esta semana ✨</div>:lb.map((r,i)=><div key={`${r.user_id}-${i}-${boardTick}`} style={{display:"flex",alignItems:"center",gap:9,padding:"7px 0",borderBottom:i<lb.length-1?"1px solid rgba(255,244,214,.18)":"none"}}><div style={{width:28,fontWeight:900}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div><PublicAvatar profile={r} size={32}/><div style={{flex:1,fontWeight:900}}>{publicName(r)}</div><div style={{color:T.gold,fontWeight:900}}>{r.score}</div></div>)}
       </Card>
     </div>
   );
@@ -2750,8 +2829,8 @@ function Ranking({user}){
           <Card key={u.id} onClick={()=>setSelectedProfile(u)} style={{marginBottom:8,background:isMe?"linear-gradient(180deg,#FFF1A8,#F6E5BE)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:isMe?`2px solid ${T.gold}`:`1px solid ${T.g300}`}} hover>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <div className="icon3d" style={{fontSize:i<3?"1.7rem":"1.1rem",minWidth:38,textAlign:"center",fontWeight:900}}>{medal}</div>
-              <Av av={u.avatar} config={u.avatar_config||u.avatarConfig} size={42}/>
-              <div style={{flex:1}}><div style={{fontWeight:900}}>{u.nombre||"Cliente"}{isMe?" · tú":""}</div><div style={{fontSize:".72rem",color:T.textSub,fontWeight:800}}>{avatarStyleName(normalizeAvatarConfig(u.avatar_config||u.avatarConfig,u.avatar))}</div></div>
+              <PublicAvatar profile={u} currentUser={user} size={42}/>
+              <div style={{flex:1}}><div style={{fontWeight:900}}>{publicName(u,user)}{isMe?" · tú":""}</div><div style={{fontSize:".72rem",color:T.textSub,fontWeight:800}}>{isPrivateProfile(u,user)?"Perfil en modo incógnito":avatarStyleName(normalizeAvatarConfig(u.avatar_config||u.avatarConfig,u.avatar))}</div></div>
               <div style={{fontWeight:900,color:T.orange,fontSize:"1.02rem"}}>{u.score||0} pts</div>
             </div>
           </Card>
@@ -3277,14 +3356,23 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
 function Perfil({user,setUser,onLogout,showToast,showPoints}){
   const [tab,setTab]=useState("resumen");
   const [ownedCosmetics,setOwnedCosmetics]=useState(localOwnedCosmetics(user));
+  const [privacy,setPrivacy]=useState(normalizePrivacy(user));
   const [form,setForm]=useState({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});
-  useEffect(()=>{setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});setOwnedCosmetics(localOwnedCosmetics(user));},[user.id,user.nombre,user.avatar,user.avatarConfig]);
+  useEffect(()=>{setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});setOwnedCosmetics(localOwnedCosmetics(user));setPrivacy(normalizePrivacy(user));},[user.id,user.nombre,user.avatar,user.avatarConfig,user.perfil_publico,user.modo_incognito]);
   async function save(){
     const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
     await dbPatch("usuarios",`?id=eq.${user.id}`,{nombre:form.nombre,avatar:form.avatar});
     await saveAvatarConfigForUser({...user,nombre:form.nombre,avatar:form.avatar},cfg);
     setUser(u=>({...u,nombre:form.nombre,avatar:form.avatar,avatarConfig:cfg,avatar_config:cfg}));
     SFX.success();showToast("Personaje actualizado");
+  }
+  async function updatePrivacy(nextPatch){
+    const next=normalizePrivacy({...privacy,...nextPatch});
+    setPrivacy(next);
+    saveLocalPrivacy(user,next);
+    await savePrivacyForUser(user,next);
+    setUser(u=>({...u,...next}));
+    SFX.success();showToast(next.modo_incognito?"Modo incógnito activado":"Privacidad actualizada");
   }
   const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Gold":user.puntos>=200?"Silver":"Bronze";
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
@@ -3324,6 +3412,16 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
             <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>{user.puntos||0}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div></div>
             <div><div style={{fontSize:"1.35rem"}}>🏆</div><div style={{fontWeight:950,color:T.g800}}>{nivel}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>nivel</div></div>
             <div><div style={{fontSize:"1.35rem"}}>🎁</div><div style={{fontWeight:950,color:T.g800}}>Camino</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>recompensas</div></div>
+          </div>
+        </Card>
+        <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${privacy.modo_incognito?T.blue:T.g300}`}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:10}}>
+            <div><div style={{fontWeight:950,color:T.g800}}>🕶️ Privacidad del perfil</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Controla cómo te ven otros clientes en rankings, foro y comentarios.</div></div>
+            {privacy.modo_incognito?<IncognitoAvatar size={48}/>:<Av av={form.avatar} config={cfg} size={48}/>}          
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr",gap:8}}>
+            <button onClick={()=>updatePrivacy({perfil_publico:!privacy.perfil_publico,modo_incognito:privacy.modo_incognito && !privacy.perfil_publico?false:privacy.modo_incognito})} style={{border:`2px solid ${privacy.perfil_publico?T.g300:T.blue}`,background:privacy.perfil_publico?"rgba(255,244,214,.72)":"linear-gradient(135deg,#1B1B1B,#3A3A3A)",color:privacy.perfil_publico?T.g800:T.white,borderRadius:16,padding:"11px 12px",fontWeight:950,cursor:"pointer",textAlign:"left"}}>{privacy.perfil_publico?"👁️ Perfil público activado":"🚫 Perfil público oculto"}<div style={{fontSize:".72rem",fontWeight:800,opacity:.8,marginTop:2}}>{privacy.perfil_publico?"Otros usuarios pueden abrir tu perfil público.":"Otros usuarios no verán tu ficha pública."}</div></button>
+            <button onClick={()=>updatePrivacy({modo_incognito:!privacy.modo_incognito,perfil_publico:privacy.modo_incognito?privacy.perfil_publico:false})} style={{border:`2px solid ${privacy.modo_incognito?T.blue:T.g300}`,background:privacy.modo_incognito?"linear-gradient(135deg,#050505,#242424)":"rgba(255,244,214,.72)",color:privacy.modo_incognito?T.white:T.g800,borderRadius:16,padding:"11px 12px",fontWeight:950,cursor:"pointer",textAlign:"left"}}>{privacy.modo_incognito?"🕶️ Modo incógnito activado":"👤 Modo incógnito desactivado"}<div style={{fontSize:".72rem",fontWeight:800,opacity:.8,marginTop:2}}>{privacy.modo_incognito?"En rankings y comunidad aparecerás como xxxxxx con silueta negra.":"Se mostrará tu nombre y tu avatar público."}</div></button>
           </div>
         </Card>
         <PerfilNewsActivity user={user}/>
