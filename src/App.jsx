@@ -375,6 +375,14 @@ function cosmeticPatch(item){return item?.slot?{[item.slot]:item.valor}:{};}
 function ownedCosmeticKey(user){return `owned_cosmetics_${String(user?.id||user?.email||"anon")}`;}
 function localOwnedCosmetics(user){try{return JSON.parse(localStorage.getItem(ownedCosmeticKey(user))||"[]");}catch{return []}}
 function saveLocalOwnedCosmetics(user,keys){try{localStorage.setItem(ownedCosmeticKey(user),JSON.stringify([...new Set(keys)]));}catch{}}
+function makeId(value=""){
+  const str=String(value||"");
+  let hash=0;
+  for(let i=0;i<str.length;i+=1){
+    hash=(hash*31+str.charCodeAt(i))>>>0;
+  }
+  return hash.toString(16);
+}
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
   const skin=AVATAR_OPTIONS.skin[cfg.skin];
