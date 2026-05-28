@@ -586,12 +586,65 @@ function PickerButton({active,children,onClick,locked=false}){
 function ColorDot({color,active,onClick}){
   return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:32,height:32,borderRadius:"50%",background:color,border:`3px solid ${active?T.gold:"rgba(255,244,214,.9)"}`,boxShadow:active?"0 0 0 3px rgba(212,175,55,.25)":"0 4px 10px rgba(20,8,4,.18)",cursor:"pointer"}}/>;
 }
+
+function EditorTabButton({active,icon,label,onClick}){
+  return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{
+    border:`2px solid ${active?T.gold:T.g200}`,
+    background:active?"linear-gradient(180deg,#FFF8E1,#E6C27A)":"rgba(255,248,225,.9)",
+    color:active?T.g900:T.g700,
+    borderRadius:18,
+    padding:"8px 10px",
+    minWidth:0,
+    cursor:"pointer",
+    boxShadow:active?"0 12px 24px rgba(212,175,55,.26)":"0 6px 14px rgba(20,8,4,.10)",
+    display:"flex",
+    flexDirection:"column",
+    alignItems:"center",
+    gap:3,
+    fontWeight:950
+  }}>
+    <div style={{fontSize:"1.08rem",lineHeight:1}}>{icon}</div>
+    <div style={{fontSize:".68rem",whiteSpace:"nowrap"}}>{label}</div>
+  </button>;
+}
+function VisualOption({label,active,onClick,locked=false,children,sub=null}){
+  return <button type="button" onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{
+    position:"relative",
+    border:`2px solid ${active?T.gold:T.g200}`,
+    background:active?"linear-gradient(180deg,#FFF8E5,#F6E5BE)":"rgba(255,248,225,.88)",
+    borderRadius:18,
+    padding:8,
+    cursor:locked?"not-allowed":"pointer",
+    boxShadow:active?"0 12px 24px rgba(212,175,55,.22)":"0 6px 14px rgba(20,8,4,.10)",
+    textAlign:"center",
+    opacity:locked?0.72:1,
+    minWidth:0
+  }}>
+    {locked&&<div style={{position:"absolute",top:6,right:6,background:"rgba(0,0,0,.56)",color:T.white,borderRadius:999,padding:"2px 6px",fontSize:".62rem",fontWeight:950}}>🔒</div>}
+    <div style={{height:84,borderRadius:14,display:"grid",placeItems:"center",background:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.2),transparent 35%),linear-gradient(160deg,#1B0D07,#5C3317 60%,#D4AF37)",overflow:"hidden",marginBottom:7}}>{children}</div>
+    <div style={{fontSize:".73rem",fontWeight:950,color:active?T.g900:T.g800,lineHeight:1.12,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{label}</div>
+    {sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,marginTop:2,lineHeight:1.05}}>{sub}</div>}
+  </button>;
+}
+function LargeSwatch({color,active,onClick}){
+  return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{
+    width:42,height:42,borderRadius:"50%",border:`3px solid ${active?T.gold:"rgba(110,53,24,.16)"}`,
+    boxShadow:active?"0 0 0 4px rgba(212,175,55,.18),0 8px 14px rgba(20,8,4,.12)":"0 6px 12px rgba(20,8,4,.1)",
+    background:color,cursor:"pointer"
+  }}/>;
+}
+function MiniSectionTitle({emoji,title,sub}){
+  return <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,margin:"6px 0 8px"}}>
+    <div style={{fontWeight:950,color:T.g800}}>{emoji} {title}</div>
+    {sub&&<div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{sub}</div>}
+  </div>;
+}
 function AvatarEditor({form,setForm,ownedKeys=[]}){
   const [panel,setPanel]=useState("base");
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
   const premiumKeys=new Set(ownedKeys||[]);
   const isLocked=(slot,value)=>COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slot&&c.valor===value&&!premiumKeys.has(c.item_key));
-  const patch=(key,value)=>{if(isLocked(key,value)){SFX.error();return;}setForm(f=>({...f,avatarConfig:normalizeAvatarConfig({...cfg,[key]:value},f.avatar)}));};
+  const patch=(key,value)=>{if(isLocked(key,value)){SFX.error();return;}setForm(f=>({...f,avatarConfig:normalizeAvatarConfig({...normalizeAvatarConfig(f.avatarConfig,f.avatar),[key]:value},f.avatar)}));};
   const randomize=()=>setForm(f=>({...f,avatarConfig:randomAvatarConfig(),avatar:Math.floor(Math.random()*AVATAR_PRESETS.length)}));
   const preset=(idx)=>setForm(f=>({...f,avatar:idx,avatarConfig:normalizeAvatarConfig(AVATAR_PRESETS[idx],idx)}));
   const basicAccessories=AVATAR_OPTIONS.accessory.filter(v=>!["capBlack","capGold","glassesGold","bandanaGreen","crown","hoopGold"].includes(v));
@@ -599,60 +652,136 @@ function AvatarEditor({form,setForm,ownedKeys=[]}){
     {id:"base",label:"Base",icon:"👤"},
     {id:"pelo",label:"Pelo",icon:"💇"},
     {id:"cara",label:"Cara",icon:"👀"},
-    {id:"extras",label:"Extras",icon:"🎩"},
+    {id:"extras",label:"Extras",icon:"🎒"},
   ];
+  const hairPreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none"},form.avatar);
+  const facePreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none",facial:"none"},form.avatar);
   return <div>
-    <Card style={{textAlign:"center",background:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.24),transparent 34%),linear-gradient(160deg,#160B07,#3A1E10 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.72)",color:T.white,marginBottom:12,overflow:"hidden"}}>
-      <div style={{fontSize:".7rem",fontWeight:950,letterSpacing:".7px",textTransform:"uppercase",opacity:.75}}>Cabina de personaje</div>
-      <div style={{display:"flex",justifyContent:"center",margin:"6px 0 8px"}}><Av av={form.avatar} config={cfg} size={150}/></div>
-      <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.5rem",textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{AVATAR_LABELS[cfg.hair]} · {AVATAR_LABELS[cfg.accessory]}</div>
-      <div style={{fontSize:".78rem",fontWeight:800,opacity:.86}}>Estilo pseudo-3D con piezas ancladas: gorra, gafas y rastas ya no flotan.</div>
-      <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:10}}>
-        <Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn>
+    <Card style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF8E8,#F5E1B6)",border:`2px solid ${T.gold}`,marginBottom:14}}>
+      <div style={{padding:12,background:"radial-gradient(circle at 50% 14%,rgba(255,241,168,.26),transparent 38%),linear-gradient(160deg,#160B07,#3A1E10 55%,#D4AF37)",color:T.white}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:8}}>
+          <div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.25rem",letterSpacing:".4px"}}>Cabina de personaje</div>
+            <div style={{fontSize:".74rem",fontWeight:800,opacity:.84}}>Toca miniaturas y cambia el look como en un creador de personaje.</div>
+          </div>
+          <Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"110px 1fr",gap:12,alignItems:"center"}}>
+          <div style={{display:"flex",justifyContent:"center"}}><Av av={form.avatar} config={cfg} size={108}/></div>
+          <div>
+            <div style={{fontWeight:950,fontSize:"1rem",lineHeight:1.05,marginBottom:4}}>{avatarStyleName(cfg)}</div>
+            <div style={{fontSize:".72rem",fontWeight:800,opacity:.86,marginBottom:8}}>Vista previa en vivo. Todo cambia al instante.</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              <span style={{background:"rgba(255,255,255,.14)",border:"1px solid rgba(255,255,255,.18)",padding:"4px 8px",borderRadius:999,fontSize:".64rem",fontWeight:900}}>{AVATAR_LABELS[cfg.hair]}</span>
+              <span style={{background:"rgba(255,255,255,.14)",border:"1px solid rgba(255,255,255,.18)",padding:"4px 8px",borderRadius:999,fontSize:".64rem",fontWeight:900}}>{AVATAR_LABELS[cfg.accessory]}</span>
+              <span style={{background:"rgba(255,255,255,.14)",border:"1px solid rgba(255,255,255,.18)",padding:"4px 8px",borderRadius:999,fontSize:".64rem",fontWeight:900}}>{AVATAR_LABELS[cfg.face]}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{padding:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+          {panels.map(p=><EditorTabButton key={p.id} active={panel===p.id} icon={p.icon} label={p.label} onClick={()=>setPanel(p.id)}/>) }
+        </div>
       </div>
     </Card>
 
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
-      {panels.map(p=><button key={p.id} onClick={()=>{SFX.tab();setPanel(p.id);}} style={{border:`2px solid ${panel===p.id?T.gold:T.g300}`,background:panel===p.id?T.gradGold:"rgba(255,244,214,.82)",color:panel===p.id?T.g900:T.g700,borderRadius:16,padding:"8px 4px",fontWeight:950,cursor:"pointer",boxShadow:panel===p.id?"0 10px 22px rgba(212,175,55,.24)":"0 5px 12px rgba(20,8,4,.1)"}}>
-        <div style={{fontSize:"1.05rem",lineHeight:1}}>{p.icon}</div><div style={{fontSize:".68rem",marginTop:3}}>{p.label}</div>
-      </button>)}
-    </div>
-
     {panel==="base"&&<>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🎭 Presets de personaje</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14}}>{AVATAR_PRESETS.slice(0,8).map((_,i)=><CharacterCard key={i} idx={i} compact selected={Number(form.avatar)===i} onPick={preset}/>)}</div>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🖼️ Fondo</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.bg.map(v=><PickerButton key={v} active={cfg.bg===v} locked={isLocked("bg",v)} onClick={()=>patch("bg",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>✨ Marco</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.frame.map(v=><PickerButton key={v} active={cfg.frame===v} locked={isLocked("frame",v)} onClick={()=>patch("frame",v)}>{AVATAR_LABELS[v]||v}</PickerButton>)}</div>
+      <MiniSectionTitle emoji="🎭" title="Presets" sub="Elige una base"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+        {AVATAR_PRESETS.slice(0,8).map((_,i)=><CharacterCard key={i} idx={i} selected={Number(form.avatar)===i} onPick={preset}/>) }
+      </div>
+
+      <MiniSectionTitle emoji="🖼️" title="Fondos" sub="Escenario"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:14}}>
+        {AVATAR_OPTIONS.bg.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.bg===v} locked={isLocked("bg",v)} onClick={()=>patch("bg",v)}>
+          <div style={{width:58,height:58,borderRadius:"50%",background:bgGradient(v),border:"3px solid rgba(255,255,255,.82)",boxShadow:"0 10px 18px rgba(0,0,0,.18)"}}/>
+        </VisualOption>)}
+      </div>
+
+      <MiniSectionTitle emoji="✨" title="Marcos" sub="Borde del avatar"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+        {AVATAR_OPTIONS.frame.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.frame===v} locked={isLocked("frame",v)} onClick={()=>patch("frame",v)}>
+          <Av av={form.avatar} config={{...cfg,frame:v,aura:"none"}} size={62}/>
+        </VisualOption>)}
+      </div>
     </>}
 
     {panel==="pelo"&&<>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>💇 Peinado</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.hair.map(v=><PickerButton key={v} active={cfg.hair===v} onClick={()=>patch("hair",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🎨 Color de pelo</div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.hairColor.map((c,i)=><ColorDot key={c} color={c} active={cfg.hairColor===i} onClick={()=>patch("hairColor",i)}/>)}</div>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🧔 Barba / bigote</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.facial.map(v=><PickerButton key={v} active={cfg.facial===v} onClick={()=>patch("facial",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+      <MiniSectionTitle emoji="💇" title="Peinados" sub="Ahora se ven, no solo se leen"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+        {AVATAR_OPTIONS.hair.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.hair===v} locked={isLocked("hair",v)} onClick={()=>patch("hair",v)}>
+          <Av av={form.avatar} config={{...hairPreviewBase,hair:v}} size={66}/>
+        </VisualOption>)}
+      </div>
+
+      <MiniSectionTitle emoji="🎨" title="Color de pelo"/>
+      <Card style={{marginBottom:14,background:"rgba(255,248,225,.75)",border:`2px solid ${T.g200}`}}>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>{AVATAR_OPTIONS.hairColor.map((c,i)=><LargeSwatch key={c} color={c} active={cfg.hairColor===i} onClick={()=>patch("hairColor",i)}/>)}</div>
+      </Card>
+
+      <MiniSectionTitle emoji="🧔" title="Barba y bigote"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+        {AVATAR_OPTIONS.facial.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.facial===v} onClick={()=>patch("facial",v)}>
+          <Av av={form.avatar} config={{...hairPreviewBase,facial:v}} size={66}/>
+        </VisualOption>)}
+      </div>
     </>}
 
     {panel==="cara"&&<>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>👤 Forma y piel</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.face.map(v=><PickerButton key={v} active={cfg.face===v} onClick={()=>patch("face",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.skin.map((c,i)=><ColorDot key={c} color={c} active={cfg.skin===i} onClick={()=>patch("skin",i)}/>)}</div>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>👀 Ojos</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.eyes.map(v=><PickerButton key={v} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.brows.map(v=><PickerButton key={v} active={cfg.brows===v} onClick={()=>patch("brows",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.eyeColor.map((c,i)=><ColorDot key={c} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
+      <MiniSectionTitle emoji="🙂" title="Forma de cara"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+        {AVATAR_OPTIONS.face.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.face===v} onClick={()=>patch("face",v)}>
+          <Av av={form.avatar} config={{...facePreviewBase,face:v}} size={66}/>
+        </VisualOption>)}
+      </div>
+
+      <MiniSectionTitle emoji="🧑" title="Tono de piel"/>
+      <Card style={{marginBottom:14,background:"rgba(255,248,225,.75)",border:`2px solid ${T.g200}`}}>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>{AVATAR_OPTIONS.skin.map((c,i)=><LargeSwatch key={c} color={c} active={cfg.skin===i} onClick={()=>patch("skin",i)}/>)}</div>
+      </Card>
+
+      <MiniSectionTitle emoji="👀" title="Ojos"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+        {AVATAR_OPTIONS.eyes.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}>
+          <Av av={form.avatar} config={{...facePreviewBase,eyes:v,eyeColor:cfg.eyeColor,brows:cfg.brows}} size={66}/>
+        </VisualOption>)}
+      </div>
+
+      <MiniSectionTitle emoji="🖋️" title="Cejas"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+        {AVATAR_OPTIONS.brows.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.brows===v} onClick={()=>patch("brows",v)}>
+          <Av av={form.avatar} config={{...facePreviewBase,brows:v,eyes:cfg.eyes,eyeColor:cfg.eyeColor}} size={66}/>
+        </VisualOption>)}
+      </div>
+
+      <MiniSectionTitle emoji="🌈" title="Color de ojos"/>
+      <Card style={{background:"rgba(255,248,225,.75)",border:`2px solid ${T.g200}`}}>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>{AVATAR_OPTIONS.eyeColor.map((c,i)=><LargeSwatch key={c} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
+      </Card>
     </>}
 
     {panel==="extras"&&<>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🎩 Complementos básicos</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{basicAccessories.map(v=><PickerButton key={v} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🔓 Complementos desbloqueables</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{["capBlack","capGold","glassesGold","bandanaGreen","crown","hoopGold"].map(v=><PickerButton key={v} active={cfg.accessory===v} locked={isLocked("accessory",v)} onClick={()=>patch("accessory",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🌟 Aura</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>{AVATAR_OPTIONS.aura.map(v=><PickerButton key={v} active={cfg.aura===v} locked={isLocked("aura",v)} onClick={()=>patch("aura",v)}>{AVATAR_LABELS[v]||v}</PickerButton>)}</div>
+      <MiniSectionTitle emoji="🎒" title="Complementos básicos" sub="Gafas, gorra, pendientes..."/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+        {basicAccessories.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}>
+          <Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={66}/>
+        </VisualOption>)}
+      </div>
+
+      <MiniSectionTitle emoji="🔓" title="Desbloqueables" sub="Se activan con progreso"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+        {["capBlack","capGold","glassesGold","bandanaGreen","crown","hoopGold"].map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} locked={isLocked("accessory",v)} onClick={()=>patch("accessory",v)}>
+          <Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={66}/>
+        </VisualOption>)}
+      </div>
+
+      <MiniSectionTitle emoji="🌟" title="Aura" sub="Brillo y rareza"/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+        {AVATAR_OPTIONS.aura.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.aura===v} locked={isLocked("aura",v)} onClick={()=>patch("aura",v)}>
+          <Av av={form.avatar} config={{...cfg,aura:v}} size={66}/>
+        </VisualOption>)}
+      </div>
     </>}
   </div>;
 }
