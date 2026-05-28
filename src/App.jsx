@@ -388,6 +388,8 @@ function AvatarFigure({config,size=80,animated=false}){
   const skin=AVATAR_OPTIONS.skin[cfg.skin];
   const hair=AVATAR_OPTIONS.hairColor[cfg.hairColor];
   const eye=AVATAR_OPTIONS.eyeColor[cfg.eyeColor];
+  const hasCap=["cap","capBlack","capGold"].includes(cfg.accessory);
+  const hasBandana=["bandana","bandanaGreen"].includes(cfg.accessory);
   const uid=`avp-${String(size).replace(/\W/g,"")}-${cfg.skin}-${cfg.hair}-${cfg.hairColor}-${cfg.accessory}-${cfg.bg}-${cfg.frame}-${cfg.aura}`;
   const faceW={oval:34,round:36,sharp:33,square:35}[cfg.face]||34;
   const jawY={oval:118,round:116,sharp:123,square:119}[cfg.face]||118;
@@ -404,6 +406,17 @@ function AvatarFigure({config,size=80,animated=false}){
   const bandanaColor=cfg.accessory==="bandanaGreen"?"#2F6B42":"#C0392B";
   const frameGlow=cfg.aura==="vip"?"rgba(255,241,168,.65)":cfg.aura==="flame"?"rgba(240,106,59,.55)":cfg.aura==="ocean"?"rgba(95,215,255,.48)":"rgba(212,175,55,.35)";
 
+  const sideLockLeft = cfg.hair==="bob"
+    ? "M46 59 C31 78 33 114 49 139"
+    : cfg.hair==="afro"
+      ? "M45 60 C30 74 32 104 44 126"
+      : "M47 58 C30 75 32 112 47 141";
+  const sideLockRight = cfg.hair==="bob"
+    ? "M114 59 C129 78 127 114 111 139"
+    : cfg.hair==="afro"
+      ? "M115 60 C130 74 128 104 116 126"
+      : "M113 58 C130 75 128 112 113 141";
+
   return <svg viewBox="0 0 160 178" width={size} height={size} style={{display:"block",overflow:"visible",filter:"drop-shadow(0 14px 14px rgba(0,0,0,.34))"}}>
     <defs>
       <radialGradient id={`${uid}-bg`} cx="35%" cy="18%" r="78%">
@@ -417,7 +430,7 @@ function AvatarFigure({config,size=80,animated=false}){
         <stop offset="100%" stopColor="#8C4C32"/>
       </linearGradient>
       <linearGradient id={`${uid}-hair`} x1="46" y1="18" x2="112" y2="140">
-        <stop offset="0%" stopColor="#6F4B2A"/>
+        <stop offset="0%" stopColor="#7A5530"/>
         <stop offset="42%" stopColor={hair}/>
         <stop offset="100%" stopColor="#120806"/>
       </linearGradient>
@@ -442,18 +455,19 @@ function AvatarFigure({config,size=80,animated=false}){
       <circle cx="55" cy="31" r="32" fill="rgba(255,255,255,.12)"/>
       {cfg.aura!=="none"&&<circle cx="80" cy="82" r="72" fill="none" stroke={frameGlow} strokeWidth="4" opacity=".72"/>}
 
-      <g style={animated?{animation:"avatarBreathPro 4.2s ease-in-out infinite",transformOrigin:"80px 140px"}:null}>
-        <path d="M49 151 C54 131 65 122 80 122 C95 122 106 131 111 151 C102 166 58 166 49 151Z" fill={`url(#${uid}-shirt)`} filter={`url(#${uid}-softShadow)`}/>
-        <path d="M62 142 C68 133 73 130 80 130 C87 130 93 133 98 142 C91 150 69 150 62 142Z" fill="rgba(212,175,55,.24)"/>
-        <path d="M68 124 C70 113 90 113 92 124 L91 137 C86 143 74 143 69 137Z" fill={`url(#${uid}-skin)`}/>
-      </g>
+      {/* Pelo trasero: siempre queda por detrás de la cara. Con gorra se recorta para que no parezca calva ni moño mal pegado. */}
+      {hasCap&&cfg.hair!=="fade"&&<g fill="none" stroke={`url(#${uid}-hair)`} strokeLinecap="round" strokeWidth={cfg.hair==="afro"?13:10} opacity=".96">
+        <path d={sideLockLeft}/>
+        <path d={sideLockRight}/>
+        {cfg.hair.includes("dreads")&&<><path d="M58 62 C46 82 49 113 57 139"/><path d="M102 62 C114 82 111 113 103 139"/></>}
+      </g>}
 
-      {cfg.hair==="dreadsLong"&&<g fill="none" stroke={`url(#${uid}-hair)`} strokeLinecap="round" strokeWidth="10">
+      {!hasCap&&cfg.hair==="dreadsLong"&&<g fill="none" stroke={`url(#${uid}-hair)`} strokeLinecap="round" strokeWidth="10">
         {["M43 48 C21 62 20 97 35 137","M55 38 C34 61 36 100 50 145","M105 38 C126 61 124 100 110 145","M117 48 C139 62 140 97 125 137","M62 34 C51 62 54 98 61 131","M98 34 C109 62 106 98 99 131"].map((d,i)=><path key={i} d={d} style={animated?{animation:`${i%2?"dreadSwing2":"dreadSwing"} ${2.6+i*.12}s ease-in-out infinite`,transformOrigin:"80px 44px"}:null}/>)}
         <g fill="#D4AF37" stroke="none"><circle cx="50" cy="112" r="3"/><circle cx="111" cy="108" r="3"/><circle cx="37" cy="126" r="2.6"/></g>
       </g>}
 
-      {cfg.hair==="dreadsBun"&&<g>
+      {!hasCap&&cfg.hair==="dreadsBun"&&<g>
         <g fill="none" stroke={`url(#${uid}-hair)`} strokeLinecap="round" strokeWidth="9">
           <path d="M50 45 C31 63 35 100 48 135"/>
           <path d="M110 45 C129 63 125 100 112 135"/>
@@ -464,7 +478,7 @@ function AvatarFigure({config,size=80,animated=false}){
         <path d="M60 31 C70 18 91 18 101 31" stroke="rgba(255,255,255,.22)" strokeWidth="4" strokeLinecap="round" fill="none"/>
       </g>}
 
-      {cfg.hair==="dreadsTop"&&<g fill="none" stroke={`url(#${uid}-hair)`} strokeLinecap="round" strokeWidth="9">
+      {!hasCap&&cfg.hair==="dreadsTop"&&<g fill="none" stroke={`url(#${uid}-hair)`} strokeLinecap="round" strokeWidth="9">
         <path d="M49 47 C34 62 37 95 50 128"/>
         <path d="M111 47 C126 62 123 95 110 128"/>
         <path d="M64 35 C55 18 68 9 78 24"/>
@@ -473,29 +487,44 @@ function AvatarFigure({config,size=80,animated=false}){
         <path d="M72 38 C78 27 90 29 93 42"/>
       </g>}
 
-      {cfg.hair==="afro"&&<g fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}>
+      {!hasCap&&cfg.hair==="afro"&&<g fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}>
         {[["50","48","19"],["68","34","23"],["92","34","23"],["110","48","19"],["40","70","19"],["120","70","19"],["80","24","24"]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}
       </g>}
 
-      {cfg.hair==="punk"&&<path d="M39 72 C44 39 58 16 80 3 C102 16 116 39 121 72 C103 55 57 55 39 72Z" fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}/>}
-      {cfg.hair==="fade"&&<path d="M43 70 C49 42 61 31 80 31 C99 31 111 42 117 70 C99 58 61 58 43 70Z" fill={`url(#${uid}-hair)`}/>}
-      {cfg.hair==="bob"&&<path d="M38 78 C35 47 51 28 80 28 C109 28 125 47 122 78 C119 112 106 132 97 144 C95 115 65 115 63 144 C54 132 41 112 38 78Z" fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}/>}
+      {!hasCap&&cfg.hair==="punk"&&<path d="M39 72 C44 39 58 16 80 3 C102 16 116 39 121 72 C103 55 57 55 39 72Z" fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}/>}
+      {!hasCap&&cfg.hair==="fade"&&<path d="M43 70 C49 42 61 31 80 31 C99 31 111 42 117 70 C99 58 61 58 43 70Z" fill={`url(#${uid}-hair)`}/>}
+      {!hasCap&&cfg.hair==="bob"&&<path d="M38 78 C35 47 51 28 80 28 C109 28 125 47 122 78 C119 112 106 132 97 144 C95 115 65 115 63 144 C54 132 41 112 38 78Z" fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}/>}
+
+      <g style={animated?{animation:"avatarBreathPro 4.2s ease-in-out infinite",transformOrigin:"80px 140px"}:null}>
+        <path d="M49 151 C54 131 65 122 80 122 C95 122 106 131 111 151 C102 166 58 166 49 151Z" fill={`url(#${uid}-shirt)`} filter={`url(#${uid}-softShadow)`}/>
+        <path d="M62 142 C68 133 73 130 80 130 C87 130 93 133 98 142 C91 150 69 150 62 142Z" fill="rgba(212,175,55,.24)"/>
+        <path d="M68 124 C70 113 90 113 92 124 L91 137 C86 143 74 143 69 137Z" fill={`url(#${uid}-skin)`}/>
+      </g>
 
       <path d={`M${80-faceW} ${cheekY} C${80-faceW-5} 41 ${80-faceW+8} 31 80 31 C${80+faceW-8} 31 ${80+faceW+5} 41 ${80+faceW} ${cheekY} C${80+faceW+2} 98 98 ${jawY} 80 ${jawY} C62 ${jawY} ${80-faceW-2} 98 ${80-faceW} ${cheekY}Z`} fill={`url(#${uid}-skin)`} filter={`url(#${uid}-softShadow)`}/>
-      <path d="M54 57 C61 38 70 32 80 32 C90 32 99 38 106 57 C95 51 65 51 54 57Z" fill={`url(#${uid}-hair)`} opacity={["dreadsLong","dreadsBun","dreadsTop","fade"].includes(cfg.hair)?1:0}/>
+
+      {/* Pelo delantero / nacimiento del pelo. Esta capa tapa la frente y evita el efecto calva. */}
+      {!hasCap&&!hasBandana&&["dreadsLong","dreadsBun","dreadsTop","fade"].includes(cfg.hair)&&<path d="M45 62 C51 41 64 32 80 32 C96 32 109 41 115 62 C98 53 62 53 45 62Z" fill={`url(#${uid}-hair)`}/>}
+      {!hasCap&&!hasBandana&&cfg.hair==="bob"&&<path d="M42 68 C46 41 60 31 80 31 C100 31 114 41 118 68 C101 54 59 54 42 68Z" fill={`url(#${uid}-hair)`}/>}
+      {!hasCap&&!hasBandana&&cfg.hair==="afro"&&<path d="M42 67 C47 45 59 34 80 32 C101 34 113 45 118 67 C98 53 62 53 42 67Z" fill={`url(#${uid}-hair)`}/>}
+      {!hasCap&&!hasBandana&&cfg.hair==="punk"&&<path d="M45 69 C52 49 64 40 80 39 C96 40 108 49 115 69 C98 58 62 58 45 69Z" fill={`url(#${uid}-hair)`}/>}
+
       <path d="M62 112 C69 119 91 119 98 112 C93 128 67 128 62 112Z" fill="rgba(90,45,28,.12)"/>
 
-      {(cfg.accessory==="bandana"||cfg.accessory==="bandanaGreen")&&<g>
-        <path d="M45 61 C57 49 103 49 115 61 L112 72 C94 63 66 63 48 72Z" fill={bandanaColor} filter={`url(#${uid}-softShadow)`}/>
-        <path d="M57 58 C67 54 94 54 104 58" stroke="rgba(255,255,255,.32)" strokeWidth="3" strokeLinecap="round"/>
-        <path d="M111 62 L131 55 L121 76Z" fill={bandanaColor}/>
+      {hasBandana&&<g>
+        <path d="M42 58 C55 45 105 45 118 58 L115 74 C96 65 64 65 45 74Z" fill={bandanaColor} filter={`url(#${uid}-softShadow)`}/>
+        <path d="M57 56 C67 51 94 51 104 56" stroke="rgba(255,255,255,.32)" strokeWidth="3" strokeLinecap="round"/>
+        <path d="M113 61 L134 53 L122 78Z" fill={bandanaColor}/>
+        <path d="M48 72 C58 64 101 64 112 72" stroke="rgba(0,0,0,.2)" strokeWidth="2" strokeLinecap="round"/>
       </g>}
 
-      {(cfg.accessory==="cap"||cfg.accessory==="capBlack"||cfg.accessory==="capGold")&&<g filter={`url(#${uid}-softShadow)`}>
-        <path d="M42 60 C48 32 61 22 80 22 C99 22 112 32 118 60 L115 71 C96 61 64 61 45 71Z" fill={capColor}/>
-        <path d="M94 62 C114 60 135 66 144 76" fill="none" stroke={capColor} strokeWidth="10" strokeLinecap="round"/>
-        <path d="M55 51 C66 42 96 42 106 51" stroke="rgba(255,255,255,.32)" strokeWidth="4" strokeLinecap="round" fill="none"/>
-        <circle cx="80" cy="37" r="4" fill="rgba(255,255,255,.35)"/>
+      {hasCap&&<g filter={`url(#${uid}-softShadow)`}>
+        <path d="M39 67 C43 40 58 24 80 23 C102 24 117 40 121 67 L117 79 C97 69 63 69 43 79Z" fill={capColor}/>
+        <path d="M45 68 C57 60 103 60 116 68 L114 77 C96 70 64 70 46 77Z" fill="rgba(0,0,0,.18)"/>
+        <path d="M91 68 C116 65 139 72 149 83" fill="none" stroke={capColor} strokeWidth="11" strokeLinecap="round"/>
+        <path d="M55 53 C66 44 96 44 107 53" stroke="rgba(255,255,255,.32)" strokeWidth="4" strokeLinecap="round" fill="none"/>
+        <circle cx="80" cy="38" r="4" fill="rgba(255,255,255,.35)"/>
+        <path d="M57 75 C69 70 91 70 103 75" stroke={`url(#${uid}-hair)`} strokeWidth="6" strokeLinecap="round" opacity={cfg.hair==="fade"?0.55:0.9}/>
       </g>}
 
       {cfg.accessory==="crown"&&<g filter={`url(#${uid}-softShadow)`}>
@@ -2901,10 +2930,76 @@ function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPo
 }
 
 // PERFIL
+
+function levelFromPoints(points=0){
+  const xp=Math.max(0,Number(points)||0);
+  const levels=[
+    {level:1,min:0,name:"Aprendiz"},
+    {level:2,min:50,name:"Primer corte"},
+    {level:3,min:120,name:"Manos firmes"},
+    {level:4,min:220,name:"Estilo propio"},
+    {level:5,min:360,name:"Rasta Pro"},
+    {level:6,min:550,name:"Barber urbano"},
+    {level:7,min:800,name:"Maestro del gancho"},
+    {level:8,min:1100,name:"Leyenda local"},
+    {level:9,min:1500,name:"Icono Rasta"},
+    {level:10,min:2000,name:"VIP de la casa"}
+  ];
+  let current=levels[0],next=levels[levels.length-1];
+  for(let i=0;i<levels.length;i++){
+    if(xp>=levels[i].min){current=levels[i];next=levels[i+1]||levels[i];}
+  }
+  const span=Math.max(1,(next.min-current.min));
+  const pct=current.level===next.level?100:Math.max(0,Math.min(100,((xp-current.min)/span)*100));
+  return {...current,next,progress:pct,xp};
+}
+function rewardLevelFor(points=0){return levelFromPoints(points).level;}
+function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}){
+  const preview=normalizeAvatarConfig({...currentConfig,...cosmeticPatch(item)},user.avatar);
+  const locked=!owned&&!reached;
+  return <button type="button" onClick={onClick} style={{
+    minWidth:88,
+    maxWidth:88,
+    border:"none",
+    background:"transparent",
+    padding:0,
+    cursor:"pointer",
+    position:"relative"
+  }}>
+    <div style={{
+      height:76,
+      width:76,
+      margin:"0 auto",
+      borderRadius:"50%",
+      display:"grid",
+      placeItems:"center",
+      background:active?"linear-gradient(145deg,#FFF8E1,#E6C27A)":reached?"linear-gradient(145deg,#FFF4D6,#F0D39B)":"linear-gradient(145deg,#16100C,#3A2A1D)",
+      border:`3px solid ${active?T.gold:owned?T.g300:reached?T.gold:"rgba(255,244,214,.22)"}`,
+      boxShadow:active?"0 0 24px rgba(212,175,55,.55)":reached?"0 8px 18px rgba(212,175,55,.25)":"inset 0 10px 22px rgba(0,0,0,.35),0 8px 14px rgba(20,8,4,.18)",
+      overflow:"hidden",
+      animation:reached&&!owned?"rewardPulsePro 2.2s ease-in-out infinite":"none"
+    }}>
+      <div style={{filter:locked?"grayscale(1) brightness(0)":"none",opacity:locked?0.78:1,transform:"scale(.92)"}}>
+        {locked?<Av av={user.avatar} config={preview} size={62}/>:<Av av={user.avatar} config={preview} size={62}/>}
+      </div>
+      {owned&&<div style={{position:"absolute",right:8,top:4,background:T.gradGold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".68rem"}}>✓</div>}
+      {locked&&<div style={{position:"absolute",right:8,top:4,background:"rgba(0,0,0,.58)",color:T.white,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontSize:".68rem"}}>🔒</div>}
+      {reached&&!owned&&<div style={{position:"absolute",right:7,top:4,background:T.gold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".68rem"}}>!</div>}
+    </div>
+    <div style={{height:18,width:3,background:owned||reached?T.gold:"rgba(255,244,214,.35)",margin:"-1px auto 0"}}/>
+    <div style={{fontSize:".68rem",fontWeight:950,color:owned||reached?T.g800:T.textSub,lineHeight:1.05}}>
+      Nv. {rewardLevelFor(item.puntos_precio)}
+    </div>
+    <div style={{fontSize:".63rem",fontWeight:850,color:T.textSub,lineHeight:1.05,marginTop:2}}>
+      {item.puntos_precio} XP
+    </div>
+  </button>;
+}
 function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
   const [items,setItems]=useState(COSMETIC_CATALOG_FALLBACK);
   const [owned,setOwned]=useState(localOwnedCosmetics(user));
   const [loading,setLoading]=useState(true);
+  const [selected,setSelected]=useState(null);
 
   useEffect(()=>{load();},[user.id]);
 
@@ -2920,15 +3015,18 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
       const {data,error}=await supabase.from("user_cosmetics").select("item_key").eq("usuario_id",String(user.id));
       if(!error && data){keys=[...new Set([...keys,...data.map(x=>x.item_key)])];saveLocalOwnedCosmetics(user,keys);}
     }catch{}
-    setItems(catalog.sort((a,b)=>Number(a.puntos_precio||0)-Number(b.puntos_precio||0)));
+    const sorted=catalog.sort((a,b)=>Number(a.puntos_precio||0)-Number(b.puntos_precio||0));
+    setItems(sorted);
     setOwned(keys);
+    setSelected(s=>s||sorted.find(i=>(user.puntos||0)>=Number(i.puntos_precio||0)&&!keys.includes(i.item_key))||sorted[0]||null);
     setLoading(false);
   }
 
   async function reveal(item){
+    if(!item)return;
     if(owned.includes(item.item_key)){apply(item);return;}
     if((user.puntos||0)<Number(item.puntos_precio||0)){
-      showToast?.(`Te faltan ${Number(item.puntos_precio||0)-(user.puntos||0)} pts para revelar este premio`);
+      showToast?.(`Necesitas ${item.puntos_precio} XP para desbloquear esta silueta`);
       SFX.error();
       return;
     }
@@ -2939,7 +3037,7 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
     saveLocalOwnedCosmetics(user,keys);
     setOwned(keys);
     SFX.success();
-    showToast?.(`${item.nombre} revelado`);
+    showToast?.(`${item.nombre} desbloqueado`);
     apply(item,true);
   }
 
@@ -2951,51 +3049,73 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
     if(!skipToast){SFX.success();showToast?.(`${item.nombre} equipado`);}
   }
 
-  const max=Math.max(...items.map(i=>Number(i.puntos_precio||0)),1);
+  const lvl=levelFromPoints(user.puntos||0);
+  const selectedItem=selected||items[0];
+  const selectedOwned=selectedItem?owned.includes(selectedItem.item_key):false;
+  const selectedReached=selectedItem?(user.puntos||0)>=Number(selectedItem.puntos_precio||0):false;
+  const selectedActive=selectedItem?normalizeAvatarConfig(currentConfig,user.avatar)[selectedItem.slot]===selectedItem.valor:false;
   const next=items.find(i=>!owned.includes(i.item_key) && Number(i.puntos_precio||0)>(user.puntos||0)) || items.find(i=>!owned.includes(i.item_key));
-  const progress=Math.max(0,Math.min(100,((user.puntos||0)/max)*100));
 
-  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`,overflow:"hidden"}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:12}}>
-      <div>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.32rem",color:T.g800}}>🎁 Camino de estilo</div>
-        <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>No gastas puntos: al alcanzar cada hito puedes revelar un cosmético para tu personaje.</div>
+  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`,overflow:"hidden",padding:14}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:10}}>
+      <div style={{minWidth:0}}>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.34rem",color:T.g800}}>🎁 Camino de recompensas</div>
+        <div style={{fontSize:".76rem",fontWeight:850,color:T.textSub,lineHeight:1.25}}>Sistema por nivel: los puntos de juego funcionan como XP y no se gastan.</div>
       </div>
-      <Badge col="gold">{user.puntos||0} pts</Badge>
+      <div style={{textAlign:"right"}}>
+        <Badge col="gold">Nv. {lvl.level}</Badge>
+        <div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:4}}>{lvl.xp} XP</div>
+      </div>
     </div>
 
-    <div style={{height:12,background:"rgba(110,53,24,.16)",borderRadius:999,overflow:"hidden",marginBottom:10}}>
-      <div style={{height:"100%",width:`${progress}%`,background:T.gradGold,borderRadius:999,transition:"width .35s ease"}}/>
+    <div style={{background:"rgba(110,53,24,.12)",borderRadius:16,padding:10,marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:".72rem",fontWeight:950,color:T.g800,marginBottom:6}}>
+        <span>{lvl.name}</span>
+        <span>{lvl.next.level===lvl.level?"Nivel máximo":`Siguiente: Nv. ${lvl.next.level}`}</span>
+      </div>
+      <div style={{height:12,background:"rgba(110,53,24,.18)",borderRadius:999,overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${lvl.progress}%`,background:T.gradGold,borderRadius:999,transition:"width .35s ease"}}/>
+      </div>
+      {next&&<div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,marginTop:7}}>Próxima silueta: <b style={{color:T.g800}}>{next.puntos_precio} XP</b></div>}
     </div>
-    {next&&<div style={{fontSize:".78rem",fontWeight:900,color:T.textSub,marginBottom:12}}>Siguiente silueta: <b style={{color:T.g800}}>{next.puntos_precio} pts</b></div>}
 
-    {loading?<Spinner/>:<div style={{display:"flex",gap:12,overflowX:"auto",padding:"4px 2px 10px"}}>
-      {items.map((item,idx)=>{
-        const reached=(user.puntos||0)>=Number(item.puntos_precio||0);
-        const has=owned.includes(item.item_key);
-        const active=normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;
-        return <div key={item.item_key} style={{minWidth:150,position:"relative",background:active?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"rgba(255,244,214,.78)",border:`2px solid ${active?T.gold:reached?T.g300:T.g200}`,borderRadius:20,padding:10,boxShadow:"0 8px 18px rgba(20,8,4,.1)"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-            <div style={{width:26,height:26,borderRadius:"50%",background:reached?T.gradGold:"rgba(47,22,12,.22)",display:"grid",placeItems:"center",fontWeight:950,color:reached?T.g900:T.white,fontSize:".78rem"}}>{idx+1}</div>
-            <b style={{color:reached?T.orange:T.textSub,fontSize:".76rem"}}>{item.puntos_precio} pts</b>
+    {loading?<Spinner/>:<>
+      <div style={{position:"relative",padding:"12px 0 8px",marginBottom:10}}>
+        <div style={{position:"absolute",left:38,right:38,top:49,height:5,background:"linear-gradient(90deg,rgba(58,30,16,.25),rgba(212,175,55,.85),rgba(58,30,16,.25))",borderRadius:999}}/>
+        <div style={{display:"flex",gap:4,overflowX:"auto",padding:"0 4px 8px",position:"relative",zIndex:2}}>
+          {items.map((item)=>{
+            const reached=(user.puntos||0)>=Number(item.puntos_precio||0);
+            const has=owned.includes(item.item_key);
+            const active=normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;
+            return <RewardSilhouette key={item.item_key} item={item} user={user} currentConfig={currentConfig} owned={has} reached={reached} active={active} onClick={()=>{SFX.tab();setSelected(item);}}/>;
+          })}
+        </div>
+      </div>
+
+      {selectedItem&&<div style={{display:"grid",gridTemplateColumns:"74px 1fr",gap:10,alignItems:"center",background:"rgba(255,248,225,.72)",border:`2px solid ${selectedReached?T.gold:T.g200}`,borderRadius:18,padding:10}}>
+        <div style={{width:68,height:68,borderRadius:"50%",display:"grid",placeItems:"center",background:selectedReached?"linear-gradient(145deg,#FFF4D6,#E6C27A)":"linear-gradient(145deg,#16100C,#3A2A1D)",overflow:"hidden",boxShadow:"inset 0 8px 18px rgba(0,0,0,.18)"}}>
+          <div style={{filter:selectedReached||selectedOwned?"none":"grayscale(1) brightness(0)",opacity:selectedReached||selectedOwned?1:.78}}>
+            <Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(selectedItem)}} size={62}/>
           </div>
-          <div style={{height:78,display:"grid",placeItems:"center",marginBottom:8}}>
-            {reached||has?<Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(item)}} size={70}/>:
-              <div style={{width:70,height:70,borderRadius:"50%",background:"linear-gradient(180deg,#6E6048,#2B1B12)",filter:"grayscale(1)",opacity:.58,display:"grid",placeItems:"center",fontSize:"2rem",boxShadow:"inset 0 8px 20px rgba(0,0,0,.25)"}}>?</div>}
+        </div>
+        <div style={{minWidth:0}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}>
+            <div style={{fontWeight:950,color:T.g800,fontSize:".9rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+              {selectedReached||selectedOwned?selectedItem.nombre:"Premio oculto"}
+            </div>
+            <Badge col={selectedOwned?"green":selectedReached?"gold":"red"}>{selectedOwned?"Desbloqueado":selectedReached?"Listo":"Bloqueado"}</Badge>
           </div>
-          <div style={{fontWeight:950,color:T.g800,fontSize:".82rem",lineHeight:1.1}}>{has||reached?item.nombre:"Premio oculto"}</div>
-          <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub,lineHeight:1.25,minHeight:32,marginTop:4}}>
-            {has?item.descripcion:reached?"Has llegado: revela el premio y equípalo.":"Sigue ganando puntos para descubrir qué hay aquí."}
+          <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,margin:"4px 0 8px",lineHeight:1.2}}>
+            Nivel {rewardLevelFor(selectedItem.puntos_precio)} · {selectedItem.puntos_precio} XP
           </div>
-          <div style={{marginTop:9}}>
-            {has?<Btn full small col={active?"ghost":"gold"} onClick={()=>apply(item)}>{active?"Equipado":"Equipar"}</Btn>:
-              <Btn full small col={reached?"gold":"ghost"} disabled={!reached} onClick={()=>reveal(item)}>{reached?"Revelar":"Bloqueado"}</Btn>}
-          </div>
-        </div>;
-      })}
-    </div>}
+          {selectedOwned?<Btn small full col={selectedActive?"ghost":"gold"} onClick={()=>apply(selectedItem)}>{selectedActive?"Equipado":"Equipar"}</Btn>:
+            <Btn small full col={selectedReached?"gold":"ghost"} disabled={!selectedReached} onClick={()=>reveal(selectedItem)}>{selectedReached?"Revelar recompensa":"Silueta bloqueada"}</Btn>}
+        </div>
+      </div>}
+    </>}
   </Card>;
 }
+
 
 function Perfil({user,setUser,onLogout,showToast,showPoints}){
   const [tab,setTab]=useState("resumen");
