@@ -388,7 +388,7 @@ function AvatarFigure({config,size=80,animated=false}){
   const skin=AVATAR_OPTIONS.skin[cfg.skin];
   const hair=AVATAR_OPTIONS.hairColor[cfg.hairColor];
   const eye=AVATAR_OPTIONS.eyeColor[cfg.eyeColor];
-  const uid=`avp-${makeId(JSON.stringify(cfg)).slice(0,8)}-${String(size).replace(/\W/g,"")}`;
+  const uid=`avp-${String(size).replace(/\W/g,"")}-${cfg.skin}-${cfg.hair}-${cfg.hairColor}-${cfg.accessory}-${cfg.bg}-${cfg.frame}-${cfg.aura}`;
   const faceW={oval:34,round:36,sharp:33,square:35}[cfg.face]||34;
   const jawY={oval:118,round:116,sharp:123,square:119}[cfg.face]||118;
   const cheekY={oval:67,round:69,sharp:66,square:66}[cfg.face]||67;
