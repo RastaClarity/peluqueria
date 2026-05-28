@@ -189,6 +189,11 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 .studio-panel>*{position:relative;z-index:2}
 .studio-panel:after{content:"";position:absolute;top:0;bottom:0;width:96px;left:-135%;z-index:1;pointer-events:none;background:linear-gradient(90deg,transparent,var(--shineA,rgba(232,211,162,.13)),var(--shineB,rgba(255,255,255,.08)),transparent);transform:skewX(-18deg);animation:shineLine var(--shineSpeed,7.2s) ease-in-out infinite}
 .studio-panel:nth-of-type(2n):after{animation-delay:1.35s}.studio-panel:nth-of-type(3n):after{animation-delay:2.4s}
+.news-reel{scroll-snap-type:y mandatory;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.news-reel::-webkit-scrollbar{display:none}
+.news-short{scroll-snap-align:start;scroll-snap-stop:always}
+.news-short-title{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.news-short-summary{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .icon3d{filter:drop-shadow(0 4px 5px rgba(0,0,0,.24));text-shadow:0 2px 5px rgba(0,0,0,.22);animation:wiggle3d 3.2s ease-in-out infinite}
 
 `;
@@ -1094,8 +1099,16 @@ function formatNewsDate(date){
 }
 function categoryInfo(id){return NEWS_CATEGORIES.find(c=>c.id===id)||NEWS_CATEGORIES[0];}
 function categoryVisual(id){return CATEGORY_COLORS[id]||CATEGORY_COLORS.todo;}
-async function fetchNews(category="todo"){
-  const res=await fetch(`/api/news?category=${encodeURIComponent(category)}&day=${new Date().toISOString().split("T")[0]}`);
+function newsTimeSlot(){
+  const h=new Date().getHours();
+  if(h<7)return "madrugada";
+  if(h<13)return "mañana";
+  if(h<18)return "tarde";
+  return "noche";
+}
+async function fetchNews(category="todo",seed=0,slot=newsTimeSlot()){
+  const day=new Date().toISOString().split("T")[0];
+  const res=await fetch(`/api/news?category=${encodeURIComponent(category)}&day=${encodeURIComponent(day)}&slot=${encodeURIComponent(slot)}&seed=${encodeURIComponent(seed)}&limit=28`);
   const data=await res.json();
   const items=Array.isArray(data.news)?data.news:[];
   return items.length?items:NEWS_FALLBACK;
@@ -1106,6 +1119,29 @@ function trimSummary(text=""){
   return clean.length>185?`${clean.slice(0,182).trim()}...`:clean;
 }
 function newsIconFor(cat){return categoryInfo(cat).icon;}
+const NEWS_POSTERS={
+  todo:{title:"Selección",sub:"Lo mejor para leer hoy",icons:["✨","📰","🧭"]},
+  curiosidades:{title:"Curiosidad",sub:"Algo rápido para aprender",icons:["💡","🔎","📜"]},
+  rural:{title:"Vida rural",sub:"Campo, oficio y producto local",icons:["🌾","🥚","🧀"]},
+  comer:{title:"Comer bien",sub:"Bares, tapas y producto cercano",icons:["🍽️","🔥","🍷"]},
+  sitios:{title:"Sitios",sub:"Rutas, pueblos y escapadas",icons:["🏞️","🧭","🏰"]},
+  estilo:{title:"Estilo",sub:"Pelo, barba y rastas",icons:["✂️","🪮","🧔"]},
+  musica:{title:"Reggae & rap",sub:"Temas, videoclips y directos",icons:["🎧","🎤","▶️"]},
+  negocios:{title:"Negocio local",sub:"Ideas para vender mejor",icons:["💼","📣","🤝"]},
+};
+function CategoryNewsPoster({catId,featured=false}){
+  const cat=categoryInfo(catId),visual=categoryVisual(catId),poster=NEWS_POSTERS[catId]||NEWS_POSTERS.todo;
+  return <div style={{height:featured?210:178,position:"relative",overflow:"hidden",borderRadius:"18px 18px 0 0",background:`radial-gradient(circle at 18% 16%,rgba(240,224,184,.34),transparent 30%),radial-gradient(circle at 86% 18%,rgba(19,11,6,.18),transparent 28%),linear-gradient(145deg,${visual.bg},${T.panel2})`,borderBottom:`1px solid ${T.g300}`}}>
+    <div style={{position:"absolute",inset:0,background:"repeating-linear-gradient(0deg,rgba(19,11,6,.035) 0 1px,transparent 1px 7px)"}}/>
+    <div style={{position:"absolute",right:-16,top:-18,fontSize:featured?"6.8rem":"5.3rem",opacity:.12,transform:"rotate(-10deg)"}}>{poster.icons[0]}</div>
+    <div style={{position:"absolute",left:18,top:18,display:"flex",gap:8}}>{poster.icons.map((ic,i)=><span key={ic+i} style={{width:i===0?48:38,height:i===0?48:38,borderRadius:16,display:"grid",placeItems:"center",background:i===0?visual.accent:"rgba(255,244,214,.62)",color:"#FFF8E5",fontSize:i===0?"1.55rem":"1.15rem",boxShadow:"0 8px 16px rgba(18,8,4,.18)",border:"1px solid rgba(255,244,214,.35)"}}>{ic}</span>)}</div>
+    <div style={{position:"absolute",left:18,right:18,bottom:18}}>
+      <div style={{fontFamily:"'Pirata One',cursive",fontSize:featured?"1.55rem":"1.28rem",lineHeight:1,color:visual.dark,textShadow:"0 1px 0 rgba(255,244,214,.55)"}}>{poster.title}</div>
+      <div style={{fontSize:".78rem",fontWeight:950,color:T.textSub,marginTop:4}}>{poster.sub}</div>
+      <div style={{marginTop:9,display:"inline-flex",alignItems:"center",gap:6,background:"rgba(19,11,6,.12)",border:`1px solid ${T.g300}`,borderRadius:999,padding:"5px 10px",fontSize:".7rem",fontWeight:950,color:visual.dark}}>{cat.icon} {cat.label}</div>
+    </div>
+  </div>;
+}
 function safeAvatarJson(cfg){try{return cfg?JSON.parse(JSON.stringify(cfg)):null;}catch{return null;}}
 async function grantNewsPoints({user,setUser,showToast,showPoints,eventKey,points,description}){
   if(!user?.id||!points)return false;
@@ -1130,36 +1166,97 @@ function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
   const hasImage=Boolean(item?.image);
   const title=item?.title||"Contenido destacado";
   const summary=trimSummary(item?.summary);
-  const imageBlock=hasImage?(
-    <div style={{width:compact?84:"100%",height:compact?90:featured?184:138,flex:"0 0 auto",backgroundImage:`linear-gradient(180deg,rgba(20,8,4,.02),rgba(20,8,4,.36)), url(${item.image})`,backgroundSize:"cover",backgroundPosition:"center",borderRadius:compact?18:"20px 20px 0 0",border:compact?`1px solid rgba(255,244,214,.65)`:"none"}}/>
-  ):(
-    <div style={{width:compact?84:"100%",height:compact?90:featured?150:112,flex:"0 0 auto",display:"grid",placeItems:"center",background:`radial-gradient(circle at 20% 20%,rgba(255,255,255,.32),transparent 34%),${visual.bg}`,borderRadius:compact?18:"20px 20px 0 0",border:compact?`1px solid ${T.g300}`:"none"}}>
-      <div style={{textAlign:"center"}}><div style={{fontSize:compact?"2rem":"3rem",filter:"drop-shadow(0 6px 8px rgba(0,0,0,.20))"}}>{cat.icon}</div>{!compact&&<div style={{fontWeight:950,color:visual.dark,fontSize:".74rem",letterSpacing:".5px",textTransform:"uppercase"}}>{cat.short}</div>}</div>
+  const showYoutube=Boolean(item?.youtubeUrl||item?.category==="musica");
+  const ytUrl=item?.youtubeUrl||`https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} oficial`)}`;
+  const openSource=(e)=>{e.stopPropagation();SFX.action();if(item?.url)window.open(item.url,"_blank","noopener,noreferrer");else openNews();};
+  const openYoutube=(e)=>{e.stopPropagation();SFX.action();window.open(ytUrl,"_blank","noopener,noreferrer");};
+  const poster=hasImage?(
+    <div style={{height:featured?218:188,position:"relative",overflow:"hidden",borderRadius:"18px 18px 0 0",backgroundImage:`linear-gradient(180deg,rgba(19,11,6,.02) 0%,rgba(19,11,6,.08) 48%,rgba(19,11,6,.62) 100%), url(${item.image})`,backgroundSize:"cover",backgroundPosition:"center",borderBottom:`1px solid ${T.g300}`}}>
+      <div style={{position:"absolute",left:12,top:12,display:"flex",gap:6,flexWrap:"wrap"}}>
+        <span style={{background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"5px 10px",fontSize:".7rem",fontWeight:950,boxShadow:"0 8px 16px rgba(18,8,4,.24)"}}>{cat.icon} {cat.short}</span>
+        <span style={{background:"rgba(19,11,6,.58)",color:T.white,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:950,backdropFilter:"blur(4px)"}}>{formatNewsDate(item?.date)}</span>
+      </div>
+      <div style={{position:"absolute",left:12,right:12,bottom:12,display:"flex",justifyContent:"space-between",alignItems:"flex-end",gap:8}}>
+        <div style={{maxWidth:"70%",fontSize:".72rem",fontWeight:950,color:T.white,textShadow:"0 2px 8px rgba(0,0,0,.45)",lineHeight:1.15}}>{item?.source||"Fuente"}</div>
+        <div style={{display:"flex",gap:6}}><span style={{background:"rgba(255,244,214,.84)",color:T.g800,borderRadius:999,padding:"5px 8px",fontSize:".7rem",fontWeight:950}}>👍 {stats?.likes||0}</span><span style={{background:"rgba(255,244,214,.84)",color:T.g800,borderRadius:999,padding:"5px 8px",fontSize:".7rem",fontWeight:950}}>💬 {stats?.comments||0}</span></div>
+      </div>
     </div>
-  );
-  return <Card onClick={openNews} hover style={{marginBottom:compact?10:14,padding:compact?12:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF9E9 0%,#F5E0B8 100%)",border:`2px solid ${featured?T.gold:T.g300}`,boxShadow:featured?"0 18px 42px rgba(20,8,4,.28), inset 0 1px 0 rgba(255,255,255,.68)":"0 10px 24px rgba(20,8,4,.18), inset 0 1px 0 rgba(255,255,255,.55)"}}>
-    <div style={{display:compact?"flex":"block",gap:12,alignItems:"stretch"}}>
-      {imageBlock}
-      <div style={{padding:compact?0:"14px 15px 15px",minWidth:0,flex:1}}>
-        <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
-          <span style={{background:visual.accent,color:"#FFF8E5",borderRadius:50,padding:"3px 9px",fontSize:".66rem",fontWeight:950,letterSpacing:".25px"}}>{cat.icon} {cat.short}</span>
-          <span style={{background:"rgba(255,244,214,.82)",color:T.g700,border:`1px solid ${T.g200}`,borderRadius:50,padding:"3px 8px",fontSize:".66rem",fontWeight:900}}>{item?.source||"Fuente"}</span>
-          {!compact&&<span style={{fontSize:".68rem",fontWeight:900,color:T.textSub,marginLeft:"auto"}}>{formatNewsDate(item?.date)}</span>}
+  ):<CategoryNewsPoster catId={item?.category||"todo"} featured={featured}/>;
+  return <Card onClick={openNews} hover style={{marginBottom:14,padding:0,overflow:"hidden",background:T.panel,border:`2px solid ${featured?visual.accent:T.g300}`,boxShadow:featured?"0 16px 34px rgba(18,8,4,.26)":"0 10px 22px rgba(18,8,4,.20)",borderRadius:22}}>
+    {poster}
+    <div style={{padding:"13px 14px 14px"}}>
+      {!hasImage&&<div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
+        <span style={{background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"4px 9px",fontSize:".66rem",fontWeight:950}}>{cat.icon} {cat.short}</span>
+        <span style={{background:"rgba(19,11,6,.08)",color:T.g700,border:`1px solid ${T.g200}`,borderRadius:999,padding:"4px 8px",fontSize:".66rem",fontWeight:900}}>{item?.source||"Fuente"}</span>
+        <span style={{fontSize:".68rem",fontWeight:900,color:T.textSub,marginLeft:"auto"}}>{formatNewsDate(item?.date)}</span>
+      </div>}
+      <div style={{fontWeight:950,color:T.g900,fontSize:featured?"1.18rem":"1rem",lineHeight:1.17,letterSpacing:"-.12px",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{title}</div>
+      <div style={{fontSize:".84rem",fontWeight:750,color:T.textSub,lineHeight:1.42,marginTop:8,display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{summary}</div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginTop:12,flexWrap:"wrap"}}>
+        <div style={{display:"flex",gap:7,alignItems:"center"}}>
+          <button onClick={openNews} style={{border:"none",background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"8px 12px",fontWeight:950,fontSize:".78rem",cursor:"pointer",boxShadow:"0 7px 14px rgba(18,8,4,.18)"}}>Leer</button>
+          {showYoutube&&<button onClick={openYoutube} style={{border:`1px solid ${T.g300}`,background:"#7A241B",color:"#FFF8E5",borderRadius:999,padding:"8px 11px",fontWeight:950,fontSize:".78rem",cursor:"pointer"}}>▶ YouTube</button>}
+          {item?.url&&<button onClick={openSource} style={{border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.52)",color:T.g800,borderRadius:999,padding:"8px 10px",fontWeight:950,fontSize:".76rem",cursor:"pointer"}}>Fuente ↗</button>}
         </div>
-        <div style={{fontWeight:950,color:T.g900,fontSize:featured?"1.18rem":compact?".92rem":"1rem",lineHeight:1.16,letterSpacing:"-.15px",display:"-webkit-box",WebkitLineClamp:compact?2:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{title}</div>
-        <div style={{fontSize:compact?".76rem":".84rem",fontWeight:750,color:T.textSub,lineHeight:1.38,marginTop:7,display:"-webkit-box",WebkitLineClamp:compact?2:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{summary}</div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginTop:10}}>
-          <span style={{fontSize:".72rem",fontWeight:900,color:visual.accent}}>Abrir debate y fuente</span>
-          <div style={{display:"flex",gap:6,alignItems:"center"}}>
-            <span style={{fontSize:".7rem",fontWeight:950,color:T.g700}}>👍 {stats?.likes||0}</span>
-            <span style={{fontSize:".7rem",fontWeight:950,color:T.g700}}>💬 {stats?.comments||0}</span>
-            <span style={{width:30,height:30,borderRadius:12,display:"grid",placeItems:"center",background:visual.accent,color:"#FFF8E5",fontWeight:950,boxShadow:"0 6px 14px rgba(20,8,4,.22)"}}>↗</span>
-          </div>
+        <div style={{display:"flex",gap:7,alignItems:"center",marginLeft:"auto"}}>
+          <span style={{fontSize:".72rem",fontWeight:950,color:T.g700}}>👍 {stats?.likes||0}</span>
+          <span style={{fontSize:".72rem",fontWeight:950,color:T.g700}}>💬 {stats?.comments||0}</span>
         </div>
       </div>
     </div>
   </Card>;
 }
+
+function NewsShortCard({item,index=0,total=0,onOpen,stats=null}){
+  const cat=categoryInfo(item?.category);
+  const visual=categoryVisual(item?.category);
+  const poster=NEWS_POSTERS[item?.category]||NEWS_POSTERS.todo;
+  const title=item?.title||"Contenido destacado";
+  const summary=trimSummary(item?.summary);
+  const hasImage=Boolean(item?.image);
+  const showYoutube=Boolean(item?.youtubeUrl||item?.category==="musica");
+  const ytUrl=item?.youtubeUrl||`https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} oficial`)}`;
+  const openDetail=(e)=>{e?.stopPropagation?.();SFX.click();onOpen?.(item);};
+  const openSource=(e)=>{e.stopPropagation();SFX.action();if(item?.url)window.open(item.url,"_blank","noopener,noreferrer");else openDetail(e);};
+  const openYoutube=(e)=>{e.stopPropagation();SFX.action();window.open(ytUrl,"_blank","noopener,noreferrer");};
+  const bg=hasImage
+    ? `linear-gradient(180deg,rgba(12,6,3,.08) 0%,rgba(12,6,3,.16) 36%,rgba(12,6,3,.88) 100%), url(${item.image})`
+    : `radial-gradient(circle at 18% 10%,rgba(240,224,184,.32),transparent 30%),radial-gradient(circle at 86% 18%,${visual.accent}44,transparent 34%),linear-gradient(160deg,${visual.dark},#130B06 52%,${visual.bg})`;
+  return <div className="news-short studio-panel" onClick={openDetail} style={{height:"calc(100dvh - 238px)",minHeight:500,maxHeight:680,borderRadius:26,overflow:"hidden",position:"relative",backgroundImage:bg,backgroundSize:"cover",backgroundPosition:"center",border:`2px solid ${visual.accent}`,boxShadow:"0 18px 38px rgba(0,0,0,.34)",marginBottom:14,cursor:"pointer"}}>
+    {!hasImage&&<>
+      <div style={{position:"absolute",inset:0,background:"repeating-linear-gradient(0deg,rgba(240,224,184,.055) 0 1px,transparent 1px 7px)"}}/>
+      <div style={{position:"absolute",right:-12,top:56,fontSize:"9.2rem",opacity:.14,filter:"drop-shadow(0 10px 14px rgba(0,0,0,.35))",transform:"rotate(-8deg)"}}>{poster.icons?.[0]||cat.icon}</div>
+      <div style={{position:"absolute",left:22,top:108,width:128,height:128,borderRadius:32,display:"grid",placeItems:"center",fontSize:"4.4rem",background:"rgba(240,224,184,.18)",border:"1px solid rgba(240,224,184,.24)",boxShadow:"inset 0 1px 0 rgba(255,255,255,.16),0 18px 30px rgba(0,0,0,.22)"}}>{poster.icons?.[0]||cat.icon}</div>
+    </>}
+    <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(0,0,0,.08) 38%,rgba(0,0,0,.54) 68%,rgba(0,0,0,.82) 100%)"}}/>
+    <div style={{position:"absolute",left:14,right:14,top:14,display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+      <span style={{display:"inline-flex",alignItems:"center",gap:7,background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"8px 12px",fontSize:".78rem",fontWeight:950,boxShadow:"0 10px 20px rgba(0,0,0,.28)",border:"1px solid rgba(255,244,214,.24)"}}>{cat.icon} {cat.short}</span>
+      <span style={{background:"rgba(12,6,3,.55)",color:T.white,border:"1px solid rgba(255,244,214,.18)",borderRadius:999,padding:"7px 10px",fontSize:".72rem",fontWeight:950,backdropFilter:"blur(5px)"}}>{index+1}/{total}</span>
+    </div>
+    <div style={{position:"absolute",right:12,bottom:146,display:"grid",gap:10,justifyItems:"center"}}>
+      <button onClick={openDetail} style={{width:48,height:48,borderRadius:"50%",border:"1px solid rgba(255,244,214,.35)",background:"rgba(240,224,184,.88)",color:T.g900,fontSize:"1rem",fontWeight:950,boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer"}}>💬</button>
+      <div style={{fontSize:".72rem",fontWeight:950,color:T.white,textShadow:"0 2px 8px rgba(0,0,0,.75)"}}>{stats?.comments||0}</div>
+      <div style={{width:48,height:48,borderRadius:"50%",display:"grid",placeItems:"center",border:"1px solid rgba(255,244,214,.35)",background:"rgba(240,224,184,.88)",color:T.g900,fontSize:"1rem",fontWeight:950,boxShadow:"0 8px 18px rgba(0,0,0,.26)"}}>👍</div>
+      <div style={{fontSize:".72rem",fontWeight:950,color:T.white,textShadow:"0 2px 8px rgba(0,0,0,.75)"}}>{stats?.likes||0}</div>
+    </div>
+    <div style={{position:"absolute",left:15,right:15,bottom:14,color:T.white}}>
+      {index===0&&<div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(240,224,184,.16)",border:"1px solid rgba(240,224,184,.22)",borderRadius:999,padding:"6px 10px",fontSize:".72rem",fontWeight:950,marginBottom:10,backdropFilter:"blur(4px)"}}>⬆️ Desliza para pasar noticia</div>}
+      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8,opacity:.9}}>
+        <span style={{fontSize:".72rem",fontWeight:950,textTransform:"uppercase",letterSpacing:".45px",color:"rgba(255,244,214,.86)"}}>{item?.source||cat.label}</span>
+        <span style={{width:5,height:5,borderRadius:"50%",background:"rgba(255,244,214,.6)"}}/>
+        <span style={{fontSize:".72rem",fontWeight:900,color:"rgba(255,244,214,.78)"}}>{formatNewsDate(item?.date)}</span>
+      </div>
+      <div className="news-short-title" style={{fontFamily:"'Pirata One',cursive",fontSize:"1.82rem",lineHeight:.98,textShadow:"0 3px 12px rgba(0,0,0,.72)",paddingRight:54}}>{title}</div>
+      <div className="news-short-summary" style={{fontSize:".92rem",fontWeight:820,lineHeight:1.34,color:"rgba(255,244,214,.9)",marginTop:9,paddingRight:46,textShadow:"0 2px 9px rgba(0,0,0,.7)"}}>{summary}</div>
+      <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginTop:12,paddingRight:10}}>
+        <button onClick={openDetail} style={{border:"none",borderRadius:999,padding:"10px 14px",fontWeight:950,fontSize:".82rem",color:"#FFF8E5",background:visual.accent,boxShadow:"0 9px 18px rgba(0,0,0,.28)",cursor:"pointer"}}>Abrir debate</button>
+        {showYoutube&&<button onClick={openYoutube} style={{border:"1px solid rgba(255,244,214,.28)",borderRadius:999,padding:"10px 13px",fontWeight:950,fontSize:".82rem",color:"#FFF8E5",background:"#7A241B",boxShadow:"0 8px 16px rgba(0,0,0,.24)",cursor:"pointer"}}>▶ YouTube</button>}
+        {item?.url&&<button onClick={openSource} style={{border:"1px solid rgba(255,244,214,.30)",borderRadius:999,padding:"10px 12px",fontWeight:950,fontSize:".8rem",color:T.g900,background:"rgba(240,224,184,.90)",boxShadow:"0 8px 16px rgba(0,0,0,.22)",cursor:"pointer"}}>Fuente ↗</button>}
+      </div>
+    </div>
+  </div>;
+}
+
 function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChanged}){
   const [comments,setComments]=useState([]);
   const [likes,setLikes]=useState(0);
@@ -1244,7 +1341,7 @@ function ActualidadMini({onNavigate}){
     let alive=true;
     async function load(){
       setLoading(true);
-      try{const list=await fetchNews("todo");if(alive)setItems(list.slice(0,3));}
+      try{const list=await fetchNews("todo",0,"mini");if(alive)setItems(list.slice(0,3));}
       catch(e){if(alive)setItems(NEWS_FALLBACK);}
       finally{if(alive)setLoading(false);}
     }
@@ -1282,14 +1379,14 @@ function Noticias({user,setUser,showToast,showPoints}){
   const [error,setError]=useState("");
   const [selected,setSelected]=useState(null);
   const [stats,setStats]=useState({});
-  const curiosity=getDailyCuriosity();
+  const [refreshSeed,setRefreshSeed]=useState(0);
 
   useEffect(()=>{
     let alive=true;
     async function load(){
       setLoading(true);setError("");
       try{
-        const list=await fetchNews(category);
+        const list=await fetchNews(category,refreshSeed);
         if(alive){setItems(list);loadStats(list);}
       }catch(e){
         const fallback=category==="todo"?NEWS_FALLBACK:NEWS_FALLBACK.filter(n=>n.category===category);
@@ -1297,7 +1394,7 @@ function Noticias({user,setUser,showToast,showPoints}){
       }finally{if(alive)setLoading(false);}
     }
     load();return()=>{alive=false;};
-  },[category]);
+  },[category,refreshSeed]);
 
   async function loadStats(list=items){
     const ids=[...new Set((list||[]).map(n=>String(n.id)).filter(Boolean))];
@@ -1317,82 +1414,41 @@ function Noticias({user,setUser,showToast,showPoints}){
   function reload(){
     SFX.action();
     showToast?.("Buscando selección nueva...");
-    setLoading(true);
-    fetchNews(category)
-      .then(list=>{setItems(list);setError("");loadStats(list);})
-      .catch(()=>setError("No se han podido actualizar ahora."))
-      .finally(()=>setLoading(false));
+    setRefreshSeed(v=>v+1);
   }
 
   function bumpStat(newsId,type){
     setStats(s=>({...s,[newsId]:{comments:(s[newsId]?.comments||0)+(type==="comment"?1:0),likes:(s[newsId]?.likes||0)+(type==="like"?1:0)}}));
   }
 
-  const featured=items[0];
-  const secondary=items.slice(1,3);
-  const rest=items.slice(3,15);
   const active=categoryInfo(category);
+  const reelItems=items.slice(0,20);
 
-  return <div style={{animation:"fadeSlide .35s ease"}}>
-    <Card style={{marginBottom:12,padding:0,overflow:"hidden",background:"linear-gradient(135deg,#1B0D07,#3A1E10 58%,#9A4F22)",border:"2px solid rgba(255,244,214,.55)",color:T.white}}>
-      <div style={{padding:"14px 14px",position:"relative"}}>
-        <div style={{position:"absolute",right:-24,top:-30,fontSize:"6rem",opacity:.08,transform:"rotate(-8deg)"}}>📰</div>
-        <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",position:"relative",zIndex:1}}>
-          <div style={{minWidth:0}}>
-            <div style={{fontSize:".68rem",fontWeight:950,letterSpacing:".65px",textTransform:"uppercase",color:"rgba(255,244,214,.75)"}}>Portada diaria</div>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",lineHeight:1}}>Actualidad útil</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.88,lineHeight:1.32,marginTop:4}}>Noticias, curiosidades y planes en formato revista, con menos scroll y selección renovada.</div>
-          </div>
-          <Btn small col="gold" onClick={reload}>Actualizar</Btn>
-        </div>
+  return <div style={{animation:"fadeSlide .35s ease",marginTop:-4}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
+      <div style={{minWidth:0}}>
+        <div style={{fontSize:".68rem",fontWeight:950,letterSpacing:".7px",textTransform:"uppercase",color:T.g200}}>Actualidad · modo shorts</div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.48rem",lineHeight:1,color:T.white,textShadow:"0 3px 10px rgba(0,0,0,.45)"}}>{active.icon} {active.short}</div>
       </div>
-    </Card>
+      <Btn small col="gold" onClick={reload}>Actualizar</Btn>
+    </div>
 
-    <div style={{display:"flex",gap:8,overflowX:"auto",padding:"0 2px 10px",marginBottom:6}}>
+    <div style={{display:"flex",gap:8,overflowX:"auto",padding:"0 2px 10px",marginBottom:8,scrollbarWidth:"none"}}>
       {NEWS_CATEGORIES.map(c=>{
         const selectedCat=category===c.id,visual=categoryVisual(c.id);
-        return <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{minWidth:96,whiteSpace:"nowrap",border:`2px solid ${selectedCat?visual.accent:T.g300}`,background:selectedCat?visual.bg:"rgba(255,244,214,.78)",color:selectedCat?T.g900:T.g700,borderRadius:999,padding:"8px 10px",fontWeight:950,cursor:"pointer",boxShadow:selectedCat?"0 10px 20px rgba(20,8,4,.18)":"0 5px 12px rgba(20,8,4,.1)"}}>
+        return <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{minWidth:86,whiteSpace:"nowrap",border:`2px solid ${selectedCat?visual.accent:"rgba(216,190,135,.45)"}`,background:selectedCat?visual.bg:"rgba(240,224,184,.72)",color:selectedCat?T.g900:T.g700,borderRadius:999,padding:"8px 10px",fontWeight:950,cursor:"pointer",boxShadow:selectedCat?"0 8px 18px rgba(20,8,4,.22)":"0 4px 10px rgba(20,8,4,.12)"}}>
           <span style={{fontSize:"1rem",marginRight:5}}>{c.icon}</span>{c.short}
         </button>;
       })}
     </div>
 
-    <div style={{display:"grid",gridTemplateColumns:"1.2fr .8fr",gap:10,marginBottom:12}}>
-      <Card style={{background:T.panel,border:`2px solid ${T.g300}`,padding:12}}>
-        <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-          <div style={{width:44,height:44,borderRadius:16,display:"grid",placeItems:"center",background:categoryVisual("curiosidades").bg,fontSize:"1.45rem"}}>💡</div>
-          <div style={{minWidth:0}}>
-            <div style={{fontSize:".65rem",fontWeight:950,color:T.g600,textTransform:"uppercase"}}>Curiosidad · {curiosity.tag}</div>
-            <div style={{fontWeight:950,color:T.g900,lineHeight:1.12,fontSize:".92rem"}}>{curiosity.title}</div>
-            <div style={{fontSize:".75rem",fontWeight:750,lineHeight:1.28,color:T.textSub,marginTop:4,display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{curiosity.text}</div>
-          </div>
-        </div>
-      </Card>
-      <Card style={{background:"linear-gradient(180deg,#F6E5BE,#E6C27A)",border:`2px solid ${T.g300}`,padding:12}}>
-        <div style={{fontWeight:950,color:T.g800,fontSize:".86rem",marginBottom:8}}>Participa</div>
-        <div style={{display:"grid",gap:6}}>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:900,color:T.textSub}}><span>👍 Primer like</span><b style={{color:T.g800}}>+1</b></div>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:900,color:T.textSub}}><span>💬 Primer comentario</span><b style={{color:T.g800}}>+3</b></div>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:900,color:T.textSub}}><span>🔥 Hitos</span><b style={{color:T.g800}}>+8/+20</b></div>
-        </div>
-      </Card>
-    </div>
+    {error&&<Card style={{marginBottom:10,background:"#E8D3A2",border:"2px solid #A8662B"}}><div style={{fontWeight:950,color:T.g800}}>Aviso</div><div style={{fontSize:".8rem",fontWeight:750,color:T.textSub}}>{error}</div></Card>}
 
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,margin:"4px 2px 10px"}}>
-      <div><div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div><div style={{fontSize:".74rem",fontWeight:800,color:T.textSub}}>Abre una tarjeta para comentar y seguir el hilo.</div></div>
-      <Badge col="gold">{items.length||0}</Badge>
-    </div>
-
-    {error&&<Card style={{marginBottom:10,background:"#FFF0E5",border:"2px solid #E8871A"}}><div style={{fontWeight:950,color:T.g800}}>Aviso</div><div style={{fontSize:".8rem",fontWeight:750,color:T.textSub}}>{error}</div></Card>}
-
-    {loading?<Spinner/>:items.length===0?<EmptyState icon="📰" title="No hay selección ahora" sub="Prueba otra categoría o actualiza en unos minutos."/>:<>
-      {featured&&<div style={{marginBottom:10}}><NewsCard item={featured} featured stats={stats[String(featured.id)]} onOpen={setSelected}/></div>}
-      {secondary.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10,marginBottom:10}}>
-        {secondary.map(n=><NewsCard key={n.id} item={n} compact stats={stats[String(n.id)]} onOpen={setSelected}/>)}
-      </div>}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>
-        {rest.map(n=><NewsCard key={n.id} item={n} compact stats={stats[String(n.id)]} onOpen={setSelected}/>)}
+    {loading?<Spinner/>:reelItems.length===0?<EmptyState icon="📰" title="No hay selección ahora" sub="Prueba otra categoría o actualiza en unos minutos."/>:<>
+      <div className="news-reel" style={{height:"calc(100dvh - 218px)",minHeight:500,maxHeight:700,paddingRight:2,paddingBottom:6}}>
+        {reelItems.map((n,i)=><NewsShortCard key={n.id||i} item={n} index={i} total={reelItems.length} stats={stats[String(n.id)]} onOpen={setSelected}/>) }
       </div>
+      <div style={{textAlign:"center",fontSize:".72rem",fontWeight:900,color:T.g150,marginTop:8,opacity:.82}}>Desliza hacia arriba para pasar a la siguiente noticia</div>
     </>}
 
     <NewsDetailModal item={selected} user={user} setUser={setUser} showToast={showToast} showPoints={showPoints} onClose={()=>setSelected(null)} onChanged={bumpStat}/>
