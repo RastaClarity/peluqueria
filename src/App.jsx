@@ -3254,12 +3254,76 @@ const HELP_TEXTS={
   caja:"Sección para cobros e ingresos.",
   usuarios:"Aquí un admin puede cambiar roles y permisos."
 };
+
+function LoginHelperAvatar(){
+  return (
+    <div
+      style={{
+        width:46,
+        height:46,
+        borderRadius:"50%",
+        overflow:"hidden",
+        display:"grid",
+        placeItems:"center",
+        background:"linear-gradient(180deg,#FFF4D6,#E6C27A)",
+        border:`2px solid ${T.g300}`,
+        boxShadow:"0 8px 16px rgba(20,8,4,.18)"
+      }}
+    >
+      <svg viewBox="0 0 120 120" style={{width:"100%",height:"100%",display:"block"}}>
+        <defs>
+          <linearGradient id="loginHelperBg" x1="0" x2="1">
+            <stop offset="0%" stopColor="#6A3B1F"/>
+            <stop offset="100%" stopColor="#D4AF37"/>
+          </linearGradient>
+        </defs>
+
+        <circle cx="60" cy="60" r="60" fill="url(#loginHelperBg)" />
+        <circle cx="60" cy="60" r="52" fill="rgba(255,255,255,.12)" />
+
+        <path d="M26 42 C18 52 18 72 30 88" fill="none" stroke="#25140B" strokeWidth="8" strokeLinecap="round"/>
+        <path d="M34 32 C24 45 25 68 36 90" fill="none" stroke="#3A2113" strokeWidth="8" strokeLinecap="round"/>
+        <path d="M94 42 C102 52 102 72 90 88" fill="none" stroke="#25140B" strokeWidth="8" strokeLinecap="round"/>
+        <path d="M86 32 C96 45 95 68 84 90" fill="none" stroke="#3A2113" strokeWidth="8" strokeLinecap="round"/>
+
+        <ellipse cx="60" cy="20" rx="16" ry="8" fill="#2A180D" />
+        <path d="M47 28 C50 20 56 16 60 16 C64 16 70 20 73 28" fill="none" stroke="#3E2313" strokeWidth="8" strokeLinecap="round"/>
+        <rect x="48" y="29" width="24" height="6" rx="3" fill="#C0392B"/>
+
+        <path d="M34 46 C38 28 49 20 60 20 C71 20 82 28 86 46" fill="#24140C"/>
+
+        <path d="M36 46 C44 40 52 38 60 38 C68 38 76 40 84 46 L82 53 C75 48 68 46 60 46 C52 46 45 48 38 53 Z" fill="#A72822"/>
+
+        <path d="M38 56 C38 40 48 30 60 30 C72 30 82 40 82 56 C82 76 72 92 60 95 C48 92 38 76 38 56 Z" fill="#F0B37E"/>
+
+        <ellipse cx="38" cy="63" rx="4" ry="7" fill="#E9A578"/>
+        <ellipse cx="82" cy="63" rx="4" ry="7" fill="#E9A578"/>
+
+        <path d="M47 52 C51 49 55 49 59 50" fill="none" stroke="#26160D" strokeWidth="2.5" strokeLinecap="round"/>
+        <path d="M61 50 C65 49 69 49 73 52" fill="none" stroke="#26160D" strokeWidth="2.5" strokeLinecap="round"/>
+
+        <ellipse cx="51" cy="60" rx="3.5" ry="4.5" fill="#17110D"/>
+        <ellipse cx="69" cy="60" rx="3.5" ry="4.5" fill="#17110D"/>
+        <circle cx="50" cy="59" r="1" fill="#fff"/>
+        <circle cx="68" cy="59" r="1" fill="#fff"/>
+
+        <path d="M59 62 C60 66 60 69 57 71" fill="none" stroke="#CF8B61" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M53 77 C56 80 64 80 67 77" fill="none" stroke="#8B2F1C" strokeWidth="3" strokeLinecap="round"/>
+
+        <path d="M48 97 C52 91 68 91 72 97" fill="#2E1B12"/>
+        <path d="M43 108 C49 100 71 100 77 108" fill="#5C3317"/>
+        <path d="M48 105 C54 99 66 99 72 105" stroke="#FFD26B" strokeWidth="4" strokeLinecap="round" fill="none"/>
+      </svg>
+    </div>
+  );
+}
+
 function HelperMascot({page}){
   const [open,setOpen]=useState(false);
   const text=HELP_TEXTS[page]||"Pulsa cualquier pestaña del menú para moverte por la app.";
   return <Card style={{marginTop:16,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px",boxShadow:"0 8px 20px rgba(20,8,4,.16)"}}>
     <button onClick={()=>{SFX.click();setOpen(v=>!v);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:"transparent",border:"none",cursor:"pointer",padding:0,textAlign:"left"}}>
-      <div style={{width:46,height:46,borderRadius:"50%",display:"grid",placeItems:"center",background:"linear-gradient(180deg,#FFF4D6,#E6C27A)",border:`2px solid ${T.g300}`,boxShadow:"0 8px 16px rgba(20,8,4,.18)",fontSize:"1.65rem"}}>🧑🏾‍🦱</div>
+      <LoginHelperAvatar />
       <div style={{flex:1}}>
         <div style={{fontWeight:950,color:T.g800}}>Ayuda rápida</div>
         <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>{open?"Toca para ocultar la ayuda":"Toca para ver qué puedes hacer aquí"}</div>
