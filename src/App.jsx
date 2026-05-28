@@ -466,17 +466,38 @@ function AvatarFigure({config,size=80,animated=false}){
   };
   const hairlineLayer=()=>{
     const fill=`url(#${uid}-hair)`;
-    const temple=<g fill={fill} opacity=".98"><path d="M50 70 C49 58 54 48 63 40 C57 58 57 73 61 85 C55 82 51 77 50 70Z"/><path d="M130 70 C131 58 126 48 117 40 C123 58 123 73 119 85 C125 82 129 77 130 70Z"/></g>;
-    if(hasCap) return <g fill={fill}>{temple}<path d="M48 82 C57 73 67 70 80 72 C88 74 96 74 105 72 C118 70 127 74 134 82 C119 86 101 84 90 82 C79 84 62 86 48 82Z"/><path d="M57 80 C68 72 79 74 87 83 C74 82 64 84 57 80Z" opacity=".82"/><path d="M123 80 C112 72 101 74 93 83 C106 82 116 84 123 80Z" opacity=".82"/></g>;
-    if(hasBandana) return <g fill={fill}>{temple}<path d="M49 76 C61 68 119 68 131 76 C116 82 64 82 49 76Z"/><path d="M56 80 C66 73 77 75 84 84 C73 83 63 84 56 80Z" opacity=".86"/><path d="M124 80 C114 73 103 75 96 84 C107 83 117 84 124 80Z" opacity=".86"/></g>;
-    if(cfg.hair==="buzzFade") return <g fill={fill}><path d="M51 72 C56 49 71 37 90 37 C109 37 124 49 129 72 C111 62 69 62 51 72Z" opacity=".92"/><path d="M52 76 C63 68 78 65 90 68 C102 65 117 68 128 76 C111 78 69 78 52 76Z" opacity=".96"/><path d="M52 77 L60 89 L63 76Z"/><path d="M128 77 L120 89 L117 76Z"/></g>;
-    if(cfg.hair==="sharpFade"||cfg.hair==="texturedCrop"||cfg.hair==="undercut") return <g fill={fill}>{temple}<path d="M49 75 C55 51 70 38 90 38 C112 38 126 51 132 75 C116 66 104 64 92 68 C80 64 64 66 49 75Z"/><path d="M57 76 C67 65 77 62 87 72 C75 71 66 76 57 76Z" opacity=".88"/><path d="M91 69 C100 61 111 63 123 75 C111 72 101 72 91 69Z" opacity=".88"/></g>;
-    if(cfg.hair==="pixie") return <g fill={fill}>{temple}<path d="M49 75 C58 50 73 38 92 38 C111 38 125 50 132 75 C118 67 104 65 91 70 C78 63 63 66 49 75Z"/><path d="M55 74 C66 55 80 55 89 70 C75 67 64 72 55 74Z"/><path d="M88 70 C101 53 118 57 129 74 C115 68 102 68 88 70Z" opacity=".9"/></g>;
-    if(cfg.hair==="mohawk") return <g fill={fill}>{temple}<path d="M50 78 C57 56 72 44 90 43 C108 44 123 56 130 78 C112 67 68 67 50 78Z"/><path d="M82 68 C84 51 88 39 90 28 C94 42 99 55 100 69 C94 65 88 65 82 68Z"/></g>;
-    if(cfg.hair==="afro"||cfg.hair==="afroPuff") return <g fill={fill}>{temple}<path d="M43 75 C48 52 64 39 90 37 C116 39 132 52 137 75 C120 65 106 62 90 66 C74 62 60 65 43 75Z"/><path d="M51 78 C62 68 74 68 82 78 C71 76 62 80 51 78Z"/><path d="M129 78 C118 68 106 68 98 78 C109 76 118 80 129 78Z"/></g>;
-    if(cfg.hair==="curlyBob") return <g fill={fill}>{temple}<path d="M44 78 C51 51 67 38 90 38 C113 38 129 51 136 78 C119 67 104 64 90 69 C76 64 61 67 44 78Z"/>{[56,70,84,98,112,126].map((cx,i)=><circle key={i} cx={cx} cy={75+(i%2)*2} r="9"/>)}<path d="M61 80 C71 68 82 68 90 82 C80 78 70 82 61 80Z" opacity=".9"/></g>;
-    if(cfg.hair==="bob"||cfg.hair==="longWaves"||cfg.hair==="braidsLong"||cfg.hair==="highPonytail") return <g fill={fill}>{temple}<path d="M44 77 C51 47 68 34 90 34 C112 34 129 47 136 77 C120 65 105 61 90 67 C75 61 60 65 44 77Z"/><path d="M55 78 C68 62 80 62 90 78 C78 74 67 80 55 78Z"/><path d="M90 78 C101 61 116 62 128 78 C115 74 103 80 90 78Z" opacity=".92"/></g>;
-    return <g fill={fill}>{temple}<path d="M47 75 C54 48 70 36 90 36 C110 36 126 48 133 75 C116 64 102 62 90 68 C78 62 64 64 47 75Z"/><path d="M59 77 C70 62 81 63 90 78 C78 75 69 80 59 77Z"/><path d="M91 78 C101 62 113 63 123 77 C112 75 101 80 91 78Z" opacity=".9"/></g>;
+    const temple=<g fill={fill} opacity=".99">
+      <path d="M48 67 C47 54 53 43 65 36 C58 55 58 76 63 91 C55 88 49 80 48 67Z"/>
+      <path d="M132 67 C133 54 127 43 115 36 C122 55 122 76 117 91 C125 88 131 80 132 67Z"/>
+      <path d="M51 86 C56 82 61 82 66 88 C60 94 53 94 51 86Z" opacity=".9"/>
+      <path d="M129 86 C124 82 119 82 114 88 C120 94 127 94 129 86Z" opacity=".9"/>
+    </g>;
+    const capLike=<g fill={fill}>{temple}<path d="M48 84 C57 73 70 69 83 72 C89 74 94 74 100 72 C114 69 126 73 134 84 C121 91 104 91 90 87 C76 91 61 91 48 84Z"/><path d="M57 87 C68 76 80 77 88 91 C76 87 66 91 57 87Z" opacity=".92"/><path d="M123 87 C112 76 100 77 92 91 C104 87 114 91 123 87Z" opacity=".92"/></g>;
+    if(hasCap || hasBandana) return capLike;
+    if(cfg.hair==="buzzFade") return <g fill={fill}><path d="M50 75 C56 50 71 37 90 37 C109 37 124 50 130 75 C111 63 69 63 50 75Z" opacity=".95"/><path d="M51 82 C63 71 77 68 90 72 C103 68 117 71 129 82 C111 86 69 86 51 82Z"/><path d="M50 82 L60 96 L64 80Z"/><path d="M130 82 L120 96 L116 80Z"/></g>;
+    if(cfg.hair==="sharpFade"||cfg.hair==="texturedCrop"||cfg.hair==="undercut") return <g fill={fill}>{temple}<path d="M48 80 C54 52 70 38 90 38 C112 38 127 52 132 80 C116 69 105 67 92 72 C79 67 63 69 48 80Z"/><path d="M55 84 C67 67 80 65 90 84 C77 78 66 86 55 84Z" opacity=".94"/><path d="M91 82 C102 65 116 67 128 84 C116 78 103 86 91 82Z" opacity=".94"/></g>;
+    if(cfg.hair==="pixie") return <g fill={fill}>{temple}<path d="M48 80 C57 51 74 38 93 38 C112 38 126 51 132 80 C118 70 105 68 91 74 C78 66 62 70 48 80Z"/><path d="M54 81 C66 58 82 57 91 76 C76 73 65 82 54 81Z"/><path d="M88 76 C102 56 119 60 131 82 C116 73 102 76 88 76Z" opacity=".92"/></g>;
+    if(cfg.hair==="mohawk") return <g fill={fill}>{temple}<path d="M49 82 C57 57 72 44 90 43 C108 44 123 57 131 82 C113 70 67 70 49 82Z"/><path d="M81 75 C84 52 88 38 90 27 C95 43 100 58 101 76 C95 71 87 71 81 75Z"/></g>;
+    if(cfg.hair==="afro"||cfg.hair==="afroPuff") return <g fill={fill}>{temple}<path d="M42 80 C48 52 64 39 90 37 C116 39 132 52 138 80 C121 68 106 65 90 70 C74 65 59 68 42 80Z"/><path d="M50 84 C63 71 76 71 84 85 C72 81 62 88 50 84Z"/><path d="M130 84 C117 71 104 71 96 85 C108 81 118 88 130 84Z"/></g>;
+    if(cfg.hair==="curlyBob") return <g fill={fill}>{temple}<path d="M43 82 C51 52 67 38 90 38 C113 38 129 52 137 82 C120 69 104 66 90 73 C76 66 60 69 43 82Z"/>{[54,68,82,98,112,126].map((cx,i)=><circle key={i} cx={cx} cy={82+(i%2)*2} r="10"/>)}<path d="M60 86 C71 70 83 70 91 88 C80 82 70 89 60 86Z" opacity=".92"/></g>;
+    if(cfg.hair==="bob"||cfg.hair==="longWaves"||cfg.hair==="braidsLong"||cfg.hair==="highPonytail") return <g fill={fill}>{temple}<path d="M43 82 C51 48 68 34 90 34 C112 34 129 48 137 82 C120 68 105 64 90 72 C75 64 60 68 43 82Z"/><path d="M54 86 C67 65 81 65 91 86 C79 80 67 89 54 86Z"/><path d="M90 86 C102 64 117 65 129 86 C116 80 103 89 90 86Z" opacity=".94"/></g>;
+    return <g fill={fill}>{temple}<path d="M46 80 C54 50 70 36 90 36 C110 36 126 50 134 80 C117 68 103 66 90 73 C77 66 63 68 46 80Z"/><path d="M58 84 C70 65 82 66 91 86 C79 80 69 88 58 84Z"/><path d="M90 86 C102 65 114 66 124 84 C113 80 102 88 90 86Z" opacity=".92"/></g>;
+  };
+  const headwearHairSeal=()=>{
+    const fill=`url(#${uid}-hair)`;
+    if(hasCap) return <g fill={fill} opacity=".98">
+      <path d="M49 86 C61 76 73 75 86 80 C89 81 92 81 95 80 C108 75 121 76 132 86 C119 94 104 95 90 89 C76 95 62 94 49 86Z"/>
+      <path d="M55 91 C66 82 77 82 86 95 C75 91 65 96 55 91Z"/>
+      <path d="M125 91 C114 82 103 82 94 95 C105 91 115 96 125 91Z"/>
+    </g>;
+    if(hasBandana) return <g fill={fill} opacity=".99">
+      <path d="M48 82 C61 73 75 73 89 79 C103 73 119 73 132 82 C119 91 104 91 90 86 C76 91 61 91 48 82Z"/>
+      <path d="M56 89 C68 78 80 79 90 96 C77 90 67 96 56 89Z"/>
+      <path d="M124 89 C112 78 100 79 90 96 C103 90 113 96 124 89Z"/>
+      <path d="M50 81 C50 75 55 70 63 68 C58 76 58 84 63 91 C56 91 51 87 50 81Z"/>
+      <path d="M130 81 C130 75 125 70 117 68 C122 76 122 84 117 91 C124 91 129 87 130 81Z"/>
+    </g>;
+    return null;
   };
   const hairFront=()=>{
     if(hasCap) return <path d="M51 79 C66 70 114 70 129 79" stroke={`url(#${uid}-hair)`} strokeWidth="6" strokeLinecap="round" opacity=".92"/>;
@@ -520,8 +541,9 @@ function AvatarFigure({config,size=80,animated=false}){
       <path d="M65 126 C74 143 106 143 115 126 C108 149 72 149 65 126Z" fill="rgba(80,35,20,.10)"/>
       {hairlineLayer()}
       {hairFront()}
-      {hasBandana&&<g filter={`url(#${uid}-shadow)`}><path d="M45 61 C60 48 120 48 135 61 L132 80 C109 70 71 70 48 80Z" fill={bandanaColor}/><path d="M61 60 C74 55 107 55 119 60" stroke="rgba(255,255,255,.34)" strokeWidth="3" strokeLinecap="round"/><path d="M130 63 L154 55 L141 84Z" fill={bandanaColor}/></g>}
-      {hasCap&&<g filter={`url(#${uid}-shadow)`}><path d="M42 72 C46 39 64 22 90 22 C116 22 134 39 138 72 L134 86 C111 74 69 74 46 86Z" fill={capColor}/><path d="M50 72 C64 63 116 63 130 72 L127 83 C108 75 72 75 53 83Z" fill="rgba(0,0,0,.24)"/><path d="M101 72 C130 69 158 77 168 88" fill="none" stroke={capColor} strokeWidth="12" strokeLinecap="round"/><path d="M62 56 C76 45 105 45 119 56" stroke="rgba(255,255,255,.34)" strokeWidth="4" strokeLinecap="round" fill="none"/><circle cx="90" cy="38" r="4" fill="rgba(255,255,255,.36)"/></g>}
+      {hasBandana&&<g filter={`url(#${uid}-shadow)`}><path d="M42 67 C55 48 124 48 138 67 L134 88 C111 78 69 78 46 88Z" fill={bandanaColor}/><path d="M57 67 C72 59 109 59 124 67" stroke="rgba(255,255,255,.34)" strokeWidth="3.4" strokeLinecap="round"/><path d="M132 70 L158 61 L144 92Z" fill={bandanaColor}/><path d="M47 85 C68 76 112 76 133 85" stroke="rgba(0,0,0,.22)" strokeWidth="3" strokeLinecap="round" fill="none"/></g>}
+      {hasCap&&<g filter={`url(#${uid}-shadow)`}><path d="M39 78 C43 39 63 20 90 20 C117 20 137 39 141 78 L136 92 C113 81 67 81 44 92Z" fill={capColor}/><path d="M48 78 C63 67 117 67 132 78 L129 90 C109 82 71 82 51 90Z" fill="rgba(0,0,0,.27)"/><path d="M101 78 C132 74 161 82 171 94" fill="none" stroke={capColor} strokeWidth="13" strokeLinecap="round"/><path d="M61 57 C76 45 106 45 121 57" stroke="rgba(255,255,255,.34)" strokeWidth="4" strokeLinecap="round" fill="none"/><circle cx="90" cy="39" r="4" fill="rgba(255,255,255,.36)"/></g>}
+      {headwearHairSeal()}
       {cfg.accessory==="flowers"&&<g filter={`url(#${uid}-shadow)`}>{[[54,55],[66,48],[78,50]].map(([cx,cy],i)=><g key={i}><circle cx={cx} cy={cy} r="5" fill="#E66A9A"/><circle cx={cx-4} cy={cy+2} r="3.5" fill="#F7C79C"/><circle cx={cx+4} cy={cy+2} r="3.5" fill="#F7C79C"/><circle cx={cx} cy={cy} r="2" fill="#D4AF37"/></g>)}</g>}
       {cfg.accessory==="crown"&&<g filter={`url(#${uid}-shadow)`}><path d="M55 64 L65 34 L82 57 L90 28 L99 57 L116 34 L126 64 Z" fill="#D4AF37"/><path d="M58 64 L123 64" stroke="#FFF1A8" strokeWidth="5" strokeLinecap="round"/><circle cx="90" cy="36" r="4" fill="#FFF1A8"/></g>}
       <path d={browPath} stroke="#1A0C06" strokeWidth={cfg.brows==="thin"?2.2:4.3} strokeLinecap="round" fill="none"/>
@@ -583,7 +605,7 @@ function EditorTabButton({active,icon,label,onClick}){
 function VisualOption({label,active,onClick,locked=false,children,sub=null}){
   return <button type="button" onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{position:"relative",border:`2px solid ${active?T.gold:T.g200}`,background:active?"linear-gradient(180deg,#FFF8E5,#F6E5BE)":"rgba(255,248,225,.88)",borderRadius:18,padding:8,cursor:locked?"not-allowed":"pointer",boxShadow:active?"0 12px 24px rgba(212,175,55,.22)":"0 6px 14px rgba(20,8,4,.10)",textAlign:"center",opacity:locked?0.72:1,minWidth:0}}>
     {locked&&<div style={{position:"absolute",top:6,right:6,background:"rgba(0,0,0,.62)",color:T.white,borderRadius:999,padding:"2px 6px",fontSize:".62rem",fontWeight:950,zIndex:4}}>🔒</div>}
-    <div style={{height:92,borderRadius:14,display:"grid",placeItems:"center",background:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.22),transparent 35%),linear-gradient(160deg,#1B0D07,#5C3317 60%,#D4AF37)",overflow:"hidden",marginBottom:7}}>{children}</div>
+    <div style={{height:112,borderRadius:14,display:"grid",placeItems:"center",background:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.22),transparent 35%),linear-gradient(160deg,#1B0D07,#5C3317 60%,#D4AF37)",overflow:"hidden",marginBottom:7}}>{children}</div>
     <div style={{fontSize:".73rem",fontWeight:950,color:active?T.g900:T.g800,lineHeight:1.12,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{label}</div>
     {sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,marginTop:2,lineHeight:1.05}}>{sub}</div>}
   </button>;
