@@ -978,7 +978,7 @@ function ClientDashboard({user,onNavigate}){
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <Card style={{marginBottom:16,background:"linear-gradient(160deg,#FFF4D6,#E9D9B7 55%,#D4AF37)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",gap:12,alignItems:"center"}}>
-          <div className="icon3d" style={{fontSize:"2.4rem"}}>🧑🏾‍🦱</div>
+          <LoginHelperAvatar size={58} />
           <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>Bienvenido a Rasta Cuts</div><div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Reserva, juega, gana puntos, lee anuncios oficiales y entra al foro para hablar con la comunidad.</div></div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginTop:12}}>
@@ -3255,12 +3255,12 @@ const HELP_TEXTS={
   usuarios:"Aquí un admin puede cambiar roles y permisos."
 };
 
-function LoginHelperAvatar(){
+function LoginHelperAvatar({size=46}={}){
   return (
     <div
       style={{
-        width:46,
-        height:46,
+        width:size,
+        height:size,
         borderRadius:"50%",
         overflow:"hidden",
         display:"grid",
