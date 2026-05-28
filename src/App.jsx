@@ -978,7 +978,7 @@ function ClientDashboard({user,onNavigate}){
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <Card style={{marginBottom:16,background:"linear-gradient(160deg,#FFF4D6,#E9D9B7 55%,#D4AF37)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",gap:12,alignItems:"center"}}>
-          <LoginHelperAvatar size={58} />
+          <LoginHelperAvatar size={58} mood="welcome" />
           <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>Bienvenido a Rasta Cuts</div><div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Reserva, juega, gana puntos, lee anuncios oficiales y entra al foro para hablar con la comunidad.</div></div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginTop:12}}>
@@ -3352,59 +3352,134 @@ function LoginHelperAvatar({size=46,speaking=false}={}){
   );
 }
 
+const HELP_TIPS = {
+  dashboard:[
+    "Empieza por el tablón si quieres ver anuncios rápidos, o entra al foro para hablar con la comunidad.",
+    "Tus puntos suben con juegos, primeras interacciones y misiones. La idea es volver cada día, no conseguirlo todo en una tarde.",
+    "Actualidad funciona como magazine: curiosidades, rural, sitios, comida, estilo y negocios.",
+    "La barra inferior tiene lo principal: Inicio, Arcade, Tienda, Comunidad y Perfil."
+  ],
+  arcade:[
+    "En Arcade intenta jugar una vez al día: los premios buenos deberían salir por constancia, no por farmear sin parar.",
+    "Los récords sirven para picarte, pero los puntos reales deben estar limitados para que la economía no se rompa.",
+    "Si un juego se siente demasiado rápido, lo ideal es bajar velocidad antes que subir puntos.",
+    "Los juegos deben sentirse fáciles de empezar y difíciles de dominar."
+  ],
+  tienda:[
+    "La tienda debe ser visual: pocos textos, recompensas claras y cosas que apetezca desbloquear.",
+    "Los cosméticos premium deberían verse como siluetas hasta que alcances el nivel o los puntos necesarios.",
+    "No conviene regalar demasiados puntos: si todo se desbloquea rápido, la gente deja de volver.",
+    "Los premios buenos funcionan mejor si se ven en una línea de progreso tipo pase."
+  ],
+  comunidad:[
+    "Comunidad junta Tablón, Foro y Actualidad para que el menú del móvil no se llene de pestañas.",
+    "El tablón debería ser más oficial; el foro, más libre; y actualidad, más revista.",
+    "Comentar noticias o temas puede dar puntos solo la primera vez o por objetivos concretos.",
+    "Si alguien comenta en un hilo, sería buena idea guardar ese hilo en su perfil para que pueda volver."
+  ],
+  noticias:[
+    "Actualidad debe rotar cada día y evitar política pesada si no aporta a la comunidad.",
+    "Las categorías buenas para esta app son: Curiosidades, Rural, Comer, Sitios, Estilo y Negocios.",
+    "Las noticias deberían abrir debate dentro de la app y también dejar ir a la fuente original.",
+    "Una buena portada enseña destacado, categorías y pocas tarjetas bien elegidas."
+  ],
+  perfil:[
+    "El perfil debe ser compacto: resumen, editor, camino de recompensas y logros en pestañas.",
+    "El editor de personaje funciona mejor con miniaturas visuales, no solo nombres de peinados.",
+    "Los puntos pueden funcionar como XP para subir nivel y desbloquear siluetas.",
+    "Guarda el personaje después de cambiar look para que se vea igual en juegos, comentarios y perfil."
+  ],
+  foro:[
+    "En el foro interesa premiar calidad: abrir tema útil, responder bien o recibir likes, no spamear.",
+    "Las votaciones pueden servir para encuestas de la tienda, peinados, eventos o ideas nuevas.",
+    "Si el foro crece, habrá que añadir moderación para admin y staff.",
+    "Los hilos con actividad deberían volver arriba, como una comunidad real."
+  ],
+  feed:[
+    "El feed puede quedar como tablón oficial: anuncios, novedades, promociones y avisos del staff.",
+    "Los clientes pueden leer y reaccionar; admin y staff publican para mantener orden.",
+    "Un tablón limpio da sensación de negocio serio y no de chat descontrolado.",
+    "Los posts importantes deberían poder fijarse arriba."
+  ]
+};
+
+function helperPageKey(page){
+  if(page==="dashboard")return "dashboard";
+  if(page==="arcade")return "arcade";
+  if(page==="tienda")return "tienda";
+  if(page==="perfil")return "perfil";
+  if(page==="foro")return "foro";
+  if(page==="feed")return "feed";
+  if(page==="noticias")return "noticias";
+  if(page==="comunidad")return "comunidad";
+  return HELP_TIPS[page]?"page":"dashboard";
+}
+function helperMood(page){
+  if(page==="dashboard")return "welcome";
+  if(page==="arcade")return "arcade";
+  if(page==="noticias"||page==="comunidad"||page==="feed"||page==="foro")return "noticias";
+  if(page==="perfil")return "success";
+  return "idle";
+}
+function helperTitle(page){
+  if(page==="arcade")return "Consejo de juego";
+  if(page==="tienda")return "Consejo de premios";
+  if(page==="perfil")return "Consejo de perfil";
+  if(page==="comunidad"||page==="foro"||page==="feed")return "Consejo de comunidad";
+  if(page==="noticias")return "Consejo de actualidad";
+  return "Consejo del rasta";
+}
 function HelperMascot({page}){
   const [open,setOpen]=useState(false);
   const [hovered,setHovered]=useState(false);
-  const tips=[
-    HELP_TEXTS[page]||"Pulsa cualquier pestaña del menú para moverte por la app.",
-    "Los puntos diarios te ayudan a subir nivel y desbloquear cosméticos del personaje.",
-    "En Comunidad puedes leer el tablón, abrir debates y comentar noticias sin salir de la misma zona.",
-    "En Perfil podrás cambiar tu look y guardar el personaje cuando desbloquees nuevas piezas.",
-    "Si una zona te lía, toca al rasta y te iré soltando consejos rápidos como en un videojuego."
-  ];
+  const key=helperPageKey(page);
+  const baseText=HELP_TEXTS[page]||"Pulsa cualquier pestaña del menú para moverte por la app.";
+  const tips=[baseText,...(HELP_TIPS[key]||HELP_TIPS.dashboard)];
   const [tipIndex,setTipIndex]=useState(0);
   const active=open||hovered;
+  const mood=helperMood(page);
 
+  useEffect(()=>{setTipIndex(0);},[page]);
   useEffect(()=>{
-    if(!active) return;
-    const id=setInterval(()=>setTipIndex(v=>(v+1)%tips.length),4200);
-    return ()=>clearInterval(id);
-  },[active,page]);
+    if(!active)return;
+    const id=setInterval(()=>setTipIndex(v=>(v+1)%tips.length),4700);
+    return()=>clearInterval(id);
+  },[active,page,tips.length]);
 
   return (
-    <div style={{marginTop:16,display:"flex",justifyContent:"flex-start"}}>
+    <div style={{marginTop:16,display:"flex",justifyContent:"flex-start",minHeight:open?118:74}}>
       <div
         onMouseEnter={()=>setHovered(true)}
         onMouseLeave={()=>setHovered(false)}
         style={{position:"relative",display:"inline-flex",alignItems:"flex-end",gap:10}}
       >
-        {active && (
+        {active&&(
           <div style={{
             position:"absolute",
-            left:74,
-            bottom:12,
+            left:78,
+            bottom:10,
             minWidth:220,
-            maxWidth:310,
+            maxWidth:315,
             background:"linear-gradient(180deg,#FFF8E6,#FFF1C8)",
             border:`2px solid ${T.g200}`,
-            borderRadius:20,
+            borderRadius:22,
             padding:"12px 14px",
             boxShadow:"0 14px 28px rgba(20,8,4,.18)",
             animation:"bubblePop .22s ease",
             zIndex:3
           }}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:6}}>
-              <div style={{fontWeight:950,color:T.g800,fontSize:".88rem"}}>Consejo del rasta</div>
+              <div style={{fontWeight:950,color:T.g800,fontSize:".88rem"}}>{helperTitle(page)}</div>
               <button onClick={()=>setOpen(false)} style={{border:"none",background:"transparent",color:T.textSub,fontWeight:900,cursor:"pointer",fontSize:"1rem",padding:0}}>×</button>
             </div>
             <div style={{fontSize:".84rem",fontWeight:800,color:T.text,lineHeight:1.45}}>{tips[tipIndex]}</div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10,gap:10}}>
-              <div style={{display:"flex",gap:6}}>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                 {tips.map((_,i)=><span key={i} style={{width:7,height:7,borderRadius:"50%",background:i===tipIndex?T.g500:"#E7DAB2",display:"block"}} />)}
               </div>
               <button onClick={()=>setTipIndex(v=>(v+1)%tips.length)} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"4px 10px",fontWeight:900,cursor:"pointer"}}>Otro tip</button>
             </div>
-            <div style={{position:"absolute",left:-10,bottom:14,width:18,height:18,background:"linear-gradient(180deg,#FFF8E6,#FFF1C8)",borderLeft:`2px solid ${T.g200}`,borderBottom:`2px solid ${T.g200}`,transform:"rotate(45deg)"}}/>
+            <div style={{position:"absolute",left:-10,bottom:15,width:18,height:18,background:"linear-gradient(180deg,#FFF8E6,#FFF1C8)",borderLeft:`2px solid ${T.g200}`,borderBottom:`2px solid ${T.g200}`,transform:"rotate(45deg)"}}/>
           </div>
         )}
 
@@ -3422,7 +3497,7 @@ function HelperMascot({page}){
           }}
         >
           <div style={{position:"relative",animation:"helperBob 2.4s ease-in-out infinite"}}>
-            <LoginHelperAvatar size={64} speaking={active} />
+            <LoginHelperAvatar size={68} speaking={active} mood={mood}/>
             <div style={{
               position:"absolute",
               right:-2,
@@ -3440,7 +3515,7 @@ function HelperMascot({page}){
               boxShadow:"0 6px 12px rgba(20,8,4,.18)"
             }}>?</div>
           </div>
-          {active && <div style={{fontSize:".8rem",fontWeight:900,color:T.textSub,background:"rgba(255,248,230,.82)",padding:"8px 10px",borderRadius:999,border:`1px solid ${T.g200}`}}>Toca al rasta para abrir consejos</div>}
+          {active&&<div style={{fontSize:".8rem",fontWeight:900,color:T.textSub,background:"rgba(255,248,230,.82)",padding:"8px 10px",borderRadius:999,border:`1px solid ${T.g200}`}}>Toca para consejos</div>}
         </button>
       </div>
     </div>
