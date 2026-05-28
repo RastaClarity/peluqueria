@@ -2416,10 +2416,10 @@ function Juegos({user,setUser,showToast,showPoints}){
   const [boardGame,setBoardGame]=useState("sopa");
   const [boardTick,setBoardTick]=useState(0);
   const GAMES=[
+    {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Tragaperras con premios raros",pts:GAME_DAILY_REWARDS.gacha},
     {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Rondas de 100 puntos",pts:GAME_DAILY_REWARDS.stitch},
     {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Doble salto y más velocidad",pts:GAME_DAILY_REWARDS.runner},
     {id:"jump",icon:"🌤️",title:"Rasta Jump",desc:"Recoge objetos de peluquería",pts:GAME_DAILY_REWARDS.jump},
-    {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Tragaperras con premios raros",pts:GAME_DAILY_REWARDS.gacha},
     {id:"memoria",icon:"🧠",title:"Memoria Pro",desc:"12 parejas, dificultad buena",pts:GAME_DAILY_REWARDS.memoria},
     {id:"sopa",icon:"🔤",title:"Sopa diaria",desc:"Sopa 14x14 que cambia cada día",pts:GAME_DAILY_REWARDS.sopa},
     {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:GAME_DAILY_REWARDS.trivia}
@@ -2482,9 +2482,24 @@ function Juegos({user,setUser,showToast,showPoints}){
         <div style={{fontWeight:900,marginBottom:6}}>🎧 Modo juego agradable</div>
         <div style={{fontSize:".82rem",fontWeight:800,opacity:.86,lineHeight:1.45}}>Los runners van más suaves, pero Memoria y Sopa mantienen dificultad real. Los récords pueden ser altos, pero los puntos reales están limitados para que los premios sigan teniendo valor.</div>
       </Card>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#2A0E05,#6E3518 58%,#D4AF37)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-18,top:-24,fontSize:"7rem",opacity:.13,transform:"rotate(-12deg)"}}>🎰</div>
+        <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:14}}>
+          <div className="icon3d" style={{fontSize:"3rem"}}>🎰</div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",lineHeight:1}}>Gacha Barber</div>
+            <div style={{fontSize:".82rem",fontWeight:850,opacity:.88,lineHeight:1.35}}>Nuevo juego: tira la máquina, junta 3 símbolos y busca el ticket dorado. Premio gordo extremadamente raro.</div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+              <Badge col="gold">50 pts máx.</Badge>
+              <Badge col="pink">1/5000 ticket</Badge>
+            </div>
+          </div>
+          <Btn small col="gold" onClick={()=>setActiveGame("gacha")}>▶ Jugar</Btn>
+        </div>
+      </Card>
       <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
         <div style={{fontWeight:900,color:T.g800,marginBottom:6}}>⚖️ Economía diaria equilibrada</div>
-        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Cada juego solo da puntos reales una vez al día. Máximo por juego: 8–15 pts. Límite diario total de Arcade: {GAME_DAILY_CAP} pts. Puedes rejugar para mejorar récords sin romper la tienda.</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Cada juego solo da puntos reales una vez al día. Máximo por juego: 8–15 pts. Límite diario total de Arcade: {GAME_DAILY_CAP} pts. Puedes rejugar para mejorar récords sin romper la tienda. El Gacha Barber es especial: puede dar hasta 50 pts, pero casi siempre da 0.</div>
       </Card>
       <div style={{display:"grid",gridTemplateColumns:"1fr",gap:12,marginBottom:16}}>
         {GAMES.map(g=>{
