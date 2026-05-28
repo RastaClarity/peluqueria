@@ -1,5 +1,6 @@
 // api/news.js
 // Versión estable sin dependencias. No necesita rss-parser.
+// FASE música: añade Reggae & rap clásico sin música comercial.
 
 const CATEGORY_LABELS = {
   todo: "Todo",
@@ -8,6 +9,7 @@ const CATEGORY_LABELS = {
   comer: "Comer bien",
   sitios: "Sitios con encanto",
   estilo: "Pelo & rastas",
+  musica: "Reggae & rap clásico",
   negocios: "Negocios locales"
 };
 
@@ -68,6 +70,20 @@ const FEEDS = [
     url: googleNews(
       "(curiosidades OR historia curiosa OR ciencia curiosa OR naturaleza OR animales curiosidades OR patrimonio curioso OR origen de) -política -gobierno -elecciones -guerra"
     )
+  },
+  {
+    category: "musica",
+    source: "Reggae & rap clásico",
+    url: googleNews(
+      '("Morodo" OR "Pure Negga" OR "Fyahbwoy" OR "Little Pepe" OR "Rapsusklei" OR "Kase.O" OR "Kase O" OR "Violadores del Verso" OR "Doble V" OR "Nach" OR "SFDK" OR "ToteKing" OR "Sho-Hai" OR "Sharif" OR "Xhelazz" OR "Juaninacka" OR "Falsalarma") (nuevo tema OR nueva canción OR nuevo single OR videoclip OR lanzamiento OR álbum OR disco OR EP OR gira OR concierto OR directo OR entrevista OR YouTube OR canal oficial) -LOS40 -Eurovisión -Benidorm -TikTok -influencer -reality -OT -famosos -televisión'
+    )
+  },
+  {
+    category: "musica",
+    source: "Nuevos temas",
+    url: googleNews(
+      '("reggae español" OR "rap español clásico" OR "hip hop español" OR "reggae conscious" OR "rap underground") ("nuevo tema" OR "nuevo single" OR "videoclip oficial" OR "nuevo disco" OR "YouTube") -LOS40 -Eurovisión -Benidorm -TikTok -influencer -reality -OT -famosos -televisión -comercial'
+    )
   }
 ];
 
@@ -119,7 +135,25 @@ const NEGATIVE_WORDS = [
   "delito",
   "detenido",
   "detenida",
-  "accidente mortal"
+  "accidente mortal",
+
+  // Ruido musical comercial/mainstream que no interesa.
+  "los40",
+  "los 40",
+  "eurovisión",
+  "eurovision",
+  "benidorm fest",
+  "operación triunfo",
+  "operacion triunfo",
+  "ot ",
+  "tiktok",
+  "influencer",
+  "reality",
+  "telecinco",
+  "gran hermano",
+  "famosos",
+  "alfombra roja",
+  "grammy latino"
 ];
 
 const POSITIVE_WORDS = {
@@ -228,6 +262,47 @@ const POSITIVE_WORDS = {
     "hidratacion",
     "mantenimiento"
   ],
+  musica: [
+    "morodo",
+    "pure negga",
+    "fyahbwoy",
+    "little pepe",
+    "rapsusklei",
+    "kase.o",
+    "kase o",
+    "violadores del verso",
+    "doble v",
+    "nach",
+    "sfdk",
+    "toteking",
+    "sho-hai",
+    "shohai",
+    "sharif",
+    "xhelazz",
+    "juaninacka",
+    "falsalarma",
+    "reggae",
+    "rap",
+    "hip hop",
+    "underground",
+    "nuevo tema",
+    "nuevo single",
+    "nueva canción",
+    "nueva cancion",
+    "videoclip",
+    "videoclip oficial",
+    "álbum",
+    "album",
+    "disco",
+    "ep",
+    "lanzamiento",
+    "gira",
+    "concierto",
+    "directo",
+    "youtube",
+    "canal oficial",
+    "entrevista"
+  ],
   curiosidades: [
     "curiosidad",
     "curiosidades",
@@ -249,6 +324,19 @@ function fallbackNews() {
   const now = new Date().toISOString();
 
   return [
+    {
+      id: "fallback-musica-1",
+      title: "Reggae y rap clásico: novedades sin ruido comercial",
+      summary:
+        "Sección para seguir lanzamientos, videoclips y conciertos de artistas como Morodo, Pure Negga, Fyahbwoy, Rapsusklei, Kase.O, Nach, SFDK o Sho-Hai.",
+      url:
+        "https://www.youtube.com/results?search_query=Morodo+Pure+Negga+Fyahbwoy+Rapsusklei+Kase.O+nuevo+tema+oficial",
+      image: "",
+      source: "Selección música",
+      category: "musica",
+      categoryLabel: "Reggae & rap clásico",
+      date: now
+    },
     {
       id: "fallback-sitios-1",
       title: "Sitios con encanto para guardar y visitar sin complicarse",
@@ -304,7 +392,7 @@ function fallbackNews() {
       id: "fallback-negocios-1",
       title: "Ideas de negocio local que pueden inspirar a pequeños comercios",
       summary:
-        "Marketing sencillo, comunidad, reservas, fidelización y contenido útil para que un negocio pequeño parezca más vivo y cercano.",
+        "Marketing sencillo, reservas, comunidad y fidelización para que un negocio pequeño parezca más vivo y cercano.",
       url:
         "https://www.google.com/search?q=ideas+negocio+local+peque%C3%B1o+comercio+marketing",
       image: "",
@@ -455,6 +543,13 @@ function scoreItem(item, category) {
     if (hay.includes(normalizeText(term))) score += 2;
   }
 
+  if (category === "musica") {
+    const title = hay;
+    if (title.includes("nuevo tema") || title.includes("nuevo single") || title.includes("videoclip")) score += 6;
+    if (title.includes("youtube") || title.includes("oficial")) score += 4;
+    if (title.includes("concierto") || title.includes("gira")) score += 2;
+  }
+
   if (item.image) score += 1;
   if (item.pubDate) score += 1;
 
@@ -476,6 +571,8 @@ function smartSummary(item, category) {
       "Contenido útil para pequeños negocios: inspiración, marketing, comercio local, comunidad y formas sencillas de vender mejor.",
     estilo:
       "Contenido de estilo, pelo, barbería, rastas o cuidado personal que puede encajar con la comunidad de la app.",
+    musica:
+      "Novedad musical seleccionada para la comunidad: reggae, rap clásico, hip hop underground, videoclips, directos o lanzamientos reales.",
     curiosidades:
       "Curiosidad para leer rápido y aprender algo distinto sin entrar en ruido político ni titulares densos."
   };
@@ -485,14 +582,20 @@ function smartSummary(item, category) {
   return chosen.length > 240 ? `${chosen.slice(0, 237).trim()}...` : chosen;
 }
 
+function youtubeSearchUrl(title) {
+  return "https://www.youtube.com/results?search_query=" + encodeURIComponent(`${title} oficial`);
+}
+
 function normalizeItem(item, feed) {
   const rawKey = item.guid || item.link || `${feed.category}-${feed.source}-${item.title}`;
+  const cleanTitle = cleanText(item.title || "Contenido destacado");
 
   return {
     id: `${feed.category}-${makeId(rawKey)}`,
-    title: cleanText(item.title || "Contenido destacado"),
+    title: cleanTitle,
     summary: smartSummary(item, feed.category),
     url: item.link || "",
+    youtubeUrl: feed.category === "musica" ? youtubeSearchUrl(cleanTitle) : "",
     image: item.image || "",
     source: feed.source,
     category: feed.category,
@@ -525,7 +628,7 @@ async function loadFeed(feed) {
   try {
     const response = await fetch(feed.url, {
       headers: {
-        "User-Agent": "RastaCutsActualidad/4.1"
+        "User-Agent": "RastaCutsActualidad/5.0"
       }
     });
 
@@ -535,13 +638,13 @@ async function loadFeed(feed) {
     const items = parseRssItems(xml);
 
     return items
-      .slice(0, 16)
+      .slice(0, 18)
       .filter((item) => item.title && item.link)
       .filter((item) => !hasNegativeNoise(item))
       .map((item) => normalizeItem(item, feed))
       .filter((item) => {
         if (item.score > 0) return true;
-        return ["comer", "estilo", "sitios", "rural", "negocios"].includes(feed.category);
+        return ["comer", "estilo", "sitios", "rural", "negocios", "musica"].includes(feed.category);
       });
   } catch (error) {
     return [];
@@ -552,8 +655,12 @@ export default async function handler(req, res) {
   try {
     const category = String(req?.query?.category || "todo").toLowerCase();
     const day = String(req?.query?.day || new Date().toISOString().split("T")[0]);
+    const slot = String(req?.query?.slot || "default");
+    const refreshSeed = String(req?.query?.seed || "0");
+    const limitRaw = Number(req?.query?.limit || 28);
+    const limit = Number.isFinite(limitRaw) ? Math.max(5, Math.min(40, limitRaw)) : 28;
 
-    const seed = todaySeed(`${category}-${day}`);
+    const seed = todaySeed(`${category}-${day}-${slot}-${refreshSeed}`);
 
     const selectedFeeds =
       category === "todo" ? FEEDS : FEEDS.filter((feed) => feed.category === category);
@@ -576,18 +683,24 @@ export default async function handler(req, res) {
 
         return dateDiff / 86400000 + (noiseB - noiseA) * 3;
       })
-      .slice(0, 28)
+      .slice(0, limit)
       .map(({ score, ...item }) => item);
+
+    const fallback = fallbackNews().filter((item) =>
+      category === "todo" ? true : item.category === category
+    );
 
     res.setHeader("Cache-Control", "max-age=0, s-maxage=300, stale-while-revalidate=1800");
 
     res.status(200).json({
       ok: true,
-      mode: "daily-rotated-curated-no-deps",
+      mode: "daily-rotated-curated-music-no-deps",
       day,
+      slot,
+      refreshSeed,
       count: news.length,
       categories: CATEGORY_LABELS,
-      news: news.length ? news : fallbackNews()
+      news: news.length ? news : (fallback.length ? fallback : fallbackNews())
     });
   } catch (error) {
     res.status(200).json({
