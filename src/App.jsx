@@ -40,18 +40,18 @@ const dbPost  = (t,b)    => db(t,"POST",b,"");
 const dbPatch = (t,q,b)  => db(t,"PATCH",b,q);
 
 const T = {
-  // Urban studio palette: más contraste, tarjetas claras y fondo oscuro cálido
-  g900:"#150B07",g800:"#24110A",g700:"#3A1E10",g600:"#6E3518",
-  g500:"#9A4F22",g400:"#C97934",g300:"#E1A85D",g200:"#F0D39B",
-  g150:"#F6E5BE",g100:"#E6C27A",g50:"#FFF4D6",
-  pink:"#C0392B",gold:"#D4AF37",orange:"#E8871A",red:"#8B0000",blue:"#1A3A5C",
-  ink:"#120806",panel:"#FFF1CE",panel2:"#FFE7B0",
-  text:"#1B0D07",textSub:"#6E3518",white:"#FFF2D4",
-  gradAdmin:"linear-gradient(135deg,#130906,#3A1E10 55%,#8B4513)",
-  gradStaff:"linear-gradient(135deg,#3A1E10,#8B4513 55%,#C97934)",
-  gradClient:"linear-gradient(135deg,#5C2B13,#B86A2E 55%,#E1A85D)",
-  gradGold:"linear-gradient(135deg,#B87912,#D4AF37 55%,#FFF1A8)",
-  gradPink:"linear-gradient(135deg,#5C0F0F,#B51F1F 55%,#F06A3B)",
+  // Paleta mate pirata/rasta: menos brillo, más lectura y contraste cálido.
+  g900:"#130B06",g800:"#21140C",g700:"#332013",g600:"#4B301B",
+  g500:"#6B4524",g400:"#8A5A2E",g300:"#A87945",g200:"#C6A06A",
+  g150:"#D8BE87",g100:"#C7A66B",g50:"#E8D3A2",
+  pink:"#8F2E24",gold:"#B99A45",orange:"#A8662B",red:"#672018",blue:"#263F4D",
+  ink:"#120806",panel:"#E6CF9B",panel2:"#D8BE87",
+  text:"#1A0F08",textSub:"#5B3A20",white:"#F0E0B8",
+  gradAdmin:"linear-gradient(135deg,#130B06,#21140C 62%,#3A2414)",
+  gradStaff:"linear-gradient(135deg,#21140C,#4B301B 62%,#6B4524)",
+  gradClient:"linear-gradient(135deg,#26331D,#4F602D 58%,#7C6A35)",
+  gradGold:"linear-gradient(135deg,#6B4D1F,#B99A45 62%,#D8BE87)",
+  gradPink:"linear-gradient(135deg,#42130F,#7A241B 62%,#A24A2D)",
 };
 
 const ROLES = { ADMIN:"admin", STAFF:"staff", CLIENT:"client" };
@@ -150,8 +150,8 @@ function stopGameMusic(restoreMain=true){
 const CSS=`
 @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Bangers&display=swap');
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#CD853F;border-radius:4px}
-body{margin:0;background-color:#160B07;background-image:radial-gradient(circle at 18% 10%,rgba(212,175,55,.18),transparent 28%),radial-gradient(circle at 90% 8%,rgba(192,57,43,.15),transparent 24%),radial-gradient(circle at 50% 110%,rgba(232,135,26,.22),transparent 38%),linear-gradient(160deg,#130906 0%,#2C1810 42%,#5C3317 100%)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#8A5A2E;border-radius:4px}
+body{margin:0;background-color:#160B07;background-image:repeating-linear-gradient(0deg,rgba(232,211,162,.035) 0 1px,transparent 1px 6px),linear-gradient(160deg,#120806 0%,#21140C 48%,#2E1C10 100%)}
 input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes popIn{from{opacity:0;transform:scale(0.82)}to{opacity:1;transform:scale(1)}}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -166,7 +166,7 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes cardLift{0%{transform:translateY(8px);opacity:0}100%{transform:translateY(0);opacity:1}}
 @keyframes softPop3d{0%{transform:scale(.96) rotateX(8deg);opacity:.75}100%{transform:scale(1) rotateX(0);opacity:1}}
 @keyframes wiggle3d{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(2deg) translateY(-2px)}}
-@keyframes shineLine{0%{left:-120%;opacity:0}25%{opacity:.35}60%{opacity:.22}100%{left:120%;opacity:0}}
+@keyframes shineLine{0%{left:-135%;opacity:0}28%{opacity:.42}55%{opacity:.20}100%{left:140%;opacity:0}}
 @keyframes hookMove{0%,100%{transform:translate(0,0) rotate(-8deg)}50%{transform:translate(10px,-8px) rotate(18deg)}}
 @keyframes dreadSwing{0%,100%{transform:rotate(0deg)}50%{transform:rotate(5deg)}}
 @keyframes dreadSwing2{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-6deg)}}
@@ -180,10 +180,16 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes rewardPulsePro{0%,100%{box-shadow:0 0 0 rgba(212,175,55,0)}50%{box-shadow:0 0 28px rgba(212,175,55,.42)}}
 
 .bp:active{transform:scale(0.94)!important}
-.ch:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 14px 34px rgba(20,8,4,0.32)!important}
+.ch:hover{transform:translateY(-2px) scale(1.005);box-shadow:0 10px 22px rgba(18,8,4,0.26)!important}
+.app-shell{isolation:isolate;transition:background .35s ease, box-shadow .35s ease}
+.app-shell:before{content:"";position:absolute;inset:54px 0 82px;pointer-events:none;z-index:0;background:radial-gradient(circle at 18% 14%,var(--pageGlowA,rgba(185,154,69,.14)),transparent 28%),radial-gradient(circle at 86% 8%,var(--pageGlowB,rgba(79,96,45,.10)),transparent 26%),linear-gradient(180deg,rgba(232,211,162,.055),transparent 34%);opacity:.95}
+.app-shell:after{content:var(--pageMark,"✂");position:fixed;right:calc(50% - 214px);top:86px;z-index:0;pointer-events:none;font-family:'Pirata One',cursive;font-size:7rem;line-height:1;color:var(--pageMarkColor,rgba(216,190,135,.045));transform:rotate(-12deg);text-shadow:0 8px 20px rgba(0,0,0,.14)}
+.app-shell>*{position:relative;z-index:1}
 .studio-panel{position:relative;overflow:hidden}
-.studio-panel:after{content:"";position:absolute;top:0;bottom:0;width:80px;left:-120%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:shineLine 5.5s ease-in-out infinite}
-.icon3d{filter:drop-shadow(0 7px 8px rgba(0,0,0,.28));text-shadow:0 4px 8px rgba(0,0,0,.25);animation:wiggle3d 3.2s ease-in-out infinite}
+.studio-panel>*{position:relative;z-index:2}
+.studio-panel:after{content:"";position:absolute;top:0;bottom:0;width:96px;left:-135%;z-index:1;pointer-events:none;background:linear-gradient(90deg,transparent,var(--shineA,rgba(232,211,162,.13)),var(--shineB,rgba(255,255,255,.08)),transparent);transform:skewX(-18deg);animation:shineLine var(--shineSpeed,7.2s) ease-in-out infinite}
+.studio-panel:nth-of-type(2n):after{animation-delay:1.35s}.studio-panel:nth-of-type(3n):after{animation-delay:2.4s}
+.icon3d{filter:drop-shadow(0 4px 5px rgba(0,0,0,.24));text-shadow:0 2px 5px rgba(0,0,0,.22);animation:wiggle3d 3.2s ease-in-out infinite}
 
 `;
 
@@ -193,13 +199,13 @@ function Btn({children,onClick,col="green",full=false,small=false,disabled=false
   return <button onClick={disabled?undefined:(e)=>{col==="ghost"?SFX.click():SFX.action();onClick?.(e);}} className="bp" style={{background:col==="ghost"?"rgba(255,244,214,.72)":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"1px solid rgba(255,255,255,.22)",borderRadius:16,padding:small?"8px 14px":"12px 20px",fontWeight:900,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"0 6px 16px rgba(20,8,4,.12)":`0 8px 22px ${c.sh}`,transition:"all 0.18s ease",letterSpacing:".2px",...sx}}>{children}</button>;
 }
 function Card({children,style:sx={},onClick,hover=false}){
-  return <div onClick={onClick?(e)=>{SFX.click();onClick(e);}:undefined} className={`${hover?"ch":""} studio-panel`} style={{background:"linear-gradient(180deg,#FFF4D6 0%,#F6E5BE 100%)",borderRadius:20,padding:"16px",boxShadow:"0 12px 30px rgba(20,8,4,0.22), inset 0 1px 0 rgba(255,255,255,.55)",border:`2px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",animation:"cardLift .35s ease",...sx}}>{children}</div>;
+  return <div onClick={onClick?(e)=>{SFX.click();onClick(e);}:undefined} className={`${hover?"ch":""} studio-panel`} style={{background:T.panel,borderRadius:20,padding:"16px",boxShadow:"0 8px 18px rgba(18,8,4,0.24)",border:`2px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",animation:"cardLift .35s ease",...sx}}>{children}</div>;
 }
 function Input({label,value,onChange,type="text",placeholder="",style:sx={}}){
-  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:"#FFF8E5",fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
+  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
 }
 function Select({label,value,onChange,options=[]}){
-  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<select value={value} onChange={e=>onChange(e.target.value)} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:"#FFF8E5",fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}>{options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>;
+  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<select value={value} onChange={e=>onChange(e.target.value)} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}>{options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>;
 }
 function Badge({children,col="green"}){
   const C={green:{bg:T.g150,c:T.g700},pink:{bg:"#FCE4EC",c:T.pink},gold:{bg:"#FFF8E1",c:"#E65100"},red:{bg:"#FFEBEE",c:T.red},blue:{bg:"#E3F2FD",c:T.blue}};
@@ -1047,16 +1053,18 @@ const NEWS_CATEGORIES=[
   {id:"comer",label:"Comer bien",short:"Comer",icon:"🍽️",desc:"bares, restaurantes y gastronomía"},
   {id:"sitios",label:"Sitios con encanto",short:"Sitios",icon:"🏞️",desc:"planes, rutas y lugares bonitos"},
   {id:"estilo",label:"Pelo & rastas",short:"Estilo",icon:"✂️",desc:"peluquería, barbería y cuidado"},
+  {id:"musica",label:"Reggae & rap clásico",short:"Música",icon:"🎧",desc:"Morodo, Pure Negga, Kase.O y rap de verdad"},
   {id:"negocios",label:"Negocios locales",short:"Negocios",icon:"💼",desc:"ideas, emprender y comercio cercano"},
 ];
 const CATEGORY_COLORS={
-  todo:{accent:"#D4AF37",bg:"linear-gradient(135deg,#FFF4D6,#F6E5BE)",dark:"#6E3518"},
-  curiosidades:{accent:"#7B3FA1",bg:"linear-gradient(135deg,#EFE3FF,#FFF4D6)",dark:"#3C2258"},
-  rural:{accent:"#65762C",bg:"linear-gradient(135deg,#EEF1CF,#FFF4D6)",dark:"#3D471A"},
-  comer:{accent:"#C97934",bg:"linear-gradient(135deg,#FFE7B0,#FFF4D6)",dark:"#6E3518"},
-  sitios:{accent:"#2F6B42",bg:"linear-gradient(135deg,#E9F5DE,#FFF4D6)",dark:"#214E31"},
-  estilo:{accent:"#8B0000",bg:"linear-gradient(135deg,#FCE4EC,#FFF4D6)",dark:"#5C0F0F"},
-  negocios:{accent:"#1A3A5C",bg:"linear-gradient(135deg,#E3F2FD,#FFF4D6)",dark:"#10263F"},
+  todo:{accent:"#B99A45",bg:"#E6CF9B",dark:"#4B301B"},
+  curiosidades:{accent:"#6B4D8A",bg:"#D9C9A3",dark:"#332013"},
+  rural:{accent:"#4F602D",bg:"#D8BE87",dark:"#26331D"},
+  comer:{accent:"#8A5A2E",bg:"#E0C486",dark:"#4B301B"},
+  sitios:{accent:"#3F6B3B",bg:"#D6C996",dark:"#26331D"},
+  estilo:{accent:"#7A241B",bg:"#D8B58C",dark:"#42130F"},
+  musica:{accent:"#4E3A76",bg:"#D2C292",dark:"#24110A"},
+  negocios:{accent:"#263F4D",bg:"#D3C195",dark:"#17252D"},
 };
 const DAILY_CURIOSITIES=[
   {title:"Las rastas necesitan secado real",text:"Después de lavar, lo importante no es solo que se vean secas por fuera: si queda humedad dentro, pueden coger mal olor. Mejor secar con calma y sin prisas.",tag:"Rastas"},
@@ -1204,19 +1212,20 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
   if(!item)return null;
   return <Modal show={!!item} onClose={onClose} title="Detalle de actualidad">
     <div>
-      <div style={{background:`radial-gradient(circle at 15% 10%,rgba(255,255,255,.22),transparent 35%),${visual.bg}`,border:`2px solid ${visual.accent}`,borderRadius:22,padding:14,marginBottom:12}}>
+      <div style={{background:visual.bg,border:`2px solid ${visual.accent}`,borderRadius:22,padding:14,marginBottom:12}}>
         <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}><Badge col="gold">{cat.icon} {cat.label}</Badge><Badge col="green">{item.source||"Fuente"}</Badge></div>
         <div style={{fontWeight:950,color:T.g900,fontSize:"1.2rem",lineHeight:1.18}}>{item.title}</div>
         <div style={{fontSize:".86rem",fontWeight:750,color:T.textSub,lineHeight:1.42,marginTop:8}}>{trimSummary(item.summary)}</div>
         <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
           <Btn small col="gold" onClick={()=>window.open(item.url,"_blank","noopener,noreferrer")}>Leer fuente original ↗</Btn>
+          {item?.youtubeUrl&&<Btn small col="red" onClick={()=>window.open(item.youtubeUrl,"_blank","noopener,noreferrer")}>▶ Buscar en YouTube</Btn>}
           <Btn small col={liked?"ghost":"dark"} disabled={loading||liked} onClick={like}>{liked?"👍 Te gusta":"👍 Me gusta"}</Btn>
         </div>
         <div style={{display:"flex",gap:10,marginTop:10,fontSize:".75rem",fontWeight:900,color:T.g700}}><span>👍 {likes}</span><span>💬 {comments.length}</span><span>{formatNewsDate(item.date)}</span></div>
       </div>
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF8E5,#F6E5BE)"}}>
+      <Card style={{marginBottom:12,background:T.panel}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:7}}>Unirse al hilo</div>
-        <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Comenta algo útil: recomendación, experiencia, sitio parecido, opinión o dato que ayude a otros." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"11px 12px",background:"#FFF8E5",resize:"none",outline:"none",fontSize:".9rem",fontWeight:750,color:T.text}}/>
+        <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Comenta algo útil: recomendación, experiencia, sitio parecido, opinión o dato que ayude a otros." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"11px 12px",background:T.g50,resize:"none",outline:"none",fontSize:".9rem",fontWeight:750,color:T.text}}/>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginTop:9}}><div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>+5 pts por tu primer comentario en esta noticia. Bonos al comentar 3 y 10 noticias distintas.</div><Btn small onClick={sendComment} disabled={loading}>Comentar</Btn></div>
       </Card>
       <div style={{fontWeight:950,color:T.g800,margin:"4px 0 10px"}}>Comentarios</div>
@@ -1349,7 +1358,7 @@ function Noticias({user,setUser,showToast,showPoints}){
     </div>
 
     <div style={{display:"grid",gridTemplateColumns:"1.2fr .8fr",gap:10,marginBottom:12}}>
-      <Card style={{background:"linear-gradient(180deg,#FFF8E5,#F6E5BE)",border:`2px solid ${T.g300}`,padding:12}}>
+      <Card style={{background:T.panel,border:`2px solid ${T.g300}`,padding:12}}>
         <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
           <div style={{width:44,height:44,borderRadius:16,display:"grid",placeItems:"center",background:categoryVisual("curiosidades").bg,fontSize:"1.45rem"}}>💡</div>
           <div style={{minWidth:0}}>
@@ -1659,7 +1668,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
       <Card style={{marginBottom:16,background:'linear-gradient(180deg,#E9D9B7 0%,#DEC79A 100%)',border:`2px solid ${T.g300}`,boxShadow:'0 10px 24px rgba(20,8,4,.16)'}}>
         <div style={{fontWeight:900,fontSize:'.92rem',color:T.g800,marginBottom:8}}>📣 Nuevo anuncio</div>
         {canPost? <>
-          <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Escribe una promoción, aviso, norma, actualización o evento..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:'#F3E7CA',resize:"none",outline:"none",boxShadow:'inset 0 2px 8px rgba(20,8,4,.06)'}}/>
+          <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Escribe una promoción, aviso, norma, actualización o evento..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:T.g150,resize:"none",outline:"none",boxShadow:'inset 0 2px 8px rgba(20,8,4,.06)'}}/>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10,gap:8}}>
             <span style={{fontSize:"0.8rem",color:T.g700,fontWeight:900}}>Solo admin/staff pueden publicar y comentar aquí</span>
             <Btn small col="dark" onClick={publish} style={{fontWeight:900,letterSpacing:'.4px'}}>📌 Publicar</Btn>
@@ -1674,7 +1683,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
           <div style={{fontSize:"0.93rem",fontWeight:700,color:T.text,lineHeight:1.55,whiteSpace:'pre-wrap'}}>{p.contenido}</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
             <span style={{fontSize:"0.76rem",color:T.textSub,fontWeight:800}}>{p.created_at?new Date(p.created_at).toLocaleDateString("es-ES"):""}</span>
-            <button onClick={()=>likePost(p)} style={{background:'#F3E7CA',border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999}}>❤️ {p.likes_count||0}</button>
+            <button onClick={()=>likePost(p)} style={{background:T.g150,border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999}}>❤️ {p.likes_count||0}</button>
           </div>
         </Card>;
       })}
@@ -1758,7 +1767,7 @@ function Foro({user,showToast}){
     {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
       <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Abrir nuevo tema</div>
       <Input label="Título" value={title} onChange={setTitle} placeholder="Ej: ¿Qué cuidados necesita una rasta nueva?"/>
-      <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Escribe tu duda, idea o propuesta..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:'#F3E7CA',resize:"none",outline:"none"}}/>
+      <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Escribe tu duda, idea o propuesta..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:T.g150,resize:"none",outline:"none"}}/>
       <div style={{marginTop:10}}><Btn full col="gold" onClick={createTopic}>➕ Crear tema</Btn></div>
     </Card>}
     {shown? <div>
@@ -1769,7 +1778,7 @@ function Foro({user,showToast}){
         <div style={{display:"flex",justifyContent:"space-between",marginTop:12,alignItems:"center"}}><Badge col="blue">{getReplies(shown.id).length} respuestas</Badge><Btn small col="gold" onClick={()=>vote(shown)}>👍 Votar {shown.likes_count||0}</Btn></div>
       </Card>
       {getReplies(shown.id).map(r=><Card key={r.id} style={{marginBottom:8,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}><div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6,cursor:"pointer"}} onClick={()=>setSelectedProfile({id:r.autor_id,nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,puntos:0})}><Av av={r.autor_avatar} config={r.autor_avatar_config} size={30}/><b>{r.autor_nombre||"Usuario"}</b></div><div style={{fontSize:".86rem",fontWeight:700,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div></Card>)}
-      <Card><textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder="Responder al tema..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:'#F3E7CA',resize:"none"}}/><div style={{marginTop:8}}><Btn full onClick={()=>addReply(shown)}>Responder</Btn></div></Card>
+      <Card><textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder="Responder al tema..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:T.g150,resize:"none"}}/><div style={{marginTop:8}}><Btn full onClick={()=>addReply(shown)}>Responder</Btn></div></Card>
     </div> : loading?<Spinner/>:topics.length===0?<EmptyState icon="🗣️" title="Foro vacío" sub="Sé el primero en abrir un tema."/>:topics.map(t=>{const a=authorOf(t);return <Card key={t.id} hover onClick={()=>setActive(t)} style={{marginBottom:10}}><div style={{display:"flex",gap:10,alignItems:"center"}}><Av av={a.avatar} config={a.avatar_config||a.avatarConfig} size={36}/><div style={{flex:1}}><div style={{fontWeight:900,color:T.g800}}>{t.titulo||t.contenido?.slice(0,48)||"Tema"}</div><div style={{fontSize:".75rem",fontWeight:800,color:T.textSub}}>{a.nombre||"Usuario"} · 👍 {t.likes_count||0} · 💬 {getReplies(t.id).length}</div></div></div></Card>;})}
     <PublicProfileModal profile={selectedProfile} onClose={()=>setSelectedProfile(null)}/>
   </div>;
@@ -2819,7 +2828,7 @@ function PerfilNewsActivity({user}){
     }catch(e){setItems([]);setLikes([]);}finally{setLoading(false);}
   }
   const total=items.length+likes.length;
-  return <Card style={{marginBottom:16,background:"linear-gradient(180deg,#FFF8E5,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+  return <Card style={{marginBottom:16,background:T.panel,border:`2px solid ${T.g300}`}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:10}}>
       <div><div style={{fontWeight:950,color:T.g800}}>📰 Mi actividad en Actualidad</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Tus comentarios y likes quedan aquí para seguir los hilos.</div></div>
       <Badge col="gold">{total}</Badge>
@@ -3794,6 +3803,27 @@ function HelperMascot({page}){
   );
 }
 
+
+const PAGE_THEMES={
+  dashboard:{mark:'"✂"',accent:'#B99A45',shell:'linear-gradient(180deg,rgba(216,190,135,.06),rgba(216,190,135,.018)),linear-gradient(160deg,#120806,#21140C 56%,#2E1C10)',header:'linear-gradient(135deg,#130B06,#2A1B0F 58%,#4B301B)',nav:'#6B4524',shineA:'rgba(216,190,135,.16)',shineB:'rgba(255,238,190,.10)',glowA:'rgba(185,154,69,.16)',glowB:'rgba(79,96,45,.10)'},
+  citas:{mark:'"☕"',accent:'#A8662B',shell:'linear-gradient(180deg,rgba(168,102,43,.075),rgba(216,190,135,.018)),linear-gradient(160deg,#120806,#21140C 54%,#352012)',header:'linear-gradient(135deg,#130B06,#3A2414 58%,#6B4524)',nav:'#6B4524',shineA:'rgba(230,190,125,.15)',shineB:'rgba(255,230,170,.10)',glowA:'rgba(168,102,43,.18)',glowB:'rgba(185,154,69,.11)'},
+  tienda:{mark:'"◆"',accent:'#B99A45',shell:'linear-gradient(180deg,rgba(185,154,69,.08),rgba(50,32,19,.018)),linear-gradient(160deg,#100704,#21140C 48%,#3A2A14)',header:'linear-gradient(135deg,#21140C,#4B301B 58%,#6B4D1F)',nav:'#725021',shineA:'rgba(226,196,125,.18)',shineB:'rgba(255,235,170,.11)',glowA:'rgba(185,154,69,.20)',glowB:'rgba(124,106,53,.12)'},
+  juegos:{mark:'"★"',accent:'#7E6A2B',shell:'linear-gradient(180deg,rgba(79,96,45,.075),rgba(185,154,69,.025)),linear-gradient(160deg,#101008,#1C2112 52%,#332B13)',header:'linear-gradient(135deg,#101008,#26331D 56%,#4F602D)',nav:'#4B562A',shineA:'rgba(184,190,110,.17)',shineB:'rgba(255,238,170,.10)',glowA:'rgba(79,96,45,.22)',glowB:'rgba(185,154,69,.14)'},
+  retos:{mark:'"⚑"',accent:'#7A241B',shell:'linear-gradient(180deg,rgba(122,36,27,.07),rgba(216,190,135,.018)),linear-gradient(160deg,#120806,#21140C 48%,#351510)',header:'linear-gradient(135deg,#130B06,#42130F 58%,#7A241B)',nav:'#672018',shineA:'rgba(216,150,110,.15)',shineB:'rgba(255,230,170,.09)',glowA:'rgba(122,36,27,.20)',glowB:'rgba(185,154,69,.10)'},
+  ranking:{mark:'"♛"',accent:'#B99A45',shell:'linear-gradient(180deg,rgba(185,154,69,.09),rgba(232,211,162,.02)),linear-gradient(160deg,#120806,#21140C 50%,#30220F)',header:'linear-gradient(135deg,#130B06,#4B301B 58%,#B99A45)',nav:'#725021',shineA:'rgba(235,203,130,.20)',shineB:'rgba(255,243,200,.12)',glowA:'rgba(185,154,69,.24)',glowB:'rgba(122,36,27,.10)'},
+  perfil:{mark:'"☻"',accent:'#A87945',shell:'linear-gradient(180deg,rgba(168,121,69,.075),rgba(216,190,135,.018)),linear-gradient(160deg,#120806,#21140C 54%,#312012)',header:'linear-gradient(135deg,#130B06,#332013 56%,#8A5A2E)',nav:'#6B4524',shineA:'rgba(220,180,115,.16)',shineB:'rgba(255,236,185,.10)',glowA:'rgba(168,121,69,.20)',glowB:'rgba(79,96,45,.10)'},
+  comunidad:{mark:'"☷"',accent:'#4F602D',shell:'linear-gradient(180deg,rgba(79,96,45,.075),rgba(216,190,135,.018)),linear-gradient(160deg,#0F0D07,#1C2112 49%,#2D2411)',header:'linear-gradient(135deg,#111006,#26331D 58%,#4F602D)',nav:'#4B562A',shineA:'rgba(190,205,125,.16)',shineB:'rgba(255,235,176,.09)',glowA:'rgba(79,96,45,.22)',glowB:'rgba(185,154,69,.11)'},
+  feed:{mark:'"☷"',accent:'#4F602D',shell:'linear-gradient(180deg,rgba(79,96,45,.075),rgba(216,190,135,.018)),linear-gradient(160deg,#0F0D07,#1C2112 49%,#2D2411)',header:'linear-gradient(135deg,#111006,#26331D 58%,#4F602D)',nav:'#4B562A',shineA:'rgba(190,205,125,.16)',shineB:'rgba(255,235,176,.09)',glowA:'rgba(79,96,45,.22)',glowB:'rgba(185,154,69,.11)'},
+  foro:{mark:'"✎"',accent:'#263F4D',shell:'linear-gradient(180deg,rgba(38,63,77,.075),rgba(216,190,135,.018)),linear-gradient(160deg,#0A0D0E,#17252D 50%,#21140C)',header:'linear-gradient(135deg,#0A0D0E,#17252D 58%,#263F4D)',nav:'#263F4D',shineA:'rgba(155,190,200,.14)',shineB:'rgba(232,211,162,.09)',glowA:'rgba(38,63,77,.22)',glowB:'rgba(185,154,69,.10)'},
+  noticias:{mark:'"☀"',accent:'#B99A45',shell:'linear-gradient(180deg,rgba(185,154,69,.075),rgba(216,190,135,.018)),linear-gradient(160deg,#120806,#21140C 50%,#352816)',header:'linear-gradient(135deg,#130B06,#3A2A14 58%,#6B4D1F)',nav:'#6B4524',shineA:'rgba(235,203,130,.16)',shineB:'rgba(255,244,214,.10)',glowA:'rgba(185,154,69,.21)',glowB:'rgba(38,63,77,.10)'},
+  galeria:{mark:'"▣"',accent:'#8A5A2E',shell:'linear-gradient(180deg,rgba(138,90,46,.075),rgba(216,190,135,.018)),linear-gradient(160deg,#120806,#21140C 52%,#392314)',header:'linear-gradient(135deg,#130B06,#332013 58%,#8A5A2E)',nav:'#6B4524',shineA:'rgba(220,180,115,.16)',shineB:'rgba(255,236,185,.10)',glowA:'rgba(138,90,46,.22)',glowB:'rgba(185,154,69,.10)'},
+  admin:{mark:'"⚙"',accent:'#263F4D',shell:'linear-gradient(180deg,rgba(38,63,77,.065),rgba(216,190,135,.018)),linear-gradient(160deg,#0A0D0E,#17252D 50%,#21140C)',header:'linear-gradient(135deg,#0A0D0E,#17252D 58%,#263F4D)',nav:'#263F4D',shineA:'rgba(155,190,200,.14)',shineB:'rgba(232,211,162,.09)',glowA:'rgba(38,63,77,.20)',glowB:'rgba(185,154,69,.10)'}
+};
+function pageTheme(page,communityTab,role){
+  const key=page==="comunidad"?(communityTab||"comunidad"):page;
+  if(["clientes","inventario","caja","usuarios"].includes(key)) return PAGE_THEMES.admin;
+  return PAGE_THEMES[key]||PAGE_THEMES[page]||PAGE_THEMES.dashboard;
+}
 export default function App(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
@@ -3846,6 +3876,7 @@ export default function App(){
   const nav=NAV_CFG[role]||NAV_CFG.client;
   const grad=GRAD_ROLE[role]||GRAD_ROLE.client;
   const ap=page;
+  const theme=pageTheme(ap,communityTab,role);
   const currentUser={...user,rol:role};
   const sp={showToast,showPoints,user:currentUser,setUser};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
@@ -3863,11 +3894,11 @@ export default function App(){
   };
 
   return(
-    <div style={{fontFamily:"'Crimson Text',serif",background:"linear-gradient(180deg,rgba(255,244,214,.09),rgba(255,244,214,.03)),linear-gradient(160deg,#2C1810,#5C3317)",minHeight:"100vh",maxWidth:480,margin:"0 auto",paddingBottom:82,position:"relative",boxShadow:"0 0 0 1px rgba(255,244,214,.12),0 0 70px rgba(0,0,0,.45)"}}>
+    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-page={ap} data-community={communityTab} style={{fontFamily:"'Crimson Text',serif",background:theme.shell,minHeight:"100vh",maxWidth:480,margin:"0 auto",paddingBottom:82,position:"relative",boxShadow:`0 0 0 1px rgba(232,211,162,.10),0 0 42px rgba(0,0,0,.42),0 0 36px ${theme.accent}22`,"--shineA":theme.shineA,"--shineB":theme.shineB,"--shineSpeed":"7.2s","--pageGlowA":theme.glowA,"--pageGlowB":theme.glowB,"--pageMark":theme.mark,"--pageMarkColor":`${theme.accent}12`,"--pageAccent":theme.accent}}>
       <style>{CSS}</style>
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
-      <div style={{background:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:"0 4px 20px rgba(27,67,50,0.25)"}}>
+      <div style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.26), inset 0 -1px 0 ${theme.accent}33`}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>✂️ {BRAND.name}</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
@@ -3880,14 +3911,15 @@ export default function App(){
           </div>
         </div>
       </div>
-      <div style={{padding:"18px 14px"}}>
+      <div style={{padding:"18px 14px",position:"relative"}}>
+        <div style={{height:4,borderRadius:999,background:`linear-gradient(90deg,transparent,${theme.accent}99,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${theme.accent}33`,opacity:.78}}/>
         {pages[ap]||pages["dashboard"]}
         <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
       </div>
-      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"#8B5E2F",borderTop:`2px solid ${T.g600}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(27,67,50,0.08)"}}>
+      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:theme.nav,borderTop:`2px solid ${theme.accent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>(
           <button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38}}>
-            <div style={{fontSize:"1.1rem",background:ap===n.id?grad:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?"0 3px 12px rgba(27,67,50,0.2)":"none"}}>{n.icon}</div>
+            <div style={{fontSize:"1.1rem",background:ap===n.id?theme.header:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${theme.accent}44`:"none"}}>{n.icon}</div>
             <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?"#F5E6C8":"#DEB887",transition:"color 0.2s"}}>{n.label}</span>
           </button>
         ))}
