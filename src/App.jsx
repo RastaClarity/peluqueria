@@ -464,6 +464,20 @@ function AvatarFigure({config,size=80,animated=false}){
     if(cfg.hair==="sharpFade") return <path d="M50 68 C57 45 72 34 90 34 C108 34 123 45 130 68 C111 56 69 56 50 68Z" fill={`url(#${uid}-hair)`}/>;
     return sideLocks();
   };
+  const hairlineLayer=()=>{
+    const fill=`url(#${uid}-hair)`;
+    const temple=<g fill={fill} opacity=".98"><path d="M50 70 C49 58 54 48 63 40 C57 58 57 73 61 85 C55 82 51 77 50 70Z"/><path d="M130 70 C131 58 126 48 117 40 C123 58 123 73 119 85 C125 82 129 77 130 70Z"/></g>;
+    if(hasCap) return <g fill={fill}>{temple}<path d="M48 82 C57 73 67 70 80 72 C88 74 96 74 105 72 C118 70 127 74 134 82 C119 86 101 84 90 82 C79 84 62 86 48 82Z"/><path d="M57 80 C68 72 79 74 87 83 C74 82 64 84 57 80Z" opacity=".82"/><path d="M123 80 C112 72 101 74 93 83 C106 82 116 84 123 80Z" opacity=".82"/></g>;
+    if(hasBandana) return <g fill={fill}>{temple}<path d="M49 76 C61 68 119 68 131 76 C116 82 64 82 49 76Z"/><path d="M56 80 C66 73 77 75 84 84 C73 83 63 84 56 80Z" opacity=".86"/><path d="M124 80 C114 73 103 75 96 84 C107 83 117 84 124 80Z" opacity=".86"/></g>;
+    if(cfg.hair==="buzzFade") return <g fill={fill}><path d="M51 72 C56 49 71 37 90 37 C109 37 124 49 129 72 C111 62 69 62 51 72Z" opacity=".92"/><path d="M52 76 C63 68 78 65 90 68 C102 65 117 68 128 76 C111 78 69 78 52 76Z" opacity=".96"/><path d="M52 77 L60 89 L63 76Z"/><path d="M128 77 L120 89 L117 76Z"/></g>;
+    if(cfg.hair==="sharpFade"||cfg.hair==="texturedCrop"||cfg.hair==="undercut") return <g fill={fill}>{temple}<path d="M49 75 C55 51 70 38 90 38 C112 38 126 51 132 75 C116 66 104 64 92 68 C80 64 64 66 49 75Z"/><path d="M57 76 C67 65 77 62 87 72 C75 71 66 76 57 76Z" opacity=".88"/><path d="M91 69 C100 61 111 63 123 75 C111 72 101 72 91 69Z" opacity=".88"/></g>;
+    if(cfg.hair==="pixie") return <g fill={fill}>{temple}<path d="M49 75 C58 50 73 38 92 38 C111 38 125 50 132 75 C118 67 104 65 91 70 C78 63 63 66 49 75Z"/><path d="M55 74 C66 55 80 55 89 70 C75 67 64 72 55 74Z"/><path d="M88 70 C101 53 118 57 129 74 C115 68 102 68 88 70Z" opacity=".9"/></g>;
+    if(cfg.hair==="mohawk") return <g fill={fill}>{temple}<path d="M50 78 C57 56 72 44 90 43 C108 44 123 56 130 78 C112 67 68 67 50 78Z"/><path d="M82 68 C84 51 88 39 90 28 C94 42 99 55 100 69 C94 65 88 65 82 68Z"/></g>;
+    if(cfg.hair==="afro"||cfg.hair==="afroPuff") return <g fill={fill}>{temple}<path d="M43 75 C48 52 64 39 90 37 C116 39 132 52 137 75 C120 65 106 62 90 66 C74 62 60 65 43 75Z"/><path d="M51 78 C62 68 74 68 82 78 C71 76 62 80 51 78Z"/><path d="M129 78 C118 68 106 68 98 78 C109 76 118 80 129 78Z"/></g>;
+    if(cfg.hair==="curlyBob") return <g fill={fill}>{temple}<path d="M44 78 C51 51 67 38 90 38 C113 38 129 51 136 78 C119 67 104 64 90 69 C76 64 61 67 44 78Z"/>{[56,70,84,98,112,126].map((cx,i)=><circle key={i} cx={cx} cy={75+(i%2)*2} r="9"/>)}<path d="M61 80 C71 68 82 68 90 82 C80 78 70 82 61 80Z" opacity=".9"/></g>;
+    if(cfg.hair==="bob"||cfg.hair==="longWaves"||cfg.hair==="braidsLong"||cfg.hair==="highPonytail") return <g fill={fill}>{temple}<path d="M44 77 C51 47 68 34 90 34 C112 34 129 47 136 77 C120 65 105 61 90 67 C75 61 60 65 44 77Z"/><path d="M55 78 C68 62 80 62 90 78 C78 74 67 80 55 78Z"/><path d="M90 78 C101 61 116 62 128 78 C115 74 103 80 90 78Z" opacity=".92"/></g>;
+    return <g fill={fill}>{temple}<path d="M47 75 C54 48 70 36 90 36 C110 36 126 48 133 75 C116 64 102 62 90 68 C78 62 64 64 47 75Z"/><path d="M59 77 C70 62 81 63 90 78 C78 75 69 80 59 77Z"/><path d="M91 78 C101 62 113 63 123 77 C112 75 101 80 91 78Z" opacity=".9"/></g>;
+  };
   const hairFront=()=>{
     if(hasCap) return <path d="M51 79 C66 70 114 70 129 79" stroke={`url(#${uid}-hair)`} strokeWidth="6" strokeLinecap="round" opacity=".92"/>;
     if(hasBandana) return <path d="M51 73 C64 66 116 66 129 73" stroke={`url(#${uid}-hair)`} strokeWidth="7" strokeLinecap="round" opacity=".95"/>;
@@ -504,6 +518,7 @@ function AvatarFigure({config,size=80,animated=false}){
       <circle cx="127" cy="98" r="7.8" fill={skin} opacity=".97"/>
       <path d={facePath} fill={`url(#${uid}-skin)`} filter={`url(#${uid}-shadow)`}/>
       <path d="M65 126 C74 143 106 143 115 126 C108 149 72 149 65 126Z" fill="rgba(80,35,20,.10)"/>
+      {hairlineLayer()}
       {hairFront()}
       {hasBandana&&<g filter={`url(#${uid}-shadow)`}><path d="M45 61 C60 48 120 48 135 61 L132 80 C109 70 71 70 48 80Z" fill={bandanaColor}/><path d="M61 60 C74 55 107 55 119 60" stroke="rgba(255,255,255,.34)" strokeWidth="3" strokeLinecap="round"/><path d="M130 63 L154 55 L141 84Z" fill={bandanaColor}/></g>}
       {hasCap&&<g filter={`url(#${uid}-shadow)`}><path d="M42 72 C46 39 64 22 90 22 C116 22 134 39 138 72 L134 86 C111 74 69 74 46 86Z" fill={capColor}/><path d="M50 72 C64 63 116 63 130 72 L127 83 C108 75 72 75 53 83Z" fill="rgba(0,0,0,.24)"/><path d="M101 72 C130 69 158 77 168 88" fill="none" stroke={capColor} strokeWidth="12" strokeLinecap="round"/><path d="M62 56 C76 45 105 45 119 56" stroke="rgba(255,255,255,.34)" strokeWidth="4" strokeLinecap="round" fill="none"/><circle cx="90" cy="38" r="4" fill="rgba(255,255,255,.36)"/></g>}
