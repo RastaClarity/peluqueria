@@ -173,6 +173,11 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes mascotFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes bubblePop{0%{transform:scale(.9) translateY(8px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
 @keyframes helperBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes avatarIdlePro{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-2px) rotate(.4deg)}}
+@keyframes avatarBreathPro{0%,100%{transform:scale(1)}50%{transform:scale(1.018)}}
+@keyframes avatarShinePro{0%{transform:translateX(-120%) skewX(-18deg);opacity:0}35%{opacity:.55}100%{transform:translateX(140%) skewX(-18deg);opacity:0}}
+@keyframes rewardPulsePro{0%,100%{box-shadow:0 0 0 rgba(212,175,55,0)}50%{box-shadow:0 0 28px rgba(212,175,55,.42)}}
+
 .bp:active{transform:scale(0.94)!important}
 .ch:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 14px 34px rgba(20,8,4,0.32)!important}
 .studio-panel{position:relative;overflow:hidden}
@@ -372,107 +377,249 @@ function localOwnedCosmetics(user){try{return JSON.parse(localStorage.getItem(ow
 function saveLocalOwnedCosmetics(user,keys){try{localStorage.setItem(ownedCosmeticKey(user),JSON.stringify([...new Set(keys)]));}catch{}}
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
-  const skin=AVATAR_OPTIONS.skin[cfg.skin],hair=AVATAR_OPTIONS.hairColor[cfg.hairColor],eye=AVATAR_OPTIONS.eyeColor[cfg.eyeColor];
-  const facePath={oval:"M50 23 C69 23 82 38 82 58 C82 82 68 94 50 96 C32 94 18 82 18 58 C18 38 31 23 50 23Z",round:"M50 22 C70 22 84 38 84 58 C84 80 70 94 50 94 C30 94 16 80 16 58 C16 38 30 22 50 22Z",sharp:"M50 20 C69 20 83 36 82 58 C81 78 67 91 50 99 C33 91 19 78 18 58 C17 36 31 20 50 20Z",square:"M28 26 C42 18 58 18 72 26 C80 39 81 74 72 87 C61 96 39 96 28 87 C19 74 20 39 28 26Z"}[cfg.face];
-  const eyeRy={anime:8,sleepy:3,sharp:5,round:6}[cfg.eyes];
-  const eyeRx={anime:7,sleepy:8,sharp:8,round:6}[cfg.eyes];
-  const browY=cfg.brows==="angry"?43:cfg.brows==="thin"?41:42;
-  return <svg viewBox="0 0 100 110" width={size} height={size} style={{display:"block",overflow:"visible",filter:"drop-shadow(0 6px 8px rgba(0,0,0,.28))"}}>
-    <circle cx="50" cy="55" r="47" fill={bgGradient(cfg.bg)}/>
-    <circle cx="50" cy="55" r="42" fill="rgba(255,255,255,.08)"/>
-    {cfg.hair==="dreadsLong"&&<g stroke={hair} strokeWidth="8" strokeLinecap="round" fill="none" style={animated?{animation:"dreadSwing 2.6s ease-in-out infinite",transformOrigin:"50px 32px"}:null}><path d="M26 30 C9 45 13 74 24 94"/><path d="M36 24 C20 42 25 73 33 98"/><path d="M64 24 C80 42 75 73 67 98"/><path d="M74 30 C91 45 87 74 76 94"/></g>}
-    {cfg.hair==="dreadsBun"&&<g stroke={hair} strokeWidth="7" strokeLinecap="round" fill="none"><path d="M36 28 C25 44 26 70 34 92"/><path d="M64 28 C75 44 74 70 66 92"/><path d="M39 18 C44 4 57 4 62 18"/><path d="M35 21 C44 12 55 12 65 21"/><ellipse cx="50" cy="18" rx="17" ry="10" fill={hair} stroke="none"/></g>}
-    {cfg.hair==="dreadsTop"&&<g stroke={hair} strokeWidth="6" strokeLinecap="round" fill="none"><path d="M35 25 C27 42 29 64 36 86"/><path d="M65 25 C73 42 71 64 64 86"/><path d="M42 17 C36 6 45 0 52 10"/><path d="M52 10 C60 0 69 8 60 19"/><path d="M46 20 C50 12 57 14 60 22"/></g>}
-    {cfg.hair==="afro"&&<g fill={hair}><circle cx="31" cy="31" r="14"/><circle cx="50" cy="22" r="18"/><circle cx="69" cy="31" r="14"/><circle cx="24" cy="48" r="14"/><circle cx="76" cy="48" r="14"/></g>}
-    {cfg.hair==="punk"&&<path d="M22 49 C29 22 40 6 50 2 C60 6 71 22 78 49 C64 38 36 38 22 49Z" fill={hair}/>} 
-    {cfg.hair==="fade"&&<path d="M22 47 C27 26 36 18 50 18 C64 18 73 26 78 47 C65 38 35 38 22 47Z" fill={hair}/>} 
-    {cfg.hair==="bob"&&<path d="M18 55 C18 30 31 16 50 16 C69 16 82 30 82 55 C82 75 72 89 66 96 C63 75 37 75 34 96 C28 89 18 75 18 55Z" fill={hair}/>} 
-    <path d={facePath} fill={skin}/>
-    {(cfg.hair==="dreadsLong"||cfg.hair==="dreadsBun"||cfg.hair==="dreadsTop"||cfg.hair==="fade")&&<path d="M19 48 C25 28 36 20 50 20 C64 20 75 28 81 48 C67 39 33 39 19 48Z" fill={hair}/>} 
-    {cfg.accessory==="bandana"&&<path d="M19 43 C32 34 68 34 81 43 L78 52 C61 45 39 45 22 52Z" fill="#C0392B"/>}
-    {cfg.accessory==="bandanaGreen"&&<path d="M19 43 C32 34 68 34 81 43 L78 52 C61 45 39 45 22 52Z" fill="#2F6B42"/>}
-    {(cfg.accessory==="cap"||cfg.accessory==="capBlack"||cfg.accessory==="capGold")&&<g>
-      <path d="M18 42 C26 24 38 16 50 16 C62 16 74 24 82 42 L80 53 C64 44 36 44 20 53Z" fill={cfg.accessory==="capGold"?"#D4AF37":cfg.accessory==="capBlack"?"#17110D":"#1A3A5C"}/>
-      <path d="M63 43 C77 43 90 48 94 55" fill="none" stroke={cfg.accessory==="capGold"?"#D4AF37":cfg.accessory==="capBlack"?"#17110D":"#1A3A5C"} strokeWidth="8" strokeLinecap="round"/>
-      <path d="M29 37 C38 31 62 31 72 37" stroke="rgba(255,255,255,.28)" strokeWidth="3" strokeLinecap="round" fill="none"/>
-    </g>}
-    {cfg.accessory==="crown"&&<g><path d="M27 40 L34 24 L44 38 L51 21 L59 38 L70 24 L75 40 Z" fill="#D4AF37"/><path d="M27 40 L75 40" stroke="#FFF1A8" strokeWidth="4" strokeLinecap="round"/></g>}
-    <path d={cfg.brows==="angry"?"M31 42 L44 46 M56 46 L69 42":cfg.brows==="thin"?"M31 42 Q38 39 44 41 M56 41 Q63 39 69 42":"M30 42 Q38 37 45 41 M55 41 Q62 37 70 42"} stroke="#24140C" strokeWidth={cfg.brows==="thin"?2:4} strokeLinecap="round" fill="none"/>
-    <ellipse cx="38" cy="55" rx={eyeRx} ry={eyeRy} fill="#fff"/>
-    <ellipse cx="62" cy="55" rx={eyeRx} ry={eyeRy} fill="#fff"/>
-    <ellipse cx="38" cy="55" rx="4" ry="5" fill={eye}/><circle cx="36" cy="53" r="1.4" fill="#fff"/>
-    <ellipse cx="62" cy="55" rx="4" ry="5" fill={eye}/><circle cx="60" cy="53" r="1.4" fill="#fff"/>
-    <path d="M48 60 C50 67 49 70 45 73" stroke="#B87253" strokeWidth="2.4" strokeLinecap="round" fill="none"/>
-    {cfg.facial==="moustache"&&<path d="M39 75 C45 70 49 73 50 77 C51 73 55 70 61 75" stroke={hair} strokeWidth="4" strokeLinecap="round" fill="none"/>}
-    {cfg.facial==="goatee"&&<g><path d="M40 75 C45 72 55 72 60 75" stroke={hair} strokeWidth="3" strokeLinecap="round" fill="none"/><path d="M48 83 Q50 91 53 83" stroke={hair} strokeWidth="4" strokeLinecap="round" fill="none"/></g>}
-    {cfg.facial==="beard"&&<path d="M29 72 C35 96 65 96 71 72 C65 89 35 89 29 72Z" fill={hair} opacity=".75"/>}
-    {cfg.facial==="full"&&<path d="M25 66 C29 98 71 98 75 66 C67 91 33 91 25 66Z" fill={hair} opacity=".82"/>}
-    <path d="M39 78 C47 85 55 85 63 78" stroke="#8B2F1C" strokeWidth="3" strokeLinecap="round" fill="none"/>
-    {cfg.accessory==="earring"&&<g><circle cx="20" cy="64" r="3" fill="#FFD66B"/><circle cx="80" cy="64" r="3" fill="#FFD66B"/></g>}
-    {cfg.accessory==="hoopGold"&&<g stroke="#FFD66B" strokeWidth="2.5" fill="none"><circle cx="20" cy="64" r="5"/><circle cx="80" cy="64" r="5"/></g>}
-    {(cfg.accessory==="glasses"||cfg.accessory==="glassesGold")&&<g stroke={cfg.accessory==="glassesGold"?"#D4AF37":"#1A120C"} strokeWidth="2.7" fill="none"><circle cx="38" cy="55" r="10"/><circle cx="62" cy="55" r="10"/><path d="M48 55 L52 55"/></g>}
-    {cfg.accessory==="piercing"&&<circle cx="57" cy="71" r="2.2" fill="#D4AF37"/>}
+  const skin=AVATAR_OPTIONS.skin[cfg.skin];
+  const hair=AVATAR_OPTIONS.hairColor[cfg.hairColor];
+  const eye=AVATAR_OPTIONS.eyeColor[cfg.eyeColor];
+  const uid=`avp-${makeId(JSON.stringify(cfg)).slice(0,8)}-${String(size).replace(/\W/g,"")}`;
+  const faceW={oval:34,round:36,sharp:33,square:35}[cfg.face]||34;
+  const jawY={oval:118,round:116,sharp:123,square:119}[cfg.face]||118;
+  const cheekY={oval:67,round:69,sharp:66,square:66}[cfg.face]||67;
+  const eyeRy={anime:6.6,sleepy:2.5,sharp:4.2,round:5.4}[cfg.eyes]||5;
+  const eyeRx={anime:7.8,sleepy:7.4,sharp:7.2,round:5.6}[cfg.eyes]||6;
+  const browShape=cfg.brows==="angry"
+    ?"M54 73 L67 77 M93 77 L106 73"
+    :cfg.brows==="thin"
+      ?"M55 72 Q61 69 67 71 M93 71 Q99 69 105 72"
+      :"M53 72 Q61 67 69 71 M91 71 Q99 67 107 72";
+
+  const capColor=cfg.accessory==="capGold"?"#D4AF37":cfg.accessory==="capBlack"?"#15100C":"#19324B";
+  const bandanaColor=cfg.accessory==="bandanaGreen"?"#2F6B42":"#C0392B";
+  const frameGlow=cfg.aura==="vip"?"rgba(255,241,168,.65)":cfg.aura==="flame"?"rgba(240,106,59,.55)":cfg.aura==="ocean"?"rgba(95,215,255,.48)":"rgba(212,175,55,.35)";
+
+  return <svg viewBox="0 0 160 178" width={size} height={size} style={{display:"block",overflow:"visible",filter:"drop-shadow(0 14px 14px rgba(0,0,0,.34))"}}>
+    <defs>
+      <radialGradient id={`${uid}-bg`} cx="35%" cy="18%" r="78%">
+        <stop offset="0%" stopColor="rgba(255,255,255,.45)"/>
+        <stop offset="42%" stopColor="rgba(255,255,255,.08)"/>
+        <stop offset="100%" stopColor="rgba(0,0,0,.16)"/>
+      </radialGradient>
+      <linearGradient id={`${uid}-skin`} x1="42" y1="46" x2="106" y2="126">
+        <stop offset="0%" stopColor="#FFE0BE"/>
+        <stop offset="45%" stopColor={skin}/>
+        <stop offset="100%" stopColor="#8C4C32"/>
+      </linearGradient>
+      <linearGradient id={`${uid}-hair`} x1="46" y1="18" x2="112" y2="140">
+        <stop offset="0%" stopColor="#6F4B2A"/>
+        <stop offset="42%" stopColor={hair}/>
+        <stop offset="100%" stopColor="#120806"/>
+      </linearGradient>
+      <linearGradient id={`${uid}-shirt`} x1="42" y1="124" x2="118" y2="174">
+        <stop offset="0%" stopColor="#4B2412"/>
+        <stop offset="55%" stopColor="#1D0E08"/>
+        <stop offset="100%" stopColor="#070302"/>
+      </linearGradient>
+      <radialGradient id={`${uid}-eye`} cx="36%" cy="34%" r="65%">
+        <stop offset="0%" stopColor="#FFFFFF"/>
+        <stop offset="34%" stopColor="#FFFFFF"/>
+        <stop offset="100%" stopColor="#E6D6C4"/>
+      </radialGradient>
+      <filter id={`${uid}-softShadow`} x="-30%" y="-30%" width="160%" height="170%">
+        <feDropShadow dx="0" dy="6" stdDeviation="4" floodColor="#000000" floodOpacity=".28"/>
+      </filter>
+    </defs>
+
+    <g style={animated?{animation:"avatarIdlePro 3.4s ease-in-out infinite",transformOrigin:"80px 92px"}:null}>
+      <ellipse cx="80" cy="162" rx="52" ry="12" fill="rgba(0,0,0,.26)"/>
+      <circle cx="80" cy="82" r="70" fill={`url(#${uid}-bg)`} opacity=".95"/>
+      <circle cx="55" cy="31" r="32" fill="rgba(255,255,255,.12)"/>
+      {cfg.aura!=="none"&&<circle cx="80" cy="82" r="72" fill="none" stroke={frameGlow} strokeWidth="4" opacity=".72"/>}
+
+      <g style={animated?{animation:"avatarBreathPro 4.2s ease-in-out infinite",transformOrigin:"80px 140px"}:null}>
+        <path d="M49 151 C54 131 65 122 80 122 C95 122 106 131 111 151 C102 166 58 166 49 151Z" fill={`url(#${uid}-shirt)`} filter={`url(#${uid}-softShadow)`}/>
+        <path d="M62 142 C68 133 73 130 80 130 C87 130 93 133 98 142 C91 150 69 150 62 142Z" fill="rgba(212,175,55,.24)"/>
+        <path d="M68 124 C70 113 90 113 92 124 L91 137 C86 143 74 143 69 137Z" fill={`url(#${uid}-skin)`}/>
+      </g>
+
+      {cfg.hair==="dreadsLong"&&<g fill="none" stroke={`url(#${uid}-hair)`} strokeLinecap="round" strokeWidth="10">
+        {["M43 48 C21 62 20 97 35 137","M55 38 C34 61 36 100 50 145","M105 38 C126 61 124 100 110 145","M117 48 C139 62 140 97 125 137","M62 34 C51 62 54 98 61 131","M98 34 C109 62 106 98 99 131"].map((d,i)=><path key={i} d={d} style={animated?{animation:`${i%2?"dreadSwing2":"dreadSwing"} ${2.6+i*.12}s ease-in-out infinite`,transformOrigin:"80px 44px"}:null}/>)}
+        <g fill="#D4AF37" stroke="none"><circle cx="50" cy="112" r="3"/><circle cx="111" cy="108" r="3"/><circle cx="37" cy="126" r="2.6"/></g>
+      </g>}
+
+      {cfg.hair==="dreadsBun"&&<g>
+        <g fill="none" stroke={`url(#${uid}-hair)`} strokeLinecap="round" strokeWidth="9">
+          <path d="M50 45 C31 63 35 100 48 135"/>
+          <path d="M110 45 C129 63 125 100 112 135"/>
+          <path d="M61 39 C53 63 56 98 63 125"/>
+          <path d="M99 39 C107 63 104 98 97 125"/>
+        </g>
+        <ellipse cx="80" cy="30" rx="27" ry="17" fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}/>
+        <path d="M60 31 C70 18 91 18 101 31" stroke="rgba(255,255,255,.22)" strokeWidth="4" strokeLinecap="round" fill="none"/>
+      </g>}
+
+      {cfg.hair==="dreadsTop"&&<g fill="none" stroke={`url(#${uid}-hair)`} strokeLinecap="round" strokeWidth="9">
+        <path d="M49 47 C34 62 37 95 50 128"/>
+        <path d="M111 47 C126 62 123 95 110 128"/>
+        <path d="M64 35 C55 18 68 9 78 24"/>
+        <path d="M78 25 C84 7 100 13 92 34"/>
+        <path d="M88 35 C100 18 114 29 100 45"/>
+        <path d="M72 38 C78 27 90 29 93 42"/>
+      </g>}
+
+      {cfg.hair==="afro"&&<g fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}>
+        {[["50","48","19"],["68","34","23"],["92","34","23"],["110","48","19"],["40","70","19"],["120","70","19"],["80","24","24"]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}
+      </g>}
+
+      {cfg.hair==="punk"&&<path d="M39 72 C44 39 58 16 80 3 C102 16 116 39 121 72 C103 55 57 55 39 72Z" fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}/>}
+      {cfg.hair==="fade"&&<path d="M43 70 C49 42 61 31 80 31 C99 31 111 42 117 70 C99 58 61 58 43 70Z" fill={`url(#${uid}-hair)`}/>}
+      {cfg.hair==="bob"&&<path d="M38 78 C35 47 51 28 80 28 C109 28 125 47 122 78 C119 112 106 132 97 144 C95 115 65 115 63 144 C54 132 41 112 38 78Z" fill={`url(#${uid}-hair)`} filter={`url(#${uid}-softShadow)`}/>}
+
+      <path d={`M${80-faceW} ${cheekY} C${80-faceW-5} 41 ${80-faceW+8} 31 80 31 C${80+faceW-8} 31 ${80+faceW+5} 41 ${80+faceW} ${cheekY} C${80+faceW+2} 98 98 ${jawY} 80 ${jawY} C62 ${jawY} ${80-faceW-2} 98 ${80-faceW} ${cheekY}Z`} fill={`url(#${uid}-skin)`} filter={`url(#${uid}-softShadow)`}/>
+      <path d="M54 57 C61 38 70 32 80 32 C90 32 99 38 106 57 C95 51 65 51 54 57Z" fill={`url(#${uid}-hair)`} opacity={["dreadsLong","dreadsBun","dreadsTop","fade"].includes(cfg.hair)?1:0}/>
+      <path d="M62 112 C69 119 91 119 98 112 C93 128 67 128 62 112Z" fill="rgba(90,45,28,.12)"/>
+
+      {(cfg.accessory==="bandana"||cfg.accessory==="bandanaGreen")&&<g>
+        <path d="M45 61 C57 49 103 49 115 61 L112 72 C94 63 66 63 48 72Z" fill={bandanaColor} filter={`url(#${uid}-softShadow)`}/>
+        <path d="M57 58 C67 54 94 54 104 58" stroke="rgba(255,255,255,.32)" strokeWidth="3" strokeLinecap="round"/>
+        <path d="M111 62 L131 55 L121 76Z" fill={bandanaColor}/>
+      </g>}
+
+      {(cfg.accessory==="cap"||cfg.accessory==="capBlack"||cfg.accessory==="capGold")&&<g filter={`url(#${uid}-softShadow)`}>
+        <path d="M42 60 C48 32 61 22 80 22 C99 22 112 32 118 60 L115 71 C96 61 64 61 45 71Z" fill={capColor}/>
+        <path d="M94 62 C114 60 135 66 144 76" fill="none" stroke={capColor} strokeWidth="10" strokeLinecap="round"/>
+        <path d="M55 51 C66 42 96 42 106 51" stroke="rgba(255,255,255,.32)" strokeWidth="4" strokeLinecap="round" fill="none"/>
+        <circle cx="80" cy="37" r="4" fill="rgba(255,255,255,.35)"/>
+      </g>}
+
+      {cfg.accessory==="crown"&&<g filter={`url(#${uid}-softShadow)`}>
+        <path d="M49 60 L57 34 L72 54 L80 27 L89 54 L104 34 L112 60 Z" fill="#D4AF37"/>
+        <path d="M50 60 L112 60" stroke="#FFF1A8" strokeWidth="5" strokeLinecap="round"/>
+        <circle cx="80" cy="34" r="4" fill="#FFF1A8"/>
+      </g>}
+
+      <path d={browShape} stroke="#1A0C06" strokeWidth={cfg.brows==="thin"?2.2:4.2} strokeLinecap="round" fill="none"/>
+      <g style={animated?{animation:"eyeBlink 5.2s ease-in-out infinite",transformOrigin:"80px 84px"}:null}>
+        <ellipse cx="64" cy="85" rx={eyeRx} ry={eyeRy} fill={`url(#${uid}-eye)`}/>
+        <ellipse cx="96" cy="85" rx={eyeRx} ry={eyeRy} fill={`url(#${uid}-eye)`}/>
+        <ellipse cx="64" cy="85" rx="3.8" ry="4.9" fill={eye}/><circle cx="62.5" cy="83.2" r="1.35" fill="#fff"/>
+        <ellipse cx="96" cy="85" rx="3.8" ry="4.9" fill={eye}/><circle cx="94.5" cy="83.2" r="1.35" fill="#fff"/>
+      </g>
+      <path d="M78 91 C80 98 79 102 74 105" stroke="#9B5A38" strokeWidth="2.8" strokeLinecap="round" fill="none"/>
+      <path d="M66 111 C75 119 87 119 96 111" stroke="#7F2B1A" strokeWidth="3.2" strokeLinecap="round" fill="none"/>
+      <path d="M69 115 C76 119 86 119 92 115" stroke="rgba(255,255,255,.38)" strokeWidth="1.8" strokeLinecap="round"/>
+
+      {cfg.facial==="moustache"&&<path d="M63 105 C71 99 77 103 80 108 C83 103 89 99 97 105" stroke={`url(#${uid}-hair)`} strokeWidth="5" strokeLinecap="round" fill="none"/>}
+      {cfg.facial==="goatee"&&<g><path d="M64 106 C72 102 88 102 96 106" stroke={`url(#${uid}-hair)`} strokeWidth="3.5" strokeLinecap="round" fill="none"/><path d="M77 118 Q80 130 84 118" stroke={`url(#${uid}-hair)`} strokeWidth="5" strokeLinecap="round" fill="none"/></g>}
+      {cfg.facial==="beard"&&<path d="M49 101 C57 135 103 135 111 101 C100 125 60 125 49 101Z" fill={`url(#${uid}-hair)`} opacity=".82"/>}
+      {cfg.facial==="full"&&<path d="M44 94 C49 139 111 139 116 94 C101 130 59 130 44 94Z" fill={`url(#${uid}-hair)`} opacity=".88"/>}
+
+      {cfg.accessory==="earring"&&<g><circle cx="46" cy="94" r="3.4" fill="#FFD66B"/><circle cx="114" cy="94" r="3.4" fill="#FFD66B"/></g>}
+      {cfg.accessory==="hoopGold"&&<g stroke="#FFD66B" strokeWidth="2.8" fill="none"><circle cx="46" cy="94" r="6"/><circle cx="114" cy="94" r="6"/></g>}
+      {(cfg.accessory==="glasses"||cfg.accessory==="glassesGold")&&<g stroke={cfg.accessory==="glassesGold"?"#D4AF37":"#1A120C"} strokeWidth="3.2" fill="rgba(255,255,255,.08)">
+        <circle cx="64" cy="85" r="11.4"/><circle cx="96" cy="85" r="11.4"/><path d="M75 85 L85 85"/>
+        <path d="M53 83 L46 80 M107 83 L114 80" strokeLinecap="round"/>
+      </g>}
+      {cfg.accessory==="piercing"&&<circle cx="90" cy="104" r="2.4" fill="#D4AF37"/>}
+
+      <path d="M54 51 C66 37 96 37 107 51" stroke="rgba(255,255,255,.18)" strokeWidth="3" strokeLinecap="round" fill="none"/>
+      <path d="M54 69 C51 87 55 106 65 116" stroke="rgba(255,255,255,.16)" strokeWidth="4" strokeLinecap="round" fill="none"/>
+    </g>
   </svg>;
 }
 function Av({av=0,config=null,size=36}){
   const cfg=normalizeAvatarConfig(config,av);
   const frame={none:`2px solid rgba(255,244,214,.9)`,bronze:`3px solid #C97934`,gold:`3px solid #D4AF37`,neon:`3px solid #5FD7FF`,legend:`3px solid #FFF1A8`}[cfg.frame]||`2px solid rgba(255,244,214,.9)`;
   const aura={none:"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)",warm:"0 0 22px rgba(212,175,55,.45), 0 8px 18px rgba(20,8,4,.28)",flame:"0 0 26px rgba(240,106,59,.55), 0 8px 18px rgba(20,8,4,.28)",ocean:"0 0 26px rgba(95,215,255,.45), 0 8px 18px rgba(20,8,4,.28)",vip:"0 0 30px rgba(255,241,168,.7), 0 8px 18px rgba(20,8,4,.28)"}[cfg.aura]||"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)";
-  return <div title={avatarStyleName(cfg)} style={{width:size,height:size,borderRadius:"50%",background:bgGradient(cfg.bg),display:"flex",alignItems:"center",justifyContent:"center",border:frame,boxShadow:aura,position:"relative",overflow:"hidden"}}>
+  return <div title={avatarStyleName(cfg)} style={{width:size,height:size,borderRadius:"50%",background:bgGradient(cfg.bg),display:"flex",alignItems:"center",justifyContent:"center",border:frame,boxShadow:aura,position:"relative",overflow:"hidden",perspective:500}}>
     {cfg.aura!=="none"&&<span style={{position:"absolute",inset:3,borderRadius:"50%",background:"radial-gradient(circle at 35% 18%,rgba(255,255,255,.28),transparent 42%)",pointerEvents:"none"}}/>}
-    <AvatarFigure config={cfg} size={size*1.14}/>
+    <span style={{position:"absolute",top:0,bottom:0,width:"38%",left:"-45%",background:"linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent)",animation:size>70?"avatarShinePro 5.2s ease-in-out infinite":"none"}}/>
+    <AvatarFigure config={cfg} size={size*1.18} animated={size>=70}/>
   </div>;
 }
 function CharacterCard({idx,selected,onPick,compact=false}){
   const cfg=normalizeAvatarConfig(AVATAR_PRESETS[idx%AVATAR_PRESETS.length],idx);
   return <button type="button" onClick={()=>{SFX.tab();onPick(idx);}} style={{background:selected?"linear-gradient(180deg,#FFF4D6,#F6E5BE)":"rgba(255,244,214,.72)",border:`2px solid ${selected?T.gold:T.g200}`,borderRadius:18,padding:compact?8:10,cursor:"pointer",boxShadow:selected?"0 10px 24px rgba(212,175,55,.3)":"0 6px 16px rgba(20,8,4,.12)",textAlign:"center",transition:"all .18s ease"}}>
-    <div style={{display:"flex",justifyContent:"center",marginBottom:6}}><Av av={idx} config={cfg} size={compact?42:54}/></div>
+    <div style={{display:"flex",justifyContent:"center",marginBottom:6}}><Av av={idx} config={cfg} size={compact?48:62}/></div>
     <div style={{fontWeight:900,fontSize:compact?".7rem":".78rem",color:T.g800,lineHeight:1.05}}>{AVATAR_LABELS[cfg.hair]}</div>
     {!compact&&<div style={{fontSize:".66rem",fontWeight:800,color:T.textSub,marginTop:2}}>{avatarStyleName(cfg)}</div>}
   </button>;
 }
-function PickerButton({active,children,onClick}){
-  return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?T.gradGold:"rgba(255,244,214,.72)",color:active?T.g900:T.g700,borderRadius:12,padding:"8px 9px",fontWeight:900,fontSize:".72rem",cursor:"pointer",boxShadow:active?"0 8px 18px rgba(212,175,55,.25)":"0 5px 12px rgba(20,8,4,.1)"}}>{children}</button>;
+function PickerButton({active,children,onClick,locked=false}){
+  return <button type="button" onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?T.gradGold:locked?"rgba(60,40,25,.18)":"rgba(255,244,214,.72)",color:active?T.g900:locked?T.textSub:T.g700,borderRadius:12,padding:"8px 9px",fontWeight:900,fontSize:".72rem",cursor:locked?"not-allowed":"pointer",boxShadow:active?"0 8px 18px rgba(212,175,55,.25)":"0 5px 12px rgba(20,8,4,.1)"}}>{locked?"🔒 ":""}{children}</button>;
 }
 function ColorDot({color,active,onClick}){
   return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:32,height:32,borderRadius:"50%",background:color,border:`3px solid ${active?T.gold:"rgba(255,244,214,.9)"}`,boxShadow:active?"0 0 0 3px rgba(212,175,55,.25)":"0 4px 10px rgba(20,8,4,.18)",cursor:"pointer"}}/>;
 }
 function AvatarEditor({form,setForm,ownedKeys=[]}){
+  const [panel,setPanel]=useState("base");
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
   const premiumKeys=new Set(ownedKeys||[]);
   const isLocked=(slot,value)=>COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slot&&c.valor===value&&!premiumKeys.has(c.item_key));
-  const patch=(key,value)=>{if(isLocked(key,value))return;setForm(f=>({...f,avatarConfig:normalizeAvatarConfig({...cfg,[key]:value},f.avatar)}));};
+  const patch=(key,value)=>{if(isLocked(key,value)){SFX.error();return;}setForm(f=>({...f,avatarConfig:normalizeAvatarConfig({...cfg,[key]:value},f.avatar)}));};
   const randomize=()=>setForm(f=>({...f,avatarConfig:randomAvatarConfig(),avatar:Math.floor(Math.random()*AVATAR_PRESETS.length)}));
   const preset=(idx)=>setForm(f=>({...f,avatar:idx,avatarConfig:normalizeAvatarConfig(AVATAR_PRESETS[idx],idx)}));
   const basicAccessories=AVATAR_OPTIONS.accessory.filter(v=>!["capBlack","capGold","glassesGold","bandanaGreen","crown","hoopGold"].includes(v));
+  const panels=[
+    {id:"base",label:"Base",icon:"👤"},
+    {id:"pelo",label:"Pelo",icon:"💇"},
+    {id:"cara",label:"Cara",icon:"👀"},
+    {id:"extras",label:"Extras",icon:"🎩"},
+  ];
   return <div>
-    <Card style={{textAlign:"center",background:"linear-gradient(160deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.72)",color:T.white,marginBottom:12}}>
-      <div style={{display:"flex",justifyContent:"center",marginBottom:8}}><Av av={form.avatar} config={cfg} size={126}/></div>
-      <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{AVATAR_LABELS[cfg.hair]} · {AVATAR_LABELS[cfg.accessory]}</div>
-      <div style={{fontSize:".78rem",fontWeight:800,opacity:.86}}>El personaje usa accesorios mejor ajustados y marcos desbloqueables.</div>
-      <div style={{marginTop:10}}><Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn></div>
+    <Card style={{textAlign:"center",background:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.24),transparent 34%),linear-gradient(160deg,#160B07,#3A1E10 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.72)",color:T.white,marginBottom:12,overflow:"hidden"}}>
+      <div style={{fontSize:".7rem",fontWeight:950,letterSpacing:".7px",textTransform:"uppercase",opacity:.75}}>Cabina de personaje</div>
+      <div style={{display:"flex",justifyContent:"center",margin:"6px 0 8px"}}><Av av={form.avatar} config={cfg} size={150}/></div>
+      <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.5rem",textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{AVATAR_LABELS[cfg.hair]} · {AVATAR_LABELS[cfg.accessory]}</div>
+      <div style={{fontSize:".78rem",fontWeight:800,opacity:.86}}>Estilo pseudo-3D con piezas ancladas: gorra, gafas y rastas ya no flotan.</div>
+      <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:10}}>
+        <Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn>
+      </div>
     </Card>
-    <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🎭 Presets rápidos</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14}}>{AVATAR_PRESETS.slice(0,8).map((_,i)=><CharacterCard key={i} idx={i} compact selected={Number(form.avatar)===i} onPick={preset}/>)}</div>
-    <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>👤 Cara</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.face.map(v=><PickerButton key={v} active={cfg.face===v} onClick={()=>patch("face",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.skin.map((c,i)=><ColorDot key={c} color={c} active={cfg.skin===i} onClick={()=>patch("skin",i)}/>)}</div>
-    <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>💇 Pelo y color</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.hair.map(v=><PickerButton key={v} active={cfg.hair===v} onClick={()=>patch("hair",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.hairColor.map((c,i)=><ColorDot key={c} color={c} active={cfg.hairColor===i} onClick={()=>patch("hairColor",i)}/>)}</div>
-    <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>👀 Ojos y cejas</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.eyes.map(v=><PickerButton key={v} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.brows.map(v=><PickerButton key={v} active={cfg.brows===v} onClick={()=>patch("brows",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.eyeColor.map((c,i)=><ColorDot key={c} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
-    <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🧔 Barba y extras básicos</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.facial.map(v=><PickerButton key={v} active={cfg.facial===v} onClick={()=>patch("facial",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{basicAccessories.map(v=><PickerButton key={v} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
-    <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🖼️ Fondos y marcos desbloqueables</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.bg.map(v=><PickerButton key={v} active={cfg.bg===v} onClick={()=>patch("bg",v)}>{isLocked("bg",v)?"🔒 ":""}{AVATAR_LABELS[v]}</PickerButton>)}</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.frame.map(v=><PickerButton key={v} active={cfg.frame===v} onClick={()=>patch("frame",v)}>{isLocked("frame",v)?"🔒 ":""}{AVATAR_LABELS[v]||v}</PickerButton>)}</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>{AVATAR_OPTIONS.aura.map(v=><PickerButton key={v} active={cfg.aura===v} onClick={()=>patch("aura",v)}>{isLocked("aura",v)?"🔒 ":""}{AVATAR_LABELS[v]||v}</PickerButton>)}</div>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
+      {panels.map(p=><button key={p.id} onClick={()=>{SFX.tab();setPanel(p.id);}} style={{border:`2px solid ${panel===p.id?T.gold:T.g300}`,background:panel===p.id?T.gradGold:"rgba(255,244,214,.82)",color:panel===p.id?T.g900:T.g700,borderRadius:16,padding:"8px 4px",fontWeight:950,cursor:"pointer",boxShadow:panel===p.id?"0 10px 22px rgba(212,175,55,.24)":"0 5px 12px rgba(20,8,4,.1)"}}>
+        <div style={{fontSize:"1.05rem",lineHeight:1}}>{p.icon}</div><div style={{fontSize:".68rem",marginTop:3}}>{p.label}</div>
+      </button>)}
+    </div>
+
+    {panel==="base"&&<>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🎭 Presets de personaje</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14}}>{AVATAR_PRESETS.slice(0,8).map((_,i)=><CharacterCard key={i} idx={i} compact selected={Number(form.avatar)===i} onPick={preset}/>)}</div>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🖼️ Fondo</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.bg.map(v=><PickerButton key={v} active={cfg.bg===v} locked={isLocked("bg",v)} onClick={()=>patch("bg",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>✨ Marco</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.frame.map(v=><PickerButton key={v} active={cfg.frame===v} locked={isLocked("frame",v)} onClick={()=>patch("frame",v)}>{AVATAR_LABELS[v]||v}</PickerButton>)}</div>
+    </>}
+
+    {panel==="pelo"&&<>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>💇 Peinado</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.hair.map(v=><PickerButton key={v} active={cfg.hair===v} onClick={()=>patch("hair",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🎨 Color de pelo</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.hairColor.map((c,i)=><ColorDot key={c} color={c} active={cfg.hairColor===i} onClick={()=>patch("hairColor",i)}/>)}</div>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🧔 Barba / bigote</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.facial.map(v=><PickerButton key={v} active={cfg.facial===v} onClick={()=>patch("facial",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+    </>}
+
+    {panel==="cara"&&<>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>👤 Forma y piel</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.face.map(v=><PickerButton key={v} active={cfg.face===v} onClick={()=>patch("face",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.skin.map((c,i)=><ColorDot key={c} color={c} active={cfg.skin===i} onClick={()=>patch("skin",i)}/>)}</div>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>👀 Ojos</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.eyes.map(v=><PickerButton key={v} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>{AVATAR_OPTIONS.brows.map(v=><PickerButton key={v} active={cfg.brows===v} onClick={()=>patch("brows",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>{AVATAR_OPTIONS.eyeColor.map((c,i)=><ColorDot key={c} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
+    </>}
+
+    {panel==="extras"&&<>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🎩 Complementos básicos</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{basicAccessories.map(v=><PickerButton key={v} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🔓 Complementos desbloqueables</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>{["capBlack","capGold","glassesGold","bandanaGreen","crown","hoopGold"].map(v=><PickerButton key={v} active={cfg.accessory===v} locked={isLocked("accessory",v)} onClick={()=>patch("accessory",v)}>{AVATAR_LABELS[v]}</PickerButton>)}</div>
+      <div style={{fontWeight:900,color:T.g800,margin:"8px 0"}}>🌟 Aura</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>{AVATAR_OPTIONS.aura.map(v=><PickerButton key={v} active={cfg.aura===v} locked={isLocked("aura",v)} onClick={()=>patch("aura",v)}>{AVATAR_LABELS[v]||v}</PickerButton>)}</div>
+    </>}
   </div>;
 }
+
 function Toast({msg,show}){if(!show)return null;return <div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",background:T.g800,color:T.white,padding:"12px 22px",borderRadius:50,fontWeight:700,fontSize:"0.88rem",zIndex:9999,whiteSpace:"nowrap",boxShadow:"0 6px 24px rgba(27,67,50,0.35)",animation:"toastIn 0.3s ease"}}>{msg}</div>;}
 function PtsPopup({pts,show}){if(!show||!pts)return null;return <div style={{position:"fixed",top:"35%",left:"50%",transform:"translateX(-50%)",zIndex:9999,animation:"ptsFloat 1.8s ease forwards",pointerEvents:"none"}}><div style={{background:T.gradGold,color:T.white,borderRadius:50,padding:"10px 24px",fontWeight:900,fontSize:"1.4rem",boxShadow:"0 6px 24px rgba(255,183,3,0.5)"}}>+{pts} pts</div></div>;}
 function Particles(){
