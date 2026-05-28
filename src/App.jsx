@@ -903,7 +903,7 @@ function formatNewsDate(date){
 function categoryInfo(id){return NEWS_CATEGORIES.find(c=>c.id===id)||NEWS_CATEGORIES[0];}
 function categoryVisual(id){return CATEGORY_COLORS[id]||CATEGORY_COLORS.todo;}
 async function fetchNews(category="todo"){
-  const res=await fetch(`/api/news?category=${encodeURIComponent(category)}`);
+  const res=await fetch(`/api/news?category=${encodeURIComponent(category)}&day=${new Date().toISOString().split("T")[0]}`);
   const data=await res.json();
   const items=Array.isArray(data.news)?data.news:[];
   return items.length?items:NEWS_FALLBACK;
@@ -1081,6 +1081,7 @@ function ActualidadMini({onNavigate}){
     </div>
   </Card>;
 }
+
 function Noticias({user,setUser,showToast,showPoints}){
   const [category,setCategory]=useState("todo");
   const [items,setItems]=useState([]);
@@ -1089,16 +1090,22 @@ function Noticias({user,setUser,showToast,showPoints}){
   const [selected,setSelected]=useState(null);
   const [stats,setStats]=useState({});
   const curiosity=getDailyCuriosity();
+
   useEffect(()=>{
     let alive=true;
     async function load(){
       setLoading(true);setError("");
-      try{const list=await fetchNews(category);if(alive){setItems(list);loadStats(list);}}
-      catch(e){const fallback=category==="todo"?NEWS_FALLBACK:NEWS_FALLBACK.filter(n=>n.category===category);if(alive){const final=fallback.length?fallback:NEWS_FALLBACK;setItems(final);loadStats(final);setError("No se han podido cargar todas las fuentes. Te dejo una selección de respaldo.");}}
-      finally{if(alive)setLoading(false);}
+      try{
+        const list=await fetchNews(category);
+        if(alive){setItems(list);loadStats(list);}
+      }catch(e){
+        const fallback=category==="todo"?NEWS_FALLBACK:NEWS_FALLBACK.filter(n=>n.category===category);
+        if(alive){const final=fallback.length?fallback:NEWS_FALLBACK;setItems(final);loadStats(final);setError("No se han podido cargar todas las fuentes. Te dejo una selección de respaldo.");}
+      }finally{if(alive)setLoading(false);}
     }
     load();return()=>{alive=false;};
   },[category]);
+
   async function loadStats(list=items){
     const ids=[...new Set((list||[]).map(n=>String(n.id)).filter(Boolean))];
     if(!ids.length)return;
@@ -1113,67 +1120,88 @@ function Noticias({user,setUser,showToast,showPoints}){
       setStats(next);
     }catch(e){console.warn("stats actualidad",e);}
   }
+
   function reload(){
-    SFX.action();showToast?.("Actualizando selección...");setLoading(true);
-    fetchNews(category).then(list=>{setItems(list);setError("");loadStats(list);}).catch(()=>setError("No se han podido actualizar ahora.")).finally(()=>setLoading(false));
+    SFX.action();
+    showToast?.("Buscando selección nueva...");
+    setLoading(true);
+    fetchNews(category)
+      .then(list=>{setItems(list);setError("");loadStats(list);})
+      .catch(()=>setError("No se han podido actualizar ahora."))
+      .finally(()=>setLoading(false));
   }
+
   function bumpStat(newsId,type){
     setStats(s=>({...s,[newsId]:{comments:(s[newsId]?.comments||0)+(type==="comment"?1:0),likes:(s[newsId]?.likes||0)+(type==="like"?1:0)}}));
   }
+
   const featured=items[0];
-  const rest=items.slice(1);
+  const secondary=items.slice(1,3);
+  const rest=items.slice(3,15);
   const active=categoryInfo(category);
+
   return <div style={{animation:"fadeSlide .35s ease"}}>
-    <Card style={{marginBottom:14,padding:0,overflow:"hidden",background:"linear-gradient(135deg,#1B0D07,#3A1E10 58%,#9A4F22)",border:"2px solid rgba(255,244,214,.55)",color:T.white}}>
-      <div style={{padding:"18px 16px",position:"relative"}}>
-        <div style={{position:"absolute",right:-30,top:-28,fontSize:"7rem",opacity:.08,transform:"rotate(-8deg)"}}>📰</div>
-        <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",position:"relative",zIndex:1}}>
-          <div>
-            <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".65px",textTransform:"uppercase",color:"rgba(255,244,214,.75)"}}>Magazine curado</div>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1}}>Actualidad útil</div>
-            <div style={{fontSize:".86rem",fontWeight:800,opacity:.9,lineHeight:1.35,marginTop:6}}>Un rincón para descubrir cosas cercanas: curiosidades, vida rural, comida, sitios con encanto, pelo, rastas y negocios locales. Lee, comenta, guarda hilos y gana puntos sin convertirlo en un periódico pesado.</div>
+    <Card style={{marginBottom:12,padding:0,overflow:"hidden",background:"linear-gradient(135deg,#1B0D07,#3A1E10 58%,#9A4F22)",border:"2px solid rgba(255,244,214,.55)",color:T.white}}>
+      <div style={{padding:"14px 14px",position:"relative"}}>
+        <div style={{position:"absolute",right:-24,top:-30,fontSize:"6rem",opacity:.08,transform:"rotate(-8deg)"}}>📰</div>
+        <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",position:"relative",zIndex:1}}>
+          <div style={{minWidth:0}}>
+            <div style={{fontSize:".68rem",fontWeight:950,letterSpacing:".65px",textTransform:"uppercase",color:"rgba(255,244,214,.75)"}}>Portada diaria</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",lineHeight:1}}>Actualidad útil</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.88,lineHeight:1.32,marginTop:4}}>Noticias, curiosidades y planes en formato revista, con menos scroll y selección renovada.</div>
           </div>
           <Btn small col="gold" onClick={reload}>Actualizar</Btn>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:14,position:"relative",zIndex:1}}>
-          {["Sin ruido político","Comentarios con puntos","Contenido para guardar"].map(t=><div key={t} style={{background:"rgba(255,244,214,.12)",border:"1px solid rgba(255,244,214,.22)",borderRadius:14,padding:"8px 6px",textAlign:"center",fontSize:".68rem",fontWeight:900}}>{t}</div>)}
-        </div>
       </div>
     </Card>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(2, minmax(0,1fr))",gap:8,marginBottom:12}}>
+
+    <div style={{display:"flex",gap:8,overflowX:"auto",padding:"0 2px 10px",marginBottom:6}}>
       {NEWS_CATEGORIES.map(c=>{
         const selectedCat=category===c.id,visual=categoryVisual(c.id);
-        return <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{border:`2px solid ${selectedCat?visual.accent:T.g300}`,background:selectedCat?visual.bg:"rgba(255,244,214,.72)",color:selectedCat?T.g900:T.g700,borderRadius:18,padding:"10px 11px",fontWeight:950,cursor:"pointer",boxShadow:selectedCat?"0 10px 22px rgba(20,8,4,.18)":"0 5px 12px rgba(20,8,4,.1)",textAlign:"left"}}>
-          <div style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:"1.18rem"}}>{c.icon}</span><span style={{fontSize:".82rem"}}>{c.short}</span></div>
-          <div style={{fontSize:".64rem",fontWeight:800,opacity:.72,marginTop:2,lineHeight:1.15}}>{c.desc}</div>
+        return <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{minWidth:96,whiteSpace:"nowrap",border:`2px solid ${selectedCat?visual.accent:T.g300}`,background:selectedCat?visual.bg:"rgba(255,244,214,.78)",color:selectedCat?T.g900:T.g700,borderRadius:999,padding:"8px 10px",fontWeight:950,cursor:"pointer",boxShadow:selectedCat?"0 10px 20px rgba(20,8,4,.18)":"0 5px 12px rgba(20,8,4,.1)"}}>
+          <span style={{fontSize:"1rem",marginRight:5}}>{c.icon}</span>{c.short}
         </button>;
       })}
     </div>
-    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF8E5,#F6E5BE)",border:`2px solid ${T.g300}`}}>
-      <div style={{display:"flex",gap:11,alignItems:"flex-start"}}>
-        <div style={{width:48,height:48,borderRadius:18,display:"grid",placeItems:"center",background:categoryVisual("curiosidades").bg,fontSize:"1.6rem",boxShadow:"inset 0 1px 0 rgba(255,255,255,.7)"}}>💡</div>
-        <div style={{flex:1}}>
-          <div style={{fontSize:".72rem",fontWeight:950,color:T.g600,textTransform:"uppercase",letterSpacing:".45px"}}>Curiosidad del día · {curiosity.tag}</div>
-          <div style={{fontWeight:950,color:T.g900,marginTop:3,lineHeight:1.15}}>{curiosity.title}</div>
-          <div style={{fontSize:".84rem",fontWeight:750,lineHeight:1.38,color:T.textSub,marginTop:5}}>{curiosity.text}</div>
+
+    <div style={{display:"grid",gridTemplateColumns:"1.2fr .8fr",gap:10,marginBottom:12}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF8E5,#F6E5BE)",border:`2px solid ${T.g300}`,padding:12}}>
+        <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+          <div style={{width:44,height:44,borderRadius:16,display:"grid",placeItems:"center",background:categoryVisual("curiosidades").bg,fontSize:"1.45rem"}}>💡</div>
+          <div style={{minWidth:0}}>
+            <div style={{fontSize:".65rem",fontWeight:950,color:T.g600,textTransform:"uppercase"}}>Curiosidad · {curiosity.tag}</div>
+            <div style={{fontWeight:950,color:T.g900,lineHeight:1.12,fontSize:".92rem"}}>{curiosity.title}</div>
+            <div style={{fontSize:".75rem",fontWeight:750,lineHeight:1.28,color:T.textSub,marginTop:4,display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{curiosity.text}</div>
+          </div>
         </div>
-      </div>
-    </Card>
-    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F6E5BE,#E6C27A)",border:`2px solid ${T.g300}`}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
-        <div><div style={{fontSize:"1.35rem"}}>👍</div><div style={{fontWeight:950,color:T.g800}}>+2</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub}}>primer like</div></div>
-        <div><div style={{fontSize:"1.35rem"}}>💬</div><div style={{fontWeight:950,color:T.g800}}>+5</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub}}>primer comentario</div></div>
-        <div><div style={{fontSize:"1.35rem"}}>🔥</div><div style={{fontWeight:950,color:T.g800}}>+15/+35</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub}}>hitos de lectura</div></div>
-      </div>
-    </Card>
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,margin:"6px 2px 12px"}}>
-      <div><div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div><div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>Abre una noticia para ver la fuente, comentar y seguir el hilo desde tu perfil.</div></div>
-      <Badge col="gold">{items.length||0} ideas</Badge>
+      </Card>
+      <Card style={{background:"linear-gradient(180deg,#F6E5BE,#E6C27A)",border:`2px solid ${T.g300}`,padding:12}}>
+        <div style={{fontWeight:950,color:T.g800,fontSize:".86rem",marginBottom:8}}>Participa</div>
+        <div style={{display:"grid",gap:6}}>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:900,color:T.textSub}}><span>👍 Primer like</span><b style={{color:T.g800}}>+1</b></div>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:900,color:T.textSub}}><span>💬 Primer comentario</span><b style={{color:T.g800}}>+3</b></div>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:900,color:T.textSub}}><span>🔥 Hitos</span><b style={{color:T.g800}}>+8/+20</b></div>
+        </div>
+      </Card>
     </div>
-    {error&&<Card style={{marginBottom:12,background:"#FFF0E5",border:"2px solid #E8871A"}}><div style={{fontWeight:950,color:T.g800}}>Aviso</div><div style={{fontSize:".82rem",fontWeight:750,color:T.textSub}}>{error}</div></Card>}
+
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,margin:"4px 2px 10px"}}>
+      <div><div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div><div style={{fontSize:".74rem",fontWeight:800,color:T.textSub}}>Abre una tarjeta para comentar y seguir el hilo.</div></div>
+      <Badge col="gold">{items.length||0}</Badge>
+    </div>
+
+    {error&&<Card style={{marginBottom:10,background:"#FFF0E5",border:"2px solid #E8871A"}}><div style={{fontWeight:950,color:T.g800}}>Aviso</div><div style={{fontSize:".8rem",fontWeight:750,color:T.textSub}}>{error}</div></Card>}
+
     {loading?<Spinner/>:items.length===0?<EmptyState icon="📰" title="No hay selección ahora" sub="Prueba otra categoría o actualiza en unos minutos."/>:<>
-      {featured&&<NewsCard item={featured} featured stats={stats[String(featured.id)]} onOpen={setSelected}/>} 
-      {rest.map(n=><NewsCard key={n.id} item={n} stats={stats[String(n.id)]} onOpen={setSelected}/>)}</>}
+      {featured&&<div style={{marginBottom:10}}><NewsCard item={featured} featured stats={stats[String(featured.id)]} onOpen={setSelected}/></div>}
+      {secondary.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10,marginBottom:10}}>
+        {secondary.map(n=><NewsCard key={n.id} item={n} compact stats={stats[String(n.id)]} onOpen={setSelected}/>)}
+      </div>}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>
+        {rest.map(n=><NewsCard key={n.id} item={n} compact stats={stats[String(n.id)]} onOpen={setSelected}/>)}
+      </div>
+    </>}
+
     <NewsDetailModal item={selected} user={user} setUser={setUser} showToast={showToast} showPoints={showPoints} onClose={()=>setSelected(null)} onChanged={bumpStat}/>
   </div>;
 }
@@ -2718,8 +2746,104 @@ function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPo
 }
 
 // PERFIL
+function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
+  const [items,setItems]=useState(COSMETIC_CATALOG_FALLBACK);
+  const [owned,setOwned]=useState(localOwnedCosmetics(user));
+  const [loading,setLoading]=useState(true);
+
+  useEffect(()=>{load();},[user.id]);
+
+  async function load(){
+    setLoading(true);
+    let catalog=COSMETIC_CATALOG_FALLBACK;
+    try{
+      const {data,error}=await supabase.from("avatar_cosmetics").select("*").eq("activo",true).order("puntos_precio",{ascending:true});
+      if(!error && data?.length) catalog=data;
+    }catch{}
+    let keys=localOwnedCosmetics(user);
+    try{
+      const {data,error}=await supabase.from("user_cosmetics").select("item_key").eq("usuario_id",String(user.id));
+      if(!error && data){keys=[...new Set([...keys,...data.map(x=>x.item_key)])];saveLocalOwnedCosmetics(user,keys);}
+    }catch{}
+    setItems(catalog.sort((a,b)=>Number(a.puntos_precio||0)-Number(b.puntos_precio||0)));
+    setOwned(keys);
+    setLoading(false);
+  }
+
+  async function reveal(item){
+    if(owned.includes(item.item_key)){apply(item);return;}
+    if((user.puntos||0)<Number(item.puntos_precio||0)){
+      showToast?.(`Te faltan ${Number(item.puntos_precio||0)-(user.puntos||0)} pts para revelar este premio`);
+      SFX.error();
+      return;
+    }
+    try{
+      await supabase.from("user_cosmetics").upsert({usuario_id:String(user.id),item_key:item.item_key,created_at:new Date().toISOString()},{onConflict:"usuario_id,item_key"});
+    }catch{}
+    const keys=[...new Set([...owned,item.item_key])];
+    saveLocalOwnedCosmetics(user,keys);
+    setOwned(keys);
+    SFX.success();
+    showToast?.(`${item.nombre} revelado`);
+    apply(item,true);
+  }
+
+  async function apply(item,skipToast=false){
+    const cfg=normalizeAvatarConfig({...currentConfig,...cosmeticPatch(item)},user.avatar);
+    await saveAvatarConfigForUser(user,cfg);
+    setUser?.(u=>({...u,avatarConfig:cfg,avatar_config:cfg}));
+    onApply?.(cfg);
+    if(!skipToast){SFX.success();showToast?.(`${item.nombre} equipado`);}
+  }
+
+  const max=Math.max(...items.map(i=>Number(i.puntos_precio||0)),1);
+  const next=items.find(i=>!owned.includes(i.item_key) && Number(i.puntos_precio||0)>(user.puntos||0)) || items.find(i=>!owned.includes(i.item_key));
+  const progress=Math.max(0,Math.min(100,((user.puntos||0)/max)*100));
+
+  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`,overflow:"hidden"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:12}}>
+      <div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.32rem",color:T.g800}}>🎁 Camino de estilo</div>
+        <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>No gastas puntos: al alcanzar cada hito puedes revelar un cosmético para tu personaje.</div>
+      </div>
+      <Badge col="gold">{user.puntos||0} pts</Badge>
+    </div>
+
+    <div style={{height:12,background:"rgba(110,53,24,.16)",borderRadius:999,overflow:"hidden",marginBottom:10}}>
+      <div style={{height:"100%",width:`${progress}%`,background:T.gradGold,borderRadius:999,transition:"width .35s ease"}}/>
+    </div>
+    {next&&<div style={{fontSize:".78rem",fontWeight:900,color:T.textSub,marginBottom:12}}>Siguiente silueta: <b style={{color:T.g800}}>{next.puntos_precio} pts</b></div>}
+
+    {loading?<Spinner/>:<div style={{display:"flex",gap:12,overflowX:"auto",padding:"4px 2px 10px"}}>
+      {items.map((item,idx)=>{
+        const reached=(user.puntos||0)>=Number(item.puntos_precio||0);
+        const has=owned.includes(item.item_key);
+        const active=normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;
+        return <div key={item.item_key} style={{minWidth:150,position:"relative",background:active?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"rgba(255,244,214,.78)",border:`2px solid ${active?T.gold:reached?T.g300:T.g200}`,borderRadius:20,padding:10,boxShadow:"0 8px 18px rgba(20,8,4,.1)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+            <div style={{width:26,height:26,borderRadius:"50%",background:reached?T.gradGold:"rgba(47,22,12,.22)",display:"grid",placeItems:"center",fontWeight:950,color:reached?T.g900:T.white,fontSize:".78rem"}}>{idx+1}</div>
+            <b style={{color:reached?T.orange:T.textSub,fontSize:".76rem"}}>{item.puntos_precio} pts</b>
+          </div>
+          <div style={{height:78,display:"grid",placeItems:"center",marginBottom:8}}>
+            {reached||has?<Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(item)}} size={70}/>:
+              <div style={{width:70,height:70,borderRadius:"50%",background:"linear-gradient(180deg,#6E6048,#2B1B12)",filter:"grayscale(1)",opacity:.58,display:"grid",placeItems:"center",fontSize:"2rem",boxShadow:"inset 0 8px 20px rgba(0,0,0,.25)"}}>?</div>}
+          </div>
+          <div style={{fontWeight:950,color:T.g800,fontSize:".82rem",lineHeight:1.1}}>{has||reached?item.nombre:"Premio oculto"}</div>
+          <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub,lineHeight:1.25,minHeight:32,marginTop:4}}>
+            {has?item.descripcion:reached?"Has llegado: revela el premio y equípalo.":"Sigue ganando puntos para descubrir qué hay aquí."}
+          </div>
+          <div style={{marginTop:9}}>
+            {has?<Btn full small col={active?"ghost":"gold"} onClick={()=>apply(item)}>{active?"Equipado":"Equipar"}</Btn>:
+              <Btn full small col={reached?"gold":"ghost"} disabled={!reached} onClick={()=>reveal(item)}>{reached?"Revelar":"Bloqueado"}</Btn>}
+          </div>
+        </div>;
+      })}
+    </div>}
+  </Card>;
+}
+
 function Perfil({user,setUser,onLogout,showToast,showPoints}){
-  const [editing,setEditing]=useState(false);
+  const [tab,setTab]=useState("resumen");
   const [ownedCosmetics,setOwnedCosmetics]=useState(localOwnedCosmetics(user));
   const [form,setForm]=useState({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});
   useEffect(()=>{setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});setOwnedCosmetics(localOwnedCosmetics(user));},[user.id,user.nombre,user.avatar,user.avatarConfig]);
@@ -2728,40 +2852,68 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
     await dbPatch("usuarios",`?id=eq.${user.id}`,{nombre:form.nombre,avatar:form.avatar});
     await saveAvatarConfigForUser({...user,nombre:form.nombre,avatar:form.avatar},cfg);
     setUser(u=>({...u,nombre:form.nombre,avatar:form.avatar,avatarConfig:cfg,avatar_config:cfg}));
-    setEditing(false);SFX.success();showToast("Personaje actualizado");
+    SFX.success();showToast("Personaje actualizado");
   }
   const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Gold":user.puntos>=200?"Silver":"Bronze";
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
+  const tabs=[
+    {id:"resumen",icon:"👤",label:"Resumen"},
+    {id:"editar",icon:"🎨",label:"Editor"},
+    {id:"camino",icon:"🎁",label:"Camino"},
+    {id:"logros",icon:"🏆",label:"Logros"},
+  ];
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🧬" title="Mi Personaje" sub="Creador de avatar estilo videojuego"/>
-      <Card style={{textAlign:"center",marginBottom:16,background:"linear-gradient(160deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.72)",color:T.white,padding:"22px 16px"}}>
-        <div style={{display:"flex",justifyContent:"center",marginBottom:10}}><Av av={form.avatar} config={cfg} size={120}/></div>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{user.nombre}</div>
-        <div style={{fontSize:"0.8rem",color:"rgba(255,244,214,.82)",fontWeight:800}}>{user.email}</div>
-        <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10,flexWrap:"wrap"}}>
-          <Badge col="gold">{nivel}</Badge>
-          <Badge col="green">{avatarStyleName(cfg)}</Badge>
-        </div>
-        {user.rol===ROLES.CLIENT&&<div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,244,214,.16)",border:"1px solid rgba(255,244,214,.35)",borderRadius:16,padding:"8px 14px"}}><span style={{fontSize:"1.4rem"}}>💎</span><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",color:T.white}}>{user.puntos||0} pts</div></div>}
-      </Card>
-      <ObjetivosTrofeos user={user} setUser={setUser} showToast={showToast} showPoints={showPoints}/>
-      <AvatarCosmeticShop user={user} setUser={setUser} currentConfig={cfg} onApply={(newCfg)=>{setForm(f=>({...f,avatarConfig:newCfg}));setOwnedCosmetics(localOwnedCosmetics(user));}} showToast={showToast} showPoints={showPoints}/>
-      <PerfilNewsActivity user={user}/>
-      {editing?(
-        <Card style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
-            <div><div style={{fontWeight:900,color:T.g800}}>Creador de personaje</div><div style={{fontSize:".78rem",color:T.textSub,fontWeight:700}}>Cara, pelo, barba, ojos, cejas, pendientes y colores</div></div>
-            <div className="icon3d" style={{fontSize:"2rem"}}>🎮</div>
+      <Card style={{marginBottom:12,background:"linear-gradient(160deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.72)",color:T.white,padding:"14px 14px"}}>
+        <div style={{display:"flex",gap:13,alignItems:"center"}}>
+          <Av av={form.avatar} config={cfg} size={86}/>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white,lineHeight:1}}>{user.nombre}</div>
+            <div style={{fontSize:".74rem",color:"rgba(255,244,214,.82)",fontWeight:800,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.email}</div>
+            <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+              <Badge col="gold">{nivel}</Badge>
+              <Badge col="green">{user.puntos||0} pts</Badge>
+            </div>
+            <div style={{fontSize:".72rem",fontWeight:800,color:"rgba(255,244,214,.82)",marginTop:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{avatarStyleName(cfg)}</div>
           </div>
-          <Input label="Nombre" value={form.nombre} onChange={v=>setForm(f=>({...f,nombre:v}))}/>
-          <AvatarEditor form={form} setForm={setForm} ownedKeys={ownedCosmetics}/>
-          <div style={{display:"flex",gap:8,marginTop:12}}>
-            <Btn full onClick={save}>💾 Guardar personaje</Btn>
-            <Btn full col="ghost" onClick={()=>setEditing(false)}>Cancelar</Btn>
+        </div>
+      </Card>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
+        {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${tab===t.id?T.gold:T.g300}`,background:tab===t.id?T.gradGold:"rgba(255,244,214,.82)",color:tab===t.id?T.g900:T.g700,borderRadius:16,padding:"9px 4px",fontWeight:950,cursor:"pointer",boxShadow:tab===t.id?"0 10px 22px rgba(212,175,55,.24)":"0 5px 12px rgba(20,8,4,.1)"}}>
+          <div style={{fontSize:"1.1rem",lineHeight:1}}>{t.icon}</div>
+          <div style={{fontSize:".68rem",marginTop:3}}>{t.label}</div>
+        </button>)}
+      </div>
+
+      {tab==="resumen"&&<>
+        <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
+            <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>{user.puntos||0}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>🏆</div><div style={{fontWeight:950,color:T.g800}}>{nivel}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>nivel</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>🎁</div><div style={{fontWeight:950,color:T.g800}}>Camino</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>recompensas</div></div>
           </div>
         </Card>
-      ):<Btn full col="gold" onClick={()=>setEditing(true)} style={{marginBottom:12}}>🎨 Editar personaje</Btn>}
+        <PerfilNewsActivity user={user}/>
+      </>}
+
+      {tab==="editar"&&<Card style={{marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
+          <div><div style={{fontWeight:900,color:T.g800}}>Editor de personaje</div><div style={{fontSize:".78rem",color:T.textSub,fontWeight:700}}>El editor queda arriba, sin bajar media página.</div></div>
+          <div className="icon3d" style={{fontSize:"2rem"}}>🎮</div>
+        </div>
+        <Input label="Nombre" value={form.nombre} onChange={v=>setForm(f=>({...f,nombre:v}))}/>
+        <AvatarEditor form={form} setForm={setForm} ownedKeys={ownedCosmetics}/>
+        <div style={{display:"flex",gap:8,marginTop:12}}>
+          <Btn full onClick={save}>💾 Guardar personaje</Btn>
+          <Btn full col="ghost" onClick={()=>setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)})}>Restaurar</Btn>
+        </div>
+      </Card>}
+
+      {tab==="camino"&&<AvatarRewardPath user={user} setUser={setUser} currentConfig={cfg} onApply={(newCfg)=>{setForm(f=>({...f,avatarConfig:newCfg}));setOwnedCosmetics(localOwnedCosmetics(user));}} showToast={showToast} showPoints={showPoints}/>}
+
+      {tab==="logros"&&<ObjetivosTrofeos user={user} setUser={setUser} showToast={showToast} showPoints={showPoints}/>}
+
       <Btn full col="red" onClick={onLogout}>🚪 Cerrar sesión</Btn>
     </div>
   );
