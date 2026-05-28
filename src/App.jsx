@@ -3255,64 +3255,98 @@ const HELP_TEXTS={
   usuarios:"Aquí un admin puede cambiar roles y permisos."
 };
 
-function LoginHelperAvatar({size=46}={}){
+function LoginHelperAvatar({size=46,speaking=false}={}){
+  const wrapStyle={
+    width:size,
+    height:size,
+    borderRadius:"50%",
+    overflow:"hidden",
+    display:"grid",
+    placeItems:"center",
+    background:"radial-gradient(circle at 30% 20%,#FFF5D8 0%,#E9D09A 42%,#C98B35 100%)",
+    border:`2px solid ${T.g300}`,
+    boxShadow:speaking?"0 10px 24px rgba(20,8,4,.24), 0 0 0 6px rgba(255,215,102,.16)":"0 8px 16px rgba(20,8,4,.18)",
+    animation:"avatarIdlePro 3.2s ease-in-out infinite"
+  };
   return (
-    <div
-      style={{
-        width:size,
-        height:size,
-        borderRadius:"50%",
-        overflow:"hidden",
-        display:"grid",
-        placeItems:"center",
-        background:"linear-gradient(180deg,#FFF4D6,#E6C27A)",
-        border:`2px solid ${T.g300}`,
-        boxShadow:"0 8px 16px rgba(20,8,4,.18)"
-      }}
-    >
+    <div style={wrapStyle}>
       <svg viewBox="0 0 120 120" style={{width:"100%",height:"100%",display:"block"}}>
         <defs>
-          <linearGradient id="loginHelperBg" x1="0" x2="1">
-            <stop offset="0%" stopColor="#6A3B1F"/>
-            <stop offset="100%" stopColor="#D4AF37"/>
+          <linearGradient id="helperBgPro" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#6E3C21"/>
+            <stop offset="60%" stopColor="#B86C2F"/>
+            <stop offset="100%" stopColor="#E0B146"/>
+          </linearGradient>
+          <radialGradient id="helperGlowPro" cx="35%" cy="25%" r="70%">
+            <stop offset="0%" stopColor="rgba(255,255,255,.55)"/>
+            <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+          </radialGradient>
+          <linearGradient id="skinHelperPro" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#F5C89A"/>
+            <stop offset="100%" stopColor="#E7AB77"/>
+          </linearGradient>
+          <linearGradient id="clothHelperPro" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#5D3317"/>
+            <stop offset="100%" stopColor="#8F4D22"/>
+          </linearGradient>
+          <linearGradient id="bandanaPro" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#A62A25"/>
+            <stop offset="100%" stopColor="#E36C47"/>
+          </linearGradient>
+          <linearGradient id="dreadPro" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#4A2B14"/>
+            <stop offset="100%" stopColor="#C08A3D"/>
           </linearGradient>
         </defs>
 
-        <circle cx="60" cy="60" r="60" fill="url(#loginHelperBg)" />
-        <circle cx="60" cy="60" r="52" fill="rgba(255,255,255,.12)" />
+        <circle cx="60" cy="60" r="60" fill="url(#helperBgPro)" />
+        <circle cx="44" cy="28" r="34" fill="url(#helperGlowPro)" />
+        <ellipse cx="60" cy="104" rx="25" ry="7" fill="rgba(20,8,4,.18)"/>
 
-        <path d="M26 42 C18 52 18 72 30 88" fill="none" stroke="#25140B" strokeWidth="8" strokeLinecap="round"/>
-        <path d="M34 32 C24 45 25 68 36 90" fill="none" stroke="#3A2113" strokeWidth="8" strokeLinecap="round"/>
-        <path d="M94 42 C102 52 102 72 90 88" fill="none" stroke="#25140B" strokeWidth="8" strokeLinecap="round"/>
-        <path d="M86 32 C96 45 95 68 84 90" fill="none" stroke="#3A2113" strokeWidth="8" strokeLinecap="round"/>
+        <g style={{transformOrigin:"60px 56px",animation:"avatarBreathPro 3s ease-in-out infinite"}}>
+          <path d="M18 46 C18 60 22 76 28 90" fill="none" stroke="#3C2413" strokeWidth="8" strokeLinecap="round"/>
+          <path d="M26 36 C24 52 28 72 34 92" fill="none" stroke="url(#dreadPro)" strokeWidth="8" strokeLinecap="round"/>
+          <path d="M33 30 C32 50 37 72 40 92" fill="none" stroke="#D4A24E" strokeWidth="8" strokeLinecap="round"/>
+          <path d="M102 46 C102 60 98 76 92 90" fill="none" stroke="#3C2413" strokeWidth="8" strokeLinecap="round"/>
+          <path d="M94 36 C96 52 92 72 86 92" fill="none" stroke="url(#dreadPro)" strokeWidth="8" strokeLinecap="round"/>
+          <path d="M87 30 C88 50 83 72 80 92" fill="none" stroke="#D4A24E" strokeWidth="8" strokeLinecap="round"/>
 
-        <ellipse cx="60" cy="20" rx="16" ry="8" fill="#2A180D" />
-        <path d="M47 28 C50 20 56 16 60 16 C64 16 70 20 73 28" fill="none" stroke="#3E2313" strokeWidth="8" strokeLinecap="round"/>
-        <rect x="48" y="29" width="24" height="6" rx="3" fill="#C0392B"/>
+          <path d="M38 42 C40 25 49 18 60 18 C71 18 80 25 82 42 L81 48 C75 44 67 42 60 42 C53 42 45 44 39 48 Z" fill="#342013"/>
+          <path d="M37 45 C44 37 52 33 60 33 C68 33 76 37 83 45 L80 55 C74 50 67 48 60 48 C53 48 46 50 40 55 Z" fill="url(#bandanaPro)"/>
+          <path d="M53 23 C55 18 58 16 60 16 C62 16 65 18 67 23" fill="none" stroke="#5B351A" strokeWidth="6" strokeLinecap="round"/>
+          <ellipse cx="60" cy="19" rx="12" ry="5" fill="#5B351A" opacity=".85"/>
 
-        <path d="M34 46 C38 28 49 20 60 20 C71 20 82 28 86 46" fill="#24140C"/>
+          <path d="M39 54 C39 39 48 28 60 28 C72 28 81 39 81 54 C81 75 72 92 60 96 C48 92 39 75 39 54 Z" fill="url(#skinHelperPro)"/>
+          <ellipse cx="38" cy="61" rx="4" ry="7" fill="#E5A06F"/>
+          <ellipse cx="82" cy="61" rx="4" ry="7" fill="#E5A06F"/>
 
-        <path d="M36 46 C44 40 52 38 60 38 C68 38 76 40 84 46 L82 53 C75 48 68 46 60 46 C52 46 45 48 38 53 Z" fill="#A72822"/>
+          <path d="M47 49 C51 46 55 46 58 47" fill="none" stroke="#301B10" strokeWidth="2.6" strokeLinecap="round"/>
+          <path d="M62 47 C65 46 69 46 73 49" fill="none" stroke="#301B10" strokeWidth="2.6" strokeLinecap="round"/>
 
-        <path d="M38 56 C38 40 48 30 60 30 C72 30 82 40 82 56 C82 76 72 92 60 95 C48 92 38 76 38 56 Z" fill="#F0B37E"/>
+          <g style={{transformOrigin:"51px 59px",animation:"eyeBlink 4.4s infinite"}}>
+            <ellipse cx="51" cy="58" rx="3.3" ry="4.2" fill="#17110D"/>
+            <circle cx="50" cy="57" r="1" fill="#fff"/>
+          </g>
+          <g style={{transformOrigin:"69px 59px",animation:"eyeBlink 4.4s infinite"}}>
+            <ellipse cx="69" cy="58" rx="3.3" ry="4.2" fill="#17110D"/>
+            <circle cx="68" cy="57" r="1" fill="#fff"/>
+          </g>
 
-        <ellipse cx="38" cy="63" rx="4" ry="7" fill="#E9A578"/>
-        <ellipse cx="82" cy="63" rx="4" ry="7" fill="#E9A578"/>
+          <path d="M59 60 C60 65 59 68 56.5 70" fill="none" stroke="#C9855C" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M50 74 C55 78 65 78 70 74" fill="none" stroke="#8E3826" strokeWidth="3" strokeLinecap="round"/>
 
-        <path d="M47 52 C51 49 55 49 59 50" fill="none" stroke="#26160D" strokeWidth="2.5" strokeLinecap="round"/>
-        <path d="M61 50 C65 49 69 49 73 52" fill="none" stroke="#26160D" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M47 70 C51 68 56 68 60 69 C64 68 69 68 73 70" fill="none" stroke="#3A2314" strokeWidth="4" strokeLinecap="round"/>
+          <path d="M49 78 C53 82 67 82 71 78" fill="none" stroke="#3A2314" strokeWidth="3" strokeLinecap="round"/>
+          <path d="M56 76 L60 84 L64 76" fill="#3A2314"/>
 
-        <ellipse cx="51" cy="60" rx="3.5" ry="4.5" fill="#17110D"/>
-        <ellipse cx="69" cy="60" rx="3.5" ry="4.5" fill="#17110D"/>
-        <circle cx="50" cy="59" r="1" fill="#fff"/>
-        <circle cx="68" cy="59" r="1" fill="#fff"/>
+          <path d="M44 106 C49 97 71 97 76 106" fill="url(#clothHelperPro)"/>
+          <path d="M52 96 C56 93 64 93 68 96" fill="none" stroke="#F4D27E" strokeWidth="4" strokeLinecap="round"/>
+        </g>
 
-        <path d="M59 62 C60 66 60 69 57 71" fill="none" stroke="#CF8B61" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M53 77 C56 80 64 80 67 77" fill="none" stroke="#8B2F1C" strokeWidth="3" strokeLinecap="round"/>
-
-        <path d="M48 97 C52 91 68 91 72 97" fill="#2E1B12"/>
-        <path d="M43 108 C49 100 71 100 77 108" fill="#5C3317"/>
-        <path d="M48 105 C54 99 66 99 72 105" stroke="#FFD26B" strokeWidth="4" strokeLinecap="round" fill="none"/>
+        {speaking && <g style={{animation:"softPop3d .25s ease"}}>
+          <circle cx="96" cy="22" r="12" fill="#FFF7E0" stroke="#D4AF37" strokeWidth="3"/>
+          <path d="M93 18 H99 M96 15 V21" stroke="#8A5A1D" strokeWidth="2.2" strokeLinecap="round"/>
+        </g>}
       </svg>
     </div>
   );
@@ -3320,18 +3354,97 @@ function LoginHelperAvatar({size=46}={}){
 
 function HelperMascot({page}){
   const [open,setOpen]=useState(false);
-  const text=HELP_TEXTS[page]||"Pulsa cualquier pestaña del menú para moverte por la app.";
-  return <Card style={{marginTop:16,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px",boxShadow:"0 8px 20px rgba(20,8,4,.16)"}}>
-    <button onClick={()=>{SFX.click();setOpen(v=>!v);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:"transparent",border:"none",cursor:"pointer",padding:0,textAlign:"left"}}>
-      <LoginHelperAvatar />
-      <div style={{flex:1}}>
-        <div style={{fontWeight:950,color:T.g800}}>Ayuda rápida</div>
-        <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>{open?"Toca para ocultar la ayuda":"Toca para ver qué puedes hacer aquí"}</div>
+  const [hovered,setHovered]=useState(false);
+  const tips=[
+    HELP_TEXTS[page]||"Pulsa cualquier pestaña del menú para moverte por la app.",
+    "Los puntos diarios te ayudan a subir nivel y desbloquear cosméticos del personaje.",
+    "En Comunidad puedes leer el tablón, abrir debates y comentar noticias sin salir de la misma zona.",
+    "En Perfil podrás cambiar tu look y guardar el personaje cuando desbloquees nuevas piezas.",
+    "Si una zona te lía, toca al rasta y te iré soltando consejos rápidos como en un videojuego."
+  ];
+  const [tipIndex,setTipIndex]=useState(0);
+  const active=open||hovered;
+
+  useEffect(()=>{
+    if(!active) return;
+    const id=setInterval(()=>setTipIndex(v=>(v+1)%tips.length),4200);
+    return ()=>clearInterval(id);
+  },[active,page]);
+
+  return (
+    <div style={{marginTop:16,display:"flex",justifyContent:"flex-start"}}>
+      <div
+        onMouseEnter={()=>setHovered(true)}
+        onMouseLeave={()=>setHovered(false)}
+        style={{position:"relative",display:"inline-flex",alignItems:"flex-end",gap:10}}
+      >
+        {active && (
+          <div style={{
+            position:"absolute",
+            left:74,
+            bottom:12,
+            minWidth:220,
+            maxWidth:310,
+            background:"linear-gradient(180deg,#FFF8E6,#FFF1C8)",
+            border:`2px solid ${T.g200}`,
+            borderRadius:20,
+            padding:"12px 14px",
+            boxShadow:"0 14px 28px rgba(20,8,4,.18)",
+            animation:"bubblePop .22s ease",
+            zIndex:3
+          }}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:6}}>
+              <div style={{fontWeight:950,color:T.g800,fontSize:".88rem"}}>Consejo del rasta</div>
+              <button onClick={()=>setOpen(false)} style={{border:"none",background:"transparent",color:T.textSub,fontWeight:900,cursor:"pointer",fontSize:"1rem",padding:0}}>×</button>
+            </div>
+            <div style={{fontSize:".84rem",fontWeight:800,color:T.text,lineHeight:1.45}}>{tips[tipIndex]}</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10,gap:10}}>
+              <div style={{display:"flex",gap:6}}>
+                {tips.map((_,i)=><span key={i} style={{width:7,height:7,borderRadius:"50%",background:i===tipIndex?T.g500:"#E7DAB2",display:"block"}} />)}
+              </div>
+              <button onClick={()=>setTipIndex(v=>(v+1)%tips.length)} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"4px 10px",fontWeight:900,cursor:"pointer"}}>Otro tip</button>
+            </div>
+            <div style={{position:"absolute",left:-10,bottom:14,width:18,height:18,background:"linear-gradient(180deg,#FFF8E6,#FFF1C8)",borderLeft:`2px solid ${T.g200}`,borderBottom:`2px solid ${T.g200}`,transform:"rotate(45deg)"}}/>
+          </div>
+        )}
+
+        <button
+          onClick={()=>{SFX.click();setOpen(v=>!v);}}
+          aria-label="Abrir consejos del rasta"
+          style={{
+            border:"none",
+            background:"transparent",
+            cursor:"pointer",
+            padding:0,
+            display:"flex",
+            alignItems:"center",
+            gap:10
+          }}
+        >
+          <div style={{position:"relative",animation:"helperBob 2.4s ease-in-out infinite"}}>
+            <LoginHelperAvatar size={64} speaking={active} />
+            <div style={{
+              position:"absolute",
+              right:-2,
+              bottom:2,
+              minWidth:24,
+              height:24,
+              borderRadius:999,
+              background:"linear-gradient(180deg,#F7D76D,#D99E22)",
+              border:`2px solid ${T.paper}`,
+              color:T.g800,
+              display:"grid",
+              placeItems:"center",
+              fontWeight:1000,
+              fontSize:".86rem",
+              boxShadow:"0 6px 12px rgba(20,8,4,.18)"
+            }}>?</div>
+          </div>
+          {active && <div style={{fontSize:".8rem",fontWeight:900,color:T.textSub,background:"rgba(255,248,230,.82)",padding:"8px 10px",borderRadius:999,border:`1px solid ${T.g200}`}}>Toca al rasta para abrir consejos</div>}
+        </button>
       </div>
-      <div style={{fontSize:"1.2rem",fontWeight:900,color:T.g700}}>{open?"−":"+"}</div>
-    </button>
-    {open&&<div style={{marginTop:10,borderTop:`1px solid ${T.g200}`,paddingTop:10,fontSize:".84rem",fontWeight:800,color:T.text,lineHeight:1.45,animation:"bubblePop .22s ease"}}>{text}</div>}
-  </Card>;
+    </div>
+  );
 }
 
 export default function App(){
