@@ -70,19 +70,64 @@ const BRAND = {
 };
 
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
+let currentMusicTrack=0,musicStep=0;
 const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
+const NOTE_FREQ={
+  C2:65.41,D2:73.42,E2:82.41,F2:87.31,G2:98,A2:110,B2:123.47,
+  C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
+  C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,
+  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880,B5:987.77,
+  C6:1046.5,D6:1174.66,E6:1318.51,F6:1396.91,G6:1567.98,A6:1760,B6:1975.53
+};
+const REGGAE_LOFI_TRACKS=[
+  {name:"Isla de humo",bpm:76,key:"Am",accent:"pan",bass:["A2","A2","E2","G2"],chords:[["A3","C4","E4"],["G3","B3","D4"],["F3","A3","C4"],["E3","G3","B3"]],melody:["E5",null,"G5",null,"A5",null,"G5","E5",null,"D5",null,"C5","E5",null,"G5",null]},
+  {name:"Papiro lofi",bpm:80,key:"Gm",accent:"piano",bass:["G2","G2","D2","F2"],chords:[["G3","Bb3","D4"],["F3","A3","C4"],["Eb3","G3","Bb3"],["D3","F3","A3"]],melody:["D5",null,"F5","G5",null,"Bb5",null,"G5","F5",null,"D5",null,"C5",null,"D5",null]},
+  {name:"Costa verde",bpm:74,key:"Dm",accent:"flute",bass:["D2","D2","A2","C3"],chords:[["D3","F3","A3"],["C3","E3","G3"],["Bb2","D3","F3"],["A2","C3","E3"]],melody:["F5",null,"A5",null,"C6","A5",null,"G5","F5",null,"E5",null,"D5",null,"F5",null]},
+  {name:"Dread moon",bpm:78,key:"Em",accent:"violin",bass:["E2","E2","B2","D3"],chords:[["E3","G3","B3"],["D3","F3","A3"],["C3","E3","G3"],["B2","D3","F3"]],melody:["B4",null,"D5",null,"E5","G5",null,"E5","D5",null,"B4",null,"A4",null,"B4",null]},
+  {name:"Barber dub",bpm:82,key:"Cm",accent:"piano",bass:["C2","C2","G2","Bb2"],chords:[["C3","Eb3","G3"],["Bb2","D3","F3"],["Ab2","C3","Eb3"],["G2","Bb2","D3"]],melody:["G4",null,"Bb4",null,"C5",null,"Eb5","C5",null,"Bb4",null,"G4","F4",null,"G4",null]},
+  {name:"Sol de Kingston",bpm:77,key:"F",accent:"pan",bass:["F2","F2","C2","Eb2"],chords:[["F3","A3","C4"],["Eb3","G3","Bb3"],["Bb2","D3","F3"],["C3","E3","G3"]],melody:["A4",null,"C5",null,"D5","C5",null,"A4","G4",null,"F4",null,"A4",null,"C5",null]},
+];
 function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function resolveFreq(value){return typeof value==="number"?value:(NOTE_FREQ[value]||PENTA[0]);}
 function playTone(freq,type="sine",dur=0.12,vol=0.15,delay=0){
   if(globalMuted)return;
   try{
     const ctx=getCtx(),osc=ctx.createOscillator(),g=ctx.createGain();
     osc.connect(g);g.connect(ctx.destination);osc.type=type;
-    osc.frequency.setValueAtTime(freq,ctx.currentTime+delay);
+    osc.frequency.setValueAtTime(resolveFreq(freq),ctx.currentTime+delay);
     g.gain.setValueAtTime(0,ctx.currentTime+delay);
-    g.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.01);
+    g.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.018);
     g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
-    osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+dur+0.05);
+    osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+dur+0.06);
   }catch(e){}
+}
+function playInstrument(note,kind="piano",dur=0.35,vol=0.04,delay=0){
+  if(!note||globalMuted)return;
+  const f=resolveFreq(note);
+  if(kind==="bass"){
+    playTone(f,"triangle",dur,vol,delay);
+    playTone(f/2,"sine",dur*1.2,vol*.45,delay);
+    return;
+  }
+  if(kind==="piano"){
+    playTone(f,"triangle",dur,vol,delay);
+    playTone(f*2,"sine",dur*.65,vol*.18,delay+.01);
+    return;
+  }
+  if(kind==="pan"){
+    playTone(f,"sine",dur*.92,vol,delay);
+    playTone(f*1.005,"triangle",dur*.85,vol*.28,delay+.015);
+    return;
+  }
+  if(kind==="violin"){
+    playTone(f,"sawtooth",dur,vol*.33,delay);
+    playTone(f,"triangle",dur*1.05,vol*.75,delay+.025);
+    return;
+  }
+  playTone(f,"sine",dur,vol,delay);
+}
+function playChord(notes,kind="piano",dur=0.22,vol=0.026,delay=0){
+  notes.forEach((n,i)=>playInstrument(n,kind,dur,vol,delay+i*.018));
 }
 const SFX={
   nav:()=>{playTone(430,"sine",0.08,0.075);playTone(560,"sine",0.09,0.055,0.055);},
@@ -94,24 +139,42 @@ const SFX={
   success:()=>{[523,659,784].forEach((f,i)=>playTone(f,"sine",0.12,0.075,i*0.07));},
   error:()=>{playTone(246,"sine",0.16,0.055);playTone(220,"sine",0.15,0.04,0.10);},
 };
+function tickLofiTrack(){
+  if(!musicPlaying||globalMuted)return;
+  try{
+    const ctx=getCtx();if(ctx.state==="suspended")ctx.resume();
+    const tr=REGGAE_LOFI_TRACKS[currentMusicTrack%REGGAE_LOFI_TRACKS.length];
+    const step=musicStep%240;
+    const beat=step%8;
+    const bar=Math.floor(step/8);
+    const chord=tr.chords[bar%tr.chords.length];
+    if(beat===0||beat===4) playInstrument(tr.bass[bar%tr.bass.length],"bass",.46,.042,0);
+    if(beat===2||beat===6) playChord(chord,"piano",.18,.022,0.02);
+    if(beat===3||beat===7) playTone(110,"triangle",.045,.018,0.01);
+    if(step%4===1){
+      const m=tr.melody[Math.floor(step/4)%tr.melody.length];
+      if(m) playInstrument(m,tr.accent==="violin"?"violin":"pan",.62,.028,0.03);
+    }
+    if(step%16===12){
+      const m=tr.melody[(Math.floor(step/4)+5)%tr.melody.length];
+      if(m) playInstrument(m,tr.accent==="piano"?"piano":"pan",.34,.020,0.08);
+    }
+    musicStep++;
+    if(musicStep>=240){musicStep=0;currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;}
+  }catch(e){}
+}
 function startMusic(){
-  if(musicPlaying)return;musicPlaying=true;let beat=0;
-  const pat=[0,2,4,2,1,3,5,3,4,6,4,2];
-  musicInterval=setInterval(()=>{
-    if(!musicPlaying)return;
-    try{
-      const ctx=getCtx();if(ctx.state==="suspended")ctx.resume();
-      const f=PENTA[pat[beat%pat.length]%PENTA.length];
-      const o=ctx.createOscillator(),g=ctx.createGain();
-      o.connect(g);g.connect(ctx.destination);o.type="sine";o.frequency.value=f;
-      g.gain.setValueAtTime(0,ctx.currentTime);
-      g.gain.linearRampToValueAtTime(0.052,ctx.currentTime+0.05);
-      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.2);
-      o.start(ctx.currentTime);o.stop(ctx.currentTime+1.3);beat++;
-    }catch(e){}
-  },600);
+  if(musicPlaying)return;
+  musicPlaying=true;
+  if(!musicInterval){musicStep=0;musicInterval=setInterval(tickLofiTrack,500);}
+  tickLofiTrack();
 }
 function stopMusic(){musicPlaying=false;if(musicInterval){clearInterval(musicInterval);musicInterval=null;}}
+function nextMusicTrack(){
+  currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;
+  musicStep=0;
+  if(musicPlaying) tickLofiTrack();
+}
 
 let gameMusicInterval=null, resumeMainAfterGame=false;
 const GAME_MUSIC={
@@ -4008,6 +4071,7 @@ export default function App(){
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
   function toggleMusic(){globalMuted=!globalMuted;if(globalMuted){stopMusic();stopGameMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}
+  function changeMusicTrack(){nextMusicTrack();SFX.tab();showToast(`Tema: ${REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta"}`);}
   const navTo=id=>{
     setHelperPage(null);
     const communityMap={feed:"feed",foro:"foro",noticias:"noticias",comunidad:communityTab||"feed"};
@@ -4058,7 +4122,7 @@ export default function App(){
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button onClick={toggleMusic} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
+          <button onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: cambiar tema (${REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta"})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
           <div onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
             <Av av={currentUser.avatar} config={currentUser.avatarConfig} size={32}/>
