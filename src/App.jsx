@@ -4377,6 +4377,32 @@ const RASTA_RARE_CULTURE_TIPS=[
   "Lo bonito de una app no es solo que funcione; es que parezca que alguien la cuida."
 ];
 
+const RASTA_DAILY_FUN_TIPS=[
+  "Cine de hoy: si esto fuera una peli de aventuras, ahora toca ordenar el mapa antes de salir a buscar tesoros.",
+  "Chiste de barbería: el peine pidió vacaciones porque estaba hasta los pelos.",
+  "Modo anime: primero entrenas en el Arcade, luego desbloqueas estilo y al final subes al ranking.",
+  "Reggae suave, café y dos partidas. No arregla el mundo, pero ordena bastante la cabeza.",
+  "Consejo de tienda: si algo no se entiende en tres segundos, no es misterio pirata; hay que hacerlo más claro.",
+  "Dato random: una comunidad viva necesita menos ruido y más pequeñas acciones repetidas.",
+  "Cine clásico de barrio: buen cartel, buena luz y una frase corta. La app también entra por los ojos.",
+  "Chiste rápido: unas tijeras sin filo son como un botón sin función: mejor no presumir de ellas.",
+  "Hoy el Rasta recomienda mirar una pestaña nueva y tocar sin miedo. Lo peor que puede pasar es encontrar un bug.",
+  "Flow de domingo: una noticia, una partida y un perfil bien tuneado."
+];
+
+function getDailyRastaTip(key){
+  const pool=[...RASTA_RARE_CULTURE_TIPS,...RASTA_DAILY_FUN_TIPS].filter(Boolean);
+  if(!pool.length)return "";
+  const storageKey=`rasta_daily_fun_${key}_${TODAY_KEY()}`;
+  try{
+    const saved=localStorage.getItem(storageKey);
+    if(saved)return saved;
+    const tip=pickRastaUnique(pool,`rasta_daily_fun_history_${key}`,Math.min(30,Math.max(1,pool.length-1)));
+    localStorage.setItem(storageKey,tip);
+    return tip;
+  }catch{return pool[0]||"";}
+}
+
 const RASTA_RARE_CHANCE=1/42;
 
 function pickRastaUnique(pool,storageKey,recentLimit=18){
@@ -4431,81 +4457,282 @@ function helperTitle(page){
   return "Rasta al habla";
 }
 
-function HelperMascot({page}){
-  const [open,setOpen]=useState(false);
-  const [hovered,setHovered]=useState(false);
+function rastaPageHelpIntro(page){
   const key=helperPageKey(page);
-  const tips=[...(HELP_TIPS[key]||HELP_TIPS.dashboard),...RASTA_GENERAL_TIPS];
-  const [tipIndex,setTipIndex]=useState(0);
-  const [currentTip,setCurrentTip]=useState(tips[0]||"");
-  const [rareTip,setRareTip]=useState(null);
-  const active=open||hovered;
-  const mood=helperMood(page);
-  const shownTip=rareTip || currentTip || tips[0] || "";
-  const recentKey=`rasta_tip_history_${key}`;
+  const base={
+    dashboard:"Estás en Inicio. Aquí se ve el resumen principal: citas, clientes, puntos, próximas reservas y accesos rápidos.",
+    arcade:"Estás en Arcade. Aquí juegas, mejoras récords y entras a los tops. Los puntos reales tienen límite diario.",
+    juegos:"Estás en Arcade. Pulsa un juego para jugar o Top 10 para ver clasificaciones.",
+    tops:"Estás en Tops. Aquí se ven rankings de juegos y estadísticas generales de clientes.",
+    tienda:"Estás en Tienda. Aquí se canjean puntos por premios, productos, bonos o personalizaciones.",
+    comunidad:"Estás en Comunidad. Aquí están tablón, foro y actualidad.",
+    feed:"Estás en Tablón. Sirve para anuncios oficiales, promociones y novedades de la tienda.",
+    foro:"Estás en Foro. Aquí los usuarios pueden abrir temas, comentar y debatir.",
+    noticias:"Estás en Actualidad. Desliza noticias, abre debate, mira fuentes o enlaces de YouTube.",
+    citas:"Estás en Citas. Aquí se piden, confirman o cancelan reservas.",
+    clientes:"Estás en Clientes. Aquí se revisa información de clientes y actividad.",
+    usuarios:"Estás en Usuarios. Aquí el admin gestiona perfiles, roles y datos básicos.",
+    perfil:"Estás en Perfil. Aquí editas avatar, privacidad, nombre y opciones de cuenta.",
+    inventario:"Estás en Stock. Aquí se revisa inventario y productos.",
+    caja:"Estás en Caja. Aquí se revisan ingresos, ventas y actividad económica.",
+    ranking:"Estás en Ranking. Aquí se comparan puntos y progreso entre clientes."
+  };
+  return base[key]||HELP_TEXTS[key]||"Pulsa una zona de la app y te explicaré para qué sirve.";
+}
 
-  function nextRastaTip(forceRare=false){
-    const shouldRare=forceRare || Math.random()<RASTA_RARE_CHANCE;
-    if(shouldRare){
-      const rare=pickRastaUnique(RASTA_RARE_CULTURE_TIPS,"rasta_rare_culture_history",28);
-      setRareTip(rare);
-      return;
-    }
-    setRareTip(null);
-    const picked=pickRastaUnique(tips,recentKey,Math.min(12,Math.max(1,tips.length-1)));
-    setCurrentTip(picked);
-    const index=tips.indexOf(picked);
-    setTipIndex(index>=0?index:(v=>(v+1)%tips.length));
+function rastaElementHelp(target,page){
+  const el=target?.closest?.("button,a,input,textarea,select,[role='button'],.ch,.bp,.studio-panel,.card")||target;
+  if(!el)return rastaPageHelpIntro(page);
+  const tag=String(el.tagName||"").toLowerCase();
+  const raw=[
+    el.getAttribute?.("aria-label"),
+    el.getAttribute?.("title"),
+    el.getAttribute?.("placeholder"),
+    el.textContent
+  ].filter(Boolean).join(" ").replace(/\s+/g," ").trim();
+  const t=raw.toLowerCase();
+
+  if(tag==="input"){
+    const type=(el.getAttribute("type")||"").toLowerCase();
+    if(type==="date")return "Esto sirve para elegir la fecha. Toca el calendario y selecciona el día que quieres.";
+    if(type==="time")return "Esto sirve para elegir la hora. Cambia la hora y la app la usará para la cita o el registro.";
+    if(type==="password")return "Aquí se escribe la contraseña. No se muestra en pantalla por seguridad.";
+    if(type==="email")return "Aquí se escribe el correo de acceso o de contacto.";
+    return "Este campo sirve para escribir información. Toca dentro, escribe y después guarda o confirma.";
   }
+  if(tag==="textarea")return "Este cuadro es para escribir un mensaje, nota o comentario más largo.";
+  if(tag==="select")return "Este desplegable sirve para elegir una opción de la lista.";
+
+  if(t.includes("sonido")||t.includes("silenciar"))return "Activa o silencia la música y los efectos. Si haces doble toque en Sonido, cambia el tema musical.";
+  if(t.includes("top 10"))return "Top 10 abre los rankings de minijuegos: semanal e histórico por cada juego.";
+  if(t.includes("top general"))return "Top general muestra estadísticas globales de clientes: puntos, juegos, tienda y comunidad.";
+  if(t.includes("ver top")||t.includes("abrir top"))return "Este botón abre la página de rankings para ver los mejores jugadores y estadísticas.";
+  if(t.includes("jugar ahora")||t==="jugar"||t.includes("▶ jugar")||t.includes("rejugar"))return "Abre el juego seleccionado. Puedes repetir para mejorar récord, aunque los puntos sólo se cobran una vez al día.";
+  if(t.includes("gacha"))return "Gacha Barber es una máquina de tiradas con límite diario. Sirve para premios, suerte y recompensas controladas.";
+  if(t.includes("guardar récord")||t.includes("guardar record"))return "Guarda tu puntuación para que aparezca en los rankings. Si ya cobraste hoy, sólo mejora la marca.";
+  if(t.includes("nueva")||t.includes("+ nueva")||t.includes("nueva cita"))return "Crea una cita nueva. Puedes elegir varios tratamientos y la app suma duración y precio.";
+  if(t.includes("confirmar"))return "Confirma esta cita. Pasará de pendiente a confirmada para que el cliente sepa que queda aceptada.";
+  if(t.includes("cancelar"))return "Cancela esta acción o cita. Úsalo si no se puede aceptar o si quieres cerrar sin guardar.";
+  if(t.includes("realizada"))return "Marca la cita como realizada. Esto servirá más adelante para historial, facturación y estadísticas.";
+  if(t.includes("proponer"))return "Permite sugerir otra fecha u hora al cliente en vez de aceptar la reserva tal cual.";
+  if(t.includes("publicar"))return "Publica el texto en el tablón, foro o comunidad según la sección donde estés.";
+  if(t.includes("responder"))return "Añade una respuesta al tema o conversación actual.";
+  if(t.includes("comentar")||t.includes("comentario"))return "Abre o añade comentarios. Participar en comunidad puede servir para puntos y actividad.";
+  if(t.includes("me gusta")||t.includes("like")||t.includes("👍"))return "Marca que te gusta esta publicación o noticia. Sirve para participación y estadísticas.";
+  if(t.includes("youtube"))return "Abre una búsqueda o enlace de YouTube relacionado, normalmente para música o vídeos oficiales.";
+  if(t.includes("fuente")||t.includes("leer fuente"))return "Abre la fuente original de la noticia fuera de la app.";
+  if(t.includes("abrir debate"))return "Abre la conversación de esa noticia para poder leer o comentar.";
+  if(t.includes("actualizar"))return "Actualiza los datos de esta sección para traer contenido o rankings más recientes.";
+  if(t.includes("perfil"))return "Entra en tu perfil para editar avatar, privacidad, nombre y opciones de cuenta.";
+  if(t.includes("comunidad"))return "Abre Comunidad: tablón, foro y actualidad.";
+  if(t.includes("inicio"))return "Vuelve al inicio, donde se ve el resumen general de la app.";
+  if(t.includes("citas"))return "Abre la sección de citas para reservar o gestionar reservas.";
+  if(t.includes("clientes"))return "Abre el panel de clientes, visible para admin o staff.";
+  if(t.includes("usuarios"))return "Abre el panel de usuarios, normalmente sólo para admin.";
+  if(t.includes("tienda"))return "Abre la tienda de puntos, premios y canjes.";
+  if(t.includes("arcade"))return "Abre los juegos y rankings.";
+  if(t.includes("guardar"))return "Guarda los cambios que has hecho.";
+  if(t.includes("editar"))return "Permite modificar esta información.";
+  if(t.includes("eliminar")||t.includes("borrar"))return "Borra este elemento. Úsalo con cuidado.";
+  if(t.includes("privacidad")||t.includes("incógnito")||t.includes("incognito"))return "Controla si tu perfil se muestra al público o aparece oculto como xxxxxx con silueta negra.";
+
+  if(page==="arcade"||page==="juegos")return "Esto pertenece al Arcade. Sirve para jugar, abrir tops o revisar tus récords.";
+  if(page==="comunidad")return "Esto pertenece a Comunidad. Aquí puedes leer, participar o cambiar entre Tablón, Foro y Actualidad.";
+  if(page==="citas")return "Esto pertenece a Citas. Sirve para crear, revisar o gestionar reservas.";
+  if(page==="perfil")return "Esto pertenece a Perfil. Sirve para personalizar tu cuenta o tu avatar.";
+  return rastaPageHelpIntro(page);
+}
+
+function HelperMascot({page}){
+  const key=helperPageKey(page);
+  const baseTips=HELP_TIPS[key]||HELP_TIPS.dashboard;
+  const dailyTip=getDailyRastaTip(key);
+  const tips=[dailyTip,...baseTips,...RASTA_GENERAL_TIPS].filter(Boolean);
+  const [open,setOpen]=useState(false);
+  const [helpMode,setHelpMode]=useState(false);
+  const [tipIndex,setTipIndex]=useState(0);
+  const [rareTip,setRareTip]=useState(null);
+  const [contextTip,setContextTip]=useState(null);
+  const dragRef=useRef({down:false,moved:false,startX:0,startY:0,baseX:0,baseY:0});
+  const [pos,setPos]=useState(()=>{
+    try{
+      const saved=JSON.parse(localStorage.getItem("rasta_helper_pos")||"null");
+      if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)) return saved;
+    }catch{}
+    if(typeof window==="undefined") return {x:360,y:620};
+    return {x:Math.max(12,Math.min(window.innerWidth-82,window.innerWidth-92)),y:Math.max(90,window.innerHeight-170)};
+  });
+
+  const mood=helperMood(page);
+  const helpIntro=`Modo ayuda activado. Pulsa cualquier botón, campo o tarjeta de esta pantalla y te diré para qué sirve. Mientras esté activado, ese toque sólo explica: no ejecuta la acción.`;
+  const shownTip=helpMode
+    ? (contextTip||helpIntro)
+    : (rareTip||tips[tipIndex%Math.max(1,tips.length)]||"");
+  const isRight=typeof window!=="undefined"?pos.x>(window.innerWidth/2):true;
 
   useEffect(()=>{
     setTipIndex(0);
     setRareTip(null);
-    setCurrentTip(pickRastaUnique(tips,`rasta_tip_history_${key}`,Math.min(12,Math.max(1,tips.length-1)))||tips[0]||"");
+    setContextTip(null);
   },[page]);
 
   useEffect(()=>{
-    if(!active)return;
-    const id=setInterval(()=>nextRastaTip(false),5200);
-    return()=>clearInterval(id);
-  },[active,page,tips.length]);
+    const onResize=()=>{
+      if(typeof window==="undefined")return;
+      setPos(p=>{
+        const next={x:Math.max(8,Math.min(window.innerWidth-78,p.x)),y:Math.max(72,Math.min(window.innerHeight-94,p.y))};
+        try{localStorage.setItem("rasta_helper_pos",JSON.stringify(next));}catch{}
+        return next;
+      });
+    };
+    window.addEventListener("resize",onResize);
+    return()=>window.removeEventListener("resize",onResize);
+  },[]);
+
+  useEffect(()=>{
+    if(!helpMode)return;
+    const onHelpClick=(e)=>{
+      if(e.target?.closest?.("[data-rasta-helper='1']"))return;
+      const explainTarget=e.target?.closest?.("button,a,input,textarea,select,[role='button'],.ch,.bp,.studio-panel,.card");
+      if(!explainTarget)return;
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation?.();
+      setContextTip(rastaElementHelp(explainTarget,page));
+      setRareTip(null);
+      setOpen(true);
+      SFX.click();
+    };
+    document.addEventListener("click",onHelpClick,true);
+    document.addEventListener("pointerup",onHelpClick,true);
+    return()=>{
+      document.removeEventListener("click",onHelpClick,true);
+      document.removeEventListener("pointerup",onHelpClick,true);
+    };
+  },[helpMode,page]);
+
+  function goTip(dir){
+    setRareTip(null);
+    setContextTip(null);
+    setTipIndex(i=>{
+      const len=Math.max(1,tips.length);
+      return (i+dir+len)%len;
+    });
+  }
+
+  function rareToday(e){
+    e?.stopPropagation?.();
+    setHelpMode(false);
+    setContextTip(null);
+    const rare=pickRastaUnique([...RASTA_RARE_CULTURE_TIPS,...RASTA_DAILY_FUN_TIPS],`rasta_manual_rare_${TODAY_KEY()}`,30);
+    setRareTip(rare);
+  }
+
+  function toggleHelp(e){
+    e?.stopPropagation?.();
+    setRareTip(null);
+    setContextTip(null);
+    setHelpMode(v=>!v);
+    setOpen(true);
+    SFX.tab();
+  }
+
+  function pointerDown(e){
+    dragRef.current={down:true,moved:false,startX:e.clientX,startY:e.clientY,baseX:pos.x,baseY:pos.y};
+    try{e.currentTarget.setPointerCapture(e.pointerId);}catch{}
+  }
+
+  function pointerMove(e){
+    const d=dragRef.current;
+    if(!d.down)return;
+    const dx=e.clientX-d.startX;
+    const dy=e.clientY-d.startY;
+    if(Math.abs(dx)+Math.abs(dy)>5)d.moved=true;
+    if(typeof window==="undefined")return;
+    const next={
+      x:Math.max(8,Math.min(window.innerWidth-78,d.baseX+dx)),
+      y:Math.max(72,Math.min(window.innerHeight-94,d.baseY+dy))
+    };
+    setPos(next);
+  }
+
+  function pointerUp(e){
+    const d=dragRef.current;
+    dragRef.current={...d,down:false};
+    try{e.currentTarget.releasePointerCapture(e.pointerId);}catch{}
+    try{localStorage.setItem("rasta_helper_pos",JSON.stringify(pos));}catch{}
+    if(!d.moved){
+      SFX.click();
+      setOpen(v=>!v);
+    }
+  }
 
   const closeBubble=(e)=>{
     e.stopPropagation();
     setOpen(false);
-    setHovered(false);
   };
+
+  const bubbleSideStyle=isRight
+    ? {right:78,bottom:8}
+    : {left:78,bottom:8};
+
+  const arrowStyle=isRight
+    ? {right:-10,bottom:18,borderRight:`2px solid ${T.g200}`,borderBottom:`2px solid ${T.g200}`}
+    : {left:-10,bottom:18,borderLeft:`2px solid ${T.g200}`,borderTop:`2px solid ${T.g200}`};
 
   return (
     <div
+      data-rasta-helper="1"
       style={{
         position:"fixed",
-        right:"max(12px, calc((100vw - 430px) / 2 + 14px))",
-        bottom:"88px",
+        left:pos.x,
+        top:pos.y,
         zIndex:9996,
-        pointerEvents:"none"
+        pointerEvents:"none",
+        touchAction:"none"
       }}
     >
+      {helpMode&&(
+        <div style={{
+          position:"fixed",
+          left:12,
+          right:12,
+          top:64,
+          zIndex:9995,
+          pointerEvents:"none",
+          display:"flex",
+          justifyContent:"center"
+        }}>
+          <div style={{
+            background:"rgba(36,17,10,.88)",
+            color:T.white,
+            border:`1px solid ${T.gold}`,
+            borderRadius:999,
+            padding:"7px 12px",
+            fontSize:".76rem",
+            fontWeight:950,
+            boxShadow:"0 8px 18px rgba(0,0,0,.25)"
+          }}>🧭 Modo ayuda activo · toca algo para explicarlo</div>
+        </div>
+      )}
       <div
-        onMouseEnter={()=>setHovered(true)}
-        onMouseLeave={()=>setHovered(false)}
         style={{
           position:"relative",
           display:"inline-flex",
           alignItems:"flex-end",
           gap:10,
-          pointerEvents:"auto"
+          pointerEvents:"auto",
+          touchAction:"none"
         }}
       >
-        {active&&(
+        {open&&(
           <div style={{
             position:"absolute",
-            right:78,
-            bottom:8,
-            width:"min(300px, calc(100vw - 120px))",
-            maxWidth:300,
-            background:"linear-gradient(180deg,#FFF8E6,#FFF1C8)",
-            border:`2px solid ${T.g200}`,
+            ...bubbleSideStyle,
+            width:"min(318px, calc(100vw - 112px))",
+            maxWidth:318,
+            background:helpMode?"linear-gradient(180deg,#FFF6CF,#F3E0A8)":"linear-gradient(180deg,#FFF8E6,#FFF1C8)",
+            border:`2px solid ${helpMode?T.gold:T.g200}`,
             borderRadius:22,
             padding:"12px 14px",
             boxShadow:"0 14px 28px rgba(20,8,4,.22)",
@@ -4513,47 +4740,62 @@ function HelperMascot({page}){
             zIndex:3
           }}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:4}}>
-              <div style={{fontWeight:950,color:T.g800,fontSize:".88rem"}}>{helperTitle(page)}</div>
+              <div style={{fontWeight:950,color:T.g800,fontSize:".88rem"}}>{helpMode?"Rasta modo ayuda":helperTitle(page)}</div>
               <button onClick={closeBubble} style={{border:"none",background:"transparent",color:T.textSub,fontWeight:900,cursor:"pointer",fontSize:"1rem",padding:0}}>×</button>
             </div>
-            <div style={{fontSize:".66rem",fontWeight:900,color:T.orange,letterSpacing:".04em",textTransform:"uppercase",marginBottom:6}}>{rareTip?"el rasta recomienda":"flow de tienda · comunidad"}</div>
-            <div style={{fontSize:".84rem",fontWeight:800,color:T.text,lineHeight:1.45}}>{shownTip}</div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10,gap:10}}>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                {tips.map((_,i)=><span key={i} style={{width:7,height:7,borderRadius:"50%",background:!rareTip&&i===tipIndex?T.g500:"#E7DAB2",display:"block"}} />)}
-              </div>
-              <button onClick={(e)=>{e.stopPropagation();nextRastaTip(false);}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"4px 10px",fontWeight:900,cursor:"pointer"}}>Otro tip</button>
+            <div style={{fontSize:".66rem",fontWeight:900,color:helpMode?T.g700:T.orange,letterSpacing:".04em",textTransform:"uppercase",marginBottom:6}}>
+              {helpMode?"ayuda interactiva":rareTip?"rareza diaria":"comentarios del rasta · guía de página"}
             </div>
+            <div style={{fontSize:".84rem",fontWeight:800,color:T.text,lineHeight:1.45,minHeight:70}}>{shownTip}</div>
+
+            {!helpMode&&(
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:12,gap:8}}>
+                <button onClick={(e)=>{e.stopPropagation();goTip(-1);}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"6px 10px",fontWeight:950,cursor:"pointer"}}>← Atrás</button>
+                <div style={{fontSize:".72rem",fontWeight:900,color:T.textSub,whiteSpace:"nowrap"}}>{rareTip?"especial":`${(tipIndex%Math.max(1,tips.length))+1}/${tips.length}`}</div>
+                <button onClick={(e)=>{e.stopPropagation();goTip(1);}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"6px 10px",fontWeight:950,cursor:"pointer"}}>Siguiente →</button>
+              </div>
+            )}
+
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10,gap:8,flexWrap:"wrap"}}>
+              <button onClick={toggleHelp} style={{border:"none",background:helpMode?"linear-gradient(180deg,#4F602D,#26331D)":"linear-gradient(180deg,#D4AF37,#A8662B)",color:helpMode?T.white:T.g900,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer",boxShadow:"0 6px 12px rgba(20,8,4,.16)"}}>
+                {helpMode?"✅ Ayuda ON":"🧭 Activar ayuda"}
+              </button>
+              {!helpMode&&<button onClick={rareToday} style={{border:"none",background:"linear-gradient(180deg,#24110A,#6E3518)",color:T.white,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer",boxShadow:"0 6px 12px rgba(20,8,4,.16)"}}>🎧 Rareza</button>}
+              {helpMode&&<button onClick={(e)=>{e.stopPropagation();setContextTip(rastaPageHelpIntro(page));}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer"}}>Esta página</button>}
+            </div>
+
             <div style={{
               position:"absolute",
-              right:-10,
-              bottom:18,
               width:18,
               height:18,
-              background:"linear-gradient(180deg,#FFF8E6,#FFF1C8)",
-              borderRight:`2px solid ${T.g200}`,
-              borderBottom:`2px solid ${T.g200}`,
-              transform:"rotate(-45deg)"
+              background:helpMode?"linear-gradient(180deg,#FFF6CF,#F3E0A8)":"linear-gradient(180deg,#FFF8E6,#FFF1C8)",
+              transform:"rotate(-45deg)",
+              ...arrowStyle
             }}/>
           </div>
         )}
 
         <button
-          onClick={()=>{SFX.click();setOpen(v=>!v);}}
+          onPointerDown={pointerDown}
+          onPointerMove={pointerMove}
+          onPointerUp={pointerUp}
+          onPointerCancel={()=>{dragRef.current.down=false;}}
           aria-label={open?"Ocultar consejos del rasta":"Abrir consejos del rasta"}
+          title="Toca para abrir · mantén y arrastra para mover"
           style={{
             border:"none",
             background:"transparent",
-            cursor:"pointer",
+            cursor:"grab",
             padding:0,
             display:"flex",
             alignItems:"center",
             gap:10,
-            WebkitTapHighlightColor:"transparent"
+            WebkitTapHighlightColor:"transparent",
+            touchAction:"none"
           }}
         >
           <div style={{position:"relative",animation:"helperBob 2.4s ease-in-out infinite"}}>
-            <LoginHelperAvatar size={66} speaking={active} mood={mood}/>
+            <LoginHelperAvatar size={66} speaking={open} mood={helpMode?"success":mood}/>
             <div style={{
               position:"absolute",
               right:-2,
@@ -4561,22 +4803,21 @@ function HelperMascot({page}){
               minWidth:24,
               height:24,
               borderRadius:999,
-              background:open?"linear-gradient(180deg,#E15B44,#A72822)":"linear-gradient(180deg,#F7D76D,#D99E22)",
+              background:helpMode?"linear-gradient(180deg,#4F602D,#26331D)":open?"linear-gradient(180deg,#E15B44,#A72822)":"linear-gradient(180deg,#F7D76D,#D99E22)",
               border:`2px solid ${T.paper}`,
-              color:open?T.white:T.g800,
+              color:helpMode||open?T.white:T.g800,
               display:"grid",
               placeItems:"center",
               fontWeight:1000,
               fontSize:".86rem",
               boxShadow:"0 6px 12px rgba(20,8,4,.18)"
-            }}>{open?"×":"?"}</div>
+            }}>{helpMode?"i":open?"×":"?"}</div>
           </div>
         </button>
       </div>
     </div>
   );
 }
-
 
 const PAGE_THEMES={
   dashboard:{mark:'"✂"',accent:'#B99A45',shell:'linear-gradient(180deg,rgba(216,190,135,.06),rgba(216,190,135,.018)),linear-gradient(160deg,#120806,#21140C 56%,#2E1C10)',header:'linear-gradient(135deg,#130B06,#2A1B0F 58%,#4B301B)',nav:'#6B4524',shineA:'rgba(216,190,135,.16)',shineB:'rgba(255,238,190,.10)',glowA:'rgba(185,154,69,.16)',glowB:'rgba(79,96,45,.10)'},
