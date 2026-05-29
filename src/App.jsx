@@ -2197,8 +2197,17 @@ function Clientes({showToast}){
   const filtered=clientes.filter(c=>(c.nombre||"").toLowerCase().includes(search.toLowerCase())||(c.email||"").toLowerCase().includes(search.toLowerCase()));
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="👥" title="Clientes" sub={`${clientes.length} clientes`}/>
-      <Input value={search} onChange={setSearch} placeholder="Buscar..."/>
+      <SectionHeader icon="👥" title="Clientes" sub={`${clientes.length} clientes reales de la app`}/>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#0E2F3A,#1A5261 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2rem"}}>👥</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Clientes</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Aquí ves sólo clientes: puntos, citas, historial y ficha pública. No sirve para cambiar roles.</div>
+          </div>
+        </div>
+      </Card>
+      <Input value={search} onChange={setSearch} placeholder="Buscar cliente por nombre o email..."/>
       {loading?<Spinner/>:filtered.map(c=>(
         <Card key={c.id} style={{marginBottom:10}} hover onClick={()=>selectCliente(c)}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -2335,7 +2344,16 @@ function AdminUsuarios({user,showToast}){
   }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="👑" title="Usuarios" sub={`${users.length} usuarios`}/>
+      <SectionHeader icon="👑" title="Usuarios y permisos" sub={`${users.length} cuentas registradas`}/>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2rem"}}>🔐</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Usuarios</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Esta pestaña es para permisos: cliente, staff o admin. No es la ficha comercial del cliente.</div>
+          </div>
+        </div>
+      </Card>
       {loading?<Spinner/>:users.map(u=>(
         <Card key={u.id} style={{marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -4523,9 +4541,90 @@ function Comunidad(props){
   </div>;
 }
 
+
+function GestionAdmin({user,setUser,showToast,showPoints}){
+  const role=normalizeRole(user?.rol||user?.role);
+  const isAdmin=role===ROLES.ADMIN;
+  const isStaff=role===ROLES.STAFF;
+  const canAccess=isAdmin||isStaff;
+  const [tab,setTab]=useState("facturacion");
+  const tabs=[
+    {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true},
+    {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true},
+    {id:"clientes",icon:"👥",label:"Clientes",sub:"Fichas e historial de clientes",staff:true},
+    {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true},
+    {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Roles y permisos",staff:false},
+    {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna",staff:false},
+  ].filter(t=>isAdmin||t.staff);
+  const active=tabs.find(t=>t.id===tab)||tabs[0];
+
+  useEffect(()=>{
+    if(!tabs.find(t=>t.id===tab)) setTab(tabs[0]?.id||"facturacion");
+  },[role]);
+
+  if(!canAccess){
+    return <EmptyState icon="🔒" title="Zona interna" sub="Sólo admin y staff pueden entrar en gestión."/>;
+  }
+
+  function RestrictedCard({title,sub,icon="🔒"}){
+    return <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div style={{fontSize:"2rem"}}>{icon}</div>
+        <div>
+          <div style={{fontWeight:950,color:T.g800}}>{title}</div>
+          <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{sub}</div>
+        </div>
+      </div>
+    </Card>;
+  }
+
+  return(
+    <div style={{animation:"fadeSlide .34s ease"}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#D4AF37)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-18,top:-28,fontSize:"7rem",opacity:.10}}>⚙️</div>
+        <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2.4rem"}}>🧾</div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1}}>Gestión</div>
+            <div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+              Panel interno para caja, citas, clientes, stock y administración. Staff ve herramientas de trabajo; admin ve permisos y ajustes.
+            </div>
+          </div>
+          <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
+        </div>
+      </Card>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+        {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.84)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
+          <div style={{fontSize:"1.28rem",lineHeight:1}}>{t.icon}</div>
+          <div style={{fontSize:".68rem",marginTop:3}}>{t.label}</div>
+        </button>)}
+      </div>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px"}}>
+        <div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{active.sub}</div>
+      </Card>
+
+      {tab==="facturacion"&&<Caja showToast={showToast}/>}
+      {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
+      {tab==="clientes"&&<Clientes showToast={showToast}/>}
+      {tab==="stock"&&<Inventario showToast={showToast}/>}
+      {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no cambiar roles ni permisos."/> )}
+      {tab==="ajustes"&&(isAdmin?<Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>⚙️ Ajustes internos</div>
+        <div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.4}}>
+          Esta zona queda preparada para el final: nombre de la tienda, puntos por acciones, frases del Rasta, recompensas, horarios y enlaces destacados.
+        </div>
+      </Card>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo deberían tocarlos administradores."/> )}
+    </div>
+  );
+}
+
+
 const NAV_CFG={
-  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"perfil",icon:"👤",label:"Perfil"}],
   client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
@@ -4546,7 +4645,8 @@ const HELP_TEXTS={
   clientes:"Sección para revisar fichas y datos de clientes.",
   inventario:"Aquí controlas productos y stock.",
   caja:"Sección para cobros e ingresos.",
-  usuarios:"Aquí un admin puede cambiar roles y permisos."
+  usuarios:"Aquí un admin puede cambiar roles y permisos.",
+  gestion:"Panel interno para facturación, caja, citas, clientes, stock y herramientas de administración."
 };
 
 function LoginHelperAvatar({size=46,speaking=false}={}){
@@ -5223,7 +5323,7 @@ const PAGE_THEMES={
 };
 function pageTheme(page,communityTab,role){
   const key=page==="comunidad"?(communityTab||"comunidad"):page;
-  if(["clientes","inventario","caja","usuarios"].includes(key)) return PAGE_THEMES.admin;
+  if(["clientes","inventario","caja","usuarios","gestion"].includes(key)) return PAGE_THEMES.admin;
   if(key==="tops") return PAGE_THEMES.ranking||PAGE_THEMES.juegos;
   if(key==="musica") return PAGE_THEMES.noticias||PAGE_THEMES.comunidad;
   return PAGE_THEMES[key]||PAGE_THEMES[page]||PAGE_THEMES.dashboard;
@@ -5290,7 +5390,7 @@ export default function App(){
   const pages={
     dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<DashboardAdmin user={currentUser}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
-    caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
+    gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
     tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>,tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
