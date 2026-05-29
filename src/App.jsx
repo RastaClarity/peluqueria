@@ -2290,7 +2290,7 @@ function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${ui
 function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
 const GAME_DAILY_REWARDS={stitch:15,runner:12,jump:12,memoria:15,sopa:15,trivia:8,gacha:50};
 const ARCADE_GAMES=[
-  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Tragaperras con premios raros",pts:GAME_DAILY_REWARDS.gacha},
+  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de premios: 50 tiradas al día",pts:GAME_DAILY_REWARDS.gacha},
   {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Rondas de 100 puntos",pts:GAME_DAILY_REWARDS.stitch},
   {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Salta tijeras hasta chocar",pts:GAME_DAILY_REWARDS.runner},
   {id:"jump",icon:"🌤️",title:"Rasta Jump",desc:"Recoge utensilios y evita tijeras",pts:GAME_DAILY_REWARDS.jump},
@@ -2299,6 +2299,10 @@ const ARCADE_GAMES=[
   {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:GAME_DAILY_REWARDS.trivia}
 ];
 const GAME_DAILY_CAP=75;
+const GACHA_DAILY_PULL_LIMIT=50;
+function gachaPullsKey(uid){return `gacha_pulls_${uid||"anon"}_${TODAY_KEY()}`;}
+function getGachaPullsToday(uid){try{return Number(localStorage.getItem(gachaPullsKey(uid))||0);}catch{return 0;}}
+function setGachaPullsToday(uid,value){try{localStorage.setItem(gachaPullsKey(uid),String(Math.max(0,Number(value)||0)));}catch{}}
 function dailyGamePointsKey(uid){return `game_points_total_${uid}_${TODAY_KEY()}`;}
 function getDailyGamePointsTotal(uid){return Number(localStorage.getItem(dailyGamePointsKey(uid))||0);}
 function addDailyGamePointsTotal(uid,pts){const next=getDailyGamePointsTotal(uid)+(Number(pts)||0);localStorage.setItem(dailyGamePointsKey(uid),String(next));return next;}
@@ -2852,13 +2856,15 @@ function DreadStitchGame({onWin,user}){
 }
 
 
-function GachaSlotsGame({onWin}){
+function GachaSlotsGame({user,onWin}){
+  const uid=user?.id||"anon";
   const SYMBOLS={scissors:{icon:'✂️',name:'Tijeras'},comb:{icon:'🪮',name:'Peines'},hook:{icon:'🪝',name:'Ganchillos'},band:{icon:'🧵',name:'Gomas'},ticket:{icon:'🎟️',name:'Ticket dorado'},gem:{icon:'💎',name:'Cristal'},coin:{icon:'🪙',name:'Moneda'}};
   const normal=['scissors','comb','hook','band','coin'];
   const [reels,setReels]=useState(['scissors','comb','hook']);
   const [spinning,setSpinning]=useState(false);
   const [result,setResult]=useState(null);
-  const [pulls,setPulls]=useState(0);
+  const [pulls,setPulls]=useState(()=>getGachaPullsToday(uid));
+  const pullsLeft=Math.max(0,GACHA_DAILY_PULL_LIMIT-pulls);
   function pickPrize(){
     const r=Math.random();
     if(r<1/5000)return{pts:50,key:'ticket',label:'Premio gordo: 3 tickets dorados'};
@@ -2872,7 +2878,15 @@ function GachaSlotsGame({onWin}){
   function randomReels(){return [0,1,2].map(()=>normal[Math.floor(Math.random()*normal.length)]);}
   function spin(){
     if(spinning)return;
-    setSpinning(true);setResult(null);setPulls(p=>p+1);
+    if(pullsLeft<=0){
+      SFX.error();
+      setResult({pts:0,key:null,label:'Límite diario alcanzado'});
+      return;
+    }
+    const nextPulls=pulls+1;
+    setPulls(nextPulls);
+    setGachaPullsToday(uid,nextPulls);
+    setSpinning(true);setResult(null);
     let ticks=0;
     const final=pickPrize();
     const spinTimer=setInterval(()=>{
@@ -2893,17 +2907,25 @@ function GachaSlotsGame({onWin}){
     },90);
   }
   return <Card style={{background:'linear-gradient(180deg,#271006,#5C3317 55%,#D4AF37)',border:`2px solid ${T.gold}`,color:T.white}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:12}}><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><Badge col='gold'>{pulls} tiradas</Badge></div>
-    <div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,lineHeight:1.45,marginBottom:12}}>Junta 3 símbolos iguales. El ticket dorado da 50 puntos, pero sale aproximadamente 1 de cada 5000 tiradas.</div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:12}}>
+      <div>
+        <div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div>
+        <div style={{fontSize:'.7rem',fontWeight:850,opacity:.78,marginTop:2}}>Máximo {GACHA_DAILY_PULL_LIMIT} tiradas al día</div>
+      </div>
+      <Badge col={pullsLeft>0?'gold':'red'}>{pullsLeft}/{GACHA_DAILY_PULL_LIMIT}</Badge>
+    </div>
+    <div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,lineHeight:1.45,marginBottom:12}}>Junta 3 símbolos iguales. Puedes tirar varias veces, pero el contador diario evita que se abuse de la máquina.</div>
+    <div style={{height:8,background:'rgba(255,244,214,.22)',borderRadius:999,overflow:'hidden',marginBottom:14}}>
+      <div style={{height:'100%',width:`${Math.min(100,(pulls/GACHA_DAILY_PULL_LIMIT)*100)}%`,background:T.gradGold,borderRadius:999,transition:'width .25s ease'}}/>
+    </div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
       {reels.map((key,i)=><div key={i} style={{height:106,borderRadius:22,display:'grid',placeItems:'center',background:'linear-gradient(180deg,#FFF8E6,#E8C477)',border:'3px solid rgba(255,244,214,.75)',boxShadow:'inset 0 8px 18px rgba(0,0,0,.16),0 10px 20px rgba(0,0,0,.22)',fontSize:'2.6rem',animation:spinning?'rewardPulsePro .38s infinite':'none'}}>{SYMBOLS[key]?.icon}</div>)}
     </div>
-    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{result.pts>0?`Premio: ${result.pts} puntos reales si lo cobras hoy.`:'Lo normal es que salga 0. Puedes volver a tirar.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col='gold' onClick={()=>onWin(result.pts)}>Cobrar {result.pts} puntos</Btn></div>}</Card>}
-    <Btn full col='gold' disabled={spinning} onClick={spin}>{spinning?'Girando...':'🎰 Tirar'}</Btn>
-    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Probabilidades: 50 pts 1/5000 · 20 pts 1/500 · 10 pts 1/200 · 5 pts 1/100 · 2 pts 1/30 · 1 pt 1/10.</div>
+    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{pullsLeft<=0&&result.label==='Límite diario alcanzado'?'Vuelve mañana para tirar otra vez.':result.pts>0?`Premio: ${result.pts} puntos reales si lo cobras hoy.`:'Lo normal es que salga 0. Puedes volver a tirar mientras te queden tiradas.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col='gold' onClick={()=>onWin(result.pts)}>Cobrar {result.pts} puntos</Btn></div>}</Card>}
+    <Btn full col={pullsLeft>0?'gold':'ghost'} disabled={spinning||pullsLeft<=0} onClick={spin}>{spinning?'Girando...':pullsLeft>0?'🎰 Tirar':'Límite diario alcanzado'}</Btn>
+    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{GACHA_DAILY_PULL_LIMIT}. Probabilidades: 50 pts 1/5000 · 20 pts 1/500 · 10 pts 1/200 · 5 pts 1/100 · 2 pts 1/30 · 1 pt 1/10.</div>
   </Card>;
 }
-
 
 
 function ArcadeInfoPanel({onOpenGacha}){
@@ -3040,7 +3062,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops}){
         {activeGame==="runner"&&<RastaRunnerGame user={user} onWin={pts=>handleWin("runner",pts)}/>} 
         {activeGame==="jump"&&<PlatformJumpGame user={user} onWin={pts=>handleWin("jump",pts)}/>} 
         {activeGame==="stitch"&&<DreadStitchGame user={user} onWin={pts=>handleWin("stitch",pts)}/>} 
-        {activeGame==="gacha"&&<GachaSlotsGame onWin={pts=>handleWin("gacha",pts)}/>} 
+        {activeGame==="gacha"&&<GachaSlotsGame user={user} onWin={pts=>handleWin("gacha",pts)}/>} 
       </div>
     );
   }
@@ -3051,25 +3073,24 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops}){
   const todayTotal=getDailyGamePointsTotal(user.id);
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🎮" title="Rasta Arcade" sub="Juega varias veces, cobra puntos una vez al día y sube a los rankings"/>
-      <ArcadeInfoPanel onOpenGacha={()=>setActiveGame("gacha")}/>
-      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#1B1008,#3B2814 54%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}} hover>
-        <div style={{position:"absolute",right:-18,top:-30,fontSize:"7rem",opacity:.13,transform:"rotate(-10deg)"}}>🏆</div>
-        <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:14}}>
-          <div style={{fontSize:"2.4rem",filter:"drop-shadow(0 8px 10px rgba(0,0,0,.3))"}}>🏆</div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontWeight:950,fontSize:"1.05rem"}}>Top de jugadores</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Entra al ranking completo: semanal, histórico y por minijuego. Se actualiza cuando alguien guarda una partida.</div>
+      <SectionHeader icon="🎮" title="Rasta Arcade" sub="Elige un juego, mejora tu marca y entra en los rankings del estudio"/>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#201208,#4F351B 56%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-18,top:-30,fontSize:"7rem",opacity:.12,transform:"rotate(-10deg)"}}>🏆</div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",lineHeight:1}}>Rankings de clientes</div>
+          <div style={{fontSize:".8rem",fontWeight:800,opacity:.82,lineHeight:1.35,marginTop:3}}>Aquí están las estadísticas públicas de la comunidad: récords de juegos, puntos, tienda y participación.</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:12}}>
+            <button onClick={()=>onOpenTops?.("games")} style={{border:"2px solid rgba(255,244,214,.42)",borderRadius:18,padding:"13px 10px",background:"rgba(255,244,214,.16)",color:T.white,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
+              <div style={{fontSize:"1.75rem",lineHeight:1}}>🏆</div>
+              <div style={{fontSize:"1rem",marginTop:5}}>Top 10</div>
+              <div style={{fontSize:".68rem",opacity:.78,lineHeight:1.25}}>Récords por minijuego</div>
+            </button>
+            <button onClick={()=>onOpenTops?.("general")} style={{border:"2px solid rgba(255,244,214,.42)",borderRadius:18,padding:"13px 10px",background:"rgba(255,244,214,.16)",color:T.white,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
+              <div style={{fontSize:"1.75rem",lineHeight:1}}>👑</div>
+              <div style={{fontSize:"1rem",marginTop:5}}>Top general</div>
+              <div style={{fontSize:".68rem",opacity:.78,lineHeight:1.25}}>Clientes y actividad</div>
+            </button>
           </div>
-          <Btn small col="gold" onClick={onOpenTops}>Ver top</Btn>
-        </div>
-      </Card>
-      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#2A0E05,#6E3518 58%,#D4AF37)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
-        <div style={{position:"absolute",right:-18,top:-24,fontSize:"7rem",opacity:.13,transform:"rotate(-12deg)"}}>🏆</div>
-        <div style={{position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
-          <div style={{background:"rgba(255,244,214,.16)",borderRadius:16,padding:10}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.8}}>Puntos juegos hoy</div><div style={{fontWeight:950,fontSize:"1.3rem",color:T.gold}}>{todayTotal}/{GAME_DAILY_CAP}</div></div>
-          <div style={{background:"rgba(255,244,214,.16)",borderRadius:16,padding:10}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.8}}>Top viendo</div><div style={{fontWeight:950,fontSize:"1.3rem",color:T.gold}}>{selectedMeta.icon}</div></div>
-          <div style={{background:"rgba(255,244,214,.16)",borderRadius:16,padding:10}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.8}}>Tu marca</div><div style={{fontWeight:950,fontSize:"1.3rem",color:T.gold}}>{myBest}</div></div>
         </div>
       </Card>
 
@@ -3099,153 +3120,232 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops}){
         })}
       </div>
 
-      <Card style={{background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`2px solid ${T.g300}`,marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div style={{fontSize:"2rem"}}>📈</div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontWeight:950,color:T.g800}}>Ranking separado</div>
-            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>El top ya no está escondido aquí abajo. Ábrelo en su propia pantalla para ver semanal, histórico y cada juego bien ordenado.</div>
-          </div>
-          <Btn small col="dark" onClick={onOpenTops}>Abrir top</Btn>
-        </div>
-      </Card>
     </div>
   );
 }
 
-// TOPS DE JUEGOS
-function GameTopsPage({user,onBack,onPlay}){
+// TOPS DE JUEGOS Y TOP GENERAL
+function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
+  const [section,setSection]=useState(initialTab||"games");
   const [game,setGame]=useState("runner");
   const [mode,setMode]=useState("weekly");
   const [rows,setRows]=useState([]);
   const [loading,setLoading]=useState(true);
   const [lastUpdate,setLastUpdate]=useState(null);
   const [livePulse,setLivePulse]=useState(0);
+  const [generalKind,setGeneralKind]=useState("total");
+  const [generalRows,setGeneralRows]=useState([]);
+  const [generalLoading,setGeneralLoading]=useState(false);
   const selected=gameMeta(game);
   const weekly=mode==="weekly";
+  const GENERAL_KINDS=[
+    {id:"total",icon:"💎",title:"General",sub:"Puntos totales actuales",unit:"pts"},
+    {id:"games",icon:"🎮",title:"Juegos",sub:"Puntos/récords acumulados en Arcade",unit:"pts"},
+    {id:"shop",icon:"🛍️",title:"Tienda",sub:"Puntos gastados en premios y personalización",unit:"pts"},
+    {id:"community",icon:"🌐",title:"Comunidad",sub:"Comentarios, likes y participación",unit:"pts"},
+  ];
+  const generalMeta=GENERAL_KINDS.find(x=>x.id===generalKind)||GENERAL_KINDS[0];
+
+  useEffect(()=>{setSection(initialTab||"games");},[initialTab]);
 
   const loadBoard=useCallback(async()=>{
+    if(section!=="games")return;
     setLoading(true);
     const remote=await loadSupabaseGameLeaderboard(game,mode);
     setRows(remote||[]);
     setLastUpdate(new Date());
     setLoading(false);
-  },[game,mode]);
+  },[game,mode,section]);
+
+  async function loadGeneralBoard(kind=generalKind){
+    setGeneralLoading(true);
+    try{
+      const usersRaw=await safeList("usuarios","?select=id,nombre,email,puntos,avatar,avatar_config,perfil_publico,modo_incognito,role&limit=500");
+      const users=(usersRaw||[]).filter(u=>{
+        const r=normalizeRole(u.role||u.rol);
+        return r!==ROLES.ADMIN && r!==ROLES.STAFF;
+      });
+      const values={};
+      users.forEach(u=>{values[String(u.id)]=kind==="total"?Number(u.puntos||0):0;});
+
+      if(kind==="games"){
+        const scores=await safeList("game_scores","?select=usuario_id,score&limit=3000");
+        (scores||[]).forEach(r=>{const id=String(r.usuario_id||""); if(id) values[id]=(values[id]||0)+Number(r.score||0);});
+      }
+      if(kind==="shop"){
+        const canjes=await safeList("canjes","?select=usuario_id,puntos_gastados&limit=3000");
+        (canjes||[]).forEach(r=>{const id=String(r.usuario_id||""); if(id) values[id]=(values[id]||0)+Number(r.puntos_gastados||0);});
+      }
+      if(kind==="community"){
+        let found=false;
+        const events=await safeList("news_point_events","?select=usuario_id,puntos&limit=3000");
+        if(events.length){found=true;(events||[]).forEach(r=>{const id=String(r.usuario_id||""); if(id) values[id]=(values[id]||0)+Number(r.puntos||0);});}
+        if(!found){
+          const [comments,likes,topics,replies]=await Promise.all([
+            safeList("news_comments","?select=usuario_id&limit=3000"),
+            safeList("news_likes","?select=usuario_id&limit=3000"),
+            safeList("publicaciones","?select=autor_id,likes_count,tipo&limit=3000"),
+            safeList("foro_respuestas","?select=autor_id&limit=3000"),
+          ]);
+          (comments||[]).forEach(r=>{const id=String(r.usuario_id||""); if(id) values[id]=(values[id]||0)+3;});
+          (likes||[]).forEach(r=>{const id=String(r.usuario_id||""); if(id) values[id]=(values[id]||0)+1;});
+          (topics||[]).forEach(r=>{const id=String(r.autor_id||""); if(id) values[id]=(values[id]||0)+5+Number(r.likes_count||0);});
+          (replies||[]).forEach(r=>{const id=String(r.autor_id||""); if(id) values[id]=(values[id]||0)+2;});
+        }
+      }
+
+      const list=users.map(u=>{
+        const privacy=normalizePrivacy(u);
+        return {
+          ...u,
+          user_id:String(u.id),
+          nombre:u.nombre||"Cliente",
+          avatar:u.avatar||0,
+          avatar_config:u.avatar_config||null,
+          perfil_publico:privacy.perfil_publico,
+          modo_incognito:privacy.modo_incognito,
+          score:Math.round(Number(values[String(u.id)]||0)),
+        };
+      }).filter(r=>kind==="total"?true:r.score>0).sort((a,b)=>Number(b.score||0)-Number(a.score||0)).slice(0,10);
+      setGeneralRows(list);
+      setLastUpdate(new Date());
+    }catch(e){
+      console.warn("top general",e);
+      setGeneralRows([]);
+    }
+    setGeneralLoading(false);
+  }
 
   useEffect(()=>{loadBoard();},[loadBoard,livePulse]);
+  useEffect(()=>{if(section==="general")loadGeneralBoard(generalKind);},[section,generalKind,livePulse]);
 
   useEffect(()=>{
     if(!supabase) return;
     let alive=true;
     const channel=supabase
-      .channel(`game_scores_live_${game}_${mode}`)
+      .channel(`tops_live_${section}_${game}_${mode}_${generalKind}`)
       .on("postgres_changes",{event:"INSERT",schema:"public",table:"game_scores"},payload=>{
         const r=payload?.new||{};
-        if(String(r.game_id)===String(game)){
-          if(mode==="historic" || String(r.week)===String(weekKey())){
-            if(alive) setLivePulse(x=>x+1);
-          }
+        if(section==="games"&&String(r.game_id)===String(game)){
+          if(mode==="historic" || String(r.week)===String(weekKey())) if(alive) setLivePulse(x=>x+1);
         }
+        if(section==="general"&&generalKind==="games") if(alive) setLivePulse(x=>x+1);
       })
-      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"game_scores"},payload=>{
-        const r=payload?.new||{};
-        if(String(r.game_id)===String(game)){
-          if(mode==="historic" || String(r.week)===String(weekKey())){
-            if(alive) setLivePulse(x=>x+1);
-          }
-        }
-      })
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"canjes"},()=>{if(section==="general"&&generalKind==="shop"&&alive)setLivePulse(x=>x+1);})
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"news_point_events"},()=>{if(section==="general"&&generalKind==="community"&&alive)setLivePulse(x=>x+1);})
       .subscribe();
-    const poll=setInterval(()=>{if(alive) setLivePulse(x=>x+1);},15000);
-    return()=>{
-      alive=false;
-      clearInterval(poll);
-      try{supabase.removeChannel(channel);}catch{}
-    };
-  },[game,mode]);
+    const poll=setInterval(()=>{if(alive) setLivePulse(x=>x+1);},18000);
+    return()=>{alive=false;clearInterval(poll);try{supabase.removeChannel(channel);}catch{}};
+  },[section,game,mode,generalKind]);
 
-  const myRow=(rows||[]).find(r=>String(r.user_id||r.usuario_id)===String(user?.id));
+  const gameMyRow=(rows||[]).find(r=>String(r.user_id||r.usuario_id)===String(user?.id));
+  const generalMyRow=(generalRows||[]).find(r=>String(r.user_id||r.usuario_id)===String(user?.id));
+  const reload=()=>section==="games"?loadBoard():loadGeneralBoard(generalKind);
+
+  function RankRow({r,i,unit="pts"}){
+    return <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 0",borderBottom:i<9?"1px solid rgba(255,244,214,.16)":"none"}}>
+      <div style={{width:36,fontWeight:950,fontSize:"1.05rem",color:i<3?T.gold:T.white}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div>
+      <PublicAvatar profile={r} currentUser={user} size={40}/>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontWeight:950,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(r,user)}</div>
+        <div style={{fontSize:".68rem",fontWeight:800,opacity:.68}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):section==="general"?generalMeta.sub:"marca guardada"}</div>
+      </div>
+      <div style={{textAlign:"right"}}>
+        <div style={{color:T.gold,fontWeight:950,fontSize:"1.12rem"}}>{Number(r.score)||0}</div>
+        <div style={{fontSize:".62rem",fontWeight:800,opacity:.72}}>{unit}</div>
+      </div>
+    </div>;
+  }
+
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
         <button onClick={()=>{SFX.navBack();onBack?.();}} style={{background:T.g150,border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",fontWeight:950,fontSize:"1rem",color:T.g700,boxShadow:"0 8px 18px rgba(20,8,4,.2)"}}>{"<"}</button>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🏆 Top de jugadores</div>
-          <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Rankings públicos del Rasta Arcade</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.5rem",color:T.g800}}>Rankings Rasta Cuts</div>
+          <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Estadísticas públicas de todos los clientes.</div>
         </div>
-        <Btn small col="gold" onClick={loadBoard}>Actualizar</Btn>
+        <Btn small col="gold" onClick={reload}>Actualizar</Btn>
       </div>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 56%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
-        <div style={{position:"absolute",right:-14,top:-26,fontSize:"7.5rem",opacity:.13}}>♛</div>
-        <div style={{position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-          <div style={{background:"rgba(255,244,214,.14)",borderRadius:16,padding:12}}>
-            <div style={{fontSize:".72rem",fontWeight:900,opacity:.75}}>Ranking activo</div>
-            <div style={{fontWeight:950,fontSize:"1.15rem",color:T.gold}}>{selected.icon} {selected.short}</div>
+      <Card style={{marginBottom:12,background:"linear-gradient(145deg,#24110A,#563519 58%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-22,top:-28,fontSize:"7.4rem",opacity:.12}}>♛</div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <button onClick={()=>{SFX.tab();setSection("games");}} style={{border:`2px solid ${section==="games"?T.gold:"rgba(255,244,214,.28)"}`,borderRadius:18,padding:"13px 10px",background:section==="games"?"rgba(255,244,214,.22)":"rgba(255,244,214,.10)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:section==="games"?"0 10px 24px rgba(185,154,69,.24)":"none"}}>
+              <div style={{fontSize:"1.75rem",lineHeight:1}}>🏆</div>
+              <div style={{fontSize:"1.05rem",marginTop:5}}>Top 10</div>
+              <div style={{fontSize:".68rem",opacity:.76,lineHeight:1.25}}>récords por juego</div>
+            </button>
+            <button onClick={()=>{SFX.tab();setSection("general");}} style={{border:`2px solid ${section==="general"?T.gold:"rgba(255,244,214,.28)"}`,borderRadius:18,padding:"13px 10px",background:section==="general"?"rgba(255,244,214,.22)":"rgba(255,244,214,.10)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:section==="general"?"0 10px 24px rgba(185,154,69,.24)":"none"}}>
+              <div style={{fontSize:"1.75rem",lineHeight:1}}>👑</div>
+              <div style={{fontSize:"1.05rem",marginTop:5}}>Top general</div>
+              <div style={{fontSize:".68rem",opacity:.76,lineHeight:1.25}}>clientes y actividad</div>
+            </button>
           </div>
-          <div style={{background:"rgba(255,244,214,.14)",borderRadius:16,padding:12}}>
-            <div style={{fontSize:".72rem",fontWeight:900,opacity:.75}}>Modo</div>
-            <div style={{fontWeight:950,fontSize:"1.15rem",color:T.gold}}>{weekly?"Semanal":"Histórico"}</div>
+          <div style={{fontSize:".76rem",fontWeight:800,opacity:.82,lineHeight:1.35,marginTop:10}}>
+            {section==="games"?"Top 10 de récords del Arcade: semanal, histórico y por minijuego.":"Top general dividido en puntos totales, juegos, tienda y comunidad."}
           </div>
-        </div>
-        <div style={{position:"relative",zIndex:1,marginTop:10,fontSize:".76rem",fontWeight:800,opacity:.82}}>
-          {lastUpdate?`Última actualización: ${lastUpdate.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}`:"Cargando datos..."} · visible para todos
-        </div>
-      </Card>
-
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:12}}>
-        <button onClick={()=>{SFX.tab();setMode("weekly");}} style={{border:"none",borderRadius:15,padding:"11px 8px",background:weekly?T.gradGold:T.panel,color:weekly?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 16px rgba(20,8,4,.13)"}}>🔥 Top semanal</button>
-        <button onClick={()=>{SFX.tab();setMode("historic");}} style={{border:"none",borderRadius:15,padding:"11px 8px",background:!weekly?T.gradGold:T.panel,color:!weekly?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 16px rgba(20,8,4,.13)"}}>👑 Histórico</button>
-      </div>
-
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`2px solid ${T.g300}`}}>
-        <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>Selecciona juego</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
-          {ARCADE_GAMES.filter(g=>g.id!=="gacha").map(g=>{
-            const active=game===g.id;
-            return <button key={g.id} onClick={()=>{SFX.tab();setGame(g.id);}} style={{border:`2px solid ${active?T.gold:T.g200}`,borderRadius:16,padding:"10px 8px",background:active?T.gradGold:T.g50,color:active?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:active?"0 10px 20px rgba(185,154,69,.22)":"0 6px 14px rgba(20,8,4,.10)"}}>
-              <div style={{fontSize:"1.55rem"}}>{g.icon}</div>
-              <div style={{fontSize:".78rem"}}>{gameMeta(g.id).short}</div>
-            </button>;
-          })}
         </div>
       </Card>
 
-      <Card style={{background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
-          <div>
-            <div style={{fontWeight:950,fontSize:"1.05rem"}}>{selected.icon} {selected.title}</div>
-            <div style={{fontSize:".74rem",opacity:.78,fontWeight:800}}>{weekly?`Semana ${weekKey()}`:"Mejor marca histórica por jugador"}</div>
-          </div>
-          <Badge col="gold">{rows.length}/10</Badge>
+      {section==="games"&&<>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:10}}>
+          <button onClick={()=>{SFX.tab();setMode("weekly");}} style={{border:"none",borderRadius:15,padding:"11px 8px",background:weekly?T.gradGold:T.panel,color:weekly?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 16px rgba(20,8,4,.13)"}}>🔥 Semanal</button>
+          <button onClick={()=>{SFX.tab();setMode("historic");}} style={{border:"none",borderRadius:15,padding:"11px 8px",background:!weekly?T.gradGold:T.panel,color:!weekly?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 16px rgba(20,8,4,.13)"}}>👑 Histórico</button>
         </div>
-        {loading?<Spinner/>:rows.length===0?<EmptyState icon="🏆" title="Sin puntuaciones todavía" sub={`Juega a ${selected.short} y estrena este ranking.`}/>:rows.map((r,i)=><div key={`${r.user_id}-${r.created_at||i}-${livePulse}`} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i<rows.length-1?"1px solid rgba(255,244,214,.18)":"none"}}>
-          <div style={{width:34,fontWeight:950,fontSize:"1.05rem",color:i<3?T.gold:T.white}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div>
-          <PublicAvatar profile={r} currentUser={user} size={38}/>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontWeight:950,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(r,user)}</div>
-            <div style={{fontSize:".68rem",fontWeight:800,opacity:.7}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"marca guardada"}</div>
+        <Card style={{marginBottom:12,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`2px solid ${T.g300}`}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>Selecciona minijuego</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+            {ARCADE_GAMES.filter(g=>g.id!=="gacha").map(g=>{
+              const active=game===g.id;
+              return <button key={g.id} onClick={()=>{SFX.tab();setGame(g.id);}} style={{border:`2px solid ${active?T.gold:T.g200}`,borderRadius:16,padding:"10px 8px",background:active?T.gradGold:T.g50,color:active?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:active?"0 10px 20px rgba(185,154,69,.22)":"0 6px 14px rgba(20,8,4,.10)"}}>
+                <div style={{fontSize:"1.55rem"}}>{g.icon}</div>
+                <div style={{fontSize:".78rem"}}>{gameMeta(g.id).short}</div>
+              </button>;
+            })}
           </div>
-          <div style={{textAlign:"right"}}>
-            <div style={{color:T.gold,fontWeight:950,fontSize:"1.12rem"}}>{Number(r.score)||0}</div>
-            <div style={{fontSize:".62rem",fontWeight:800,opacity:.72}}>pts</div>
+        </Card>
+        <Card style={{background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
+            <div><div style={{fontWeight:950,fontSize:"1.05rem"}}>{selected.icon} Top 10 · {selected.title}</div><div style={{fontSize:".74rem",opacity:.78,fontWeight:800}}>{weekly?`Semana ${weekKey()}`:"Mejor marca histórica por jugador"}</div></div>
+            <Badge col="gold">{rows.length}/10</Badge>
           </div>
-        </div>)}
-      </Card>
+          {loading?<Spinner/>:rows.length===0?<EmptyState icon="🏆" title="Sin puntuaciones todavía" sub={`Juega a ${selected.short} y estrena este ranking.`}/>:rows.map((r,i)=><RankRow key={`${r.user_id}-${r.created_at||i}-${livePulse}`} r={r} i={i}/>)}
+        </Card>
+        {gameMyRow&&<Card style={{marginTop:12,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`2px solid ${T.gold}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}><PublicAvatar profile={gameMyRow} currentUser={user} size={40}/><div style={{flex:1}}><div style={{fontWeight:950,color:T.g800}}>Tu marca en este top</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Estás dentro del Top 10 de {selected.short}.</div></div><div style={{fontWeight:950,color:T.orange,fontSize:"1.2rem"}}>{gameMyRow.score}</div></div>
+        </Card>}
+      </>}
 
-      {myRow&&<Card style={{marginTop:12,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`2px solid ${T.gold}`}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <PublicAvatar profile={myRow} currentUser={user} size={40}/>
-          <div style={{flex:1}}>
-            <div style={{fontWeight:950,color:T.g800}}>Tu marca en este top</div>
-            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Estás dentro del top 10 de {selected.short}.</div>
+      {section==="general"&&<>
+        <Card style={{marginBottom:12,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`2px solid ${T.g300}`}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>Top general por categoría</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+            {GENERAL_KINDS.map(k=>{
+              const active=generalKind===k.id;
+              return <button key={k.id} onClick={()=>{SFX.tab();setGeneralKind(k.id);}} style={{border:`2px solid ${active?T.gold:T.g200}`,borderRadius:16,padding:"10px 8px",background:active?T.gradGold:T.g50,color:active?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:active?"0 10px 20px rgba(185,154,69,.22)":"0 6px 14px rgba(20,8,4,.10)",textAlign:"left"}}>
+                <div style={{fontSize:"1.45rem",lineHeight:1}}>{k.icon}</div>
+                <div style={{fontSize:".86rem",marginTop:5}}>{k.title}</div>
+                <div style={{fontSize:".64rem",opacity:.75,lineHeight:1.25}}>{k.sub}</div>
+              </button>;
+            })}
           </div>
-          <div style={{fontWeight:950,color:T.orange,fontSize:"1.2rem"}}>{myRow.score}</div>
-        </div>
-      </Card>}
+        </Card>
+        <Card style={{background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
+            <div><div style={{fontWeight:950,fontSize:"1.05rem"}}>{generalMeta.icon} Top general · {generalMeta.title}</div><div style={{fontSize:".74rem",opacity:.78,fontWeight:800}}>{generalMeta.sub}</div></div>
+            <Badge col="gold">{generalRows.length}/10</Badge>
+          </div>
+          {generalLoading?<Spinner/>:generalRows.length===0?<EmptyState icon="👑" title="Sin datos todavía" sub="Cuando los clientes participen, jueguen o canjeen puntos aparecerán aquí."/>:generalRows.map((r,i)=><RankRow key={`${r.user_id}-${generalKind}-${i}-${livePulse}`} r={r} i={i} unit={generalMeta.unit}/>)}
+        </Card>
+        {generalMyRow&&<Card style={{marginTop:12,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`2px solid ${T.gold}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}><PublicAvatar profile={generalMyRow} currentUser={user} size={40}/><div style={{flex:1}}><div style={{fontWeight:950,color:T.g800}}>Tu posición en {generalMeta.title}</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>{generalMeta.sub}</div></div><div style={{fontWeight:950,color:T.orange,fontSize:"1.2rem"}}>{generalMyRow.score}</div></div>
+        </Card>}
+      </>}
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:14}}>
-        <Btn full col="ghost" onClick={onBack}>Volver al arcade</Btn>
+        <Btn full col="ghost" onClick={onBack}>Volver</Btn>
         <Btn full col="gold" onClick={onPlay}>Jugar ahora</Btn>
       </div>
     </div>
@@ -4508,6 +4608,7 @@ export default function App(){
   const [musicOn,setMusicOn]=useState(false);
   const [checkingSession,setCheckingSession]=useState(true);
   const [helperPage,setHelperPage]=useState(null);
+  const [topsInitial,setTopsInitial]=useState("games");
 
   useEffect(()=>{
     async function restoreSession(){
@@ -4562,7 +4663,7 @@ export default function App(){
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
-    tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTops={()=>navTo("tops")}/>,tops:<GameTopsPage user={currentUser} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
+    tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>,tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
