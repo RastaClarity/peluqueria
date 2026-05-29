@@ -2390,7 +2390,7 @@ function Caja({user,showToast}){
   const [metodo,setMetodo]=useState("efectivo");
   const [clienteNombre,setClienteNombre]=useState("");
   const [citaCobro,setCitaCobro]=useState(null);
-  const [cobroForm,setCobroForm]=useState({metodo_pago:"efectivo",importe:"",puntos_usados:"0",descripcion:""});
+  const [cobroForm,setCobroForm]=useState({metodo_pago:"efectivo",importe:"",puntos_generados:"10",descripcion:""});
 
   const today=()=>new Date().toISOString().split("T")[0];
   const monthStart=()=>{
@@ -2399,6 +2399,22 @@ function Caja({user,showToast}){
   };
   const money=n=>`${(Number(n)||0).toFixed(2)}€`;
   const metodoLabel=m=>({efectivo:"Efectivo",tarjeta:"Tarjeta",bizum:"Bizum",puntos:"Puntos",mixto:"Mixto"})[m]||m||"Sin método";
+
+  async function sumarPuntosFidelidad(usuarioId,puntos=0){
+    if(!usuarioId)return false;
+    const add=Math.max(0,parseInt(puntos||0,10)||0);
+    if(!add)return true;
+    try{
+      const rows=await dbGet("usuarios",`?id=eq.${usuarioId}&select=id,puntos&limit=1`);
+      const actual=Number(rows?.[0]?.puntos||0);
+      const nuevos=Math.max(0,actual + add);
+      const ok=await dbPatch("usuarios",`?id=eq.${usuarioId}`,{puntos:nuevos});
+      return Boolean(ok);
+    }catch(e){
+      console.warn("No se pudieron sumar puntos de fidelidad",e);
+      return false;
+    }
+  }
 
   useEffect(()=>{loadCaja();},[]);
 
@@ -2472,7 +2488,7 @@ function Caja({user,showToast}){
     setCobroForm({
       metodo_pago:"efectivo",
       importe:String(precio||0),
-      puntos_usados:"0",
+      puntos_generados:"10",
       descripcion:cita.servicio_label||cita.servicio||"Servicio de peluquería"
     });
   }
@@ -2481,7 +2497,7 @@ function Caja({user,showToast}){
     if(!citaCobro)return;
     const importe=Number(String(cobroForm.importe||"0").replace(",","."));
     if(!(importe>=0)){showToast?.("Importe no válido");return;}
-    const puntosUsados=Math.max(0,parseInt(cobroForm.puntos_usados||"0",10)||0);
+    const puntosGenerados=Math.max(0,parseInt(cobroForm.puntos_generados||"0",10)||0);
     const ok=await dbPost("cobros",{
       cita_id:citaCobro.id,
       usuario_id:citaCobro.usuario_id||null,
@@ -2490,15 +2506,16 @@ function Caja({user,showToast}){
       descripcion:cobroForm.descripcion||citaCobro.servicio_label||citaCobro.servicio||"Servicio de peluquería",
       importe:Number(importe.toFixed(2)),
       metodo_pago:cobroForm.metodo_pago,
-      puntos_usados:puntosUsados,
-      puntos_generados:0,
+      puntos_usados:0,
+      puntos_generados:puntosGenerados,
       estado:"pagado",
       fecha:today(),
       creado_por:user?.id||user?.email||"app"
     });
     if(ok){
+      const puntosOk=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
       SFX.coins();
-      showToast?.(`Cita cobrada: ${money(importe)}`);
+      showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosGenerados} pts de fidelidad`:""}${!puntosOk?" · revisa puntos":""}`);
       setCitaCobro(null);
       await loadCaja();
     }else{
@@ -2522,7 +2539,7 @@ function Caja({user,showToast}){
           <div className="icon3d" style={{fontSize:"2rem"}}>🧾</div>
           <div style={{flex:1}}>
             <div style={{fontWeight:950,fontSize:"1rem"}}>Caja y cobros reales</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Registra ventas manuales y cobra citas realizadas. Todo se guarda en Supabase en la tabla cobros.</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Registra ventas manuales y cobra citas realizadas. Los puntos son fidelidad, no dinero ni método de pago.</div>
           </div>
         </div>
       </Card>
@@ -2628,8 +2645,14 @@ function Caja({user,showToast}){
               <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,marginTop:4}}>✂️ {citaCobro.servicio_label||citaCobro.servicio}</div>
             </Card>
             <Input label="Importe final" value={cobroForm.importe} onChange={v=>setCobroForm(f=>({...f,importe:v}))} type="number"/>
-            <Select label="Método de pago" value={cobroForm.metodo_pago} onChange={v=>setCobroForm(f=>({...f,metodo_pago:v}))} options={[{value:"efectivo",label:"Efectivo"},{value:"tarjeta",label:"Tarjeta"},{value:"bizum",label:"Bizum"},{value:"puntos",label:"Puntos"},{value:"mixto",label:"Mixto"}]}/>
-            <Input label="Puntos usados" value={cobroForm.puntos_usados} onChange={v=>setCobroForm(f=>({...f,puntos_usados:v}))} type="number"/>
+            <Select label="Método de pago" value={cobroForm.metodo_pago} onChange={v=>setCobroForm(f=>({...f,metodo_pago:v}))} options={[{value:"efectivo",label:"Efectivo"},{value:"tarjeta",label:"Tarjeta"},{value:"bizum",label:"Bizum"},{value:"mixto",label:"Mixto"}]}/>
+            <Input label="Puntos de fidelidad a sumar" value={cobroForm.puntos_generados} onChange={v=>setCobroForm(f=>({...f,puntos_generados:v}))} type="number"/>
+            <Card style={{marginBottom:14,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`1.5px solid ${T.gold}`,padding:12}}>
+              <div style={{fontWeight:950,color:T.g800}}>⭐ Puntos de fidelidad</div>
+              <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>
+                Los puntos no equivalen a euros y no se usan como método de pago. Sólo se suman como fidelidad y luego se canjean por cupones, avatar, juegos o premios de tienda.
+              </div>
+            </Card>
             <Input label="Descripción" value={cobroForm.descripcion} onChange={v=>setCobroForm(f=>({...f,descripcion:v}))}/>
             <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
               <Btn full col="gold" onClick={cobrarCita}>Guardar cobro</Btn>
@@ -3759,7 +3782,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
   const GENERAL_KINDS=[
     {id:"total",icon:"💎",title:"General",sub:"Puntos totales actuales",unit:"pts"},
     {id:"games",icon:"🎮",title:"Juegos",sub:"Puntos/récords acumulados en Arcade",unit:"pts"},
-    {id:"shop",icon:"🛍️",title:"Tienda",sub:"Puntos gastados en premios y personalización",unit:"pts"},
+    {id:"shop",icon:"🛍️",title:"Tienda",sub:"Puntos canjeados por cupones, avatar, juegos y premios",unit:"pts"},
     {id:"community",icon:"🌐",title:"Comunidad",sub:"Comentarios, likes y participación",unit:"pts"},
   ];
   const generalMeta=GENERAL_KINDS.find(x=>x.id===generalKind)||GENERAL_KINDS[0];
