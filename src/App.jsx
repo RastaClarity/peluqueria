@@ -1707,12 +1707,13 @@ function Citas({user,showToast}){
   const [loading,setLoading]=useState(true);
   const [form,setForm]=useState({servicios:["corte"],fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});
   const [ocupados,setOcupados]=useState([]);
-  const [view,setView]=useState("todas");
+  const [view,setView]=useState(user?.rol!==ROLES.CLIENT?"pendiente":"todas");
+  const [proposal,setProposal]=useState(null);
   const isAdmin=user?.rol!==ROLES.CLIENT;
   useEffect(()=>{loadCitas();},[]);
   async function loadCitas(){
     setLoading(true);
-    const q=isAdmin?"?order=fecha.asc,hora.asc&select=*":`?usuario_id=eq.${user.id}&order=fecha.asc&select=*`;
+    const q=isAdmin?"?order=fecha.asc,hora.asc&select=*":`?usuario_id=eq.${user.id}&order=fecha.asc,hora.asc&select=*`;
     setCitas(await dbGet("citas",q)||[]);setLoading(false);
   }
   async function checkHorarios(fecha){if(!fecha)return;const data=await dbGet("citas",`?fecha=eq.${fecha}&select=hora`);setOcupados((data||[]).map(c=>c.hora));}
@@ -1746,55 +1747,101 @@ function Citas({user,showToast}){
     });
     showToast("Cita enviada y pendiente de confirmar");SFX.success();setShowNew(false);setForm({servicios:["corte"],fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});loadCitas();
   }
+  async function updateCita(cita,patch,msg){
+    const ok=await dbPatch("citas",`?id=eq.${cita.id}`,patch);
+    if(ok){showToast(msg);SFX.success();await loadCitas();}
+    else{showToast("No se pudo actualizar la cita");SFX.error();}
+  }
+  function openProposal(cita){
+    setProposal({cita,fecha:cita.fecha||"",hora:cita.hora||"",nota:""});
+    checkHorarios(cita.fecha||"");
+  }
+  async function sendProposal(){
+    if(!proposal?.fecha||!proposal?.hora){showToast("Elige fecha y hora para la propuesta");return;}
+    const old=String(proposal.cita.notas||"").trim();
+    const extra=`Propuesta de nueva hora: ${proposal.fecha} a las ${proposal.hora}${proposal.nota?` · ${proposal.nota}`:""}`;
+    await updateCita(proposal.cita,{fecha:proposal.fecha,hora:proposal.hora,estado:"propuesta",notas:old?`${old}\n\n${extra}`:extra},"Propuesta enviada");
+    setProposal(null);
+  }
   const currentServices=selectedServices(form.servicios);
   const currentTotal=citaTotal(currentServices);
   const currentDuration=citaDuration(currentServices);
-  const pending=citas.filter(c=>String(c.estado||"pendiente")==="pendiente");
-  const citasVisibles=view==="pendientes"?pending:citas;
-  const eColor={pendiente:"gold",confirmada:"green",cancelada:"red",completada:"blue"};
+  const statusOf=c=>String(c.estado||"pendiente").toLowerCase();
+  const counts=citas.reduce((acc,c)=>{const st=statusOf(c);acc[st]=(acc[st]||0)+1;acc.todas=(acc.todas||0)+1;return acc;},{todas:citas.length});
+  const statusTabs=isAdmin?[
+    {id:"pendiente",label:"Pendientes",icon:"🟡"},
+    {id:"propuesta",label:"Propuestas",icon:"🔁"},
+    {id:"confirmada",label:"Confirmadas",icon:"✅"},
+    {id:"completada",label:"Realizadas",icon:"🏁"},
+    {id:"cancelada",label:"Canceladas",icon:"❌"},
+    {id:"todas",label:"Todas",icon:"📚"},
+  ]:[
+    {id:"todas",label:"Todas",icon:"📚"},
+    {id:"pendiente",label:"Pendientes",icon:"🟡"},
+    {id:"propuesta",label:"Propuestas",icon:"🔁"},
+    {id:"confirmada",label:"Confirmadas",icon:"✅"},
+  ];
+  const citasVisibles=view==="todas"?citas:citas.filter(c=>statusOf(c)===view);
+  const eColor={pendiente:"gold",propuesta:"blue",confirmada:"green",cancelada:"red",completada:"blue"};
+  const eLabel={pendiente:"pendiente",propuesta:"propuesta",confirmada:"confirmada",cancelada:"cancelada",completada:"realizada"};
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="📅" title="Citas" sub={isAdmin?"Gestión de citas":"Tus citas"} action={<Btn small onClick={()=>setShowNew(true)}>+ Nueva</Btn>}/>
-      {isAdmin&&<Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-          <div><div style={{fontWeight:950,color:T.g800}}>☕ Citas pendientes</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Las reservas de clientes llegan aquí como pendientes.</div></div>
-          <Badge col={pending.length?"gold":"green"}>{pending.length} pendientes</Badge>
+      <SectionHeader icon="📅" title="Citas" sub={isAdmin?"Panel de reservas pendientes":"Tus reservas"} action={<Btn small onClick={()=>setShowNew(true)}>+ Nueva</Btn>}/>
+
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>{isAdmin?"☕ Panel de citas":"🧾 Estado de tus citas"}</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>{isAdmin?"Acepta, cancela, propone otra hora o marca citas realizadas.":"Aquí verás si tu reserva está pendiente, confirmada o con propuesta de cambio."}</div>
+          </div>
+          <Badge col={(counts.pendiente||0)?"gold":"green"}>{counts.pendiente||0} pendientes</Badge>
         </div>
-        <div style={{display:"flex",gap:8,marginTop:10}}>
-          <Btn small col={view==="todas"?"dark":"ghost"} onClick={()=>setView("todas")}>Todas</Btn>
-          <Btn small col={view==="pendientes"?"gold":"ghost"} onClick={()=>setView("pendientes")}>Pendientes</Btn>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.pendiente||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Pendientes</div></div>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.confirmada||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Confirmadas</div></div>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.completada||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Realizadas</div></div>
         </div>
-      </Card>}
-      {loading?<Spinner/>:citasVisibles.length===0?<EmptyState icon="📅" title="Sin citas" sub={view==="pendientes"?"No hay citas pendientes":"Reserva la primera"}/>
+        <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:2}}>
+          {statusTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setView(t.id);}} style={{flex:"0 0 auto",border:"none",borderRadius:999,padding:"8px 12px",background:view===t.id?T.gradGold:"rgba(255,244,214,.62)",color:view===t.id?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:view===t.id?"0 8px 18px rgba(18,8,4,.16)":"none"}}>{t.icon} {t.label} <span style={{opacity:.75}}>({counts[t.id]||0})</span></button>)}
+        </div>
+      </Card>
+
+      {loading?<Spinner/>:citasVisibles.length===0?<EmptyState icon="📅" title="Sin citas" sub={view==="todas"?"Todavía no hay citas en esta vista":"No hay citas con este estado"}/>
         :citasVisibles.map(c=>{
           const list=citaServices(c);
           const dur=citaDuration(list);
           const precio=Number(c.servicio_precio)||citaTotal(list);
-          return <Card key={c.id} style={{marginBottom:10}}>
+          const st=statusOf(c);
+          return <Card key={c.id} style={{marginBottom:12,background:st==="pendiente"?"linear-gradient(180deg,#F0E0B8,#E6CF9B)":st==="confirmada"?"linear-gradient(180deg,#E4E8C6,#D8BE87)":T.panel}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:7}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7,flexWrap:"wrap"}}>
+                  <Badge col={eColor[st]||"green"}>{eLabel[st]||st}</Badge>
+                  <span style={{fontSize:".78rem",fontWeight:950,color:T.g700}}>👤 {c.cliente_nombre||"Cliente"}</span>
+                </div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
                   {list.length?list.map(s=><span key={s.id} style={{background:"rgba(75,48,27,.1)",border:`1px solid ${T.g300}`,borderRadius:999,padding:"4px 9px",fontWeight:900,fontSize:".72rem",color:T.g800}}>{s.icon||"✂️"} {s.label}</span>):<b>{c.servicio_label||c.servicio}</b>}
                 </div>
-                <div style={{fontSize:"0.8rem",fontWeight:850,color:T.textSub}}>{c.cliente_nombre}</div>
-                <div style={{fontSize:"0.78rem",color:T.textSub,marginTop:2,fontWeight:800}}>{c.fecha} · {c.hora}{dur?` - ${endTime(c.hora,dur)}`:""}</div>
-                {c.notas&&<div style={{marginTop:8,fontSize:".76rem",lineHeight:1.35,color:T.textSub,whiteSpace:"pre-wrap",fontWeight:700}}>{String(c.notas).slice(0,180)}</div>}
+                <div style={{fontSize:"0.86rem",fontWeight:950,color:T.g800}}>📆 {c.fecha} · {c.hora}{dur?` - ${endTime(c.hora,dur)}`:""}</div>
+                {c.notas&&<div style={{marginTop:8,fontSize:".76rem",lineHeight:1.38,color:T.textSub,whiteSpace:"pre-wrap",fontWeight:750,maxHeight:86,overflow:"hidden"}}>{String(c.notas)}</div>}
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
-                <Badge col={eColor[c.estado]||"green"}>{c.estado||"pendiente"}</Badge>
-                {!!precio&&<span style={{fontWeight:950,color:T.g600,fontSize:"0.92rem"}}>{precio}€</span>}
+                {!!precio&&<span style={{fontWeight:950,color:T.g600,fontSize:"1rem"}}>{precio}€</span>}
                 {!!dur&&<span style={{fontWeight:850,color:T.textSub,fontSize:"0.72rem"}}>⏱️ {formatDuration(dur)}</span>}
               </div>
             </div>
-            {String(c.estado||"pendiente")==="pendiente"&&(
-              <div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}>
-                {isAdmin&&<Btn small col="green" onClick={()=>{dbPatch("citas",`?id=eq.${c.id}`,{estado:"confirmada"});loadCitas();}}>Confirmar</Btn>}
-                <Btn small col="red" onClick={()=>{dbPatch("citas",`?id=eq.${c.id}`,{estado:"cancelada"});loadCitas();}}>Cancelar</Btn>
-              </div>
-            )}
+            <div style={{marginTop:12,display:"flex",gap:8,flexWrap:"wrap"}}>
+              {isAdmin&&st==="pendiente"&&<Btn small col="green" onClick={()=>updateCita(c,{estado:"confirmada"},"Cita confirmada")}>✅ Aceptar</Btn>}
+              {isAdmin&&["pendiente","confirmada","propuesta"].includes(st)&&<Btn small col="gold" onClick={()=>openProposal(c)}>🔁 Proponer otra hora</Btn>}
+              {isAdmin&&["confirmada","propuesta"].includes(st)&&<Btn small col="dark" onClick={()=>updateCita(c,{estado:"completada"},"Cita marcada como realizada")}>🏁 Realizada</Btn>}
+              {isAdmin&&st==="cancelada"&&<Btn small col="green" onClick={()=>updateCita(c,{estado:"pendiente"},"Cita reabierta")}>↩️ Reabrir</Btn>}
+              {!isAdmin&&st==="propuesta"&&<Btn small col="green" onClick={()=>updateCita(c,{estado:"confirmada"},"Propuesta aceptada")}>✅ Aceptar propuesta</Btn>}
+              {["pendiente","propuesta","confirmada"].includes(st)&&<Btn small col="red" onClick={()=>updateCita(c,{estado:"cancelada"},"Cita cancelada")}>❌ Cancelar</Btn>}
+            </div>
           </Card>;
         })
       }
+
       <Modal show={showNew} onClose={()=>setShowNew(false)} title="Nueva cita">
         {isAdmin&&<Input label="Nombre del cliente" value={form.cliente_nombre} onChange={v=>setForm(f=>({...f,cliente_nombre:v}))}/>} 
         <div style={{marginBottom:14}}>
@@ -1835,10 +1882,28 @@ function Citas({user,showToast}){
         <Input label="Notas" value={form.notas} onChange={v=>setForm(f=>({...f,notas:v}))} placeholder="Ej: quiero revisar raíces, pelo sensible, voy con prisa..."/>
         <Btn full onClick={saveCita}>Enviar cita pendiente</Btn>
       </Modal>
+
+      <Modal show={!!proposal} onClose={()=>setProposal(null)} title="Proponer otra hora">
+        {proposal&&<>
+          <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",padding:12}}>
+            <div style={{fontWeight:950,color:T.g800}}>Cita de {proposal.cita.cliente_nombre||"cliente"}</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:4}}>Actual: {proposal.cita.fecha} · {proposal.cita.hora}</div>
+          </Card>
+          <Input label="Nueva fecha" value={proposal.fecha} onChange={v=>{setProposal(p=>({...p,fecha:v,hora:""}));checkHorarios(v);}} type="date"/>
+          {proposal.fecha&&<div style={{marginBottom:14}}>
+            <div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:8}}>Nueva hora</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>{HORARIOS.map(h=>{
+              const busy=ocupados.includes(h)&&!(proposal.cita.fecha===proposal.fecha&&proposal.cita.hora===h);
+              return <button key={h} disabled={busy} onClick={()=>setProposal(p=>({...p,hora:h}))} style={{padding:"7px 12px",borderRadius:10,border:`2px solid ${proposal.hora===h?T.g600:busy?T.g200:T.g300}`,background:proposal.hora===h?T.g600:busy?T.g100:T.white,color:proposal.hora===h?T.white:busy?T.textSub:T.text,fontWeight:700,fontSize:"0.8rem",cursor:busy?"not-allowed":"pointer",opacity:busy?0.5:1}}>{h}</button>;
+            })}</div>
+          </div>}
+          <Input label="Mensaje opcional" value={proposal.nota} onChange={v=>setProposal(p=>({...p,nota:v}))} placeholder="Ej: esa hora está ocupada, te propongo esta alternativa."/>
+          <Btn full col="gold" onClick={sendProposal}>Enviar propuesta</Btn>
+        </>}
+      </Modal>
     </div>
   );
 }
-
 // CLIENTES
 function Clientes({showToast}){
   const [clientes,setClientes]=useState([]);
@@ -2224,6 +2289,15 @@ const TODAY_KEY=()=>new Date().toISOString().split("T")[0];
 function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${uid}_${TODAY_KEY()}`)==="1";}
 function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
 const GAME_DAILY_REWARDS={stitch:15,runner:12,jump:12,memoria:15,sopa:15,trivia:8,gacha:50};
+const ARCADE_GAMES=[
+  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Tragaperras con premios raros",pts:GAME_DAILY_REWARDS.gacha},
+  {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Rondas de 100 puntos",pts:GAME_DAILY_REWARDS.stitch},
+  {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Salta tijeras hasta chocar",pts:GAME_DAILY_REWARDS.runner},
+  {id:"jump",icon:"🌤️",title:"Rasta Jump",desc:"Recoge utensilios y evita tijeras",pts:GAME_DAILY_REWARDS.jump},
+  {id:"memoria",icon:"🧠",title:"Memoria Pro",desc:"12 parejas de peluquería",pts:GAME_DAILY_REWARDS.memoria},
+  {id:"sopa",icon:"🔤",title:"Sopa diaria",desc:"Sopa 14x14 que cambia cada día",pts:GAME_DAILY_REWARDS.sopa},
+  {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:GAME_DAILY_REWARDS.trivia}
+];
 const GAME_DAILY_CAP=75;
 function dailyGamePointsKey(uid){return `game_points_total_${uid}_${TODAY_KEY()}`;}
 function getDailyGamePointsTotal(uid){return Number(localStorage.getItem(dailyGamePointsKey(uid))||0);}
@@ -2258,6 +2332,54 @@ function getMyBestScore(gameId,uid){
     const list=JSON.parse(localStorage.getItem(`leader_${gameId}_${weekKey()}`)||"[]");
     return list.filter(x=>String(x.user_id)===String(uid)).sort((a,b)=>b.score-a.score)[0]?.score||0;
   }catch{return 0;}
+}
+const GAME_META={
+  gacha:{icon:"🎰",title:"Gacha Barber",short:"Gacha"},
+  stitch:{icon:"🪝",title:"Gancho Ninja",short:"Gancho"},
+  runner:{icon:"✂️",title:"Rasta Runner",short:"Runner"},
+  jump:{icon:"🌤️",title:"Rasta Jump",short:"Jump"},
+  memoria:{icon:"🧠",title:"Memoria Pro",short:"Memoria"},
+  sopa:{icon:"🔤",title:"Sopa diaria",short:"Sopa"},
+  trivia:{icon:"💈",title:"Trivia Barber",short:"Trivia"}
+};
+function gameMeta(gameId){return GAME_META[gameId]||{icon:"🎮",title:gameId||"Juego",short:gameId||"Juego"};}
+function dedupeBestScores(rows=[]){
+  const byUser={};
+  for(const r of rows){
+    const key=String(r.user_id||r.usuario_id||r.email||r.nombre||Math.random());
+    const score=Number(r.score)||0;
+    if(!byUser[key]||score>Number(byUser[key].score||0)) byUser[key]={...r,user_id:key,score};
+  }
+  return Object.values(byUser).sort((a,b)=>Number(b.score||0)-Number(a.score||0)).slice(0,10);
+}
+async function loadSupabaseGameLeaderboard(gameId,mode="weekly"){
+  try{
+    const g=encodeURIComponent(String(gameId));
+    const query=mode==="weekly"
+      ? `?game_id=eq.${g}&week=eq.${encodeURIComponent(weekKey())}&order=score.desc&limit=80&select=*`
+      : `?game_id=eq.${g}&order=score.desc&limit=120&select=*`;
+    const rows=await safeList("game_scores",query);
+    if(!rows.length)return[];
+    const ids=[...new Set(rows.map(r=>r.usuario_id).filter(Boolean).map(String))];
+    let userMap={};
+    if(ids.length){
+      const users=await safeList("usuarios",`?id=in.(${ids.map(encodeURIComponent).join(",")})&select=id,nombre,avatar,avatar_config,perfil_publico,modo_incognito`);
+      userMap=Object.fromEntries((users||[]).map(u=>[String(u.id),u]));
+    }
+    return dedupeBestScores(rows.map(r=>{
+      const u=userMap[String(r.usuario_id)]||{};
+      const privacy=normalizePrivacy({...u,perfil_publico:u.perfil_publico,modo_incognito:u.modo_incognito});
+      return {
+        ...r,
+        user_id:r.usuario_id,
+        nombre:u.nombre||r.usuario_nombre||"Jugador",
+        avatar:u.avatar??r.usuario_avatar??0,
+        avatar_config:u.avatar_config||r.usuario_avatar_config||null,
+        perfil_publico:privacy.perfil_publico,
+        modo_incognito:privacy.modo_incognito
+      };
+    }));
+  }catch{return [];}
 }
 
 const SOPA_WORD_BANK=[
@@ -2843,19 +2965,14 @@ function ArcadeInfoPanel({onOpenGacha}){
 }
 
 
-function Juegos({user,setUser,showToast,showPoints,setHelperPage}){
+function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops}){
   const [activeGame,setActiveGame]=useState(null);
-  const [boardGame,setBoardGame]=useState("sopa");
+  const [boardGame,setBoardGame]=useState("runner");
+  const [topMode,setTopMode]=useState("weekly");
+  const [leaderboard,setLeaderboard]=useState([]);
+  const [lbLoading,setLbLoading]=useState(false);
   const [boardTick,setBoardTick]=useState(0);
-  const GAMES=[
-    {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Tragaperras con premios raros",pts:GAME_DAILY_REWARDS.gacha},
-    {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Rondas de 100 puntos",pts:GAME_DAILY_REWARDS.stitch},
-    {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Doble salto y más velocidad",pts:GAME_DAILY_REWARDS.runner},
-    {id:"jump",icon:"🌤️",title:"Rasta Jump",desc:"Recoge objetos de peluquería",pts:GAME_DAILY_REWARDS.jump},
-    {id:"memoria",icon:"🧠",title:"Memoria Pro",desc:"12 parejas, dificultad buena",pts:GAME_DAILY_REWARDS.memoria},
-    {id:"sopa",icon:"🔤",title:"Sopa diaria",desc:"Sopa 14x14 que cambia cada día",pts:GAME_DAILY_REWARDS.sopa},
-    {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:GAME_DAILY_REWARDS.trivia}
-  ];
+  const GAMES=ARCADE_GAMES;
   useEffect(()=>{
     if(activeGame) startGameMusic(activeGame);
     else stopGameMusic();
@@ -2866,16 +2983,31 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage}){
     setHelperPage?.(activeGame?`game_${activeGame}`:"arcade");
     return ()=>setHelperPage?.(null);
   },[activeGame,setHelperPage]);
+
+  useEffect(()=>{
+    let alive=true;
+    async function loadBoard(){
+      setLbLoading(true);
+      const remote=await loadSupabaseGameLeaderboard(boardGame,topMode);
+      const local=getLocalGameLeaderboard(boardGame);
+      const rows=remote.length?remote:dedupeBestScores(local);
+      if(alive){setLeaderboard(rows);setLbLoading(false);}
+    }
+    loadBoard();
+    return()=>{alive=false;};
+  },[boardGame,topMode,boardTick,user?.id]);
+
   async function handleWin(gameId,score){
     const alreadyPlayed=getPlayedToday(gameId,user.id);
     const rawScore=Math.max(0,Number(score)||0);
     const reward=gameRewardFor(gameId,rawScore,user.id);
     saveLocalGameScore(gameId,user,rawScore);
     try{ await dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,usuario_avatar_config:user.avatarConfig||user.avatar_config||null,game_id:gameId,score:rawScore,week:weekKey()}); }catch{}
+    setBoardGame(gameId);
     setBoardTick(t=>t+1);
     if(alreadyPlayed){
       SFX.success();
-      showToast(`Récord guardado. Los puntos de ${gameId} ya estaban cobrados hoy.`);
+      showToast(`Récord guardado. Los puntos de ${gameMeta(gameId).short} ya estaban cobrados hoy.`);
       setActiveGame(null);
       return;
     }
@@ -2893,6 +3025,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage}){
     showPoints(reward);SFX.coins();showToast(`+${reward} puntos reales!`);
     setActiveGame(null);
   }
+
   if(activeGame){
     const g=GAMES.find(x=>x.id===activeGame);
     return(
@@ -2901,61 +3034,220 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage}){
           <button onClick={()=>{SFX.navBack();setActiveGame(null);}} style={{background:T.g150,border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",fontWeight:900,fontSize:"1rem",color:T.g700,boxShadow:"0 8px 18px rgba(20,8,4,.2)"}}>{"<"}</button>
           <div style={{display:"flex",alignItems:"center",gap:8}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={38}/><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>{g?.title}</div></div>
         </div>
-        {activeGame==="sopa"&&<SopaLetras user={user} onWin={pts=>handleWin("sopa",pts)}/>}
-        {activeGame==="memoria"&&<MemoryGame onWin={pts=>handleWin("memoria",pts)}/>}
-        {activeGame==="trivia"&&<TriviaGame onWin={pts=>handleWin("trivia",pts)}/>}
-        {activeGame==="runner"&&<RastaRunnerGame user={user} onWin={pts=>handleWin("runner",pts)}/>}
-        {activeGame==="jump"&&<PlatformJumpGame user={user} onWin={pts=>handleWin("jump",pts)}/>}
-        {activeGame==="stitch"&&<DreadStitchGame user={user} onWin={pts=>handleWin("stitch",pts)}/>}
-        {activeGame==="gacha"&&<GachaSlotsGame onWin={pts=>handleWin("gacha",pts)}/>}
+        {activeGame==="sopa"&&<SopaLetras user={user} onWin={pts=>handleWin("sopa",pts)}/>} 
+        {activeGame==="memoria"&&<MemoryGame onWin={pts=>handleWin("memoria",pts)}/>} 
+        {activeGame==="trivia"&&<TriviaGame onWin={pts=>handleWin("trivia",pts)}/>} 
+        {activeGame==="runner"&&<RastaRunnerGame user={user} onWin={pts=>handleWin("runner",pts)}/>} 
+        {activeGame==="jump"&&<PlatformJumpGame user={user} onWin={pts=>handleWin("jump",pts)}/>} 
+        {activeGame==="stitch"&&<DreadStitchGame user={user} onWin={pts=>handleWin("stitch",pts)}/>} 
+        {activeGame==="gacha"&&<GachaSlotsGame onWin={pts=>handleWin("gacha",pts)}/>} 
       </div>
     );
   }
-  const lb=getLocalGameLeaderboard(boardGame);
+
+  const selectedMeta=gameMeta(boardGame);
+  const weeklySelected=topMode==="weekly";
+  const myBest=getMyBestScore(boardGame,user.id);
+  const todayTotal=getDailyGamePointsTotal(user.id);
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🎮" title="Rasta Arcade" sub="Arcade táctil con avatar propio, sopas diarias y récords semanales"/>
+      <SectionHeader icon="🎮" title="Rasta Arcade" sub="Juega varias veces, cobra puntos una vez al día y sube a los rankings"/>
       <ArcadeInfoPanel onOpenGacha={()=>setActiveGame("gacha")}/>
-      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#2A0E05,#6E3518 58%,#D4AF37)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
-        <div style={{position:"absolute",right:-18,top:-24,fontSize:"7rem",opacity:.13,transform:"rotate(-12deg)"}}>🎰</div>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#1B1008,#3B2814 54%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}} hover>
+        <div style={{position:"absolute",right:-18,top:-30,fontSize:"7rem",opacity:.13,transform:"rotate(-10deg)"}}>🏆</div>
         <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:14}}>
-          <div className="icon3d" style={{fontSize:"3rem"}}>🎰</div>
-          <div style={{flex:1}}>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",lineHeight:1}}>Gacha Barber</div>
-            <div style={{fontSize:".82rem",fontWeight:850,opacity:.88,lineHeight:1.35}}>Máquina de premios: junta 3 símbolos iguales. Lo normal es no ganar; el ticket dorado es el premio raro.</div>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-              <Badge col="gold">50 pts máx.</Badge>
-              <Badge col="pink">1/5000 ticket</Badge>
-            </div>
+          <div style={{fontSize:"2.4rem",filter:"drop-shadow(0 8px 10px rgba(0,0,0,.3))"}}>🏆</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontWeight:950,fontSize:"1.05rem"}}>Top de jugadores</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Entra al ranking completo: semanal, histórico y por minijuego. Se actualiza cuando alguien guarda una partida.</div>
           </div>
-          <Btn small col="gold" onClick={()=>setActiveGame("gacha")}>▶ Jugar</Btn>
+          <Btn small col="gold" onClick={onOpenTops}>Ver top</Btn>
         </div>
       </Card>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#2A0E05,#6E3518 58%,#D4AF37)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-18,top:-24,fontSize:"7rem",opacity:.13,transform:"rotate(-12deg)"}}>🏆</div>
+        <div style={{position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
+          <div style={{background:"rgba(255,244,214,.16)",borderRadius:16,padding:10}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.8}}>Puntos juegos hoy</div><div style={{fontWeight:950,fontSize:"1.3rem",color:T.gold}}>{todayTotal}/{GAME_DAILY_CAP}</div></div>
+          <div style={{background:"rgba(255,244,214,.16)",borderRadius:16,padding:10}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.8}}>Top viendo</div><div style={{fontWeight:950,fontSize:"1.3rem",color:T.gold}}>{selectedMeta.icon}</div></div>
+          <div style={{background:"rgba(255,244,214,.16)",borderRadius:16,padding:10}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.8}}>Tu marca</div><div style={{fontWeight:950,fontSize:"1.3rem",color:T.gold}}>{myBest}</div></div>
+        </div>
+      </Card>
+
       <div style={{display:"grid",gridTemplateColumns:"1fr",gap:12,marginBottom:16}}>
         {GAMES.map(g=>{
           const played=getPlayedToday(g.id,user.id);
           const best=getMyBestScore(g.id,user.id);
           return(
-            <Card key={g.id} style={{opacity:played?0.72:1,background:played?"linear-gradient(180deg,#EBD8A8,#D7B777)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)",border:played?`1px solid ${T.g300}`:`2px solid ${T.gold}`}} hover>
+            <Card key={g.id} style={{opacity:played?0.76:1,background:played?"linear-gradient(180deg,#EBD8A8,#D7B777)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)",border:played?`1px solid ${T.g300}`:`2px solid ${T.gold}`}} hover>
               <div style={{display:"flex",alignItems:"center",gap:14}}>
                 <div className="icon3d" style={{fontSize:"2.55rem"}}>{g.icon}</div>
-                <div style={{flex:1}}><div style={{fontWeight:900,fontSize:"1rem"}}>{g.title}</div><div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800}}>{g.desc}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:4}}><span style={{fontSize:"0.75rem",color:T.orange,fontWeight:900}}>🏅 Máx. +{g.pts} pts reales/día</span><span style={{fontSize:"0.75rem",color:T.g700,fontWeight:900}}>📈 Récord: {best}</span></div></div>
-                <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>{played&&<Badge col="green">✅ Puntos hoy</Badge>}<Btn small col="gold" onClick={()=>setActiveGame(g.id)}>{played?"🔁 Rejugar":"▶ Jugar"}</Btn></div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:950,fontSize:"1rem",color:T.g800}}>{g.title}</div>
+                  <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800,lineHeight:1.35}}>{g.desc}</div>
+                  <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:5}}>
+                    <span style={{fontSize:"0.74rem",color:T.orange,fontWeight:950}}>🏅 máx. +{g.pts} pts/día</span>
+                    <span style={{fontSize:"0.74rem",color:T.g700,fontWeight:950}}>📈 tu récord semana: {best}</span>
+                  </div>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
+                  {played&&<Badge col="green">✅ cobrado hoy</Badge>}
+                  <Btn small col="gold" onClick={()=>setActiveGame(g.id)}>{played?"🔁 Rejugar":"▶ Jugar"}</Btn>
+                </div>
               </div>
             </Card>
           );
         })}
       </div>
+
+      <Card style={{background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`2px solid ${T.g300}`,marginBottom:14}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div style={{fontSize:"2rem"}}>📈</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontWeight:950,color:T.g800}}>Ranking separado</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>El top ya no está escondido aquí abajo. Ábrelo en su propia pantalla para ver semanal, histórico y cada juego bien ordenado.</div>
+          </div>
+          <Btn small col="dark" onClick={onOpenTops}>Abrir top</Btn>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// TOPS DE JUEGOS
+function GameTopsPage({user,onBack,onPlay}){
+  const [game,setGame]=useState("runner");
+  const [mode,setMode]=useState("weekly");
+  const [rows,setRows]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [lastUpdate,setLastUpdate]=useState(null);
+  const [livePulse,setLivePulse]=useState(0);
+  const selected=gameMeta(game);
+  const weekly=mode==="weekly";
+
+  const loadBoard=useCallback(async()=>{
+    setLoading(true);
+    const remote=await loadSupabaseGameLeaderboard(game,mode);
+    setRows(remote||[]);
+    setLastUpdate(new Date());
+    setLoading(false);
+  },[game,mode]);
+
+  useEffect(()=>{loadBoard();},[loadBoard,livePulse]);
+
+  useEffect(()=>{
+    if(!supabase) return;
+    let alive=true;
+    const channel=supabase
+      .channel(`game_scores_live_${game}_${mode}`)
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"game_scores"},payload=>{
+        const r=payload?.new||{};
+        if(String(r.game_id)===String(game)){
+          if(mode==="historic" || String(r.week)===String(weekKey())){
+            if(alive) setLivePulse(x=>x+1);
+          }
+        }
+      })
+      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"game_scores"},payload=>{
+        const r=payload?.new||{};
+        if(String(r.game_id)===String(game)){
+          if(mode==="historic" || String(r.week)===String(weekKey())){
+            if(alive) setLivePulse(x=>x+1);
+          }
+        }
+      })
+      .subscribe();
+    const poll=setInterval(()=>{if(alive) setLivePulse(x=>x+1);},15000);
+    return()=>{
+      alive=false;
+      clearInterval(poll);
+      try{supabase.removeChannel(channel);}catch{}
+    };
+  },[game,mode]);
+
+  const myRow=(rows||[]).find(r=>String(r.user_id||r.usuario_id)===String(user?.id));
+  return(
+    <div style={{animation:"fadeSlide 0.4s ease"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+        <button onClick={()=>{SFX.navBack();onBack?.();}} style={{background:T.g150,border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",fontWeight:950,fontSize:"1rem",color:T.g700,boxShadow:"0 8px 18px rgba(20,8,4,.2)"}}>{"<"}</button>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🏆 Top de jugadores</div>
+          <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Rankings públicos del Rasta Arcade</div>
+        </div>
+        <Btn small col="gold" onClick={loadBoard}>Actualizar</Btn>
+      </div>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 56%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-14,top:-26,fontSize:"7.5rem",opacity:.13}}>♛</div>
+        <div style={{position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <div style={{background:"rgba(255,244,214,.14)",borderRadius:16,padding:12}}>
+            <div style={{fontSize:".72rem",fontWeight:900,opacity:.75}}>Ranking activo</div>
+            <div style={{fontWeight:950,fontSize:"1.15rem",color:T.gold}}>{selected.icon} {selected.short}</div>
+          </div>
+          <div style={{background:"rgba(255,244,214,.14)",borderRadius:16,padding:12}}>
+            <div style={{fontSize:".72rem",fontWeight:900,opacity:.75}}>Modo</div>
+            <div style={{fontWeight:950,fontSize:"1.15rem",color:T.gold}}>{weekly?"Semanal":"Histórico"}</div>
+          </div>
+        </div>
+        <div style={{position:"relative",zIndex:1,marginTop:10,fontSize:".76rem",fontWeight:800,opacity:.82}}>
+          {lastUpdate?`Última actualización: ${lastUpdate.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}`:"Cargando datos..."} · visible para todos
+        </div>
+      </Card>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:12}}>
+        <button onClick={()=>{SFX.tab();setMode("weekly");}} style={{border:"none",borderRadius:15,padding:"11px 8px",background:weekly?T.gradGold:T.panel,color:weekly?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 16px rgba(20,8,4,.13)"}}>🔥 Top semanal</button>
+        <button onClick={()=>{SFX.tab();setMode("historic");}} style={{border:"none",borderRadius:15,padding:"11px 8px",background:!weekly?T.gradGold:T.panel,color:!weekly?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 16px rgba(20,8,4,.13)"}}>👑 Histórico</button>
+      </div>
+
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>Selecciona juego</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+          {ARCADE_GAMES.filter(g=>g.id!=="gacha").map(g=>{
+            const active=game===g.id;
+            return <button key={g.id} onClick={()=>{SFX.tab();setGame(g.id);}} style={{border:`2px solid ${active?T.gold:T.g200}`,borderRadius:16,padding:"10px 8px",background:active?T.gradGold:T.g50,color:active?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:active?"0 10px 20px rgba(185,154,69,.22)":"0 6px 14px rgba(20,8,4,.10)"}}>
+              <div style={{fontSize:"1.55rem"}}>{g.icon}</div>
+              <div style={{fontSize:".78rem"}}>{gameMeta(g.id).short}</div>
+            </button>;
+          })}
+        </div>
+      </Card>
+
       <Card style={{background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
-          <div><div style={{fontWeight:900}}>🏆 Top 10 semanal por juego</div><div style={{fontSize:".72rem",opacity:.75,fontWeight:700}}>Se actualiza y guarda el récord local de la semana</div></div>
-          <div style={{fontWeight:900,color:T.gold}}>{weekKey()}</div>
+          <div>
+            <div style={{fontWeight:950,fontSize:"1.05rem"}}>{selected.icon} {selected.title}</div>
+            <div style={{fontSize:".74rem",opacity:.78,fontWeight:800}}>{weekly?`Semana ${weekKey()}`:"Mejor marca histórica por jugador"}</div>
+          </div>
+          <Badge col="gold">{rows.length}/10</Badge>
         </div>
-        <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:'wrap'}}>
-          {GAMES.map(g=><button key={g.id} onClick={()=>{SFX.tab();setBoardGame(g.id);}} style={{flex:'1 1 18%',border:"none",borderRadius:12,padding:"8px 4px",background:boardGame===g.id?T.gradGold:"rgba(255,244,214,.18)",color:boardGame===g.id?T.g900:T.white,fontWeight:900,cursor:"pointer"}} title={g.title}>{g.icon}</button>)}
-        </div>
-        {lb.length===0?<div style={{fontSize:".82rem",fontWeight:800,opacity:.8,textAlign:"center",padding:"10px"}}>Sé el primero en marcar puntuación esta semana ✨</div>:lb.map((r,i)=><div key={`${r.user_id}-${i}-${boardTick}`} style={{display:"flex",alignItems:"center",gap:9,padding:"7px 0",borderBottom:i<lb.length-1?"1px solid rgba(255,244,214,.18)":"none"}}><div style={{width:28,fontWeight:900}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div><PublicAvatar profile={r} size={32}/><div style={{flex:1,fontWeight:900}}>{publicName(r)}</div><div style={{color:T.gold,fontWeight:900}}>{r.score}</div></div>)}
+        {loading?<Spinner/>:rows.length===0?<EmptyState icon="🏆" title="Sin puntuaciones todavía" sub={`Juega a ${selected.short} y estrena este ranking.`}/>:rows.map((r,i)=><div key={`${r.user_id}-${r.created_at||i}-${livePulse}`} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i<rows.length-1?"1px solid rgba(255,244,214,.18)":"none"}}>
+          <div style={{width:34,fontWeight:950,fontSize:"1.05rem",color:i<3?T.gold:T.white}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div>
+          <PublicAvatar profile={r} currentUser={user} size={38}/>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontWeight:950,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(r,user)}</div>
+            <div style={{fontSize:".68rem",fontWeight:800,opacity:.7}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"marca guardada"}</div>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <div style={{color:T.gold,fontWeight:950,fontSize:"1.12rem"}}>{Number(r.score)||0}</div>
+            <div style={{fontSize:".62rem",fontWeight:800,opacity:.72}}>pts</div>
+          </div>
+        </div>)}
       </Card>
+
+      {myRow&&<Card style={{marginTop:12,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`2px solid ${T.gold}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <PublicAvatar profile={myRow} currentUser={user} size={40}/>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,color:T.g800}}>Tu marca en este top</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Estás dentro del top 10 de {selected.short}.</div>
+          </div>
+          <div style={{fontWeight:950,color:T.orange,fontSize:"1.2rem"}}>{myRow.score}</div>
+        </div>
+      </Card>}
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:14}}>
+        <Btn full col="ghost" onClick={onBack}>Volver al arcade</Btn>
+        <Btn full col="gold" onClick={onPlay}>Jugar ahora</Btn>
+      </div>
     </div>
   );
 }
@@ -3715,8 +4007,8 @@ function Comunidad(props){
 }
 
 const NAV_CFG={
-  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"inventario",icon:"📦",label:"Stock"},{id:"perfil",icon:"👤",label:"Perfil"}],
   client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
@@ -4007,7 +4299,7 @@ function pickRastaUnique(pool,storageKey,recentLimit=18){
 function helperPageKey(page){
   if(HELP_TIPS[page]) return page;
   if(page==="dashboard")return "dashboard";
-  if(page==="arcade"||page==="juegos")return "arcade";
+  if(page==="arcade"||page==="juegos"||page==="tops")return "arcade";
   if(page==="tienda")return "tienda";
   if(page==="perfil")return "perfil";
   if(page==="foro")return "foro";
@@ -4018,7 +4310,7 @@ function helperPageKey(page){
 }
 function helperMood(page){
   if(page==="dashboard")return "welcome";
-  if(page==="arcade"||String(page).startsWith("game_"))return "arcade";
+  if(page==="arcade"||page==="tops"||String(page).startsWith("game_"))return "arcade";
   if(page==="noticias"||page==="comunidad"||page==="feed"||page==="foro")return "noticias";
   if(page==="perfil")return "success";
   return "idle";
@@ -4204,6 +4496,7 @@ const PAGE_THEMES={
 function pageTheme(page,communityTab,role){
   const key=page==="comunidad"?(communityTab||"comunidad"):page;
   if(["clientes","inventario","caja","usuarios"].includes(key)) return PAGE_THEMES.admin;
+  if(key==="tops") return PAGE_THEMES.ranking||PAGE_THEMES.juegos;
   return PAGE_THEMES[key]||PAGE_THEMES[page]||PAGE_THEMES.dashboard;
 }
 export default function App(){
@@ -4269,7 +4562,7 @@ export default function App(){
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
-    tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp} setHelperPage={setHelperPage}/>,retos:<Retos {...sp}/>,
+    tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTops={()=>navTo("tops")}/>,tops:<GameTopsPage user={currentUser} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
