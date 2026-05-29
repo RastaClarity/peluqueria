@@ -1425,7 +1425,7 @@ function DashboardAdmin({user,showToast}){
     const [citas,clientes,ventas,stock]=await Promise.all([
       dbGet("citas",`?fecha=gte.${today}&order=fecha.asc,hora.asc&select=*`),
       dbGet("usuarios","?role=eq.client&select=id"),
-      dbGet("facturas",`?fecha=gte.${today}&select=total`),
+      dbGet("cobros",`?fecha=gte.${today}&select=importe,estado`),
       dbGet("inventario","?stock=lte.5&select=id"),
     ]);
     const list=citas||[];
@@ -1434,7 +1434,7 @@ function DashboardAdmin({user,showToast}){
       pendientes:list.filter(c=>String(c.estado||"pendiente").toLowerCase()==="pendiente").length,
       confirmadas:list.filter(c=>String(c.estado||"pendiente").toLowerCase()==="confirmada").length,
       clientes:(clientes||[]).length,
-      ingresos:(ventas||[]).reduce((sum,v)=>sum+(Number(v.total)||0),0),
+      ingresos:(ventas||[]).filter(v=>String(v.estado||"pagado").toLowerCase()!=="anulado").reduce((sum,v)=>sum+(Number(v.importe)||0),0),
       stockBajo:(stock||[]).length
     });
     setCitasHoy(list.slice(0,8));
@@ -2381,50 +2381,261 @@ function Inventario({showToast}){
 }
 
 // CAJA
-function Caja({showToast}){
-  const [ventas,setVentas]=useState([]);const [showNew,setShowNew]=useState(false);const [loading,setLoading]=useState(true);
-  const [carrito,setCarrito]=useState([]);const [metodo,setMetodo]=useState("efectivo");const [clienteNombre,setClienteNombre]=useState("");
-  useEffect(()=>{loadVentas();},[]);
-  async function loadVentas(){setLoading(true);const today=new Date().toISOString().split("T")[0];setVentas(await dbGet("facturas",`?fecha=gte.${today}&order=created_at.desc&select=*`)||[]);setLoading(false);}
-  function addToCarrito(s){setCarrito(c=>{const ex=c.find(i=>i.id===s.id);if(ex)return c.map(i=>i.id===s.id?{...i,qty:i.qty+1}:i);return[...c,{...s,qty:1}];});}
-  const total=carrito.reduce((s,i)=>s+i.precio*i.qty,0);
-  async function cobrar(){
-    if(!carrito.length)return;
-    await dbPost("facturas",{items:JSON.stringify(carrito),total,metodo_pago:metodo,cliente_nombre:clienteNombre,fecha:new Date().toISOString().split("T")[0]});
-    SFX.coins();showToast(`Cobrado ${total.toFixed(2)}€`);setCarrito([]);setClienteNombre("");setShowNew(false);loadVentas();
+function Caja({user,showToast}){
+  const [cobros,setCobros]=useState([]);
+  const [citasRealizadas,setCitasRealizadas]=useState([]);
+  const [showNew,setShowNew]=useState(false);
+  const [loading,setLoading]=useState(true);
+  const [carrito,setCarrito]=useState([]);
+  const [metodo,setMetodo]=useState("efectivo");
+  const [clienteNombre,setClienteNombre]=useState("");
+  const [citaCobro,setCitaCobro]=useState(null);
+  const [cobroForm,setCobroForm]=useState({metodo_pago:"efectivo",importe:"",puntos_usados:"0",descripcion:""});
+
+  const today=()=>new Date().toISOString().split("T")[0];
+  const monthStart=()=>{
+    const d=new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-01`;
+  };
+  const money=n=>`${(Number(n)||0).toFixed(2)}€`;
+  const metodoLabel=m=>({efectivo:"Efectivo",tarjeta:"Tarjeta",bizum:"Bizum",puntos:"Puntos",mixto:"Mixto"})[m]||m||"Sin método";
+
+  useEffect(()=>{loadCaja();},[]);
+
+  async function loadCaja(){
+    setLoading(true);
+    const [cobs,citas]=await Promise.all([
+      dbGet("cobros",`?fecha=gte.${monthStart()}&order=created_at.desc&select=*`),
+      dbGet("citas",`?estado=eq.completada&order=fecha.desc,hora.desc&select=*`)
+    ]);
+    const cleanCobros=Array.isArray(cobs)?cobs:[];
+    setCobros(cleanCobros);
+    const cobradas=new Set(cleanCobros.map(c=>String(c.cita_id||"")).filter(Boolean));
+    setCitasRealizadas((Array.isArray(citas)?citas:[]).filter(c=>!cobradas.has(String(c.id))));
+    setLoading(false);
   }
-  const totalHoy=ventas.reduce((s,v)=>s+(v.total||0),0);
+
+  function addToCarrito(servicio){
+    setCarrito(c=>{
+      const ex=c.find(i=>i.id===servicio.id);
+      if(ex)return c.map(i=>i.id===servicio.id?{...i,qty:i.qty+1}:i);
+      return[...c,{...servicio,qty:1}];
+    });
+  }
+
+  function removeFromCarrito(id){
+    setCarrito(c=>c.map(i=>i.id===id?{...i,qty:i.qty-1}:i).filter(i=>i.qty>0));
+  }
+
+  const total=carrito.reduce((sum,i)=>sum+(Number(i.precio)||0)*(Number(i.qty)||1),0);
+  const cobrosValidos=cobros.filter(c=>String(c.estado||"pagado").toLowerCase()!=="anulado");
+  const cobrosHoy=cobrosValidos.filter(c=>String(c.fecha)===today());
+  const totalHoy=cobrosHoy.reduce((sum,c)=>sum+(Number(c.importe)||0),0);
+  const totalMes=cobrosValidos.reduce((sum,c)=>sum+(Number(c.importe)||0),0);
+  const porMetodo=m=>cobrosHoy.filter(c=>c.metodo_pago===m).reduce((sum,c)=>sum+(Number(c.importe)||0),0);
+
+  async function cobrarVentaManual(){
+    if(!carrito.length){showToast?.("Añade al menos un servicio o producto");return;}
+    const descripcion=carrito.map(i=>`${i.label} x${i.qty}`).join(" · ");
+    const ok=await dbPost("cobros",{
+      cita_id:null,
+      usuario_id:null,
+      cliente_nombre:clienteNombre||"Cliente mostrador",
+      concepto:"Venta manual",
+      descripcion,
+      importe:Number(total.toFixed(2)),
+      metodo_pago:metodo,
+      puntos_usados:0,
+      puntos_generados:0,
+      estado:"pagado",
+      fecha:today(),
+      creado_por:user?.id||user?.email||"app"
+    });
+    if(ok){
+      SFX.coins();
+      showToast?.(`Cobrado ${money(total)}`);
+      setCarrito([]);
+      setClienteNombre("");
+      setMetodo("efectivo");
+      setShowNew(false);
+      await loadCaja();
+    }else{
+      showToast?.("No se pudo guardar el cobro");
+      SFX.error();
+    }
+  }
+
+  function openCobrarCita(cita){
+    const list=citaServices(cita);
+    const precio=Number(cita.servicio_precio)||citaTotal(list);
+    setCitaCobro(cita);
+    setCobroForm({
+      metodo_pago:"efectivo",
+      importe:String(precio||0),
+      puntos_usados:"0",
+      descripcion:cita.servicio_label||cita.servicio||"Servicio de peluquería"
+    });
+  }
+
+  async function cobrarCita(){
+    if(!citaCobro)return;
+    const importe=Number(String(cobroForm.importe||"0").replace(",","."));
+    if(!(importe>=0)){showToast?.("Importe no válido");return;}
+    const puntosUsados=Math.max(0,parseInt(cobroForm.puntos_usados||"0",10)||0);
+    const ok=await dbPost("cobros",{
+      cita_id:citaCobro.id,
+      usuario_id:citaCobro.usuario_id||null,
+      cliente_nombre:citaCobro.cliente_nombre||"Cliente",
+      concepto:"Cita cobrada",
+      descripcion:cobroForm.descripcion||citaCobro.servicio_label||citaCobro.servicio||"Servicio de peluquería",
+      importe:Number(importe.toFixed(2)),
+      metodo_pago:cobroForm.metodo_pago,
+      puntos_usados:puntosUsados,
+      puntos_generados:0,
+      estado:"pagado",
+      fecha:today(),
+      creado_por:user?.id||user?.email||"app"
+    });
+    if(ok){
+      SFX.coins();
+      showToast?.(`Cita cobrada: ${money(importe)}`);
+      setCitaCobro(null);
+      await loadCaja();
+    }else{
+      showToast?.("No se pudo guardar el cobro de la cita");
+      SFX.error();
+    }
+  }
+
+  async function anularCobro(cobro){
+    const ok=await dbPatch("cobros",`?id=eq.${cobro.id}`,{estado:"anulado"});
+    if(ok){showToast?.("Cobro anulado");SFX.success();await loadCaja();}
+    else{showToast?.("No se pudo anular el cobro");SFX.error();}
+  }
+
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="💰" title="Caja" sub={`Hoy: ${totalHoy.toFixed(2)}€`} action={<Btn small onClick={()=>setShowNew(true)}>+ Venta</Btn>}/>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
-        <StatCard icon="💶" label="Efectivo" value={`${ventas.filter(v=>v.metodo_pago==="efectivo").reduce((s,v)=>s+(v.total||0),0).toFixed(2)}€`} col="green"/>
-        <StatCard icon="💳" label="Tarjeta" value={`${ventas.filter(v=>v.metodo_pago==="tarjeta").reduce((s,v)=>s+(v.total||0),0).toFixed(2)}€`} col="blue"/>
+      <SectionHeader icon="💰" title="Facturación" sub={`Hoy: ${money(totalHoy)} · Mes: ${money(totalMes)}`} action={<Btn small onClick={()=>setShowNew(true)}>+ Venta</Btn>}/>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2rem"}}>🧾</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Caja y cobros reales</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Registra ventas manuales y cobra citas realizadas. Todo se guarda en Supabase en la tabla cobros.</div>
+          </div>
+        </div>
+      </Card>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+        <StatCard icon="💶" label="Hoy" value={money(totalHoy)} col="green"/>
+        <StatCard icon="📆" label="Mes" value={money(totalMes)} col="gold"/>
+        <StatCard icon="💵" label="Efectivo hoy" value={money(porMetodo("efectivo"))} col="green"/>
+        <StatCard icon="💳" label="Tarjeta hoy" value={money(porMetodo("tarjeta"))} col="blue"/>
       </div>
-      {loading?<Spinner/>:ventas.length===0?<EmptyState icon="💰" title="Sin ventas hoy" sub=""/>
-        :ventas.map(v=>(
-          <Card key={v.id} style={{marginBottom:8}}>
-            <div style={{display:"flex",justifyContent:"space-between"}}>
-              <div><div style={{fontWeight:800}}>{v.cliente_nombre||"Anonimo"}</div><div style={{fontSize:"0.75rem",color:T.textSub}}>{v.metodo_pago}</div></div>
-              <div style={{fontWeight:900,fontSize:"1.1rem",color:T.g600}}>{(v.total||0).toFixed(2)}€</div>
-            </div>
-          </Card>
-        ))
-      }
+
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>🏁 Citas realizadas pendientes de cobrar</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Cuando marques una cita como realizada, aparecerá aquí para cobrarla.</div>
+          </div>
+          <Badge col={citasRealizadas.length?"gold":"green"}>{citasRealizadas.length}</Badge>
+        </div>
+        {loading?<Spinner/>:citasRealizadas.length===0?<EmptyState icon="✅" title="Nada pendiente de cobrar" sub="Las citas realizadas sin cobro aparecerán aquí."/>:
+          citasRealizadas.map(c=>{
+            const list=citaServices(c);
+            const precio=Number(c.servicio_precio)||citaTotal(list);
+            const dur=citaDuration(list);
+            return <div key={c.id} style={{padding:"11px 0",borderBottom:`1px solid ${T.g200}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:950,color:T.g800}}>👤 {c.cliente_nombre||"Cliente"}</div>
+                  <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:3}}>📆 {c.fecha||"sin fecha"} · 🕒 {c.hora||"sin hora"}{dur?` · ${formatDuration(dur)}`:""}</div>
+                  <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:3}}>✂️ {c.servicio_label||c.servicio||"Servicio"}</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontWeight:950,color:T.g600,fontSize:"1.05rem"}}>{money(precio)}</div>
+                  <Btn small col="gold" onClick={()=>openCobrarCita(c)}>Cobrar</Btn>
+                </div>
+              </div>
+            </div>;
+          })
+        }
+      </Card>
+
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>📜 Últimos cobros</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Historial del mes actual.</div>
+          </div>
+          <Badge col="gold">{cobrosValidos.length}</Badge>
+        </div>
+        {loading?<Spinner/>:cobros.length===0?<EmptyState icon="💰" title="Sin cobros todavía" sub="Cuando cobres una cita o venta, aparecerá aquí."/>:
+          cobros.map(v=>{
+            const anulado=String(v.estado||"pagado").toLowerCase()==="anulado";
+            return <Card key={v.id} style={{marginBottom:8,opacity:anulado?.55:1,background:anulado?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"rgba(255,248,230,.72)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",gap:10}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                    <b style={{color:T.g800}}>{v.cliente_nombre||"Cliente"}</b>
+                    {anulado&&<Badge col="red">anulado</Badge>}
+                  </div>
+                  <div style={{fontSize:".75rem",fontWeight:850,color:T.textSub,marginTop:3}}>{v.fecha} · {metodoLabel(v.metodo_pago)} · {v.concepto||"Cobro"}</div>
+                  {v.descripcion&&<div style={{fontSize:".72rem",fontWeight:750,color:T.textSub,marginTop:4,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{v.descripcion}</div>}
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontWeight:950,fontSize:"1.05rem",color:anulado?T.textSub:T.g600}}>{money(v.importe)}</div>
+                  {!anulado&&<button onClick={()=>anularCobro(v)} style={{border:"none",background:"transparent",color:T.red,fontSize:".7rem",fontWeight:950,cursor:"pointer",padding:0}}>Anular</button>}
+                </div>
+              </div>
+            </Card>;
+          })
+        }
+      </Card>
+
       <Modal show={showNew} onClose={()=>setShowNew(false)} title="Nueva venta">
-        <Input label="Cliente (opcional)" value={clienteNombre} onChange={setClienteNombre}/>
-        <div style={{fontWeight:800,color:T.g700,marginBottom:8,fontSize:"0.85rem"}}>Servicios</div>
+        <Input label="Cliente (opcional)" value={clienteNombre} onChange={setClienteNombre} placeholder="Nombre del cliente o venta mostrador"/>
+        <div style={{fontWeight:950,color:T.g700,marginBottom:8,fontSize:"0.85rem"}}>Servicios / productos rápidos</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
-          {SERVICIOS.map(s=><button key={s.id} onClick={()=>addToCarrito(s)} style={{padding:"8px 12px",borderRadius:10,border:`1.5px solid ${T.g300}`,background:T.g50,cursor:"pointer",fontSize:"0.8rem",fontWeight:700}}>{s.label} {s.precio}€</button>)}
+          {SERVICIOS.map(s=><button key={s.id} onClick={()=>addToCarrito(s)} style={{padding:"8px 12px",borderRadius:12,border:`1.5px solid ${T.g300}`,background:T.g50,cursor:"pointer",fontSize:"0.78rem",fontWeight:850}}>{s.icon} {s.label} {s.precio}€</button>)}
         </div>
         {carrito.length>0&&(
-          <div style={{background:T.g50,borderRadius:12,padding:12,marginBottom:14}}>
-            {carrito.map(i=><div key={i.id} style={{display:"flex",justifyContent:"space-between",fontSize:"0.85rem",marginBottom:4}}><span>{i.label} x{i.qty}</span><span style={{fontWeight:800}}>{(i.precio*i.qty).toFixed(2)}€</span></div>)}
-            <div style={{borderTop:`1px solid ${T.g200}`,marginTop:8,paddingTop:8,fontWeight:900,display:"flex",justifyContent:"space-between"}}><span>TOTAL</span><span style={{color:T.g600}}>{total.toFixed(2)}€</span></div>
+          <div style={{background:T.g50,borderRadius:14,padding:12,marginBottom:14,border:`1px solid ${T.g300}`}}>
+            {carrito.map(i=><div key={i.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:"0.85rem",marginBottom:6,gap:8}}>
+              <span>{i.label} x{i.qty}</span>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <button onClick={()=>removeFromCarrito(i.id)} style={{border:"none",background:T.g150,borderRadius:8,padding:"2px 7px",fontWeight:950,cursor:"pointer"}}>-</button>
+                <b>{money((Number(i.precio)||0)*(Number(i.qty)||1))}</b>
+              </div>
+            </div>)}
+            <div style={{borderTop:`1px solid ${T.g200}`,marginTop:8,paddingTop:8,fontWeight:950,display:"flex",justifyContent:"space-between"}}><span>TOTAL</span><span style={{color:T.g600}}>{money(total)}</span></div>
           </div>
         )}
-        <Select label="Metodo de pago" value={metodo} onChange={setMetodo} options={[{value:"efectivo",label:"Efectivo"},{value:"tarjeta",label:"Tarjeta"},{value:"bizum",label:"Bizum"}]}/>
-        <Btn full col="gold" onClick={cobrar} disabled={!carrito.length}>Cobrar {total.toFixed(2)}€</Btn>
+        <Select label="Método de pago" value={metodo} onChange={setMetodo} options={[{value:"efectivo",label:"Efectivo"},{value:"tarjeta",label:"Tarjeta"},{value:"bizum",label:"Bizum"},{value:"mixto",label:"Mixto"}]}/>
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
+          <Btn full col="gold" onClick={cobrarVentaManual} disabled={!carrito.length}>Cobrar {money(total)}</Btn>
+        </div>
+      </Modal>
+
+      <Modal show={!!citaCobro} onClose={()=>setCitaCobro(null)} title="Cobrar cita realizada">
+        {citaCobro&&(
+          <div>
+            <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+              <div style={{fontWeight:950,color:T.g800}}>👤 {citaCobro.cliente_nombre||"Cliente"}</div>
+              <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,marginTop:4}}>📆 {citaCobro.fecha} · 🕒 {citaCobro.hora}</div>
+              <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,marginTop:4}}>✂️ {citaCobro.servicio_label||citaCobro.servicio}</div>
+            </Card>
+            <Input label="Importe final" value={cobroForm.importe} onChange={v=>setCobroForm(f=>({...f,importe:v}))} type="number"/>
+            <Select label="Método de pago" value={cobroForm.metodo_pago} onChange={v=>setCobroForm(f=>({...f,metodo_pago:v}))} options={[{value:"efectivo",label:"Efectivo"},{value:"tarjeta",label:"Tarjeta"},{value:"bizum",label:"Bizum"},{value:"puntos",label:"Puntos"},{value:"mixto",label:"Mixto"}]}/>
+            <Input label="Puntos usados" value={cobroForm.puntos_usados} onChange={v=>setCobroForm(f=>({...f,puntos_usados:v}))} type="number"/>
+            <Input label="Descripción" value={cobroForm.descripcion} onChange={v=>setCobroForm(f=>({...f,descripcion:v}))}/>
+            <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
+              <Btn full col="gold" onClick={cobrarCita}>Guardar cobro</Btn>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
@@ -4727,7 +4938,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
       </Card>
 
       {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast}/>} 
-      {tab==="facturacion"&&<Caja showToast={showToast}/>}
+      {tab==="facturacion"&&<Caja user={user} showToast={showToast}/>}
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
       {tab==="clientes"&&<Clientes showToast={showToast}/>}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
