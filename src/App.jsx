@@ -362,6 +362,10 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes avatarShinePro{0%{transform:translateX(-120%) skewX(-18deg);opacity:0}35%{opacity:.55}100%{transform:translateX(140%) skewX(-18deg);opacity:0}}
 @keyframes rewardPulsePro{0%,100%{box-shadow:0 0 0 rgba(212,175,55,0)}50%{box-shadow:0 0 28px rgba(212,175,55,.42)}}
 
+
+@keyframes winkPulse{0%,78%,100%{transform:scaleY(1)}84%{transform:scaleY(.72)}}
+@keyframes hookShoulderMove{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(8px) rotate(3deg)}}
+
 .bp:active{transform:scale(0.94)!important}
 .ch:hover{transform:translateY(-2px) scale(1.005);box-shadow:0 10px 22px rgba(18,8,4,0.26)!important}
 .app-shell{isolation:isolate;transition:background .35s ease, box-shadow .35s ease}
@@ -938,17 +942,14 @@ function HeroMascot(){
         <path d="M147 113 C158 104, 170 101, 181 106" fill="none" stroke="#26160D" strokeWidth="5" strokeLinecap="round" />
         <path d="M201 106 C212 101, 224 104, 235 113" fill="none" stroke="#26160D" strokeWidth="5" strokeLinecap="round" />
 
-        {/* Eyes */}
+        {/* Eyes: one open, one wink */}
         <ellipse cx="158" cy="136" rx="24" ry="24" fill="#FFF" />
-        <ellipse cx="224" cy="136" rx="24" ry="24" fill="#FFF" />
-        <g style={{transformOrigin:"158px 136px",animation:"eyeBlink 4.8s ease-in-out infinite"}}>
-          <ellipse cx="158" cy="136" rx="14" ry="16" fill="#17110D" />
+        <ellipse cx="224" cy="136" rx="23" ry="21" fill="#FFF" />
+        <g style={{transformOrigin:"158px 136px",animation:"eyeBlink 5.4s ease-in-out infinite"}}>
+          <ellipse cx="158" cy="136" rx="14" ry="16" fill="#112435" />
           <ellipse cx="154" cy="131" rx="4" ry="4.5" fill="#fff" />
         </g>
-        <g style={{transformOrigin:"224px 136px",animation:"eyeBlink 5s ease-in-out infinite"}}>
-          <ellipse cx="224" cy="136" rx="14" ry="16" fill="#17110D" />
-          <ellipse cx="220" cy="131" rx="4" ry="4.5" fill="#fff" />
-        </g>
+        <path d="M209 136 C218 128, 232 128, 239 136" fill="none" stroke="#17110D" strokeWidth="7" strokeLinecap="round" style={{animation:"winkPulse 3.4s ease-in-out infinite",transformOrigin:"224px 136px"}}/>
 
         {/* Nose and mouth */}
         <path d="M185 149 C189 161, 189 169, 183 174" fill="none" stroke="#CF8B61" strokeWidth="4" strokeLinecap="round" />
@@ -956,11 +957,13 @@ function HeroMascot(){
         <path d="M159 184 C173 199, 210 199, 224 184" fill="none" stroke="#8B2F1C" strokeWidth="7" strokeLinecap="round" />
         <path d="M168 188 C178 196, 203 196, 215 188" fill="#FFF2F2" opacity=".42" />
 
-        {/* Crochet hook */}
-        <g style={{animation:"hookMove 1.7s ease-in-out infinite",transformOrigin:"278px 146px"}}>
-          <path d="M286 168 C264 139, 236 128, 208 121" fill="none" stroke="#E2D6C2" strokeWidth="5" strokeLinecap="round" />
-          <path d="M286 168 q11 0 11 -11 q0 -8 -8 -8" fill="none" stroke="#E2D6C2" strokeWidth="5" strokeLinecap="round" />
-          <path d="M281 161 C267 145, 248 138, 232 130" fill="none" stroke="#7E4A28" strokeWidth="3" strokeLinecap="round" opacity=".55" />
+        {/* Crochet hook held by hand, away from the face */}
+        <g style={{animation:"hookShoulderMove 2.2s ease-in-out infinite",transformOrigin:"287px 204px"}}>
+          <path d="M274 206 C286 199, 300 201, 306 212 C312 224, 302 238, 287 235 C275 232, 268 216, 274 206Z" fill="#F0B37E" stroke="#D18B5F" strokeWidth="2"/>
+          <path d="M285 214 L316 176" stroke="#8B5529" strokeWidth="8" strokeLinecap="round"/>
+          <path d="M314 177 C321 168, 333 170, 332 181 C331 188, 324 190, 320 186" fill="none" stroke="#E2D6C2" strokeWidth="6" strokeLinecap="round"/>
+          <path d="M305 186 L319 169" stroke="#F5EFE3" strokeWidth="3" strokeLinecap="round" opacity=".85"/>
+          <path d="M279 211 C285 209, 292 212, 296 218" fill="none" stroke="#C9855C" strokeWidth="3" strokeLinecap="round"/>
         </g>
 
         {/* Neck / shoulders */}
@@ -1085,6 +1088,111 @@ async function createUserProfile({nombre,email}){
   return data;
 }
 
+
+function LandingFeature({icon,title,sub,accent="#D4AF37"}){
+  return(
+    <div className="studio-panel" style={{
+      border:`1px solid ${accent}55`,
+      borderRadius:18,
+      padding:"12px 10px",
+      background:"linear-gradient(180deg,rgba(24,15,8,.82),rgba(10,7,4,.92))",
+      boxShadow:`0 12px 26px rgba(0,0,0,.28), inset 0 -2px 0 ${accent}55`,
+      minHeight:96,
+      position:"relative",
+      overflow:"hidden"
+    }}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div className="icon3d" style={{fontSize:"1.65rem",filter:`drop-shadow(0 0 10px ${accent}66)`}}>{icon}</div>
+        <div style={{minWidth:0}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.05rem",color:"#FFF4D6",lineHeight:1}}>{title}</div>
+          <div style={{fontSize:".72rem",fontWeight:800,color:"rgba(255,244,214,.72)",lineHeight:1.25,marginTop:4}}>{sub}</div>
+        </div>
+      </div>
+      <div style={{position:"absolute",left:12,right:12,bottom:8,height:3,borderRadius:999,background:`linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)`,opacity:.85}}/>
+    </div>
+  );
+}
+
+function RastaLandingHero({compact=false,onNavigate=null,user=null}){
+  return(
+    <div style={{
+      position:"relative",
+      overflow:"hidden",
+      borderRadius:28,
+      padding:compact?"18px 14px 16px":"22px 16px 18px",
+      background:"radial-gradient(circle at 50% 20%,rgba(255,214,107,.24),transparent 38%),linear-gradient(180deg,#1A1008,#070503 72%,#100905)",
+      border:"1.5px solid rgba(212,175,55,.42)",
+      boxShadow:"0 22px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,244,214,.12)",
+      marginBottom:16
+    }}>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 12% 78%,rgba(47,107,66,.24),transparent 26%),radial-gradient(circle at 88% 84%,rgba(167,40,34,.18),transparent 24%)",pointerEvents:"none"}}/>
+      <div style={{position:"absolute",right:-28,top:90,fontSize:"9rem",opacity:.07,transform:"rotate(-10deg)"}}>✂️</div>
+      <div style={{position:"relative",zIndex:1,textAlign:"center"}}>
+        <div style={{
+          fontFamily:"'Rubik Wet Paint','Bangers',cursive",
+          fontSize:compact?"2.45rem":"3.25rem",
+          lineHeight:.86,
+          letterSpacing:"1px",
+          color:"#FFD66B",
+          textShadow:"0 4px 0 #3A1607,0 10px 22px rgba(0,0,0,.54)",
+          transform:"rotate(-1deg)",
+          marginBottom:compact?-4:-2
+        }}>{BRAND.name}</div>
+        <div style={{
+          display:"inline-flex",
+          alignItems:"center",
+          gap:8,
+          marginTop:10,
+          padding:"6px 13px",
+          background:"rgba(255,244,214,.08)",
+          border:"1px solid rgba(212,175,55,.28)",
+          borderRadius:999,
+          color:"#F5E6C8",
+          fontWeight:950,
+          fontSize:".75rem",
+          letterSpacing:".08em",
+          textTransform:"uppercase"
+        }}>✂️ Cortes, rastas y estilo urbano ✂️</div>
+        <div style={{marginTop:compact?4:8}}>
+          <HeroMascot/>
+        </div>
+        <div style={{
+          margin:"-10px auto 12px",
+          maxWidth:360,
+          background:"rgba(10,7,4,.72)",
+          border:"1px solid rgba(212,175,55,.32)",
+          borderRadius:22,
+          padding:"12px 14px",
+          color:"#FFF4D6",
+          boxShadow:"0 12px 24px rgba(0,0,0,.25)"
+        }}>
+          <div style={{fontWeight:950,fontSize:compact?".94rem":"1.05rem",color:"#FFD66B"}}>Reserva, juega y gana recompensas.</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.32}}>Actualidad, música reggae/rap clásico, rankings, avatar y premios de la tienda en una sola app.</div>
+        </div>
+        {user&&(
+          <div style={{display:"flex",gap:8,justifyContent:"center",alignItems:"center",marginBottom:10,flexWrap:"wrap"}}>
+            <Badge col="gold">👑 {user.puntos||0} pts</Badge>
+            <Badge col="green">🎮 Arcade activo</Badge>
+          </div>
+        )}
+        {onNavigate&&(
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+            <button onClick={()=>onNavigate("citas")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
+              <div style={{fontSize:"1.45rem"}}>📅</div><div style={{fontSize:".72rem"}}>Reserva</div>
+            </button>
+            <button onClick={()=>onNavigate("juegos")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
+              <div style={{fontSize:"1.45rem"}}>🎮</div><div style={{fontSize:".72rem"}}>Juega</div>
+            </button>
+            <button onClick={()=>onNavigate("tienda")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
+              <div style={{fontSize:"1.45rem"}}>🎁</div><div style={{fontSize:".72rem"}}>Premios</div>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // AUTH
 function Auth({onLogin,showToast}){
   const [mode,setMode]=useState("login");
@@ -1140,27 +1248,30 @@ function Auth({onLogin,showToast}){
   }
 
   return(
-    <div style={{minHeight:"100vh",background:`linear-gradient(160deg,${T.g900} 0%,${T.g700} 50%,${T.g600} 100%)`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+    <div style={{minHeight:"100vh",background:"radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),linear-gradient(180deg,#050403,#130B06 48%,#080604)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",padding:"18px 14px 28px",overflowX:"hidden"}}>
       <style>{CSS}</style>
       <Particles/>
-      <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:460}}>
-        <div style={{textAlign:"center",marginBottom:24}}>
-          <HeroMascot/>
-          <div style={{fontFamily:"'Rubik Wet Paint','Bangers',cursive",fontSize:"3.35rem",lineHeight:.92,letterSpacing:"2px",color:"#FFD66B",textShadow:"0 4px 0 #4A1F0A, 0 10px 18px rgba(0,0,0,0.48)",transform:"rotate(-1deg)"}}>{BRAND.name}</div>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:10,padding:"7px 14px",background:"rgba(255,244,214,.1)",border:"1px solid rgba(255,214,107,.28)",borderRadius:999,backdropFilter:"blur(6px)"}}>
-            <span className="icon3d" style={{fontSize:"1.05rem"}}>🪮</span>
-            <span style={{color:T.g150,fontSize:"0.84rem",fontWeight:900,textTransform:"uppercase",letterSpacing:"1px"}}>{BRAND.tagline}</span>
-            <span className="icon3d" style={{fontSize:"1.05rem"}}>✂️</span>
-          </div>
-          <div style={{color:"rgba(245,230,200,0.88)",fontSize:"0.82rem",marginTop:7,fontWeight:700,maxWidth:320,marginInline:"auto"}}>{BRAND.subtagline}. Vibra de estudio urbano, look anime y rastas con estilo.</div>
+      <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:480}}>
+        <RastaLandingHero compact={false}/>
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+          <LandingFeature icon="📅" title="Reservas" sub="Elige tratamientos y guarda tu cita." accent="#D4AF37"/>
+          <LandingFeature icon="🎮" title="Juegos" sub="Arcade, récords, Top 10 y puntos." accent="#4F602D"/>
+          <LandingFeature icon="🌐" title="Actualidad" sub="Noticias tipo shorts, debate y comunidad." accent="#263F4D"/>
+          <LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico y novedades." accent="#8A5A2E"/>
         </div>
-        <Card style={{padding:"28px 24px",animation:"softPop3d 0.42s ease",background:"linear-gradient(180deg,#FFF4D6 0%,#F7E0AE 100%)",border:"2px solid #C97934",boxShadow:"0 18px 40px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.75)"}}>
-          <div style={{display:"flex",background:T.g100,borderRadius:12,padding:4,marginBottom:22}}>
+
+        <Card style={{padding:"22px 18px",animation:"softPop3d 0.42s ease",background:"linear-gradient(180deg,#FFF4D6 0%,#F0D69C 100%)",border:"2px solid #B99A45",boxShadow:"0 18px 40px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.75)"}}>
+          <div style={{display:"flex",background:"rgba(36,17,10,.08)",borderRadius:14,padding:4,marginBottom:18}}>
             {["login","register"].map(m=>(
-              <button key={m} onClick={()=>{setMode(m);setFormError("");}} style={{flex:1,padding:"8px",borderRadius:10,border:"none",background:mode===m?T.white:"transparent",color:mode===m?T.g800:T.textSub,fontWeight:800,fontSize:"0.85rem",cursor:"pointer",transition:"all 0.2s"}}>
+              <button key={m} onClick={()=>{setMode(m);setFormError("");}} style={{flex:1,padding:"10px 8px",borderRadius:12,border:"none",background:mode===m?"linear-gradient(180deg,#24110A,#6E3518)": "transparent",color:mode===m?T.white:T.g800,fontWeight:950,fontSize:"0.86rem",cursor:"pointer",transition:"all 0.2s"}}>
                 {m==="login"?"Entrar":"Registrarse"}
               </button>
             ))}
+          </div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800,marginBottom:4}}>{mode==="login"?"Entra al estudio":"Crea tu ficha de cliente"}</div>
+          <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginBottom:14}}>
+            {mode==="login"?"Vuelve a tus puntos, citas, juegos y comunidad.":"Regístrate para reservar, jugar, leer actualidad y desbloquear recompensas."}
           </div>
           {formError&&(
             <div style={{background:"#FFEBEE",border:"1.5px solid #8B0000",color:"#8B0000",borderRadius:12,padding:"10px 12px",fontWeight:800,fontSize:"0.82rem",marginBottom:14}}>
@@ -1171,23 +1282,26 @@ function Auth({onLogin,showToast}){
             <div>
               <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
               <Input label="Contraseña" value={pass} onChange={setPass} type="password" placeholder="••••••••"/>
-              <Btn full col="dark" onClick={handleLogin} disabled={loading}>{loading?"Entrando...":"Entrar"}</Btn>
+              <Btn full col="dark" onClick={handleLogin} disabled={loading}>{loading?"Entrando...":"Entrar al estudio"}</Btn>
             </div>
           ):(
             <div>
               <Input label="Nombre completo" value={name} onChange={setName} placeholder="Tu nombre"/>
               <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
               <Input label="Contraseña" value={pass} onChange={setPass} type="password" placeholder="Mínimo 6 caracteres"/>
-              <Btn full col="green" onClick={handleRegister} disabled={loading}>{loading?"Registrando...":"Crear cuenta"}</Btn>
+              <Btn full col="green" onClick={handleRegister} disabled={loading}>{loading?"Registrando...":"Crear cuenta y entrar"}</Btn>
             </div>
           )}
         </Card>
+
+        <div style={{textAlign:"center",color:"rgba(255,244,214,.72)",fontSize:".74rem",fontWeight:800,lineHeight:1.35,marginTop:14}}>
+          Al registrarte verás reservas, juegos, rankings, noticias, música, avatar y tienda de recompensas.
+        </div>
       </div>
     </div>
   );
 }
 
-// DASHBOARD ADMIN
 function DashboardAdmin({user}){
   const [stats,setStats]=useState({citas:0,clientes:0,ingresos:0,stockBajo:0});
   const [citasHoy,setCitasHoy]=useState([]);
@@ -1249,59 +1363,71 @@ function ClientDashboard({user,onNavigate}){
   const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Gold":user.puntos>=200?"Silver":"Bronze";
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <Card style={{marginBottom:16,background:"linear-gradient(160deg,#FFF4D6,#E9D9B7 55%,#D4AF37)",border:`2px solid ${T.g300}`}}>
-        <div style={{display:"flex",gap:12,alignItems:"center"}}>
-          <LoginHelperAvatar size={58} mood="welcome" />
-          <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>Bienvenido a Rasta Cuts</div><div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Reserva, juega, gana puntos, lee anuncios oficiales y entra al foro para hablar con la comunidad.</div></div>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginTop:12}}>
-          <Btn small col="gold" onClick={()=>onNavigate?.("feed")}>📌 Ver tablón</Btn>
-          <Btn small col="dark" onClick={()=>onNavigate?.("foro")}>🗣️ Ir al foro</Btn>
-          <Btn small col="ghost" onClick={()=>onNavigate?.("noticias")}>📰 Actualidad</Btn>
-          <Btn small col="pink" onClick={()=>onNavigate?.("juegos")}>🎮 Jugar</Btn>
-        </div>
-      </Card>
-      <Card style={{background:"linear-gradient(135deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.4)",marginBottom:16,padding:"20px",color:T.white}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <RastaLandingHero compact user={user} onNavigate={onNavigate}/>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+        <LandingFeature icon="📰" title="Actualidad" sub="Noticias rápidas tipo shorts." accent="#263F4D"/>
+        <LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico y novedades." accent="#4E3A76"/>
+        <LandingFeature icon="🏆" title="Tops" sub="Rankings semanales y generales." accent="#D4AF37"/>
+        <LandingFeature icon="💬" title="Comunidad" sub="Foro, tablón y comentarios." accent="#4F602D"/>
+      </div>
+
+      <Card style={{background:"linear-gradient(135deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.4)",marginBottom:16,padding:"18px",color:T.white}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
           <div>
-            <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.8rem",fontWeight:700}}>Hola de nuevo!</div>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.4rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
-            <div style={{marginTop:6}}><Badge col="gold">{nivel}</Badge></div>
+            <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.78rem",fontWeight:800}}>Hola de nuevo</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
+            <div style={{marginTop:6,display:"flex",gap:6,flexWrap:"wrap"}}><Badge col="gold">{nivel}</Badge><Badge col="green">{user.puntos||0} pts</Badge></div>
           </div>
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.75)",fontWeight:700}}>TUS PUNTOS</div>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",color:T.white}}>{user.puntos||0}</div>
-          </div>
+          <Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={58}/>
         </div>
         <div style={{marginTop:14,height:8,background:"rgba(255,255,255,0.25)",borderRadius:50,overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${Math.min(((user.puntos||0)/1000)*100,100)}%`,background:T.white,borderRadius:50,transition:"width 0.6s ease"}}/>
+          <div style={{height:"100%",width:`${Math.min(((user.puntos||0)/1000)*100,100)}%`,background:"linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)",borderRadius:50,transition:"width 0.6s ease"}}/>
         </div>
       </Card>
-      {proxCita&&(
-        <Card style={{marginBottom:16,background:T.g50}}>
-          <div style={{fontWeight:800,color:T.g700,marginBottom:8}}>Tu proxima cita</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontWeight:700}}>{proxCita.servicio}</div><div style={{fontSize:"0.8rem",color:T.textSub}}>{proxCita.fecha}</div></div>
+
+      {proxCita?(
+        <Card style={{marginBottom:16,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+            <div>
+              <div style={{fontWeight:950,color:T.g800,marginBottom:6}}>📅 Tu próxima cita</div>
+              <div style={{fontWeight:900,color:T.g700}}>{proxCita.servicio_label||proxCita.servicio}</div>
+              <div style={{fontSize:"0.82rem",color:T.textSub,fontWeight:800,marginTop:2}}>{proxCita.fecha}</div>
+            </div>
             <Badge col="green">{proxCita.hora}</Badge>
           </div>
         </Card>
+      ):(
+        <Card style={{marginBottom:16,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}} hover onClick={()=>onNavigate?.("citas")}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{fontSize:"2rem"}}>📅</div>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:950,color:T.g800}}>Reserva tu próxima visita</div>
+              <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Elige varios tratamientos y guarda tu cita en segundos.</div>
+            </div>
+            <Btn small col="gold" onClick={()=>onNavigate?.("citas")}>Reservar</Btn>
+          </div>
+        </Card>
       )}
+
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:18}}>
-        {[["📅","Cita","citas"],["🛍️","Tienda","tienda"],["🎮","Jugar","juegos"]].map(([icon,lbl,id])=>(
-          <Card key={lbl} onClick={()=>onNavigate?.(id)} style={{textAlign:"center",padding:"14px 8px",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",minHeight:92}} hover>
+        {[["📅","Cita","citas"],["🎮","Arcade","juegos"],["🎁","Tienda","tienda"]].map(([icon,lbl,id])=>(
+          <Card key={lbl} onClick={()=>onNavigate?.(id)} style={{textAlign:"center",padding:"14px 8px",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",minHeight:92,border:`1.5px solid ${T.g300}`}} hover>
             <div className="icon3d" style={{fontSize:"2rem"}}>{icon}</div>
-            <div style={{fontSize:"0.75rem",fontWeight:900,color:T.g700,marginTop:6}}>{lbl}</div>
+            <div style={{fontSize:"0.75rem",fontWeight:950,color:T.g700,marginTop:6}}>{lbl}</div>
           </Card>
         ))}
       </div>
+
       <ActualidadMini onNavigate={onNavigate}/>
+
       {noticias.length>0&&(
         <div>
-          <div style={{fontWeight:800,color:T.g800,marginBottom:10}}>Novedades</div>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>Novedades de la tienda</div>
           {noticias.map(n=>(
-            <Card key={n.id} style={{marginBottom:10}} hover>
-              <div style={{fontWeight:800,color:T.g800}}>{n.emoji} {n.titulo||n.contenido?.slice(0,40)}</div>
-              <div style={{fontSize:"0.8rem",color:T.textSub,marginTop:4}}>{n.contenido}</div>
+            <Card key={n.id} style={{marginBottom:10,background:"linear-gradient(180deg,#FFF4D6,#F0D69C)"}} hover>
+              <div style={{fontWeight:900,color:T.g800}}>{n.emoji} {n.titulo||n.contenido?.slice(0,40)}</div>
+              <div style={{fontSize:"0.8rem",color:T.textSub,marginTop:4,fontWeight:800}}>{n.contenido}</div>
             </Card>
           ))}
         </div>
