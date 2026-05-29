@@ -81,60 +81,84 @@ const NOTE_FREQ={
 };
 const REGGAE_LOFI_TRACKS=[
   {
-    name:"Brisa Dub de Pueblo",bpm:74,key:"Am",accent:"pan",
+    name:"Brisa Dub de Pueblo",tickMs:430,length:704,accent:"pan",
     bass:["A2",null,"A2","C3","E2",null,"G2","E2","F2",null,"F2","A2","G2",null,"E2","G2"],
     chords:[["A3","C4","E4"],["G3","B3","D4"],["F3","A3","C4"],["E3","G3","B3"]],
-    melody:["E5",null,"G5","A5","C6",null,"B5","A5","G5",null,"E5","D5","E5",null,"G5",null,"A5",null,"C6","E6","D6",null,"C6","A5","G5",null,"A5","G5","E5",null,"D5",null,"C5",null,"E5","G5","A5",null,"G5","E5","D5",null,"E5","G5",null,"A5","C6",null,"B5",null,"A5","G5","E5",null,"D5","C5","D5",null,"E5",null,"A4",null,"C5",null],
-    counter:["A4",null,"C5",null,"E5",null,"C5",null,"G4",null,"B4",null,"D5",null,"B4",null,"F4",null,"A4",null,"C5",null,"A4",null,"E4",null,"G4",null,"B4",null,"G4",null]
+    melody:["E5",null,"G5","A5","C6",null,"B5","A5","G5",null,"E5","D5","E5",null,"G5",null,"A5",null,"C6","E6","D6",null,"C6","A5","G5",null,"A5","G5","E5",null,"D5",null],
+    counter:["A4",null,"C5",null,"E5",null,"C5",null,"G4",null,"B4",null,"D5",null,"B4",null],
+    groove:{kick:[0,8],snare:[4,12],hat:[2,6,10,14],bass:[0,3,8,11,14],skank:[5,13],ghost:[7,15],melody:[1,5,9,13],counter:[6,10,14],padEvery:32,arp:30}
   },
   {
-    name:"Centro Rasta Lofi",bpm:76,key:"Gm",accent:"piano",
-    bass:["G2",null,"G2","Bb2","D2",null,"F2","D2","Eb2",null,"Eb2","G2","F2",null,"D2","F2"],
-    chords:[["G3","Bb3","D4"],["F3","A3","C4"],["Eb3","G3","Bb3"],["D3","F3","A3"]],
-    melody:["D5",null,"F5","G5","Bb5",null,"A5","G5","F5",null,"D5","C5","D5",null,"F5",null,"G5",null,"Bb5","D6","C6",null,"Bb5","G5","F5",null,"G5","F5","D5",null,"C5",null,"Bb4",null,"D5","F5","G5",null,"F5","D5","C5",null,"D5","F5",null,"G5","Bb5",null,"A5",null,"G5","F5","D5",null,"C5","Bb4","C5",null,"D5",null,"G4",null,"Bb4",null],
-    counter:["G4",null,"Bb4",null,"D5",null,"Bb4",null,"F4",null,"A4",null,"C5",null,"A4",null,"Eb4",null,"G4",null,"Bb4",null,"G4",null,"D4",null,"F4",null,"A4",null,"F4",null]
-  },
-  {
-    name:"Costa Skank Adventure",bpm:78,key:"Dm",accent:"pan",
+    name:"Skank de Mercado",tickMs:385,length:784,accent:"piano",
     bass:["D2",null,"D2","F2","A2",null,"C3","A2","Bb2",null,"Bb2","D3","C3",null,"A2","C3"],
     chords:[["D3","F3","A3"],["C3","E3","G3"],["Bb2","D3","F3"],["A2","C3","E3"]],
-    melody:["F5",null,"A5","D6","C6",null,"A5","G5","F5",null,"E5","D5","F5",null,"A5",null,"C6",null,"D6","F6","E6",null,"D6","C6","A5",null,"C6","A5","G5",null,"F5",null,"E5",null,"F5","A5","C6",null,"A5","F5","E5",null,"F5","A5",null,"C6","D6",null,"C6",null,"A5","G5","F5",null,"E5","D5","E5",null,"F5",null,"A4",null,"D5",null],
-    counter:["D5",null,"F5",null,"A5",null,"F5",null,"C5",null,"E5",null,"G5",null,"E5",null,"Bb4",null,"D5",null,"F5",null,"D5",null,"A4",null,"C5",null,"E5",null,"C5",null]
+    melody:["A4","D5",null,"F5","E5",null,"D5",null,"C5","E5",null,"G5","F5",null,"E5",null,"D5",null,"F5","A5",null,"G5","E5",null,"F5",null,"E5","D5",null,"C5",null,null],
+    counter:["D4",null,"F4",null,"A4",null,"F4",null,"C4",null,"E4",null,"G4",null,"E4",null],
+    groove:{kick:[0,6,10],snare:[4,12],rim:[15],hat:[2,5,8,11,14],bass:[0,2,6,8,10,13],skank:[3,7,11,15],ghost:[5,13],melody:[0,3,6,10,12],counter:[5,9,14],padEvery:64,arp:31}
   },
   {
-    name:"Bosque Verde Dub",bpm:80,key:"Em",accent:"violin",
+    name:"Noche Lofi en Tagor",tickMs:470,length:640,accent:"violin",
+    bass:["G2",null,null,"Bb2","D2",null,"F2",null,"Eb2",null,null,"G2","F2",null,"D2",null],
+    chords:[["G3","Bb3","D4"],["F3","A3","C4"],["Eb3","G3","Bb3"],["D3","F3","A3"]],
+    melody:["D5",null,null,"F5","G5",null,"Bb5",null,"A5",null,"G5","F5",null,"D5",null,null,"C5",null,"D5","F5",null,"G5",null,"Bb5","D6",null,"C6","Bb5",null,"G5",null,null],
+    counter:["G4",null,null,"Bb4",null,"D5",null,null,"F4",null,"A4",null,"C5",null,null,null],
+    groove:{kick:[0,9],snare:[4,12],hat:[3,7,11,15],bass:[0,4,9,12],skank:[6,14],ghost:[10],melody:[3,7,11,15],counter:[5,13],padEvery:16,arp:46}
+  },
+  {
+    name:"Costa One Drop",tickMs:410,length:736,accent:"pan",
+    bass:["C2",null,"C3",null,"G2",null,"Bb2","G2","F2",null,"F3",null,"G2",null,"Bb2","G2"],
+    chords:[["C3","E3","G3"],["Bb2","D3","F3"],["F3","A3","C4"],["G3","B3","D4"]],
+    melody:["G4","C5",null,"E5",null,"G5","E5",null,"Bb4","D5",null,"F5",null,"D5",null,null,"A4","C5",null,"F5","E5",null,"C5",null,"D5",null,"G5",null,"F5","D5",null,null],
+    counter:["C4",null,"E4",null,"G4",null,"E4",null,"F4",null,"A4",null,"C5",null,"A4",null],
+    groove:{kick:[0],snare:[4,12],rim:[8],hat:[2,6,10,14],bass:[0,1,7,8,9,15],skank:[2,6,10,14],ghost:[3,11],melody:[0,3,5,8,11,14],counter:[7,15],padEvery:48,arp:63}
+  },
+  {
+    name:"Ruta Rasta RPG",tickMs:360,length:848,accent:"piano",
     bass:["E2",null,"E2","G2","B2",null,"D3","B2","C3",null,"C3","E3","D3",null,"B2","D3"],
     chords:[["E3","G3","B3"],["D3","Fs3","A3"],["C3","E3","G3"],["B2","D3","Fs3"]],
-    melody:["B4",null,"D5","E5","G5",null,"Fs5","E5","D5",null,"B4","A4","B4",null,"D5",null,"E5",null,"G5","B5","A5",null,"G5","E5","D5",null,"E5","D5","B4",null,"A4",null,"G4",null,"B4","D5","E5",null,"D5","B4","A4",null,"B4","D5",null,"E5","G5",null,"Fs5",null,"E5","D5","B4",null,"A4","G4","A4",null,"B4",null,"E4",null,"G4",null],
-    counter:["E4",null,"G4",null,"B4",null,"G4",null,"D4",null,"Fs4",null,"A4",null,"Fs4",null,"C4",null,"E4",null,"G4",null,"E4",null,"B3",null,"D4",null,"Fs4",null,"D4",null]
+    melody:["B4","E5","G5","B5",null,"A5","G5","E5","D5",null,"E5","G5","A5",null,"B5",null,"C6","B5","A5","G5",null,"E5",null,"D5","E5","G5",null,"A5","G5","E5",null,null],
+    counter:["E4",null,"G4",null,"B4",null,"G4",null,"D4",null,"Fs4",null,"A4",null,"Fs4",null],
+    groove:{kick:[0,4,8,12],snare:[6,14],hat:[1,3,5,7,9,11,13,15],bass:[0,2,4,7,8,10,12,15],skank:[5,9,13],ghost:[3,11,15],melody:[0,2,4,6,8,10,12,14],counter:[7,15],padEvery:64,arp:30}
   },
   {
-    name:"Barber Dub Quest",bpm:73,key:"Cm",accent:"piano",
-    bass:["C2",null,"C2","Eb2","G2",null,"Bb2","G2","Ab2",null,"Ab2","C3","Bb2",null,"G2","Bb2"],
+    name:"Dub Espacial de Taller",tickMs:520,length:592,accent:"violin",
+    bass:["F2",null,null,null,"F2",null,"A2",null,"C3",null,null,"A2","Bb2",null,"C3",null],
+    chords:[["F3","A3","C4"],["C3","E3","G3"],["Bb2","D3","F3"],["C3","E3","G3"]],
+    melody:["C5",null,null,"F5",null,"A5",null,null,"G5",null,"F5",null,"E5",null,null,null,"D5",null,"F5",null,"G5",null,"A5",null,"C6",null,"A5","G5",null,"F5",null,null],
+    counter:["F4",null,null,null,"A4",null,null,null,"C5",null,null,null,"A4",null,null,null],
+    groove:{kick:[0,10],snare:[4,12],hat:[6,14],bass:[0,4,10,12],skank:[7,15],ghost:[3,11],melody:[3,5,9,13],counter:[8],padEvery:16,arp:62}
+  },
+  {
+    name:"Tauste Sunshine Ska",tickMs:330,length:912,accent:"pan",
+    bass:["A2","C3","E3",null,"G2","E2","C3",null,"F2","A2","C3",null,"E2","G2","B2",null],
+    chords:[["A3","C4","E4"],["G3","B3","D4"],["F3","A3","C4"],["E3","G3","B3"]],
+    melody:["A5",null,"C6","E6","D6",null,"C6","A5","G5",null,"A5","C6","B5",null,"A5",null,"E5","G5","A5","C6",null,"B5","G5",null,"A5",null,"E5",null,"G5","A5",null,null],
+    counter:["A4","C5",null,"E5",null,"C5",null,"A4","G4","B4",null,"D5",null,"B4",null,"G4"],
+    groove:{kick:[0,4,8,12],snare:[2,6,10,14],hat:[1,3,5,7,9,11,13,15],bass:[0,1,4,5,8,9,12,13],skank:[1,3,5,7,9,11,13,15],ghost:[],melody:[0,2,4,6,8,10,12,14],counter:[3,7,11,15],padEvery:96,arp:47}
+  },
+  {
+    name:"Meditación con Dreadlocks",tickMs:560,length:544,accent:"violin",
+    bass:["D2",null,null,null,"A2",null,null,null,"Bb2",null,null,null,"F2",null,"A2",null],
+    chords:[["D3","F3","A3"],["A2","C3","E3"],["Bb2","D3","F3"],["F3","A3","C4"]],
+    melody:["A4",null,null,null,"D5",null,"F5",null,"E5",null,null,"D5",null,"C5",null,null,"Bb4",null,"D5",null,"F5",null,null,"A5",null,"G5",null,"F5",null,null,null,null],
+    counter:["D4",null,null,null,"F4",null,null,null,"A4",null,null,null,"F4",null,null,null],
+    groove:{kick:[0],snare:[8],hat:[4,12],bass:[0,8,12],skank:[6,14],ghost:[],melody:[4,7,11,14],counter:[10],padEvery:16,arp:126}
+  },
+  {
+    name:"Barrio Old School",tickMs:395,length:768,accent:"piano",
+    bass:["B2",null,"B2","D3","Fs2",null,"A2","Fs2","G2",null,"G2","B2","A2",null,"Fs2","A2"],
+    chords:[["B2","D3","Fs3"],["A2","Cs3","E3"],["G2","B2","D3"],["Fs2","A2","Cs3"]],
+    melody:["Fs4",null,"B4","D5",null,"E5","D5","B4","A4",null,"Cs5","E5",null,"D5","Cs5",null,"B4","D5","Fs5",null,"E5","D5",null,"B4","A4",null,"B4","D5","Cs5",null,"A4",null],
+    counter:["B3",null,"D4",null,"Fs4",null,"D4",null,"A3",null,"Cs4",null,"E4",null,"Cs4",null],
+    groove:{kick:[0,7,8],snare:[4,12],rim:[10,15],hat:[2,5,6,9,11,14],bass:[0,3,7,8,11,15],skank:[5,13],ghost:[2,10,14],melody:[1,4,7,9,12,15],counter:[6,10,14],padEvery:64,arp:31}
+  },
+  {
+    name:"Isla de Vinilo",tickMs:445,length:688,accent:"pan",
+    bass:["C2",null,"Eb2",null,"G2",null,"Bb2",null,"Ab2",null,"C3",null,"Bb2",null,"G2",null],
     chords:[["C3","Eb3","G3"],["Bb2","D3","F3"],["Ab2","C3","Eb3"],["G2","Bb2","D3"]],
-    melody:["G4",null,"Bb4","C5","Eb5",null,"D5","C5","Bb4",null,"G4","F4","G4",null,"Bb4",null,"C5",null,"Eb5","G5","F5",null,"Eb5","C5","Bb4",null,"C5","Bb4","G4",null,"F4",null,"Eb4",null,"G4","Bb4","C5",null,"Bb4","G4","F4",null,"G4","Bb4",null,"C5","Eb5",null,"D5",null,"C5","Bb4","G4",null,"F4","Eb4","F4",null,"G4",null,"C4",null,"Eb4",null],
-    counter:["C4",null,"Eb4",null,"G4",null,"Eb4",null,"Bb3",null,"D4",null,"F4",null,"D4",null,"Ab3",null,"C4",null,"Eb4",null,"C4",null,"G3",null,"Bb3",null,"D4",null,"Bb3",null]
-  },
-  {
-    name:"Sol de Kingston RPG",bpm:77,key:"F",accent:"pan",
-    bass:["F2",null,"F2","A2","C2",null,"Eb2","C2","Bb2",null,"Bb2","D3","C3",null,"E2","G2"],
-    chords:[["F3","A3","C4"],["Eb3","G3","Bb3"],["Bb2","D3","F3"],["C3","E3","G3"]],
-    melody:["A4",null,"C5","D5","F5",null,"E5","D5","C5",null,"A4","G4","A4",null,"C5",null,"D5",null,"F5","A5","G5",null,"F5","D5","C5",null,"D5","C5","A4",null,"G4",null,"F4",null,"A4","C5","D5",null,"C5","A4","G4",null,"A4","C5",null,"D5","F5",null,"E5",null,"D5","C5","A4",null,"G4","F4","G4",null,"A4",null,"F4",null,"C5",null],
-    counter:["F4",null,"A4",null,"C5",null,"A4",null,"Eb4",null,"G4",null,"Bb4",null,"G4",null,"Bb3",null,"D4",null,"F4",null,"D4",null,"C4",null,"E4",null,"G4",null,"E4",null]
-  },
-  {
-    name:"Marea Azul Chill",bpm:75,key:"Bb",accent:"violin",
-    bass:["Bb2",null,"Bb2","D3","F2",null,"Ab2","F2","G2",null,"G2","Bb2","F2",null,"A2","C3"],
-    chords:[["Bb3","D4","F4"],["Ab3","C4","Eb4"],["G3","Bb3","D4"],["F3","A3","C4"]],
-    melody:["F4",null,"Bb4","C5","D5",null,"F5","D5","C5",null,"Bb4","A4","Bb4",null,"D5",null,"F5",null,"G5","F5","Eb5",null,"D5","C5","Bb4",null,"C5","D5","F5",null,"D5",null,"C5",null,"Bb4","C5","D5",null,"F5","D5","C5",null,"Bb4","D5",null,"F5","G5",null,"F5",null,"D5","C5","Bb4",null,"A4","Bb4","C5",null,"D5",null,"F4",null,"Bb4",null],
-    counter:["Bb3",null,"D4",null,"F4",null,"D4",null,"Ab3",null,"C4",null,"Eb4",null,"C4",null,"G3",null,"Bb3",null,"D4",null,"Bb3",null,"F3",null,"A3",null,"C4",null,"A3",null]
-  },
-  {
-    name:"Atardecer de Rastas",bpm:72,key:"Ab",accent:"pan",
-    bass:["Ab2",null,"Ab2","C3","Eb2",null,"Gb2","Eb2","Db2",null,"Db2","F2","Eb2",null,"G2","Bb2"],
-    chords:[["Ab3","C4","Eb4"],["Gb3","Bb3","Db4"],["Db3","F3","Ab3"],["Eb3","G3","Bb3"]],
-    melody:["Eb5",null,"Ab5","Bb5","C6",null,"Eb6","C6","Bb5",null,"Ab5","G5","Ab5",null,"C6",null,"Eb6",null,"F6","Eb6","Db6",null,"C6","Bb5","Ab5",null,"Bb5","C6","Eb6",null,"C6",null,"Bb5",null,"Ab5","Bb5","C6",null,"Eb6","C6","Bb5",null,"Ab5","C6",null,"Eb6","F6",null,"Eb6",null,"C6","Bb5","Ab5",null,"G5","Ab5","Bb5",null,"C6",null,"Eb5",null,"Ab5",null],
-    counter:["Ab4",null,"C5",null,"Eb5",null,"C5",null,"Gb4",null,"Bb4",null,"Db5",null,"Bb4",null,"Db4",null,"F4",null,"Ab4",null,"F4",null,"Eb4",null,"G4",null,"Bb4",null,"G4",null]
+    melody:["G4",null,"C5",null,"Eb5","G5",null,"Bb5","Ab5",null,"G5","Eb5",null,"C5",null,null,"Bb4",null,"D5","F5",null,"G5",null,"F5","Eb5",null,"C5",null,"Bb4",null,"G4",null],
+    counter:["C4",null,null,"Eb4",null,"G4",null,null,"Ab4",null,null,"C5",null,"Bb4",null,null],
+    groove:{kick:[0,8,11],snare:[4,12],hat:[2,6,9,14],bass:[0,2,4,8,11,12,14],skank:[3,7,13],ghost:[5,15],melody:[2,5,8,10,13],counter:[7,15],padEvery:32,arp:30}
   }
 ];
 function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
@@ -223,12 +247,22 @@ const SFX={
   success:()=>{[523,659,784].forEach((f,i)=>playTone(f,"sine",0.12,0.075,i*0.07));},
   error:()=>{playTone(246,"sine",0.16,0.055);playTone(220,"sine",0.15,0.04,0.10);},
 };
+function beatHit(list,beat){return Array.isArray(list)&&list.includes(beat);}
+function trackIntervalMs(){
+  const tr=REGGAE_LOFI_TRACKS[currentMusicTrack%REGGAE_LOFI_TRACKS.length];
+  return Math.max(300,Math.min(620,Number(tr?.tickMs)||430));
+}
+function setupMusicInterval(){
+  if(musicInterval) clearInterval(musicInterval);
+  musicInterval=setInterval(tickLofiTrack,trackIntervalMs());
+}
 function tickLofiTrack(){
   if(!musicPlaying||globalMuted)return;
   try{
     const ctx=getCtx();if(ctx.state==="suspended")ctx.resume();
     const tr=REGGAE_LOFI_TRACKS[currentMusicTrack%REGGAE_LOFI_TRACKS.length];
-    const step=musicStep%384;
+    const trackLength=Number(tr.length)||704;
+    const step=musicStep%trackLength;
     const beat=step%16;
     const bar=Math.floor(step/16);
     const chord=tr.chords[bar%tr.chords.length];
@@ -236,64 +270,67 @@ function tickLofiTrack(){
     const melodyNote=tr.melody[step%tr.melody.length];
     const counterNote=tr.counter[step%tr.counter.length];
     const leadKind=tr.accent==="violin"?"violin":tr.accent==="piano"?"piano":"pan";
+    const g=tr.groove||{};
+    const swing=(beat%2===1)?0.035:0;
 
-    // Groove base: dub/lofi reggae, más cerca de una radio chill que de un pitido corto.
-    if([0,8].includes(beat)) playLofiPerc("kick",0);
-    if([4,12].includes(beat)) playLofiPerc(beat===12?"snare":"rim",0.01);
-    if([2,6,10,14].includes(beat)) playLofiPerc("hat",0.02);
+    // Cada tema tiene su propio patrón: one drop, ska, dub lento, old school o RPG.
+    if(beatHit(g.kick,beat)) playLofiPerc("kick",swing*.35);
+    if(beatHit(g.snare,beat)) playLofiPerc(beat===12?"snare":"rim",0.01+swing*.25);
+    if(beatHit(g.rim,beat)) playLofiPerc("rim",0.02+swing);
+    if(beatHit(g.hat,beat)) playLofiPerc("hat",0.02+swing);
 
-    // Bajo con caminata suave, menos repetitivo.
-    if(bassNote && [0,3,8,11,14].includes(beat)){
-      playInstrument(bassNote,"bass",.42,beat===0?.056:.040,0);
+    if(bassNote && beatHit(g.bass,beat)){
+      playInstrument(bassNote,"bass",.44,beat===0?.058:.041,swing*.6);
     }
 
-    // Skank reggae: acordes cortos al contratiempo, con un eco de piano.
-    if([5,13].includes(beat)){
-      playChord(chord,"piano",.16,.028,0.01);
-      playChord(chord,"piano",.12,.012,0.19);
+    if(beatHit(g.skank,beat)){
+      playChord(chord,"piano",.15,.027,0.01+swing);
+      if((bar+beat)%3!==0) playChord(chord,"piano",.11,.010,0.20+swing);
     }
-    if([7,15].includes(beat)) playChord(chord,"piano",.10,.012,0.02);
+    if(beatHit(g.ghost,beat)) playChord(chord,"piano",.09,.011,0.02+swing);
 
-    // Melodía principal con más notas tipo aventura clásica, pero suave y lofi.
-    if(melodyNote){
-      const strong=[1,5,9,13].includes(beat);
-      playInstrument(melodyNote,leadKind,strong?.34:.25,strong?.038:.026,0.025);
+    if(melodyNote && beatHit(g.melody,beat)){
+      const strong=[0,1,4,8,12,13].includes(beat);
+      playInstrument(melodyNote,leadKind,strong?.36:.25,strong?.039:.026,0.025+swing);
       const nextNote=tr.melody[(step+1)%tr.melody.length];
-      if(nextNote && [3,11].includes(beat)) playInstrument(nextNote,leadKind,.20,.018,0.20);
+      if(nextNote && (beat===3||beat===11||beat===14)) playInstrument(nextNote,leadKind,.19,.016,0.22+swing);
     }
 
-    // Respuestas de piano/flauta para que parezca tema largo, no bucle de 4 notas.
-    if(counterNote && [6,10,14].includes(beat)) playInstrument(counterNote,"piano",.22,.018,0.08);
+    if(counterNote && beatHit(g.counter,beat)) playInstrument(counterNote,"piano",.22,.018,0.08+swing);
 
-    // Pad/violín muy discreto cada 2 compases.
-    if(step%32===0){
-      chord.forEach((n,i)=>playInstrument(n,"violin",.95,.010,0.05+i*.035));
+    if(g.padEvery && step%g.padEvery===0){
+      chord.forEach((n,i)=>playInstrument(n,"violin",1.05,.009,0.05+i*.04));
     }
 
-    // Pequeños arpegios de transición, rollo juego antiguo.
-    if(step%32===30){
+    if(Number.isFinite(g.arp) && step%64===g.arp){
       [...chord].reverse().forEach((n,i)=>playInstrument(n,"pan",.12,.014,0.04+i*.06));
     }
 
-    // Polvo lofi casi imperceptible.
-    if(step%48===16) playNoise(.09,.006,0,"highpass",2600);
+    // Pequeños detalles dub/lofi muy suaves para que el bucle de 5 minutos respire.
+    if(step%96===16) playNoise(.09,.006,0,"highpass",2600);
+    if(step%128===64) playChord(chord,"piano",.18,.009,0.30);
 
     musicStep++;
-    // 384 pasos x 0.43s = 2m45s aprox por tema.
-    if(musicStep>=384){musicStep=0;currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;}
+    // Cada tema dura alrededor de 5 minutos o más, según su tickMs y length.
+    if(musicStep>=trackLength){
+      musicStep=0;
+      currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;
+      if(musicPlaying && musicInterval) setupMusicInterval();
+    }
   }catch(e){}
 }
+
 function startMusic(){
   if(musicPlaying)return;
   musicPlaying=true;
-  if(!musicInterval){musicStep=0;musicInterval=setInterval(tickLofiTrack,430);}
+  if(!musicInterval){musicStep=0;setupMusicInterval();}
   tickLofiTrack();
 }
 function stopMusic(){musicPlaying=false;if(musicInterval){clearInterval(musicInterval);musicInterval=null;}}
 function nextMusicTrack(){
   currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;
   musicStep=0;
-  if(musicPlaying) tickLofiTrack();
+  if(musicPlaying){setupMusicInterval();tickLofiTrack();}
 }
 
 let gameMusicInterval=null, resumeMainAfterGame=false;
