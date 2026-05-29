@@ -506,7 +506,7 @@ function PublicProfileModal({profile,onClose}){
       </Card>
       <Card style={{marginTop:10,textAlign:"left",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
         <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🏆 Resumen público</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,textAlign:"center"}}>
           <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Puntos</div></div>
           <div><div style={{fontSize:"1.4rem"}}>🔥</div><b>{profile.visitas||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Visitas</div></div>
           <div><div style={{fontSize:"1.4rem"}}>🎮</div><b>{profile.records||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Récords</div></div>
@@ -4357,6 +4357,134 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
 }
 
 
+
+const MUSIC_LIBRARY=[
+  {id:"kaseo",artist:"Kase.O",emoji:"🎤",genre:"Rap clásico",mood:"letra, técnica y calma",desc:"Rap español de alto nivel, ideal para escuchar con atención. Buen punto de entrada para quien quiere rap con letras trabajadas.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Kase.O+oficial"},
+    {label:"Temas clásicos",url:"https://www.youtube.com/results?search_query=Kase.O+mejores+canciones"}
+  ]},
+  {id:"morodo",artist:"Morodo",emoji:"🟢",genre:"Reggae español",mood:"raíz, barrio y buen ritmo",desc:"Reggae nacional muy reconocible, con temas perfectos para ambiente tranquilo y letras directas.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Morodo+oficial"},
+    {label:"Nuevos temas",url:"https://www.youtube.com/results?search_query=Morodo+nuevo+tema"}
+  ]},
+  {id:"purenegga",artist:"Pure Negga",emoji:"🎧",genre:"Reggae / rap melódico",mood:"voz suave y ambiente",desc:"Muy buena opción para quien busca algo más melódico, con vibra tranquila y fácil de escuchar.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Pure+Negga+oficial"},
+    {label:"Novedades",url:"https://www.youtube.com/results?search_query=Pure+Negga+nuevo+tema"}
+  ]},
+  {id:"fyahbwoy",artist:"Fyahbwoy",emoji:"🔥",genre:"Dancehall / reggae",mood:"energía y flow",desc:"Para momentos con más fuerza: dancehall, reggae y ritmo con más pegada para entrar al Arcade con energía.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Fyahbwoy+oficial"},
+    {label:"Directos y temas",url:"https://www.youtube.com/results?search_query=Fyahbwoy+mejores+temas"}
+  ]},
+  {id:"rapsusklei",artist:"Rapsusklei",emoji:"🌙",genre:"Rap / reggae",mood:"letra y sensibilidad",desc:"Rap con mucha personalidad, buen equilibrio entre calma, reflexión y musicalidad.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Rapsusklei+oficial"},
+    {label:"Temas recomendados",url:"https://www.youtube.com/results?search_query=Rapsusklei+mejores+canciones"}
+  ]},
+  {id:"bobmarley",artist:"Bob Marley",emoji:"🇯🇲",genre:"Reggae clásico",mood:"clásico imprescindible",desc:"Base obligatoria para quien quiera entender el reggae. Música reconocible, positiva y con historia.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Bob+Marley+official"},
+    {label:"Clásicos",url:"https://www.youtube.com/results?search_query=Bob+Marley+greatest+hits"}
+  ]},
+  {id:"skap",artist:"Ska-P",emoji:"🎺",genre:"Ska punk",mood:"fiesta y crítica",desc:"Ska rápido, guitarras, metales y energía. Perfecto para una sección más cañera sin caer en música comercial.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Ska-P+oficial"},
+    {label:"Clásicos",url:"https://www.youtube.com/results?search_query=Ska-P+mejores+canciones"}
+  ]},
+  {id:"nirvana",artist:"Nirvana",emoji:"🎸",genre:"Rock / grunge",mood:"crudo y mítico",desc:"Rock alternativo/grunge para meter variedad en la biblioteca. Sonido más duro, clásico y muy reconocible.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Nirvana+official"},
+    {label:"Clásicos",url:"https://www.youtube.com/results?search_query=Nirvana+greatest+hits"}
+  ]},
+  {id:"violadores",artist:"Violadores del Verso",emoji:"🏙️",genre:"Rap clásico",mood:"Zaragoza y barras",desc:"Rap de Zaragoza con peso histórico. Encaja muy bien para una app con identidad local y cultura urbana.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Violadores+del+Verso+oficial"},
+    {label:"Temas clásicos",url:"https://www.youtube.com/results?search_query=Violadores+del+Verso+mejores+temas"}
+  ]},
+  {id:"nach",artist:"Nach",emoji:"📖",genre:"Rap lírico",mood:"letra y mensaje",desc:"Rap español con letras muy cuidadas. Buena opción para escuchar con calma y descubrir temas con mensaje.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Nach+oficial"},
+    {label:"Temas recomendados",url:"https://www.youtube.com/results?search_query=Nach+mejores+canciones"}
+  ]},
+  {id:"culturaprofetica",artist:"Cultura Profética",emoji:"🌊",genre:"Reggae latino",mood:"suave y elegante",desc:"Reggae latino con sonido muy agradable, ideal para relajar el ambiente sin perder calidad.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Cultura+Profetica+oficial"},
+    {label:"Clásicos",url:"https://www.youtube.com/results?search_query=Cultura+Profetica+mejores+canciones"}
+  ]},
+  {id:"mano_negra",artist:"Mano Negra",emoji:"🚐",genre:"Rock / ska / mestizaje",mood:"callejero y viajero",desc:"Sonido callejero, mezcla de estilos y energía de ruta. Buena puerta a rock, ska y mestizaje.",links:[
+    {label:"YouTube",url:"https://www.youtube.com/results?search_query=Mano+Negra+mejores+canciones"},
+    {label:"Directos",url:"https://www.youtube.com/results?search_query=Mano+Negra+live"}
+  ]}
+];
+
+function MusicaComunidad({showToast}){
+  const [filter,setFilter]=useState("todo");
+  const filters=[
+    {id:"todo",label:"Todo",icon:"✨"},
+    {id:"reggae",label:"Reggae",icon:"🟢"},
+    {id:"rap",label:"Rap",icon:"🎤"},
+    {id:"ska",label:"Ska",icon:"🎺"},
+    {id:"rock",label:"Rock",icon:"🎸"}
+  ];
+  function matches(item){
+    const g=normalizeText(`${item.genre} ${item.artist} ${item.desc}`);
+    if(filter==="todo")return true;
+    if(filter==="reggae")return g.includes("reggae")||g.includes("dancehall");
+    if(filter==="rap")return g.includes("rap");
+    if(filter==="ska")return g.includes("ska");
+    if(filter==="rock")return g.includes("rock")||g.includes("grunge");
+    return true;
+  }
+  const list=MUSIC_LIBRARY.filter(matches);
+  function openLink(link){
+    SFX.action();
+    showToast?.(`Abriendo ${link.label}`);
+    window.open(link.url,"_blank","noopener,noreferrer");
+  }
+  return <div style={{animation:"fadeSlide .32s ease"}}>
+    <Card style={{marginBottom:14,padding:0,overflow:"hidden",background:"linear-gradient(160deg,#120806,#24110A 48%,#4E3A76)",border:"2px solid rgba(255,244,214,.5)",color:T.white}}>
+      <div style={{padding:"18px 16px",position:"relative"}}>
+        <div style={{position:"absolute",right:-18,top:-28,fontSize:"7rem",opacity:.10,transform:"rotate(-12deg)"}}>🎧</div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,244,214,.72)"}}>Biblioteca Rasta Cuts</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1,color:"#FFD66B",textShadow:"0 4px 12px rgba(0,0,0,.35)"}}>Música buena</div>
+          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35,marginTop:4}}>Reggae, rap clásico, ska y rock con enlaces rápidos para descubrir artistas sin tragarte música comercial.</div>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,padding:"0 12px 14px"}}>
+        {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);}} style={{border:`1.5px solid ${filter===f.id?T.gold:"rgba(255,244,214,.25)"}`,borderRadius:14,padding:"8px 4px",background:filter===f.id?"rgba(255,214,107,.22)":"rgba(255,244,214,.08)",color:T.white,fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
+          <div style={{fontSize:"1.1rem",lineHeight:1}}>{f.icon}</div>
+          <div style={{marginTop:3}}>{f.label}</div>
+        </button>)}
+      </div>
+    </Card>
+
+    <div style={{display:"grid",gap:12}}>
+      {list.map(item=><Card key={item.id} style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}} hover>
+        <div style={{display:"grid",gridTemplateColumns:"88px 1fr",gap:0}}>
+          <div style={{minHeight:142,background:"radial-gradient(circle at 40% 25%,rgba(255,255,255,.28),transparent 32%),linear-gradient(160deg,#24110A,#4E3A76 60%,#D4AF37)",display:"grid",placeItems:"center",position:"relative"}}>
+            <div className="icon3d" style={{fontSize:"2.9rem"}}>{item.emoji}</div>
+            <div style={{position:"absolute",bottom:8,left:8,right:8,textAlign:"center",fontSize:".62rem",fontWeight:950,color:"rgba(255,244,214,.8)"}}>{item.genre}</div>
+          </div>
+          <div style={{padding:"13px 13px 12px",minWidth:0}}>
+            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8}}>
+              <div>
+                <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.32rem",lineHeight:1,color:T.g800}}>{item.artist}</div>
+                <div style={{fontSize:".72rem",fontWeight:950,color:"#4E3A76",textTransform:"uppercase",letterSpacing:".05em",marginTop:2}}>{item.mood}</div>
+              </div>
+              <Badge col="gold">{item.genre.split("/")[0].trim()}</Badge>
+            </div>
+            <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:8}}>{item.desc}</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:11}}>
+              {item.links.map(link=><button key={link.label} onClick={()=>openLink(link)} style={{border:"none",borderRadius:999,padding:"8px 11px",background:link.label==="YouTube"?"linear-gradient(180deg,#A72822,#6E1B14)":"linear-gradient(180deg,#24110A,#6E3518)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 14px rgba(20,8,4,.18)"}}>
+                {link.label==="YouTube"?"▶️ ":"🔎 "}{link.label}
+              </button>)}
+            </div>
+          </div>
+        </div>
+      </Card>)}
+    </div>
+
+    <Card style={{marginTop:14,background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`}}>
+      <div style={{fontWeight:950,color:T.g800}}>📌 Idea para más adelante</div>
+      <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Podemos convertir esta sección en editable desde admin para añadir artistas, canciones concretas, playlists y novedades sin tocar código.</div>
+    </Card>
+  </div>;
+}
+
+
 function Comunidad(props){
   const {initialTab="feed",showToast}=props;
   const [sub,setSub]=useState(initialTab||"feed");
@@ -4365,6 +4493,7 @@ function Comunidad(props){
     {id:"feed",icon:"📌",label:"Tablón",sub:"Anuncios oficiales, promociones y novedades de la tienda."},
     {id:"foro",icon:"🗣️",label:"Foro",sub:"Temas abiertos, dudas, votaciones y conversación entre usuarios."},
     {id:"noticias",icon:"📰",label:"Actualidad",sub:"Curiosidades, rural, comida, sitios, peluquería y negocios locales."},
+    {id:"musica",icon:"🎧",label:"Música",sub:"Reggae, rap clásico, ska y rock con enlaces rápidos para descubrir buena música."},
   ];
   const active=tabs.find(t=>t.id===sub)||tabs[0];
   return <div style={{animation:"fadeSlide .32s ease"}}>
@@ -4372,12 +4501,12 @@ function Comunidad(props){
       <div style={{display:"flex",gap:12,alignItems:"center",justifyContent:"space-between"}}>
         <div>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",lineHeight:1}}>Comunidad</div>
-          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.82)",lineHeight:1.35}}>Un solo sitio para leer, participar y volver a tus hilos sin perderte entre pestañas.</div>
+          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.82)",lineHeight:1.35}}>Un solo sitio para leer, participar, descubrir música y volver a tus hilos sin perderte entre pestañas.</div>
         </div>
         <div className="icon3d" style={{fontSize:"2.1rem"}}>🌐</div>
       </div>
     </Card>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
       {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setSub(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.82)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
         <div style={{fontSize:"1.28rem",lineHeight:1}}>{t.icon}</div>
         <div style={{fontSize:".75rem",marginTop:3}}>{t.label}</div>
@@ -4390,6 +4519,7 @@ function Comunidad(props){
     {sub==="feed"&&<SocialFeed {...props}/>} 
     {sub==="foro"&&<Foro {...props}/>} 
     {sub==="noticias"&&<Noticias {...props}/>} 
+    {sub==="musica"&&<MusicaComunidad {...props}/>} 
   </div>;
 }
 
@@ -4402,7 +4532,8 @@ const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
 
 const HELP_TEXTS={
   dashboard:"Aquí ves tu resumen principal: puntos, próxima cita y accesos rápidos.",
-  comunidad:"Aquí están el Tablón, el Foro y Actualidad: lee anuncios, abre temas, comenta noticias y vuelve a tus hilos.",
+  comunidad:"Aquí están Tablón, Foro, Actualidad y Música: lee anuncios, abre temas, comenta noticias y descubre enlaces recomendados.",
+  musica:"Biblioteca de música con reggae, rap clásico, ska y rock. Entra a enlaces rápidos y descubre artistas sin música comercial.",
   noticias:"Magazine de comunidad: lee noticias útiles, comenta, da likes y gana puntos por participar sin ruido político.",
   feed:"El tablón es para anuncios oficiales de la tienda. Los clientes leen y reaccionan; admin y staff publican.",
   foro:"En el Foro puedes abrir temas, responder, votar ideas y hablar con otros usuarios.",
@@ -5094,6 +5225,7 @@ function pageTheme(page,communityTab,role){
   const key=page==="comunidad"?(communityTab||"comunidad"):page;
   if(["clientes","inventario","caja","usuarios"].includes(key)) return PAGE_THEMES.admin;
   if(key==="tops") return PAGE_THEMES.ranking||PAGE_THEMES.juegos;
+  if(key==="musica") return PAGE_THEMES.noticias||PAGE_THEMES.comunidad;
   return PAGE_THEMES[key]||PAGE_THEMES[page]||PAGE_THEMES.dashboard;
 }
 export default function App(){
@@ -5130,7 +5262,7 @@ export default function App(){
   function changeMusicTrack(){nextMusicTrack();SFX.tab();showToast(`Tema: ${REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta"}`);}
   const navTo=id=>{
     setHelperPage(null);
-    const communityMap={feed:"feed",foro:"foro",noticias:"noticias",comunidad:communityTab||"feed"};
+    const communityMap={feed:"feed",foro:"foro",noticias:"noticias",musica:"musica",comunidad:communityTab||"feed"};
     const target=communityMap[id]?"comunidad":id;
     if(communityMap[id]) setCommunityTab(communityMap[id]);
     target===page?SFX.tab():(target==="dashboard"?SFX.navBack():SFX.nav());
