@@ -73,19 +73,55 @@ let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
 let currentMusicTrack=0,musicStep=0;
 const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
 const NOTE_FREQ={
-  C2:65.41,D2:73.42,E2:82.41,F2:87.31,G2:98,A2:110,B2:123.47,
-  C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
-  C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,
-  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880,B5:987.77,
-  C6:1046.5,D6:1174.66,E6:1318.51,F6:1396.91,G6:1567.98,A6:1760,B6:1975.53
+  C2:65.41,Cs2:69.30,Db2:69.30,D2:73.42,Ds2:77.78,Eb2:77.78,E2:82.41,F2:87.31,Fs2:92.50,Gb2:92.50,G2:98,Ab2:103.83,Gs2:103.83,A2:110,As2:116.54,Bb2:116.54,B2:123.47,
+  C3:130.81,Cs3:138.59,Db3:138.59,D3:146.83,Ds3:155.56,Eb3:155.56,E3:164.81,F3:174.61,Fs3:185.00,Gb3:185.00,G3:196,Ab3:207.65,Gs3:207.65,A3:220,As3:233.08,Bb3:233.08,B3:246.94,
+  C4:261.63,Cs4:277.18,Db4:277.18,D4:293.66,Ds4:311.13,Eb4:311.13,E4:329.63,F4:349.23,Fs4:369.99,Gb4:369.99,G4:392,Ab4:415.30,Gs4:415.30,A4:440,As4:466.16,Bb4:466.16,B4:493.88,
+  C5:523.25,Cs5:554.37,Db5:554.37,D5:587.33,Ds5:622.25,Eb5:622.25,E5:659.25,F5:698.46,Fs5:739.99,Gb5:739.99,G5:783.99,Ab5:830.61,Gs5:830.61,A5:880,As5:932.33,Bb5:932.33,B5:987.77,
+  C6:1046.5,Cs6:1108.73,Db6:1108.73,D6:1174.66,Ds6:1244.51,Eb6:1244.51,E6:1318.51,F6:1396.91,Fs6:1479.98,Gb6:1479.98,G6:1567.98,Ab6:1661.22,Gs6:1661.22,A6:1760,As6:1864.66,Bb6:1864.66,B6:1975.53
 };
 const REGGAE_LOFI_TRACKS=[
-  {name:"Isla de humo",bpm:76,key:"Am",accent:"pan",bass:["A2","A2","E2","G2"],chords:[["A3","C4","E4"],["G3","B3","D4"],["F3","A3","C4"],["E3","G3","B3"]],melody:["E5",null,"G5",null,"A5",null,"G5","E5",null,"D5",null,"C5","E5",null,"G5",null]},
-  {name:"Papiro lofi",bpm:80,key:"Gm",accent:"piano",bass:["G2","G2","D2","F2"],chords:[["G3","Bb3","D4"],["F3","A3","C4"],["Eb3","G3","Bb3"],["D3","F3","A3"]],melody:["D5",null,"F5","G5",null,"Bb5",null,"G5","F5",null,"D5",null,"C5",null,"D5",null]},
-  {name:"Costa verde",bpm:74,key:"Dm",accent:"flute",bass:["D2","D2","A2","C3"],chords:[["D3","F3","A3"],["C3","E3","G3"],["Bb2","D3","F3"],["A2","C3","E3"]],melody:["F5",null,"A5",null,"C6","A5",null,"G5","F5",null,"E5",null,"D5",null,"F5",null]},
-  {name:"Dread moon",bpm:78,key:"Em",accent:"violin",bass:["E2","E2","B2","D3"],chords:[["E3","G3","B3"],["D3","F3","A3"],["C3","E3","G3"],["B2","D3","F3"]],melody:["B4",null,"D5",null,"E5","G5",null,"E5","D5",null,"B4",null,"A4",null,"B4",null]},
-  {name:"Barber dub",bpm:82,key:"Cm",accent:"piano",bass:["C2","C2","G2","Bb2"],chords:[["C3","Eb3","G3"],["Bb2","D3","F3"],["Ab2","C3","Eb3"],["G2","Bb2","D3"]],melody:["G4",null,"Bb4",null,"C5",null,"Eb5","C5",null,"Bb4",null,"G4","F4",null,"G4",null]},
-  {name:"Sol de Kingston",bpm:77,key:"F",accent:"pan",bass:["F2","F2","C2","Eb2"],chords:[["F3","A3","C4"],["Eb3","G3","Bb3"],["Bb2","D3","F3"],["C3","E3","G3"]],melody:["A4",null,"C5",null,"D5","C5",null,"A4","G4",null,"F4",null,"A4",null,"C5",null]},
+  {
+    name:"Ruta Pallet Town Dub",bpm:82,key:"Am",accent:"pan",
+    bass:["A2","A2","E2","G2","F2","F2","G2","E2"],
+    chords:[["A3","C4","E4"],["G3","B3","D4"],["F3","A3","C4"],["E3","G3","B3"]],
+    melody:["E5","G5","A5","C6","B5","A5","G5","E5","D5","E5","G5","A5",null,"C6","B5","G5","E5","G5","A5","E6","D6","C6","A5","G5","E5",null,"D5","C5","D5","E5","G5",null],
+    counter:["C5",null,"E5",null,"D5",null,"C5",null,"A4",null,"C5",null,"B4",null,"G4",null]
+  },
+  {
+    name:"Centro Pokémon Lofi",bpm:78,key:"Gm",accent:"piano",
+    bass:["G2","G2","D2","F2","Eb2","Eb2","F2","D2"],
+    chords:[["G3","Bb3","D4"],["F3","A3","C4"],["Eb3","G3","Bb3"],["D3","F3","A3"]],
+    melody:["D5","F5","G5","Bb5","A5","G5","F5","D5","C5","D5","F5","G5",null,"Bb5","A5","F5","D5","F5","G5","D6","C6","Bb5","G5","F5","D5",null,"C5","Bb4","C5","D5","F5",null],
+    counter:["Bb4",null,"D5",null,"C5",null,"Bb4",null,"G4",null,"Bb4",null,"A4",null,"F4",null]
+  },
+  {
+    name:"Isla Dread Adventure",bpm:84,key:"Dm",accent:"pan",
+    bass:["D2","D2","A2","C3","Bb2","Bb2","C3","A2"],
+    chords:[["D3","F3","A3"],["C3","E3","G3"],["Bb2","D3","F3"],["A2","C3","E3"]],
+    melody:["F5","A5","D6","C6","A5","G5","F5","E5","D5","F5","A5","C6",null,"D6","C6","A5","F5","A5","C6","F6","E6","D6","C6","A5","G5","F5","E5","D5","E5","F5","A5",null],
+    counter:["A4",null,"D5",null,"C5",null,"A4",null,"F4",null,"A4",null,"G4",null,"E4",null]
+  },
+  {
+    name:"Bosque Verde Skank",bpm:86,key:"Em",accent:"violin",
+    bass:["E2","E2","B2","D3","C3","C3","D3","B2"],
+    chords:[["E3","G3","B3"],["D3","Fs3","A3"],["C3","E3","G3"],["B2","D3","Fs3"]],
+    melody:["B4","D5","E5","G5","Fs5","E5","D5","B4","A4","B4","D5","E5",null,"G5","Fs5","D5","B4","D5","E5","B5","A5","G5","E5","D5","B4",null,"A4","G4","A4","B4","D5",null],
+    counter:["G4",null,"B4",null,"A4",null,"G4",null,"E4",null,"G4",null,"Fs4",null,"D4",null]
+  },
+  {
+    name:"Barber Dub Quest",bpm:80,key:"Cm",accent:"piano",
+    bass:["C2","C2","G2","Bb2","Ab2","Ab2","Bb2","G2"],
+    chords:[["C3","Eb3","G3"],["Bb2","D3","F3"],["Ab2","C3","Eb3"],["G2","Bb2","D3"]],
+    melody:["G4","Bb4","C5","Eb5","D5","C5","Bb4","G4","F4","G4","Bb4","C5",null,"Eb5","D5","Bb4","G4","Bb4","C5","G5","F5","Eb5","C5","Bb4","G4",null,"F4","Eb4","F4","G4","Bb4",null],
+    counter:["Eb4",null,"G4",null,"F4",null,"Eb4",null,"C4",null,"Eb4",null,"D4",null,"Bb3",null]
+  },
+  {
+    name:"Sol de Kingston RPG",bpm:83,key:"F",accent:"pan",
+    bass:["F2","F2","C2","Eb2","Bb2","Bb2","C3","E2"],
+    chords:[["F3","A3","C4"],["Eb3","G3","Bb3"],["Bb2","D3","F3"],["C3","E3","G3"]],
+    melody:["A4","C5","D5","F5","E5","D5","C5","A4","G4","A4","C5","D5",null,"F5","E5","C5","A4","C5","D5","A5","G5","F5","D5","C5","A4",null,"G4","F4","G4","A4","C5",null],
+    counter:["F4",null,"A4",null,"G4",null,"F4",null,"D4",null,"F4",null,"E4",null,"C4",null]
+  }
 ];
 function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
 function resolveFreq(value){return typeof value==="number"?value:(NOTE_FREQ[value]||PENTA[0]);}
@@ -144,23 +180,39 @@ function tickLofiTrack(){
   try{
     const ctx=getCtx();if(ctx.state==="suspended")ctx.resume();
     const tr=REGGAE_LOFI_TRACKS[currentMusicTrack%REGGAE_LOFI_TRACKS.length];
-    const step=musicStep%240;
+    const step=musicStep%256;
     const beat=step%8;
     const bar=Math.floor(step/8);
     const chord=tr.chords[bar%tr.chords.length];
-    if(beat===0||beat===4) playInstrument(tr.bass[bar%tr.bass.length],"bass",.46,.042,0);
-    if(beat===2||beat===6) playChord(chord,"piano",.18,.022,0.02);
-    if(beat===3||beat===7) playTone(110,"triangle",.045,.018,0.01);
-    if(step%4===1){
-      const m=tr.melody[Math.floor(step/4)%tr.melody.length];
-      if(m) playInstrument(m,tr.accent==="violin"?"violin":"pan",.62,.028,0.03);
+    const melodyIndex=step%tr.melody.length;
+    const melodyNote=tr.melody[melodyIndex];
+    const counterNote=tr.counter[step%tr.counter.length];
+
+    // Bajo reggae: firme, pero suave.
+    if(beat===0||beat===4) playInstrument(tr.bass[bar%tr.bass.length],"bass",.50,.060,0);
+
+    // Acorde a contratiempo, rollo reggae/lofi.
+    if(beat===2||beat===6) playChord(chord,"piano",.20,.032,0.015);
+    if(beat===3||beat===7) playTone(110,"triangle",.040,.020,0.01);
+
+    // Melodía principal: más notas, tipo aventura RPG/ Pokémon antiguo, pero sin ser estridente.
+    if(melodyNote){
+      playInstrument(melodyNote,tr.accent==="violin"?"violin":tr.accent==="piano"?"piano":"pan",.38,.043,0.02);
+      const nextNote=tr.melody[(melodyIndex+1)%tr.melody.length];
+      if(nextNote && step%4===1) playInstrument(nextNote,tr.accent==="violin"?"violin":"pan",.24,.026,0.24);
     }
-    if(step%16===12){
-      const m=tr.melody[(Math.floor(step/4)+5)%tr.melody.length];
-      if(m) playInstrument(m,tr.accent==="piano"?"piano":"pan",.34,.020,0.08);
+
+    // Respuesta suave de piano para que no se quede en bucle plano.
+    if(counterNote && (beat===1||beat===5)) playInstrument(counterNote,"piano",.28,.024,0.08);
+
+    // Mini arpegio de transición cada dos compases.
+    if(step%16===14){
+      chord.forEach((n,i)=>playInstrument(n,"piano",.16,.018,0.05+i*.085));
     }
+
     musicStep++;
-    if(musicStep>=240){musicStep=0;currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;}
+    // 256 pasos x 0.5s = 128s por tema aprox.
+    if(musicStep>=256){musicStep=0;currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;}
   }catch(e){}
 }
 function startMusic(){
@@ -1363,7 +1415,7 @@ function NewsShortCard({item,index=0,total=0,onOpen,stats=null}){
   const bg=hasImage
     ? `linear-gradient(180deg,rgba(12,6,3,.08) 0%,rgba(12,6,3,.16) 36%,rgba(12,6,3,.88) 100%), url(${item.image})`
     : `radial-gradient(circle at 18% 10%,rgba(240,224,184,.32),transparent 30%),radial-gradient(circle at 86% 18%,${visual.accent}44,transparent 34%),linear-gradient(160deg,${visual.dark},#130B06 52%,${visual.bg})`;
-  return <div className="news-short studio-panel" onClick={openDetail} style={{height:"calc(100dvh - 238px)",minHeight:500,maxHeight:680,borderRadius:26,overflow:"hidden",position:"relative",backgroundImage:bg,backgroundSize:"cover",backgroundPosition:"center",border:`2px solid ${visual.accent}`,boxShadow:"0 18px 38px rgba(0,0,0,.34)",marginBottom:14,cursor:"pointer"}}>
+  return <div className="news-short studio-panel" onClick={openDetail} style={{height:"100%",minHeight:"100%",maxHeight:"none",borderRadius:0,overflow:"hidden",position:"relative",backgroundImage:bg,backgroundSize:"cover",backgroundPosition:"center",border:"none",boxShadow:"none",marginBottom:0,cursor:"pointer"}}>
     {!hasImage&&<>
       <div style={{position:"absolute",inset:0,background:"repeating-linear-gradient(0deg,rgba(240,224,184,.055) 0 1px,transparent 1px 7px)"}}/>
       <div style={{position:"absolute",right:-12,top:56,fontSize:"9.2rem",opacity:.14,filter:"drop-shadow(0 10px 14px rgba(0,0,0,.35))",transform:"rotate(-8deg)"}}>{poster.icons?.[0]||cat.icon}</div>
@@ -1374,21 +1426,21 @@ function NewsShortCard({item,index=0,total=0,onOpen,stats=null}){
       <span style={{display:"inline-flex",alignItems:"center",gap:7,background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"8px 12px",fontSize:".78rem",fontWeight:950,boxShadow:"0 10px 20px rgba(0,0,0,.28)",border:"1px solid rgba(255,244,214,.24)"}}>{cat.icon} {cat.short}</span>
       <span style={{background:"rgba(12,6,3,.55)",color:T.white,border:"1px solid rgba(255,244,214,.18)",borderRadius:999,padding:"7px 10px",fontSize:".72rem",fontWeight:950,backdropFilter:"blur(5px)"}}>{index+1}/{total}</span>
     </div>
-    <div style={{position:"absolute",right:12,bottom:146,display:"grid",gap:10,justifyItems:"center"}}>
+    <div style={{position:"absolute",right:12,bottom:170,display:"grid",gap:10,justifyItems:"center"}}>
       <button onClick={openDetail} style={{width:48,height:48,borderRadius:"50%",border:"1px solid rgba(255,244,214,.35)",background:"rgba(240,224,184,.88)",color:T.g900,fontSize:"1rem",fontWeight:950,boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer"}}>💬</button>
       <div style={{fontSize:".72rem",fontWeight:950,color:T.white,textShadow:"0 2px 8px rgba(0,0,0,.75)"}}>{stats?.comments||0}</div>
       <div style={{width:48,height:48,borderRadius:"50%",display:"grid",placeItems:"center",border:"1px solid rgba(255,244,214,.35)",background:"rgba(240,224,184,.88)",color:T.g900,fontSize:"1rem",fontWeight:950,boxShadow:"0 8px 18px rgba(0,0,0,.26)"}}>👍</div>
       <div style={{fontSize:".72rem",fontWeight:950,color:T.white,textShadow:"0 2px 8px rgba(0,0,0,.75)"}}>{stats?.likes||0}</div>
     </div>
-    <div style={{position:"absolute",left:15,right:15,bottom:14,color:T.white}}>
+    <div style={{position:"absolute",left:15,right:15,bottom:38,color:T.white}}>
       {index===0&&<div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(240,224,184,.16)",border:"1px solid rgba(240,224,184,.22)",borderRadius:999,padding:"6px 10px",fontSize:".72rem",fontWeight:950,marginBottom:10,backdropFilter:"blur(4px)"}}>⬆️ Desliza para pasar noticia</div>}
       <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8,opacity:.9}}>
         <span style={{fontSize:".72rem",fontWeight:950,textTransform:"uppercase",letterSpacing:".45px",color:"rgba(255,244,214,.86)"}}>{item?.source||cat.label}</span>
         <span style={{width:5,height:5,borderRadius:"50%",background:"rgba(255,244,214,.6)"}}/>
         <span style={{fontSize:".72rem",fontWeight:900,color:"rgba(255,244,214,.78)"}}>{formatNewsDate(item?.date)}</span>
       </div>
-      <div className="news-short-title" style={{fontFamily:"'Pirata One',cursive",fontSize:"1.82rem",lineHeight:.98,textShadow:"0 3px 12px rgba(0,0,0,.72)",paddingRight:54}}>{title}</div>
-      <div className="news-short-summary" style={{fontSize:".92rem",fontWeight:820,lineHeight:1.34,color:"rgba(255,244,214,.9)",marginTop:9,paddingRight:46,textShadow:"0 2px 9px rgba(0,0,0,.7)"}}>{summary}</div>
+      <div className="news-short-title" style={{fontFamily:"'Pirata One',cursive",fontSize:"2.05rem",lineHeight:.96,textShadow:"0 3px 12px rgba(0,0,0,.72)",paddingRight:54}}>{title}</div>
+      <div className="news-short-summary" style={{fontSize:".96rem",fontWeight:820,lineHeight:1.34,color:"rgba(255,244,214,.9)",marginTop:9,paddingRight:46,textShadow:"0 2px 9px rgba(0,0,0,.7)"}}>{summary}</div>
       <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginTop:12,paddingRight:10}}>
         <button onClick={openDetail} style={{border:"none",borderRadius:999,padding:"10px 14px",fontWeight:950,fontSize:".82rem",color:"#FFF8E5",background:visual.accent,boxShadow:"0 9px 18px rgba(0,0,0,.28)",cursor:"pointer"}}>Abrir debate</button>
         {showYoutube&&<button onClick={openYoutube} style={{border:"1px solid rgba(255,244,214,.28)",borderRadius:999,padding:"10px 13px",fontWeight:950,fontSize:".82rem",color:"#FFF8E5",background:"#7A241B",boxShadow:"0 8px 16px rgba(0,0,0,.24)",cursor:"pointer"}}>▶ YouTube</button>}
@@ -1563,34 +1615,37 @@ function Noticias({user,setUser,showToast,showPoints}){
   }
 
   const active=categoryInfo(category);
-  const reelItems=items.slice(0,20);
+  const visual=categoryVisual(category);
+  const reelItems=items.slice(0,24);
 
-  return <div style={{animation:"fadeSlide .35s ease",marginTop:-4}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
-      <div style={{minWidth:0}}>
-        <div style={{fontSize:".68rem",fontWeight:950,letterSpacing:".7px",textTransform:"uppercase",color:T.g200}}>Actualidad · modo shorts</div>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.48rem",lineHeight:1,color:T.white,textShadow:"0 3px 10px rgba(0,0,0,.45)"}}>{active.icon} {active.short}</div>
+  return <div style={{animation:"fadeSlide .25s ease",margin:"-18px -14px -18px",height:"calc(100dvh - 126px)",minHeight:560,position:"relative",overflow:"hidden",background:`linear-gradient(180deg,${visual.dark},#120806 52%,#0B0503)`,borderTop:`1px solid ${visual.accent}66`}}>
+    <div style={{position:"absolute",left:0,right:0,top:0,zIndex:20,padding:"10px 10px 8px",background:"linear-gradient(180deg,rgba(8,4,2,.82),rgba(8,4,2,.42),transparent)",pointerEvents:"none"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:8,pointerEvents:"auto"}}>
+        <div style={{minWidth:0}}>
+          <div style={{fontSize:".62rem",fontWeight:950,letterSpacing:".8px",textTransform:"uppercase",color:"rgba(240,224,184,.72)"}}>Actualidad · desliza arriba</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.32rem",lineHeight:1,color:T.white,textShadow:"0 3px 10px rgba(0,0,0,.55)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{active.icon} {active.short}</div>
+        </div>
+        <button onClick={reload} style={{border:"1px solid rgba(240,224,184,.30)",background:"rgba(240,224,184,.16)",color:T.white,borderRadius:999,padding:"8px 11px",fontWeight:950,fontSize:".78rem",backdropFilter:"blur(8px)",cursor:"pointer"}}>🔄</button>
       </div>
-      <Btn small col="gold" onClick={reload}>Actualizar</Btn>
+      <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:3,scrollbarWidth:"none",pointerEvents:"auto"}}>
+        {NEWS_CATEGORIES.map(c=>{
+          const selectedCat=category===c.id,cv=categoryVisual(c.id);
+          return <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{flex:"0 0 auto",whiteSpace:"nowrap",border:`1.5px solid ${selectedCat?cv.accent:"rgba(240,224,184,.20)"}`,background:selectedCat?cv.accent:"rgba(12,6,3,.48)",color:T.white,borderRadius:999,padding:"7px 9px",fontWeight:950,fontSize:".74rem",cursor:"pointer",boxShadow:selectedCat?"0 8px 18px rgba(0,0,0,.28)":"none",backdropFilter:"blur(8px)"}}>
+            <span style={{fontSize:".95rem",marginRight:4}}>{c.icon}</span>{c.short}
+          </button>;
+        })}
+      </div>
     </div>
 
-    <div style={{display:"flex",gap:8,overflowX:"auto",padding:"0 2px 10px",marginBottom:8,scrollbarWidth:"none"}}>
-      {NEWS_CATEGORIES.map(c=>{
-        const selectedCat=category===c.id,visual=categoryVisual(c.id);
-        return <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{minWidth:86,whiteSpace:"nowrap",border:`2px solid ${selectedCat?visual.accent:"rgba(216,190,135,.45)"}`,background:selectedCat?visual.bg:"rgba(240,224,184,.72)",color:selectedCat?T.g900:T.g700,borderRadius:999,padding:"8px 10px",fontWeight:950,cursor:"pointer",boxShadow:selectedCat?"0 8px 18px rgba(20,8,4,.22)":"0 4px 10px rgba(20,8,4,.12)"}}>
-          <span style={{fontSize:"1rem",marginRight:5}}>{c.icon}</span>{c.short}
-        </button>;
-      })}
-    </div>
+    {error&&<div style={{position:"absolute",left:12,right:12,top:104,zIndex:25,background:"rgba(232,211,162,.92)",border:`1px solid ${T.orange}`,borderRadius:16,padding:10,boxShadow:"0 10px 24px rgba(0,0,0,.25)"}}><div style={{fontWeight:950,color:T.g800,fontSize:".82rem"}}>Aviso</div><div style={{fontSize:".76rem",fontWeight:750,color:T.textSub}}>{error}</div></div>}
 
-    {error&&<Card style={{marginBottom:10,background:"#E8D3A2",border:"2px solid #A8662B"}}><div style={{fontWeight:950,color:T.g800}}>Aviso</div><div style={{fontSize:".8rem",fontWeight:750,color:T.textSub}}>{error}</div></Card>}
-
-    {loading?<Spinner/>:reelItems.length===0?<EmptyState icon="📰" title="No hay selección ahora" sub="Prueba otra categoría o actualiza en unos minutos."/>:<>
-      <div className="news-reel" style={{height:"calc(100dvh - 218px)",minHeight:500,maxHeight:700,paddingRight:2,paddingBottom:6}}>
+    {loading?<div style={{height:"100%",display:"grid",placeItems:"center"}}><Spinner/></div>:reelItems.length===0?<div style={{height:"100%",display:"grid",placeItems:"center",padding:20}}><EmptyState icon="📰" title="No hay selección ahora" sub="Prueba otra categoría o actualiza en unos minutos."/></div>:
+      <div className="news-reel" style={{height:"100%",width:"100%"}}>
         {reelItems.map((n,i)=><NewsShortCard key={n.id||i} item={n} index={i} total={reelItems.length} stats={stats[String(n.id)]} onOpen={setSelected}/>) }
       </div>
-      <div style={{textAlign:"center",fontSize:".72rem",fontWeight:900,color:T.g150,marginTop:8,opacity:.82}}>Desliza hacia arriba para pasar a la siguiente noticia</div>
-    </>}
+    }
+
+    {!loading&&reelItems.length>0&&<div style={{position:"absolute",left:0,right:0,bottom:8,zIndex:18,textAlign:"center",fontSize:".72rem",fontWeight:950,color:"rgba(240,224,184,.78)",textShadow:"0 2px 8px rgba(0,0,0,.7)",pointerEvents:"none"}}>⬆️ Desliza para pasar noticia</div>}
 
     <NewsDetailModal item={selected} user={user} setUser={setUser} showToast={showToast} showPoints={showPoints} onClose={()=>setSelected(null)} onChanged={bumpStat}/>
   </div>;
