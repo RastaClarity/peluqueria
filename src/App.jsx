@@ -419,6 +419,33 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 .news-short-title{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .news-short-summary{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .icon3d{filter:drop-shadow(0 4px 5px rgba(0,0,0,.24));text-shadow:0 2px 5px rgba(0,0,0,.22);animation:wiggle3d 3.2s ease-in-out infinite}
+@keyframes pageEnterPro{0%{opacity:0;transform:translateY(18px) scale(.985);filter:blur(4px)}58%{opacity:1;filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes pageGlowSweep{0%{transform:translateX(-120%) skewX(-18deg);opacity:0}35%{opacity:.38}100%{transform:translateX(140%) skewX(-18deg);opacity:0}}
+@keyframes navBouncePro{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.08)}}
+@keyframes rastaSpeechIn{0%{opacity:0;transform:translateY(10px) scale(.92)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes signalPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.18)}}
+@keyframes chipFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(.7deg)}}
+@keyframes bgDriftPro{0%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(12px,-10px,0) rotate(2deg)}100%{transform:translate3d(0,0,0) rotate(0deg)}}
+.page-content-pro{animation:pageEnterPro .42s cubic-bezier(.19,1,.22,1);transform-origin:center top}
+.page-content-pro:before{content:"";position:absolute;left:-80px;right:-80px;top:-16px;height:90px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--pageAccent,#D4AF37),transparent);opacity:.10;filter:blur(18px);animation:bgDriftPro 9s ease-in-out infinite}
+.motion-strip{height:4px;border-radius:999;position:relative;overflow:hidden}
+.motion-strip:after{content:"";position:absolute;top:0;bottom:0;width:90px;background:linear-gradient(90deg,transparent,rgba(255,244,214,.95),transparent);animation:pageGlowSweep 2.8s ease-in-out infinite}
+.landing-nav-card{position:relative;overflow:hidden;transition:transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease, background .22s ease!important}
+.landing-nav-card:before{content:"";position:absolute;inset:-2px;background:radial-gradient(circle at 50% -20%,rgba(255,214,107,.34),transparent 42%);opacity:0;transition:opacity .22s ease;pointer-events:none}
+.landing-nav-card:hover,.landing-nav-card:focus-visible{transform:translateY(-5px) scale(1.035);box-shadow:0 16px 30px rgba(0,0,0,.32),0 0 24px rgba(212,175,55,.22)!important;background:rgba(255,244,214,.14)!important}
+.landing-nav-card:hover:before,.landing-nav-card:focus-visible:before{opacity:1}
+.landing-feature-pro{transition:transform .24s cubic-bezier(.34,1.56,.64,1), box-shadow .24s ease, filter .24s ease}
+.landing-feature-pro:hover{transform:translateY(-7px) rotate(-.4deg);filter:saturate(1.12);box-shadow:0 18px 34px rgba(0,0,0,.34), inset 0 -2px 0 rgba(212,175,55,.55)!important}
+.rasta-speech-bubble{animation:rastaSpeechIn .35s ease, chipFloat 4s ease-in-out infinite;transition:transform .22s ease, box-shadow .22s ease}
+.rasta-speech-bubble:hover{transform:translateY(-3px) scale(1.015);box-shadow:0 16px 30px rgba(0,0,0,.32)!important}
+.nav-tab-pro{position:relative;transition:transform .20s cubic-bezier(.34,1.56,.64,1), background .2s ease, filter .2s ease}
+.nav-tab-pro:hover,.nav-tab-pro:focus-visible{transform:translateY(-6px);filter:saturate(1.22)}
+.nav-tab-pro:hover .nav-icon-pro{animation:navBouncePro .55s ease}
+.nav-tab-pro:after{content:"";position:absolute;left:50%;bottom:-1px;width:4px;height:4px;border-radius:50%;background:#F5E6C8;opacity:0;transform:translateX(-50%);transition:opacity .2s ease, width .2s ease}
+.nav-tab-pro:hover:after{opacity:.85;width:18px}
+.header-action-pro{transition:transform .2s ease, background .2s ease, box-shadow .2s ease}
+.header-action-pro:hover{transform:translateY(-2px) scale(1.03);background:rgba(255,255,255,.26)!important;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 
 `;
 
@@ -623,6 +650,20 @@ async function saveAvatarConfigForUser(user,cfg){
   setLocalAvatarConfig(user,clean);
   try{await supabase.from("avatar_profiles").upsert({usuario_id:String(user.id),email:user.email,avatar_config:clean,updated_at:new Date().toISOString()},{onConflict:"usuario_id"});}catch{}
   return clean;
+}
+async function enrichProfilesWithAvatarConfigs(list=[]){
+  const arr=Array.isArray(list)?list:[];
+  if(!arr.length || !supabase) return arr;
+  const ids=arr.map(u=>String(u.id)).filter(Boolean);
+  try{
+    const {data,error}=await supabase.from("avatar_profiles").select("usuario_id,avatar_config").in("usuario_id",ids);
+    if(error) return arr;
+    const map=new Map((data||[]).map(r=>[String(r.usuario_id),r.avatar_config]));
+    return arr.map(u=>{
+      const cfg=map.get(String(u.id));
+      return cfg?{...u,avatar_config:normalizeAvatarConfig(cfg,u.avatar),avatarConfig:normalizeAvatarConfig(cfg,u.avatar)}:u;
+    });
+  }catch(e){return arr;}
 }
 function randomAvatarConfig(gender=null){
   const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
@@ -1128,7 +1169,7 @@ async function createUserProfile({nombre,email}){
 
 function LandingFeature({icon,title,sub,accent="#D4AF37"}){
   return(
-    <div className="studio-panel" style={{
+    <div className="studio-panel landing-feature-pro" style={{
       border:`1px solid ${accent}55`,
       borderRadius:18,
       padding:"12px 10px",
@@ -1190,8 +1231,11 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null}){
           letterSpacing:".08em",
           textTransform:"uppercase"
         }}>✂️ Cortes, rastas y estilo urbano ✂️</div>
-        <div style={{marginTop:compact?4:8}}>
+        <div style={{marginTop:compact?4:8,position:"relative"}}>
           <HeroMascot/>
+          <div className="rasta-speech-bubble" style={{position:"absolute",right:compact?"2%":"5%",bottom:compact?10:18,maxWidth:compact?190:230,background:"rgba(255,244,214,.92)",border:"1.5px solid rgba(212,175,55,.72)",borderRadius:18,padding:"9px 11px",color:"#3A1E10",fontWeight:950,fontSize:compact?".72rem":".78rem",lineHeight:1.25,boxShadow:"0 12px 24px rgba(0,0,0,.24)",textAlign:"left"}}>
+            <span style={{display:"inline-block",marginRight:5,animation:"signalPulse 1.5s ease-in-out infinite"}}>✨</span>{compact?"Entra, juega y mira qué se cuece hoy.":"Entra a pasarlo bien: reserva, juega, escucha música y gana recompensas."}
+          </div>
         </div>
         <div style={{
           margin:"-10px auto 12px",
@@ -1214,13 +1258,13 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null}){
         )}
         {onNavigate&&(
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-            <button onClick={()=>onNavigate("citas")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
+            <button className="landing-nav-card" onClick={()=>onNavigate("citas")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
               <div style={{fontSize:"1.45rem"}}>📅</div><div style={{fontSize:".72rem"}}>Reserva</div>
             </button>
-            <button onClick={()=>onNavigate("juegos")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
+            <button className="landing-nav-card" onClick={()=>onNavigate("juegos")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
               <div style={{fontSize:"1.45rem"}}>🎮</div><div style={{fontSize:".72rem"}}>Juega</div>
             </button>
-            <button onClick={()=>onNavigate("tienda")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
+            <button className="landing-nav-card" onClick={()=>onNavigate("tienda")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
               <div style={{fontSize:"1.45rem"}}>🎁</div><div style={{fontSize:".72rem"}}>Premios</div>
             </button>
           </div>
@@ -2143,7 +2187,12 @@ function Clientes({showToast}){
   const [historial,setHistorial]=useState([]);
   const [loading,setLoading]=useState(true);
   useEffect(()=>{load();},[]);
-  async function load(){setLoading(true);setClientes(await dbGet("usuarios","?role=eq.client&order=nombre.asc&select=*")||[]);setLoading(false);}
+  async function load(){
+    setLoading(true);
+    const raw=await dbGet("usuarios","?role=eq.client&order=nombre.asc&select=*")||[];
+    setClientes(await enrichProfilesWithAvatarConfigs(raw));
+    setLoading(false);
+  }
   async function selectCliente(c){setSelected(c);setHistorial(await dbGet("citas",`?usuario_id=eq.${c.id}&order=fecha.desc&limit=10&select=*`)||[]);}
   const filtered=clientes.filter(c=>(c.nombre||"").toLowerCase().includes(search.toLowerCase())||(c.email||"").toLowerCase().includes(search.toLowerCase()));
   return(
@@ -2153,7 +2202,7 @@ function Clientes({showToast}){
       {loading?<Spinner/>:filtered.map(c=>(
         <Card key={c.id} style={{marginBottom:10}} hover onClick={()=>selectCliente(c)}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <Av av={c.avatar} size={44}/>
+            <PublicAvatar profile={c} currentUser={null} size={44}/>
             <div style={{flex:1}}><div style={{fontWeight:800}}>{c.nombre}</div><div style={{fontSize:"0.78rem",color:T.textSub}}>{c.email}</div></div>
             <div style={{fontWeight:900,color:T.g600}}>pts {c.puntos||0}</div>
           </div>
@@ -2163,7 +2212,7 @@ function Clientes({showToast}){
         {selected&&(
           <div>
             <div style={{display:"flex",gap:12,marginBottom:16,alignItems:"center"}}>
-              <Av av={selected.avatar} size={56}/>
+              <PublicAvatar profile={selected} currentUser={null} size={56}/>
               <div><div style={{fontWeight:800}}>{selected.nombre}</div><div style={{fontSize:"0.82rem",color:T.textSub}}>{selected.email}</div></div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
@@ -2274,7 +2323,12 @@ function AdminUsuarios({user,showToast}){
   const canManageUsers=user?.rol===ROLES.ADMIN;
   const [users,setUsers]=useState([]);const [loading,setLoading]=useState(true);
   useEffect(()=>{if(canManageUsers) load(); else setLoading(false);},[canManageUsers]);
-  async function load(){setLoading(true);setUsers(await dbGet("usuarios","?order=nombre.asc&select=*")||[]);setLoading(false);}
+  async function load(){
+    setLoading(true);
+    const raw=await dbGet("usuarios","?order=nombre.asc&select=*")||[];
+    setUsers(await enrichProfilesWithAvatarConfigs(raw));
+    setLoading(false);
+  }
   async function changeRole(id,rol){if(!canManageUsers)return;await dbPatch("usuarios",`?id=eq.${id}`,{role:rol});showToast("Rol actualizado");load();}
   if(!canManageUsers){
     return <EmptyState icon="🔒" title="Solo administradores" sub="Esta sección permite cambiar roles y gestionar usuarios."/>;
@@ -2285,7 +2339,7 @@ function AdminUsuarios({user,showToast}){
       {loading?<Spinner/>:users.map(u=>(
         <Card key={u.id} style={{marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <Av av={u.avatar} size={40}/>
+            <PublicAvatar profile={u} currentUser={user} size={40}/>
             <div style={{flex:1}}><div style={{fontWeight:800,fontSize:"0.9rem"}}>{u.nombre}</div><div style={{fontSize:"0.75rem",color:T.textSub}}>{u.email}</div></div>
             <select value={u.role||"client"} onChange={e=>changeRole(u.id,e.target.value)} style={{padding:"5px 8px",borderRadius:8,border:`1.5px solid ${T.g300}`,background:T.g50,fontSize:"0.78rem",fontWeight:700,cursor:"pointer"}}>
               <option value="client">Cliente</option>
@@ -2310,7 +2364,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
       dbGet("publicaciones","?tipo=neq.foro&order=created_at.desc&limit=30&select=*"),
       dbGet("usuarios","?select=*")
     ]);
-    setPosts(Array.isArray(raw)?raw:[]);setProfiles(Array.isArray(users)?users:[]);setLoading(false);
+    setPosts(Array.isArray(raw)?raw:[]);setProfiles(await enrichProfilesWithAvatarConfigs(Array.isArray(users)?users:[]));setLoading(false);
   }
   function authorOf(post){return profiles.find(u=>String(u.id)===String(post.autor_id))||user;}
   async function publish(){
@@ -2598,7 +2652,8 @@ async function loadSupabaseGameLeaderboard(gameId,mode="weekly"){
     const ids=[...new Set(rows.map(r=>r.usuario_id).filter(Boolean).map(String))];
     let userMap={};
     if(ids.length){
-      const users=await safeList("usuarios",`?id=in.(${ids.map(encodeURIComponent).join(",")})&select=id,nombre,avatar,avatar_config,perfil_publico,modo_incognito`);
+      const usersRaw=await safeList("usuarios",`?id=in.(${ids.map(encodeURIComponent).join(",")})&select=id,nombre,avatar,perfil_publico,modo_incognito`);
+      const users=await enrichProfilesWithAvatarConfigs(usersRaw||[]);
       userMap=Object.fromEntries((users||[]).map(u=>[String(u.id),u]));
     }
     return dedupeBestScores(rows.map(r=>{
@@ -3391,8 +3446,9 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
   async function loadGeneralBoard(kind=generalKind){
     setGeneralLoading(true);
     try{
-      const usersRaw=await safeList("usuarios","?select=id,nombre,email,puntos,avatar,avatar_config,perfil_publico,modo_incognito,role&limit=500");
-      const users=(usersRaw||[]).filter(u=>{
+      const usersRaw=await safeList("usuarios","?select=id,nombre,email,puntos,avatar,perfil_publico,modo_incognito,role&limit=500");
+      const usersFull=await enrichProfilesWithAvatarConfigs(usersRaw||[]);
+      const users=(usersFull||[]).filter(u=>{
         const r=normalizeRole(u.role||u.rol);
         return r!==ROLES.ADMIN && r!==ROLES.STAFF;
       });
@@ -4553,73 +4609,42 @@ const HELP_TIPS = {
 };
 
 const RASTA_GENERAL_TIPS=[
-  "Chiste rápido: si la app se lía, no la peines a contrapelo; toca al rasta y vamos paso a paso.",
-  "Si hoy no toca premio, mañana se vuelve. Hasta las rastas buenas necesitan tiempo.",
-  "Rollo rural: menos correr, más hacer las cosas bien. Una app bonita también se cultiva.",
-  "Si esto fuera anime, ahora estaríamos en el arco de entrenamiento. Paciencia, mejora y siguiente nivel.",
-  "Regla de oro: que el usuario entienda lo justo en pantalla, y lo demás se lo cuenta el rasta cuando lo toque.",
-  "Una buena comunidad se cuida como un huerto: agua justa, paciencia y nada de malas hierbas.",
-  "Si vas a farmear puntos, hazlo con estilo. Aquí no se viene a romper la tienda, se viene a darle vida.",
-  "No corras más que las tijeras, mi pana. A veces el mejor movimiento es esperar medio segundo."
+  "Pulsa Activar ayuda y toca cualquier botón para saber qué hace sin ejecutar la acción.",
+  "Los puntos se ganan poco a poco: juegos, participación y actividad real en la app.",
+  "En Perfil puedes ajustar tu avatar, tu privacidad y cómo apareces en rankings.",
+  "La pantalla de Comunidad reúne tablón, foro y actualidad para no perderte entre pestañas.",
+  "En Arcade puedes repetir partidas para mejorar récord, aunque los puntos diarios tienen límite.",
+  "Top 10 enseña marcas por juego; Top general resume actividad global de clientes.",
+  "Si una sección no queda clara, abre el modo ayuda y toca justo esa zona.",
+  "La app está pensada para reservar, jugar, leer novedades y volver a la tienda con más ganas."
 ];
 
 const RASTA_RARE_CULTURE_TIPS=[
-  "Pure Negga tiene una voz celestial. Ponte un tema suyo de fondo y prueba otra partida con calma.",
-  "Morodo es de esos nombres que hay que tener ubicados si te gusta el reggae en España. Búscalo en YouTube cuando tengas un rato.",
-  "Fyahbwoy entra perfecto para jugar con energía sin perder el flow.",
-  "Rapsusklei tiene letras para escucharlas sin prisa, de esas que pegan con una tarde tranquila.",
-  "Hoy te vendría bien un tema reggae de fondo y una vuelta por Comunidad. Plan sencillo, pero funciona.",
-  "Esto también va de tripulación, como en One Piece: cada usuario que aporta algo bueno suma al barco.",
-  "El ticket dorado del Gacha es casi tesoro de isla final. No esperes encontrarlo en la primera tirada.",
-  "Una partida, un tema tranquilo y a seguir. A veces el buen ritmo arregla más que tocar veinte botones.",
-  "Todo usuario tiene su arco de entrenamiento antes de dominar el Gancho Ninja.",
-  "Si la tienda fuera una isla, los puntos serían el mapa. No los gastes sin mirar la ruta.",
-  "Un poco de reggae, una noticia curiosa y una partida corta. Esa mezcla sí tiene buen rollo.",
-  "Si vas a escuchar algo mientras juegas, mejor algo con flow que te deje pensar, no música que te acelere las tijeras.",
-  "Rapsusklei pega para esas tardes de pensar un poco y no correr tanto. Buena compañía para leer Actualidad.",
-  "Morodo tiene ese rollo de raíz que entra bien cuando quieres bajar revoluciones.",
-  "Pure Negga de fondo y a editar el avatar con calma. Hay combinaciones que piden paciencia.",
-  "Fyahbwoy para entrar al Arcade con energía, pero sin jugar como si te persiguiera la Guardia Civil.",
-  "Si esta comunidad fuera una tripulación, el foro sería la cubierta donde se habla antes de zarpar.",
-  "Un buen avatar es como una buena rasta: si lo fuerzas, se nota raro; si lo cuidas, queda con personalidad.",
-  "Plan de domingo: una vuelta por pueblos, comer bien y luego una partida rápida. No suena mal.",
-  "El Gacha es como buscar una seta buena: puede salir, pero no vayas al monte contando con llenar la cesta.",
-  "Si vas de ruta, guarda los sitios interesantes. Actualidad puede acabar dando planes mejores que un mapa doblado.",
-  "El foro sin respeto es como una barbería sin espejo: algo falla desde el principio.",
-  "Una buena promo no grita; se entiende rápido y deja ganas de volver.",
-  "Si esto fuese anime, el entrenamiento de hoy sería no gastar todos los puntos en la primera recompensa bonita.",
-  "El ticket dorado no se persigue con rabia. Se saluda si aparece y se sigue jugando si no.",
-  "Los peines ordenan el pelo; los buenos menús ordenan la app. Todo en su sitio y sin saturar.",
-  "Una app con comunidad necesita ritmo: novedades, juego, conversación y algún premio que pique.",
-  "Si escuchas reggae mientras pruebas la app, mejor. Hay bugs que se miran con otra paciencia.",
-  "Cuidar una comunidad es como cuidar un huerto: si riegas demasiado, se pudre; si no riegas nada, se seca.",
-  "One Piece no va solo de tesoros; va de nakamas. Aquí la idea es que la gente vuelva por la comunidad.",
-  "Una buena noticia local vale más que veinte titulares que no le importan a nadie.",
-  "Si un juego se siente injusto, no es difícil: está mal afinado. El reto tiene que enganchar, no castigar.",
-  "El mejor descuento es el que se entiende en tres segundos y se canjea sin preguntar diez veces.",
-  "A veces el plan bueno es simple: corte limpio, música tranquila y una app que no te maree.",
-  "No todo tiene que dar puntos. Algunas cosas tienen que dar ganas de quedarse.",
-  "La estética rural bien llevada no es poner paja en todo: es que se sienta cercano, útil y con oficio.",
-  "Una comunidad pequeña con buen ambiente gana a una grande llena de ruido.",
-  "Si el avatar te representa, vuelves más. Los juegos enganchan, pero la identidad engancha mucho más.",
-  "Los buenos rankings pican sin humillar. Competir sí, pero con flow.",
-  "Un tema de reggae, un café y revisar comentarios: plan de gestor de comunidad con paz mental.",
-  "Si Rasta Cuts fuera una isla, el Arcade sería la taberna, el Foro la plaza y el Perfil tu camarote.",
-  "Lo bonito de una app no es solo que funcione; es que parezca que alguien la cuida."
+  "Tip musical: la sección Música/Actualidad está pensada para reggae y rap clásico, no para ruido comercial.",
+  "Tip de comunidad: un buen comentario aporta algo, pregunta algo o abre conversación.",
+  "Tip de juegos: repetir una partida mejora el récord, pero no rompe la economía de puntos.",
+  "Tip de perfil: un avatar reconocible hace que rankings y comunidad se sientan más vivos.",
+  "Tip de tienda: los puntos tienen más sentido cuando hay premios, bonos y personalización.",
+  "Tip de reservas: si eliges varios tratamientos, la app calcula duración y precio aproximado.",
+  "Tip de noticias: abre debate cuando una noticia merezca conversación, no sólo lectura rápida.",
+  "Tip de privacidad: el modo incógnito oculta tu nombre público y muestra una silueta.",
+  "Tip de rankings: el semanal sirve para pique reciente; el histórico guarda las mejores marcas.",
+  "Tip de sonido: toca Sonido para activar música y doble toque para cambiar de tema."
 ];
 
 const RASTA_DAILY_FUN_TIPS=[
-  "Cine de hoy: si esto fuera una peli de aventuras, ahora toca ordenar el mapa antes de salir a buscar tesoros.",
-  "Chiste de barbería: el peine pidió vacaciones porque estaba hasta los pelos.",
-  "Modo anime: primero entrenas en el Arcade, luego desbloqueas estilo y al final subes al ranking.",
-  "Reggae suave, café y dos partidas. No arregla el mundo, pero ordena bastante la cabeza.",
-  "Consejo de tienda: si algo no se entiende en tres segundos, no es misterio pirata; hay que hacerlo más claro.",
-  "Dato random: una comunidad viva necesita menos ruido y más pequeñas acciones repetidas.",
-  "Cine clásico de barrio: buen cartel, buena luz y una frase corta. La app también entra por los ojos.",
-  "Chiste rápido: unas tijeras sin filo son como un botón sin función: mejor no presumir de ellas.",
-  "Hoy el Rasta recomienda mirar una pestaña nueva y tocar sin miedo. Lo peor que puede pasar es encontrar un bug.",
-  "Flow de domingo: una noticia, una partida y un perfil bien tuneado."
+  "Hoy puedes probar una partida, mirar una noticia y revisar si tu avatar sigue como quieres.",
+  "Una app clara se entiende en pocos toques: reserva, juega, participa y canjea.",
+  "Actualidad funciona mejor con titulares cortos, imagen clara y un resumen útil.",
+  "El Arcade tiene que picar sin regalar puntos infinitos: récord sí, abuso no.",
+  "Una buena pantalla de inicio debe enseñar rápido qué se puede hacer dentro.",
+  "Los clientes deberían reconocer su avatar igual en Perfil, Usuarios, Comunidad y rankings.",
+  "Si algo aparece raro en móvil, se corrige en diseño antes de seguir acumulando funciones.",
+  "Los mensajes del asistente deben ayudar, no molestar ni tapar botones importantes.",
+  "La tienda gana valor cuando los puntos sirven para cosas visibles y deseables.",
+  "El perfil público debe enseñar lo justo: avatar, nombre, puntos y actividad sin datos privados."
 ];
+
 
 function getDailyRastaTip(key){
   const pool=[...RASTA_RARE_CULTURE_TIPS,...RASTA_DAILY_FUN_TIPS].filter(Boolean);
@@ -4975,14 +5000,14 @@ function HelperMascot({page}){
               <button onClick={closeBubble} style={{border:"none",background:"transparent",color:T.textSub,fontWeight:900,cursor:"pointer",fontSize:"1rem",padding:0}}>×</button>
             </div>
             <div style={{fontSize:".66rem",fontWeight:900,color:helpMode?T.g700:T.orange,letterSpacing:".04em",textTransform:"uppercase",marginBottom:6}}>
-              {helpMode?"ayuda interactiva":rareTip?"rareza diaria":"comentarios del rasta · guía de página"}
+              {helpMode?"ayuda interactiva":rareTip?"tip diario":"guía rápida de la app"}
             </div>
             <div style={{fontSize:".84rem",fontWeight:800,color:T.text,lineHeight:1.45,minHeight:70}}>{shownTip}</div>
 
             {!helpMode&&(
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:12,gap:8}}>
                 <button onClick={(e)=>{e.stopPropagation();goTip(-1);}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"6px 10px",fontWeight:950,cursor:"pointer"}}>← Atrás</button>
-                <div style={{fontSize:".72rem",fontWeight:900,color:T.textSub,whiteSpace:"nowrap"}}>{rareTip?"especial":`${(tipIndex%Math.max(1,tips.length))+1}/${tips.length}`}</div>
+                <div style={{fontSize:".72rem",fontWeight:900,color:T.textSub,whiteSpace:"nowrap"}}>{rareTip?"tip":`${(tipIndex%Math.max(1,tips.length))+1}/${tips.length}`}</div>
                 <button onClick={(e)=>{e.stopPropagation();goTip(1);}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"6px 10px",fontWeight:950,cursor:"pointer"}}>Siguiente →</button>
               </div>
             )}
@@ -4991,7 +5016,7 @@ function HelperMascot({page}){
               <button onClick={toggleHelp} style={{border:"none",background:helpMode?"linear-gradient(180deg,#4F602D,#26331D)":"linear-gradient(180deg,#D4AF37,#A8662B)",color:helpMode?T.white:T.g900,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer",boxShadow:"0 6px 12px rgba(20,8,4,.16)"}}>
                 {helpMode?"✅ Ayuda ON":"🧭 Activar ayuda"}
               </button>
-              {!helpMode&&<button onClick={rareToday} style={{border:"none",background:"linear-gradient(180deg,#24110A,#6E3518)",color:T.white,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer",boxShadow:"0 6px 12px rgba(20,8,4,.16)"}}>🎧 Rareza</button>}
+              {!helpMode&&<button onClick={rareToday} style={{border:"none",background:"linear-gradient(180deg,#24110A,#6E3518)",color:T.white,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer",boxShadow:"0 6px 12px rgba(20,8,4,.16)"}}>💡 Tip diario</button>}
               {helpMode&&<button onClick={(e)=>{e.stopPropagation();setContextTip(rastaPageHelpIntro(page));}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer"}}>Esta página</button>}
             </div>
 
@@ -5153,22 +5178,22 @@ export default function App(){
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: cambiar tema (${REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta"})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
+          <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: cambiar tema (${REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta"})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
-          <div onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
+          <div className="header-action-pro" onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
             <Av av={currentUser.avatar} config={currentUser.avatarConfig} size={32}/>
           </div>
         </div>
       </div>
-      <div style={{padding:"18px 14px",position:"relative"}}>
-        <div style={{height:4,borderRadius:999,background:`linear-gradient(90deg,transparent,${theme.accent}99,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${theme.accent}33`,opacity:.78}}/>
+      <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
+        <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${theme.accent}99,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${theme.accent}33`,opacity:.78}}/>
         {pages[ap]||pages["dashboard"]}
         <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
       </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:theme.nav,borderTop:`2px solid ${theme.accent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>(
-          <button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38}}>
-            <div style={{fontSize:"1.1rem",background:ap===n.id?theme.header:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${theme.accent}44`:"none"}}>{n.icon}</div>
+          <button className="nav-tab-pro" key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38}}>
+            <div className="nav-icon-pro" style={{fontSize:"1.1rem",background:ap===n.id?theme.header:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${theme.accent}44`:"none"}}>{n.icon}</div>
             <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?"#F5E6C8":"#DEB887",transition:"color 0.2s"}}>{n.label}</span>
           </button>
         ))}
