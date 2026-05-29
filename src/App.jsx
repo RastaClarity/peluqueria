@@ -62,6 +62,13 @@ function normalizeRole(value){
   if(["staff","empleado","trabajador","worker"].includes(role)) return ROLES.STAFF;
   return ROLES.CLIENT;
 }
+function normalizeText(text=""){
+  return String(text||"")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .trim();
+}
 
 const BRAND = {
   name:"Rasta Cuts",
@@ -4437,7 +4444,7 @@ function MusicaComunidad({showToast}){
     {id:"rock",label:"Rock",icon:"🎸"}
   ];
   function matches(item){
-    const g=normalizeText(`${item.genre} ${item.artist} ${item.desc}`);
+    const g=normalizeText(`${item?.genre||""} ${item?.artist||""} ${item?.desc||""}`);
     if(filter==="todo")return true;
     if(filter==="reggae")return g.includes("reggae")||g.includes("dancehall");
     if(filter==="rap")return g.includes("rap");
@@ -4445,7 +4452,7 @@ function MusicaComunidad({showToast}){
     if(filter==="rock")return g.includes("rock")||g.includes("grunge");
     return true;
   }
-  const list=MUSIC_LIBRARY.filter(matches);
+  const list=(Array.isArray(MUSIC_LIBRARY)?MUSIC_LIBRARY:[]).filter(matches);
   function openLink(link){
     SFX.action();
     showToast?.(`Abriendo ${link.label}`);
@@ -4482,11 +4489,11 @@ function MusicaComunidad({showToast}){
                 <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.32rem",lineHeight:1,color:T.g800}}>{item.artist}</div>
                 <div style={{fontSize:".72rem",fontWeight:950,color:"#4E3A76",textTransform:"uppercase",letterSpacing:".05em",marginTop:2}}>{item.mood}</div>
               </div>
-              <Badge col="gold">{item.genre.split("/")[0].trim()}</Badge>
+              <Badge col="gold">{String(item.genre||"Música").split("/")[0].trim()}</Badge>
             </div>
             <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:8}}>{item.desc}</div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:11}}>
-              {item.links.map(link=><button key={link.label} onClick={()=>openLink(link)} style={{border:"none",borderRadius:999,padding:"8px 11px",background:link.label==="YouTube"?"linear-gradient(180deg,#A72822,#6E1B14)":"linear-gradient(180deg,#24110A,#6E3518)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 14px rgba(20,8,4,.18)"}}>
+              {(item.links||[]).map(link=><button key={link.label} onClick={()=>openLink(link)} style={{border:"none",borderRadius:999,padding:"8px 11px",background:link.label==="YouTube"?"linear-gradient(180deg,#A72822,#6E1B14)":"linear-gradient(180deg,#24110A,#6E3518)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 14px rgba(20,8,4,.18)"}}>
                 {link.label==="YouTube"?"▶️ ":"🔎 "}{link.label}
               </button>)}
             </div>
@@ -4623,7 +4630,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
 
 
 const NAV_CFG={
-  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"usuarios",icon:"👑",label:"Usuarios"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"perfil",icon:"👤",label:"Perfil"}],
   staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"perfil",icon:"👤",label:"Perfil"}],
   client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
@@ -5391,7 +5398,7 @@ export default function App(){
     dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<DashboardAdmin user={currentUser}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
-    noticias:<Noticias {...sp}/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
+    noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
     tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>,tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
