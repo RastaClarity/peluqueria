@@ -1653,19 +1653,61 @@ function Noticias({user,setUser,showToast,showPoints}){
 
 // CITAS
 const SERVICIOS=[
-  {id:"corte",label:"Corte",precio:15},{id:"color",label:"Coloracion",precio:45},
-  {id:"mechas",label:"Mechas",precio:60},{id:"lavado",label:"Lavado",precio:12},
-  {id:"tratamiento",label:"Tratamiento",precio:25},{id:"alisado",label:"Alisado",precio:55},
-  {id:"recogido",label:"Recogido",precio:30},
+  {id:"rastas_mantenimiento",icon:"🪮",label:"Mantenimiento de rastas",precio:35,duracion:90,grupo:"Rastas"},
+  {id:"rastas_ganchillo",icon:"🧶",label:"Rastas con ganchillo",precio:45,duracion:120,grupo:"Rastas"},
+  {id:"rastas_arreglo",icon:"🧑🏾‍🦱",label:"Arreglo de raíces",precio:30,duracion:75,grupo:"Rastas"},
+  {id:"corte",icon:"✂️",label:"Corte",precio:15,duracion:30,grupo:"Pelo"},
+  {id:"degradado",icon:"💈",label:"Degradado",precio:18,duracion:35,grupo:"Pelo"},
+  {id:"barba",icon:"🧔",label:"Barba",precio:12,duracion:20,grupo:"Barber"},
+  {id:"lavado",icon:"🫧",label:"Lavado",precio:12,duracion:20,grupo:"Extras"},
+  {id:"tratamiento",icon:"✨",label:"Tratamiento hidratante",precio:25,duracion:35,grupo:"Extras"},
+  {id:"color",icon:"🎨",label:"Coloración",precio:45,duracion:90,grupo:"Color"},
+  {id:"mechas",icon:"🌗",label:"Mechas",precio:60,duracion:120,grupo:"Color"},
+  {id:"alisado",icon:"🌊",label:"Alisado",precio:55,duracion:110,grupo:"Pelo"},
+  {id:"recogido",icon:"👑",label:"Recogido",precio:30,duracion:45,grupo:"Pelo"},
 ];
 const HORARIOS=["09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30"];
+function formatDuration(min=0){
+  const n=Number(min)||0;
+  const h=Math.floor(n/60),m=n%60;
+  if(!h)return `${m} min`;
+  return m?`${h}h ${m}min`:`${h}h`;
+}
+function selectedServices(ids=[]){
+  const list=Array.isArray(ids)?ids:String(ids||"").split(",").filter(Boolean);
+  return list.map(id=>SERVICIOS.find(s=>s.id===id)).filter(Boolean);
+}
+function citaServices(cita={}){
+  const ids=String(cita.servicio||"").split(",").filter(Boolean);
+  const fromIds=selectedServices(ids);
+  if(fromIds.length)return fromIds;
+  if(cita.servicio_label){
+    return String(cita.servicio_label).split(" + ").map((label,i)=>({id:`legacy-${i}`,label,precio:i===0?Number(cita.servicio_precio)||0:0,duracion:0,icon:"✂️"}));
+  }
+  return [];
+}
+function citaTotal(list=[]){return list.reduce((acc,s)=>acc+Number(s.precio||0),0);}
+function citaDuration(list=[]){return list.reduce((acc,s)=>acc+Number(s.duracion||0),0);}
+function endTime(start,duration){
+  if(!start||!duration)return "";
+  const [hh,mm]=String(start).split(":").map(Number);
+  if(!Number.isFinite(hh)||!Number.isFinite(mm))return "";
+  const total=hh*60+mm+duration;
+  const h=String(Math.floor(total/60)%24).padStart(2,"0");
+  const m=String(total%60).padStart(2,"0");
+  return `${h}:${m}`;
+}
+function serviceGroups(){
+  return [...new Set(SERVICIOS.map(s=>s.grupo))];
+}
 
 function Citas({user,showToast}){
   const [citas,setCitas]=useState([]);
   const [showNew,setShowNew]=useState(false);
   const [loading,setLoading]=useState(true);
-  const [form,setForm]=useState({servicio:"corte",fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});
+  const [form,setForm]=useState({servicios:["corte"],fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});
   const [ocupados,setOcupados]=useState([]);
+  const [view,setView]=useState("todas");
   const isAdmin=user?.rol!==ROLES.CLIENT;
   useEffect(()=>{loadCitas();},[]);
   async function loadCitas(){
@@ -1674,42 +1716,110 @@ function Citas({user,showToast}){
     setCitas(await dbGet("citas",q)||[]);setLoading(false);
   }
   async function checkHorarios(fecha){if(!fecha)return;const data=await dbGet("citas",`?fecha=eq.${fecha}&select=hora`);setOcupados((data||[]).map(c=>c.hora));}
-  async function saveCita(){
-    if(!form.fecha||!form.hora){showToast("Selecciona fecha y hora");return;}
-    const serv=SERVICIOS.find(s=>s.id===form.servicio);
-    await dbPost("citas",{...form,usuario_id:user.id,estado:"pendiente",servicio_precio:serv?.precio,servicio_label:serv?.label});
-    showToast("Cita reservada");SFX.success();setShowNew(false);setForm({servicio:"corte",fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});loadCitas();
+  function toggleService(id){
+    setForm(f=>{
+      const current=Array.isArray(f.servicios)?f.servicios:[];
+      const exists=current.includes(id);
+      const next=exists?current.filter(x=>x!==id):[...current,id];
+      return {...f,servicios:next.length?next:current};
+    });
   }
+  async function saveCita(){
+    if(!form.servicios?.length){showToast("Elige al menos un tratamiento");return;}
+    if(!form.fecha||!form.hora){showToast("Selecciona fecha y hora");return;}
+    const servicios=selectedServices(form.servicios);
+    const total=citaTotal(servicios);
+    const duracion=citaDuration(servicios);
+    const fin=endTime(form.hora,duracion);
+    const notasLimpias=String(form.notas||"").trim();
+    const resumenDuracion=`Duración estimada: ${formatDuration(duracion)}${fin?` · Hasta aprox. ${fin}`:""}`;
+    await dbPost("citas",{
+      servicio:servicios.map(s=>s.id).join(","),
+      servicio_label:servicios.map(s=>s.label).join(" + "),
+      servicio_precio:total,
+      fecha:form.fecha,
+      hora:form.hora,
+      notas:notasLimpias?`${resumenDuracion}\n${notasLimpias}`:resumenDuracion,
+      cliente_nombre:form.cliente_nombre||user?.nombre||user?.email||"Cliente",
+      usuario_id:user.id,
+      estado:"pendiente"
+    });
+    showToast("Cita enviada y pendiente de confirmar");SFX.success();setShowNew(false);setForm({servicios:["corte"],fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});loadCitas();
+  }
+  const currentServices=selectedServices(form.servicios);
+  const currentTotal=citaTotal(currentServices);
+  const currentDuration=citaDuration(currentServices);
+  const pending=citas.filter(c=>String(c.estado||"pendiente")==="pendiente");
+  const citasVisibles=view==="pendientes"?pending:citas;
   const eColor={pendiente:"gold",confirmada:"green",cancelada:"red",completada:"blue"};
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="📅" title="Citas" sub={isAdmin?"Gestion de citas":"Tus citas"} action={<Btn small onClick={()=>setShowNew(true)}>+ Nueva</Btn>}/>
-      {loading?<Spinner/>:citas.length===0?<EmptyState icon="📅" title="Sin citas" sub="Reserva la primera"/>
-        :citas.map(c=>(
-          <Card key={c.id} style={{marginBottom:10}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-              <div>
-                <div style={{fontWeight:800,fontSize:"0.92rem"}}>{c.servicio_label||c.servicio}</div>
-                <div style={{fontSize:"0.8rem",color:T.textSub}}>{c.cliente_nombre}</div>
-                <div style={{fontSize:"0.78rem",color:T.textSub,marginTop:2}}>{c.fecha} · {c.hora}</div>
+      <SectionHeader icon="📅" title="Citas" sub={isAdmin?"Gestión de citas":"Tus citas"} action={<Btn small onClick={()=>setShowNew(true)}>+ Nueva</Btn>}/>
+      {isAdmin&&<Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+          <div><div style={{fontWeight:950,color:T.g800}}>☕ Citas pendientes</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Las reservas de clientes llegan aquí como pendientes.</div></div>
+          <Badge col={pending.length?"gold":"green"}>{pending.length} pendientes</Badge>
+        </div>
+        <div style={{display:"flex",gap:8,marginTop:10}}>
+          <Btn small col={view==="todas"?"dark":"ghost"} onClick={()=>setView("todas")}>Todas</Btn>
+          <Btn small col={view==="pendientes"?"gold":"ghost"} onClick={()=>setView("pendientes")}>Pendientes</Btn>
+        </div>
+      </Card>}
+      {loading?<Spinner/>:citasVisibles.length===0?<EmptyState icon="📅" title="Sin citas" sub={view==="pendientes"?"No hay citas pendientes":"Reserva la primera"}/>
+        :citasVisibles.map(c=>{
+          const list=citaServices(c);
+          const dur=citaDuration(list);
+          const precio=Number(c.servicio_precio)||citaTotal(list);
+          return <Card key={c.id} style={{marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:7}}>
+                  {list.length?list.map(s=><span key={s.id} style={{background:"rgba(75,48,27,.1)",border:`1px solid ${T.g300}`,borderRadius:999,padding:"4px 9px",fontWeight:900,fontSize:".72rem",color:T.g800}}>{s.icon||"✂️"} {s.label}</span>):<b>{c.servicio_label||c.servicio}</b>}
+                </div>
+                <div style={{fontSize:"0.8rem",fontWeight:850,color:T.textSub}}>{c.cliente_nombre}</div>
+                <div style={{fontSize:"0.78rem",color:T.textSub,marginTop:2,fontWeight:800}}>{c.fecha} · {c.hora}{dur?` - ${endTime(c.hora,dur)}`:""}</div>
+                {c.notas&&<div style={{marginTop:8,fontSize:".76rem",lineHeight:1.35,color:T.textSub,whiteSpace:"pre-wrap",fontWeight:700}}>{String(c.notas).slice(0,180)}</div>}
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
-                <Badge col={eColor[c.estado]||"green"}>{c.estado}</Badge>
-                {c.servicio_precio&&<span style={{fontWeight:800,color:T.g600,fontSize:"0.88rem"}}>{c.servicio_precio}€</span>}
+                <Badge col={eColor[c.estado]||"green"}>{c.estado||"pendiente"}</Badge>
+                {!!precio&&<span style={{fontWeight:950,color:T.g600,fontSize:"0.92rem"}}>{precio}€</span>}
+                {!!dur&&<span style={{fontWeight:850,color:T.textSub,fontSize:"0.72rem"}}>⏱️ {formatDuration(dur)}</span>}
               </div>
             </div>
-            {c.estado==="pendiente"&&(
-              <div style={{marginTop:10,display:"flex",gap:8}}>
+            {String(c.estado||"pendiente")==="pendiente"&&(
+              <div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}>
                 {isAdmin&&<Btn small col="green" onClick={()=>{dbPatch("citas",`?id=eq.${c.id}`,{estado:"confirmada"});loadCitas();}}>Confirmar</Btn>}
                 <Btn small col="red" onClick={()=>{dbPatch("citas",`?id=eq.${c.id}`,{estado:"cancelada"});loadCitas();}}>Cancelar</Btn>
               </div>
             )}
-          </Card>
-        ))
+          </Card>;
+        })
       }
       <Modal show={showNew} onClose={()=>setShowNew(false)} title="Nueva cita">
-        {isAdmin&&<Input label="Nombre del cliente" value={form.cliente_nombre} onChange={v=>setForm(f=>({...f,cliente_nombre:v}))}/>}
-        <Select label="Servicio" value={form.servicio} onChange={v=>setForm(f=>({...f,servicio:v}))} options={SERVICIOS.map(s=>({value:s.id,label:`${s.label} - ${s.precio}€`}))}/>
+        {isAdmin&&<Input label="Nombre del cliente" value={form.cliente_nombre} onChange={v=>setForm(f=>({...f,cliente_nombre:v}))}/>} 
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:"0.82rem",fontWeight:950,color:T.g800,marginBottom:7}}>Tratamientos</div>
+          <div style={{fontSize:"0.76rem",fontWeight:750,color:T.textSub,marginBottom:10}}>Puedes elegir varios. La app suma el precio y el tiempo aproximado.</div>
+          {serviceGroups().map(grupo=><div key={grupo} style={{marginBottom:10}}>
+            <div style={{fontSize:".72rem",fontWeight:950,color:T.g600,textTransform:"uppercase",letterSpacing:".5px",marginBottom:6}}>{grupo}</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {SERVICIOS.filter(s=>s.grupo===grupo).map(s=>{
+                const active=form.servicios.includes(s.id);
+                return <button key={s.id} onClick={()=>toggleService(s.id)} style={{textAlign:"left",border:`2px solid ${active?T.g600:T.g300}`,background:active?"linear-gradient(180deg,#D8BE87,#C7A66B)":T.g50,borderRadius:16,padding:"10px",cursor:"pointer",boxShadow:active?"0 8px 18px rgba(18,8,4,.18)":"none"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:"1.25rem"}}>{s.icon}</span><b style={{fontSize:".78rem",color:T.text,lineHeight:1.1}}>{s.label}</b></div>
+                  <div style={{marginTop:6,fontSize:".72rem",fontWeight:850,color:T.textSub}}>{s.precio}€ · {formatDuration(s.duracion)}</div>
+                </button>;
+              })}
+            </div>
+          </div>)}
+        </div>
+        <Card style={{marginBottom:14,background:"linear-gradient(180deg,#D8BE87,#C7A66B)",padding:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center"}}>
+            <div><div style={{fontWeight:950,color:T.g800}}>Resumen</div><div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>{currentServices.length} tratamiento{currentServices.length===1?"":"s"} seleccionado{currentServices.length===1?"":"s"}</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontWeight:950,fontSize:"1.15rem",color:T.g800}}>{currentTotal}€</div><div style={{fontSize:".76rem",fontWeight:900,color:T.textSub}}>⏱️ {formatDuration(currentDuration)}</div></div>
+          </div>
+          {form.hora&&currentDuration>0&&<div style={{marginTop:8,fontSize:".76rem",fontWeight:850,color:T.textSub}}>Si empieza a las {form.hora}, terminaría aprox. a las {endTime(form.hora,currentDuration)}.</div>}
+        </Card>
         <Input label="Fecha" value={form.fecha} onChange={v=>{setForm(f=>({...f,fecha:v,hora:""}));checkHorarios(v);}} type="date"/>
         {form.fecha&&(
           <div style={{marginBottom:14}}>
@@ -1722,8 +1832,8 @@ function Citas({user,showToast}){
             </div>
           </div>
         )}
-        <Input label="Notas" value={form.notas} onChange={v=>setForm(f=>({...f,notas:v}))} placeholder="Indicaciones especiales..."/>
-        <Btn full onClick={saveCita}>Reservar cita</Btn>
+        <Input label="Notas" value={form.notas} onChange={v=>setForm(f=>({...f,notas:v}))} placeholder="Ej: quiero revisar raíces, pelo sensible, voy con prisa..."/>
+        <Btn full onClick={saveCita}>Enviar cita pendiente</Btn>
       </Modal>
     </div>
   );
