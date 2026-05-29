@@ -81,46 +81,60 @@ const NOTE_FREQ={
 };
 const REGGAE_LOFI_TRACKS=[
   {
-    name:"Ruta Pallet Town Dub",bpm:82,key:"Am",accent:"pan",
-    bass:["A2","A2","E2","G2","F2","F2","G2","E2"],
+    name:"Brisa Dub de Pueblo",bpm:74,key:"Am",accent:"pan",
+    bass:["A2",null,"A2","C3","E2",null,"G2","E2","F2",null,"F2","A2","G2",null,"E2","G2"],
     chords:[["A3","C4","E4"],["G3","B3","D4"],["F3","A3","C4"],["E3","G3","B3"]],
-    melody:["E5","G5","A5","C6","B5","A5","G5","E5","D5","E5","G5","A5",null,"C6","B5","G5","E5","G5","A5","E6","D6","C6","A5","G5","E5",null,"D5","C5","D5","E5","G5",null],
-    counter:["C5",null,"E5",null,"D5",null,"C5",null,"A4",null,"C5",null,"B4",null,"G4",null]
+    melody:["E5",null,"G5","A5","C6",null,"B5","A5","G5",null,"E5","D5","E5",null,"G5",null,"A5",null,"C6","E6","D6",null,"C6","A5","G5",null,"A5","G5","E5",null,"D5",null,"C5",null,"E5","G5","A5",null,"G5","E5","D5",null,"E5","G5",null,"A5","C6",null,"B5",null,"A5","G5","E5",null,"D5","C5","D5",null,"E5",null,"A4",null,"C5",null],
+    counter:["A4",null,"C5",null,"E5",null,"C5",null,"G4",null,"B4",null,"D5",null,"B4",null,"F4",null,"A4",null,"C5",null,"A4",null,"E4",null,"G4",null,"B4",null,"G4",null]
   },
   {
-    name:"Centro Pokémon Lofi",bpm:78,key:"Gm",accent:"piano",
-    bass:["G2","G2","D2","F2","Eb2","Eb2","F2","D2"],
+    name:"Centro Rasta Lofi",bpm:76,key:"Gm",accent:"piano",
+    bass:["G2",null,"G2","Bb2","D2",null,"F2","D2","Eb2",null,"Eb2","G2","F2",null,"D2","F2"],
     chords:[["G3","Bb3","D4"],["F3","A3","C4"],["Eb3","G3","Bb3"],["D3","F3","A3"]],
-    melody:["D5","F5","G5","Bb5","A5","G5","F5","D5","C5","D5","F5","G5",null,"Bb5","A5","F5","D5","F5","G5","D6","C6","Bb5","G5","F5","D5",null,"C5","Bb4","C5","D5","F5",null],
-    counter:["Bb4",null,"D5",null,"C5",null,"Bb4",null,"G4",null,"Bb4",null,"A4",null,"F4",null]
+    melody:["D5",null,"F5","G5","Bb5",null,"A5","G5","F5",null,"D5","C5","D5",null,"F5",null,"G5",null,"Bb5","D6","C6",null,"Bb5","G5","F5",null,"G5","F5","D5",null,"C5",null,"Bb4",null,"D5","F5","G5",null,"F5","D5","C5",null,"D5","F5",null,"G5","Bb5",null,"A5",null,"G5","F5","D5",null,"C5","Bb4","C5",null,"D5",null,"G4",null,"Bb4",null],
+    counter:["G4",null,"Bb4",null,"D5",null,"Bb4",null,"F4",null,"A4",null,"C5",null,"A4",null,"Eb4",null,"G4",null,"Bb4",null,"G4",null,"D4",null,"F4",null,"A4",null,"F4",null]
   },
   {
-    name:"Isla Dread Adventure",bpm:84,key:"Dm",accent:"pan",
-    bass:["D2","D2","A2","C3","Bb2","Bb2","C3","A2"],
+    name:"Costa Skank Adventure",bpm:78,key:"Dm",accent:"pan",
+    bass:["D2",null,"D2","F2","A2",null,"C3","A2","Bb2",null,"Bb2","D3","C3",null,"A2","C3"],
     chords:[["D3","F3","A3"],["C3","E3","G3"],["Bb2","D3","F3"],["A2","C3","E3"]],
-    melody:["F5","A5","D6","C6","A5","G5","F5","E5","D5","F5","A5","C6",null,"D6","C6","A5","F5","A5","C6","F6","E6","D6","C6","A5","G5","F5","E5","D5","E5","F5","A5",null],
-    counter:["A4",null,"D5",null,"C5",null,"A4",null,"F4",null,"A4",null,"G4",null,"E4",null]
+    melody:["F5",null,"A5","D6","C6",null,"A5","G5","F5",null,"E5","D5","F5",null,"A5",null,"C6",null,"D6","F6","E6",null,"D6","C6","A5",null,"C6","A5","G5",null,"F5",null,"E5",null,"F5","A5","C6",null,"A5","F5","E5",null,"F5","A5",null,"C6","D6",null,"C6",null,"A5","G5","F5",null,"E5","D5","E5",null,"F5",null,"A4",null,"D5",null],
+    counter:["D5",null,"F5",null,"A5",null,"F5",null,"C5",null,"E5",null,"G5",null,"E5",null,"Bb4",null,"D5",null,"F5",null,"D5",null,"A4",null,"C5",null,"E5",null,"C5",null]
   },
   {
-    name:"Bosque Verde Skank",bpm:86,key:"Em",accent:"violin",
-    bass:["E2","E2","B2","D3","C3","C3","D3","B2"],
+    name:"Bosque Verde Dub",bpm:80,key:"Em",accent:"violin",
+    bass:["E2",null,"E2","G2","B2",null,"D3","B2","C3",null,"C3","E3","D3",null,"B2","D3"],
     chords:[["E3","G3","B3"],["D3","Fs3","A3"],["C3","E3","G3"],["B2","D3","Fs3"]],
-    melody:["B4","D5","E5","G5","Fs5","E5","D5","B4","A4","B4","D5","E5",null,"G5","Fs5","D5","B4","D5","E5","B5","A5","G5","E5","D5","B4",null,"A4","G4","A4","B4","D5",null],
-    counter:["G4",null,"B4",null,"A4",null,"G4",null,"E4",null,"G4",null,"Fs4",null,"D4",null]
+    melody:["B4",null,"D5","E5","G5",null,"Fs5","E5","D5",null,"B4","A4","B4",null,"D5",null,"E5",null,"G5","B5","A5",null,"G5","E5","D5",null,"E5","D5","B4",null,"A4",null,"G4",null,"B4","D5","E5",null,"D5","B4","A4",null,"B4","D5",null,"E5","G5",null,"Fs5",null,"E5","D5","B4",null,"A4","G4","A4",null,"B4",null,"E4",null,"G4",null],
+    counter:["E4",null,"G4",null,"B4",null,"G4",null,"D4",null,"Fs4",null,"A4",null,"Fs4",null,"C4",null,"E4",null,"G4",null,"E4",null,"B3",null,"D4",null,"Fs4",null,"D4",null]
   },
   {
-    name:"Barber Dub Quest",bpm:80,key:"Cm",accent:"piano",
-    bass:["C2","C2","G2","Bb2","Ab2","Ab2","Bb2","G2"],
+    name:"Barber Dub Quest",bpm:73,key:"Cm",accent:"piano",
+    bass:["C2",null,"C2","Eb2","G2",null,"Bb2","G2","Ab2",null,"Ab2","C3","Bb2",null,"G2","Bb2"],
     chords:[["C3","Eb3","G3"],["Bb2","D3","F3"],["Ab2","C3","Eb3"],["G2","Bb2","D3"]],
-    melody:["G4","Bb4","C5","Eb5","D5","C5","Bb4","G4","F4","G4","Bb4","C5",null,"Eb5","D5","Bb4","G4","Bb4","C5","G5","F5","Eb5","C5","Bb4","G4",null,"F4","Eb4","F4","G4","Bb4",null],
-    counter:["Eb4",null,"G4",null,"F4",null,"Eb4",null,"C4",null,"Eb4",null,"D4",null,"Bb3",null]
+    melody:["G4",null,"Bb4","C5","Eb5",null,"D5","C5","Bb4",null,"G4","F4","G4",null,"Bb4",null,"C5",null,"Eb5","G5","F5",null,"Eb5","C5","Bb4",null,"C5","Bb4","G4",null,"F4",null,"Eb4",null,"G4","Bb4","C5",null,"Bb4","G4","F4",null,"G4","Bb4",null,"C5","Eb5",null,"D5",null,"C5","Bb4","G4",null,"F4","Eb4","F4",null,"G4",null,"C4",null,"Eb4",null],
+    counter:["C4",null,"Eb4",null,"G4",null,"Eb4",null,"Bb3",null,"D4",null,"F4",null,"D4",null,"Ab3",null,"C4",null,"Eb4",null,"C4",null,"G3",null,"Bb3",null,"D4",null,"Bb3",null]
   },
   {
-    name:"Sol de Kingston RPG",bpm:83,key:"F",accent:"pan",
-    bass:["F2","F2","C2","Eb2","Bb2","Bb2","C3","E2"],
+    name:"Sol de Kingston RPG",bpm:77,key:"F",accent:"pan",
+    bass:["F2",null,"F2","A2","C2",null,"Eb2","C2","Bb2",null,"Bb2","D3","C3",null,"E2","G2"],
     chords:[["F3","A3","C4"],["Eb3","G3","Bb3"],["Bb2","D3","F3"],["C3","E3","G3"]],
-    melody:["A4","C5","D5","F5","E5","D5","C5","A4","G4","A4","C5","D5",null,"F5","E5","C5","A4","C5","D5","A5","G5","F5","D5","C5","A4",null,"G4","F4","G4","A4","C5",null],
-    counter:["F4",null,"A4",null,"G4",null,"F4",null,"D4",null,"F4",null,"E4",null,"C4",null]
+    melody:["A4",null,"C5","D5","F5",null,"E5","D5","C5",null,"A4","G4","A4",null,"C5",null,"D5",null,"F5","A5","G5",null,"F5","D5","C5",null,"D5","C5","A4",null,"G4",null,"F4",null,"A4","C5","D5",null,"C5","A4","G4",null,"A4","C5",null,"D5","F5",null,"E5",null,"D5","C5","A4",null,"G4","F4","G4",null,"A4",null,"F4",null,"C5",null],
+    counter:["F4",null,"A4",null,"C5",null,"A4",null,"Eb4",null,"G4",null,"Bb4",null,"G4",null,"Bb3",null,"D4",null,"F4",null,"D4",null,"C4",null,"E4",null,"G4",null,"E4",null]
+  },
+  {
+    name:"Marea Azul Chill",bpm:75,key:"Bb",accent:"violin",
+    bass:["Bb2",null,"Bb2","D3","F2",null,"Ab2","F2","G2",null,"G2","Bb2","F2",null,"A2","C3"],
+    chords:[["Bb3","D4","F4"],["Ab3","C4","Eb4"],["G3","Bb3","D4"],["F3","A3","C4"]],
+    melody:["F4",null,"Bb4","C5","D5",null,"F5","D5","C5",null,"Bb4","A4","Bb4",null,"D5",null,"F5",null,"G5","F5","Eb5",null,"D5","C5","Bb4",null,"C5","D5","F5",null,"D5",null,"C5",null,"Bb4","C5","D5",null,"F5","D5","C5",null,"Bb4","D5",null,"F5","G5",null,"F5",null,"D5","C5","Bb4",null,"A4","Bb4","C5",null,"D5",null,"F4",null,"Bb4",null],
+    counter:["Bb3",null,"D4",null,"F4",null,"D4",null,"Ab3",null,"C4",null,"Eb4",null,"C4",null,"G3",null,"Bb3",null,"D4",null,"Bb3",null,"F3",null,"A3",null,"C4",null,"A3",null]
+  },
+  {
+    name:"Atardecer de Rastas",bpm:72,key:"Ab",accent:"pan",
+    bass:["Ab2",null,"Ab2","C3","Eb2",null,"Gb2","Eb2","Db2",null,"Db2","F2","Eb2",null,"G2","Bb2"],
+    chords:[["Ab3","C4","Eb4"],["Gb3","Bb3","Db4"],["Db3","F3","Ab3"],["Eb3","G3","Bb3"]],
+    melody:["Eb5",null,"Ab5","Bb5","C6",null,"Eb6","C6","Bb5",null,"Ab5","G5","Ab5",null,"C6",null,"Eb6",null,"F6","Eb6","Db6",null,"C6","Bb5","Ab5",null,"Bb5","C6","Eb6",null,"C6",null,"Bb5",null,"Ab5","Bb5","C6",null,"Eb6","C6","Bb5",null,"Ab5","C6",null,"Eb6","F6",null,"Eb6",null,"C6","Bb5","Ab5",null,"G5","Ab5","Bb5",null,"C6",null,"Eb5",null,"Ab5",null],
+    counter:["Ab4",null,"C5",null,"Eb5",null,"C5",null,"Gb4",null,"Bb4",null,"Db5",null,"Bb4",null,"Db4",null,"F4",null,"Ab4",null,"F4",null,"Eb4",null,"G4",null,"Bb4",null,"G4",null]
   }
 ];
 function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
@@ -136,6 +150,40 @@ function playTone(freq,type="sine",dur=0.12,vol=0.15,delay=0){
     g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
     osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+dur+0.06);
   }catch(e){}
+}
+function playNoise(dur=0.05,vol=0.02,delay=0,type="highpass",freq=1800){
+  if(globalMuted)return;
+  try{
+    const ctx=getCtx();
+    const buffer=ctx.createBuffer(1,Math.max(1,Math.floor(ctx.sampleRate*dur)),ctx.sampleRate);
+    const data=buffer.getChannelData(0);
+    for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*(1-i/data.length);
+    const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),g=ctx.createGain();
+    src.buffer=buffer;filter.type=type;filter.frequency.value=freq;
+    src.connect(filter);filter.connect(g);g.connect(ctx.destination);
+    g.gain.setValueAtTime(0,ctx.currentTime+delay);
+    g.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.008);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
+    src.start(ctx.currentTime+delay);src.stop(ctx.currentTime+delay+dur+0.02);
+  }catch(e){}
+}
+function playLofiPerc(kind="hat",delay=0){
+  if(kind==="kick"){
+    playTone("C2","sine",.15,.055,delay);
+    playTone("G2","triangle",.06,.020,delay+.025);
+    return;
+  }
+  if(kind==="rim"){
+    playTone("C5","square",.025,.018,delay);
+    playNoise(.035,.014,delay,"bandpass",1700);
+    return;
+  }
+  if(kind==="snare"){
+    playNoise(.075,.022,delay,"bandpass",1250);
+    playTone("D3","triangle",.04,.010,delay);
+    return;
+  }
+  playNoise(.028,.010,delay,"highpass",4200);
 }
 function playInstrument(note,kind="piano",dur=0.35,vol=0.04,delay=0){
   if(!note||globalMuted)return;
@@ -180,45 +228,65 @@ function tickLofiTrack(){
   try{
     const ctx=getCtx();if(ctx.state==="suspended")ctx.resume();
     const tr=REGGAE_LOFI_TRACKS[currentMusicTrack%REGGAE_LOFI_TRACKS.length];
-    const step=musicStep%256;
-    const beat=step%8;
-    const bar=Math.floor(step/8);
+    const step=musicStep%384;
+    const beat=step%16;
+    const bar=Math.floor(step/16);
     const chord=tr.chords[bar%tr.chords.length];
-    const melodyIndex=step%tr.melody.length;
-    const melodyNote=tr.melody[melodyIndex];
+    const bassNote=tr.bass[step%tr.bass.length];
+    const melodyNote=tr.melody[step%tr.melody.length];
     const counterNote=tr.counter[step%tr.counter.length];
+    const leadKind=tr.accent==="violin"?"violin":tr.accent==="piano"?"piano":"pan";
 
-    // Bajo reggae: firme, pero suave.
-    if(beat===0||beat===4) playInstrument(tr.bass[bar%tr.bass.length],"bass",.50,.060,0);
+    // Groove base: dub/lofi reggae, más cerca de una radio chill que de un pitido corto.
+    if([0,8].includes(beat)) playLofiPerc("kick",0);
+    if([4,12].includes(beat)) playLofiPerc(beat===12?"snare":"rim",0.01);
+    if([2,6,10,14].includes(beat)) playLofiPerc("hat",0.02);
 
-    // Acorde a contratiempo, rollo reggae/lofi.
-    if(beat===2||beat===6) playChord(chord,"piano",.20,.032,0.015);
-    if(beat===3||beat===7) playTone(110,"triangle",.040,.020,0.01);
+    // Bajo con caminata suave, menos repetitivo.
+    if(bassNote && [0,3,8,11,14].includes(beat)){
+      playInstrument(bassNote,"bass",.42,beat===0?.056:.040,0);
+    }
 
-    // Melodía principal: más notas, tipo aventura RPG/ Pokémon antiguo, pero sin ser estridente.
+    // Skank reggae: acordes cortos al contratiempo, con un eco de piano.
+    if([5,13].includes(beat)){
+      playChord(chord,"piano",.16,.028,0.01);
+      playChord(chord,"piano",.12,.012,0.19);
+    }
+    if([7,15].includes(beat)) playChord(chord,"piano",.10,.012,0.02);
+
+    // Melodía principal con más notas tipo aventura clásica, pero suave y lofi.
     if(melodyNote){
-      playInstrument(melodyNote,tr.accent==="violin"?"violin":tr.accent==="piano"?"piano":"pan",.38,.043,0.02);
-      const nextNote=tr.melody[(melodyIndex+1)%tr.melody.length];
-      if(nextNote && step%4===1) playInstrument(nextNote,tr.accent==="violin"?"violin":"pan",.24,.026,0.24);
+      const strong=[1,5,9,13].includes(beat);
+      playInstrument(melodyNote,leadKind,strong?.34:.25,strong?.038:.026,0.025);
+      const nextNote=tr.melody[(step+1)%tr.melody.length];
+      if(nextNote && [3,11].includes(beat)) playInstrument(nextNote,leadKind,.20,.018,0.20);
     }
 
-    // Respuesta suave de piano para que no se quede en bucle plano.
-    if(counterNote && (beat===1||beat===5)) playInstrument(counterNote,"piano",.28,.024,0.08);
+    // Respuestas de piano/flauta para que parezca tema largo, no bucle de 4 notas.
+    if(counterNote && [6,10,14].includes(beat)) playInstrument(counterNote,"piano",.22,.018,0.08);
 
-    // Mini arpegio de transición cada dos compases.
-    if(step%16===14){
-      chord.forEach((n,i)=>playInstrument(n,"piano",.16,.018,0.05+i*.085));
+    // Pad/violín muy discreto cada 2 compases.
+    if(step%32===0){
+      chord.forEach((n,i)=>playInstrument(n,"violin",.95,.010,0.05+i*.035));
     }
+
+    // Pequeños arpegios de transición, rollo juego antiguo.
+    if(step%32===30){
+      [...chord].reverse().forEach((n,i)=>playInstrument(n,"pan",.12,.014,0.04+i*.06));
+    }
+
+    // Polvo lofi casi imperceptible.
+    if(step%48===16) playNoise(.09,.006,0,"highpass",2600);
 
     musicStep++;
-    // 256 pasos x 0.5s = 128s por tema aprox.
-    if(musicStep>=256){musicStep=0;currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;}
+    // 384 pasos x 0.43s = 2m45s aprox por tema.
+    if(musicStep>=384){musicStep=0;currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;}
   }catch(e){}
 }
 function startMusic(){
   if(musicPlaying)return;
   musicPlaying=true;
-  if(!musicInterval){musicStep=0;musicInterval=setInterval(tickLofiTrack,500);}
+  if(!musicInterval){musicStep=0;musicInterval=setInterval(tickLofiTrack,430);}
   tickLofiTrack();
 }
 function stopMusic(){musicPlaying=false;if(musicInterval){clearInterval(musicInterval);musicInterval=null;}}
