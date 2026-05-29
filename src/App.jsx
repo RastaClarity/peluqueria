@@ -170,16 +170,28 @@ const REGGAE_LOFI_TRACKS=[
 ];
 function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
 function resolveFreq(value){return typeof value==="number"?value:(NOTE_FREQ[value]||PENTA[0]);}
+function softWave(type="sine"){
+  // Evitamos ondas duras que en móviles pueden sonar a altavoz roto.
+  if(type==="square"||type==="sawtooth") return "triangle";
+  return type||"sine";
+}
 function playTone(freq,type="sine",dur=0.12,vol=0.15,delay=0){
   if(globalMuted)return;
   try{
-    const ctx=getCtx(),osc=ctx.createOscillator(),g=ctx.createGain();
-    osc.connect(g);g.connect(ctx.destination);osc.type=type;
-    osc.frequency.setValueAtTime(resolveFreq(freq),ctx.currentTime+delay);
-    g.gain.setValueAtTime(0,ctx.currentTime+delay);
-    g.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.018);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
-    osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+dur+0.06);
+    const ctx=getCtx(),osc=ctx.createOscillator(),filter=ctx.createBiquadFilter(),g=ctx.createGain();
+    osc.connect(filter);filter.connect(g);g.connect(ctx.destination);
+    osc.type=softWave(type);
+    filter.type="lowpass";
+    filter.frequency.setValueAtTime(type==="bass"?520:1650,ctx.currentTime+delay);
+    filter.Q.setValueAtTime(0.55,ctx.currentTime+delay);
+    const start=ctx.currentTime+delay;
+    const cleanVol=Math.min(vol*.55,0.045);
+    osc.frequency.setValueAtTime(resolveFreq(freq),start);
+    g.gain.setValueAtTime(0,start);
+    g.gain.linearRampToValueAtTime(cleanVol,start+0.045);
+    g.gain.setValueAtTime(cleanVol*.72,start+Math.max(0.06,dur*.55));
+    g.gain.exponentialRampToValueAtTime(0.001,start+dur+0.18);
+    osc.start(start);osc.stop(start+dur+0.24);
   }catch(e){}
 }
 function playNoise(dur=0.05,vol=0.02,delay=0,type="highpass",freq=1800){
@@ -188,61 +200,60 @@ function playNoise(dur=0.05,vol=0.02,delay=0,type="highpass",freq=1800){
     const ctx=getCtx();
     const buffer=ctx.createBuffer(1,Math.max(1,Math.floor(ctx.sampleRate*dur)),ctx.sampleRate);
     const data=buffer.getChannelData(0);
-    for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*(1-i/data.length);
+    for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*(1-i/data.length)*0.35;
     const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),g=ctx.createGain();
-    src.buffer=buffer;filter.type=type;filter.frequency.value=freq;
+    src.buffer=buffer;filter.type="lowpass";filter.frequency.value=Math.min(freq,1400);filter.Q.value=.42;
     src.connect(filter);filter.connect(g);g.connect(ctx.destination);
     g.gain.setValueAtTime(0,ctx.currentTime+delay);
-    g.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.008);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
-    src.start(ctx.currentTime+delay);src.stop(ctx.currentTime+delay+dur+0.02);
+    g.gain.linearRampToValueAtTime(Math.min(vol*.35,.006),ctx.currentTime+delay+0.02);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur+0.08);
+    src.start(ctx.currentTime+delay);src.stop(ctx.currentTime+delay+dur+0.12);
   }catch(e){}
 }
 function playLofiPerc(kind="hat",delay=0){
+  // Percusión muy suave: más brush/jazz que golpe seco.
   if(kind==="kick"){
-    playTone("C2","sine",.15,.055,delay);
-    playTone("G2","triangle",.06,.020,delay+.025);
+    playTone("C2","sine",.22,.030,delay);
     return;
   }
   if(kind==="rim"){
-    playTone("C5","square",.025,.018,delay);
-    playNoise(.035,.014,delay,"bandpass",1700);
+    playTone("G4","triangle",.045,.010,delay);
     return;
   }
   if(kind==="snare"){
-    playNoise(.075,.022,delay,"bandpass",1250);
-    playTone("D3","triangle",.04,.010,delay);
+    playNoise(.09,.010,delay,"lowpass",1050);
+    playTone("D3","sine",.055,.006,delay+.01);
     return;
   }
-  playNoise(.028,.010,delay,"highpass",4200);
+  playNoise(.045,.006,delay,"lowpass",1250);
 }
 function playInstrument(note,kind="piano",dur=0.35,vol=0.04,delay=0){
   if(!note||globalMuted)return;
   const f=resolveFreq(note);
   if(kind==="bass"){
-    playTone(f,"triangle",dur,vol,delay);
-    playTone(f/2,"sine",dur*1.2,vol*.45,delay);
+    playTone(f,"sine",dur*.95,vol*.58,delay);
+    playTone(f/2,"sine",dur*1.25,vol*.20,delay+.01);
     return;
   }
   if(kind==="piano"){
-    playTone(f,"triangle",dur,vol,delay);
-    playTone(f*2,"sine",dur*.65,vol*.18,delay+.01);
+    playTone(f,"triangle",dur*1.05,vol*.62,delay);
+    playTone(f*2,"sine",dur*.75,vol*.08,delay+.025);
     return;
   }
   if(kind==="pan"){
-    playTone(f,"sine",dur*.92,vol,delay);
-    playTone(f*1.005,"triangle",dur*.85,vol*.28,delay+.015);
+    playTone(f,"sine",dur*1.15,vol*.50,delay);
+    playTone(f*1.003,"sine",dur*1.05,vol*.12,delay+.02);
     return;
   }
   if(kind==="violin"){
-    playTone(f,"sawtooth",dur,vol*.33,delay);
-    playTone(f,"triangle",dur*1.05,vol*.75,delay+.025);
+    playTone(f,"triangle",dur*1.2,vol*.38,delay);
+    playTone(f*1.002,"sine",dur*1.15,vol*.12,delay+.04);
     return;
   }
-  playTone(f,"sine",dur,vol,delay);
+  playTone(f,"sine",dur,vol*.5,delay);
 }
 function playChord(notes,kind="piano",dur=0.22,vol=0.026,delay=0){
-  notes.forEach((n,i)=>playInstrument(n,kind,dur,vol,delay+i*.018));
+  notes.forEach((n,i)=>playInstrument(n,kind,dur*1.18,vol*.60,delay+i*.032));
 }
 const SFX={
   nav:()=>{playTone(430,"sine",0.08,0.075);playTone(560,"sine",0.09,0.055,0.055);},
@@ -280,42 +291,42 @@ function tickLofiTrack(){
     const g=tr.groove||{};
     const swing=(beat%2===1)?0.035:0;
 
-    // Cada tema tiene su propio patrón: one drop, ska, dub lento, old school o RPG.
+    // Patrones suaves: reggae/jazz lofi sin golpes agresivos.
     if(beatHit(g.kick,beat)) playLofiPerc("kick",swing*.35);
     if(beatHit(g.snare,beat)) playLofiPerc(beat===12?"snare":"rim",0.01+swing*.25);
     if(beatHit(g.rim,beat)) playLofiPerc("rim",0.02+swing);
     if(beatHit(g.hat,beat)) playLofiPerc("hat",0.02+swing);
 
     if(bassNote && beatHit(g.bass,beat)){
-      playInstrument(bassNote,"bass",.44,beat===0?.058:.041,swing*.6);
+      playInstrument(bassNote,"bass",.56,beat===0?.036:.026,swing*.6);
     }
 
     if(beatHit(g.skank,beat)){
-      playChord(chord,"piano",.15,.027,0.01+swing);
-      if((bar+beat)%3!==0) playChord(chord,"piano",.11,.010,0.20+swing);
+      playChord(chord,"piano",.28,.016,0.02+swing);
+      if((bar+beat)%4===0) playChord(chord,"piano",.18,.006,0.24+swing);
     }
-    if(beatHit(g.ghost,beat)) playChord(chord,"piano",.09,.011,0.02+swing);
+    if(beatHit(g.ghost,beat) && bar%2===0) playChord(chord,"piano",.14,.005,0.04+swing);
 
     if(melodyNote && beatHit(g.melody,beat)){
       const strong=[0,1,4,8,12,13].includes(beat);
-      playInstrument(melodyNote,leadKind,strong?.36:.25,strong?.039:.026,0.025+swing);
+      playInstrument(melodyNote,leadKind,strong?.48:.34,strong?.023:.016,0.045+swing);
       const nextNote=tr.melody[(step+1)%tr.melody.length];
-      if(nextNote && (beat===3||beat===11||beat===14)) playInstrument(nextNote,leadKind,.19,.016,0.22+swing);
+      if(nextNote && (beat===3||beat===11) && bar%2===0) playInstrument(nextNote,leadKind,.28,.009,0.24+swing);
     }
 
-    if(counterNote && beatHit(g.counter,beat)) playInstrument(counterNote,"piano",.22,.018,0.08+swing);
+    if(counterNote && beatHit(g.counter,beat)) playInstrument(counterNote,"piano",.34,.009,0.10+swing);
 
     if(g.padEvery && step%g.padEvery===0){
-      chord.forEach((n,i)=>playInstrument(n,"violin",1.05,.009,0.05+i*.04));
+      chord.forEach((n,i)=>playInstrument(n,"violin",1.45,.005,0.08+i*.055));
     }
 
     if(Number.isFinite(g.arp) && step%64===g.arp){
-      [...chord].reverse().forEach((n,i)=>playInstrument(n,"pan",.12,.014,0.04+i*.06));
+      [...chord].reverse().forEach((n,i)=>playInstrument(n,"pan",.22,.007,0.06+i*.08));
     }
 
     // Pequeños detalles dub/lofi muy suaves para que el bucle de 5 minutos respire.
-    if(step%96===16) playNoise(.09,.006,0,"highpass",2600);
-    if(step%128===64) playChord(chord,"piano",.18,.009,0.30);
+    if(step%128===16) playNoise(.08,.003,0,"lowpass",900);
+    if(step%128===64) playChord(chord,"piano",.32,.0045,0.34);
 
     musicStep++;
     // Cada tema dura alrededor de 5 minutos o más, según su tickMs y length.
@@ -430,6 +441,11 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 @keyframes pageGlowSweep{0%{transform:translateX(-120%) skewX(-18deg);opacity:0}35%{opacity:.38}100%{transform:translateX(140%) skewX(-18deg);opacity:0}}
 @keyframes navBouncePro{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.08)}}
 @keyframes rastaSpeechIn{0%{opacity:0;transform:translateY(10px) scale(.92)}100%{opacity:1;transform:translateY(0) scale(1)}}
+
+@keyframes proCardBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.landing-nav-card:hover,.studio-panel:hover{transform:translateY(-3px) scale(1.015);filter:brightness(1.06)}
+@supports (height:100dvh){.app-shell{min-height:100dvh!important}}
+
 @keyframes signalPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.18)}}
 @keyframes chipFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(.7deg)}}
 @keyframes bgDriftPro{0%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(12px,-10px,0) rotate(2deg)}100%{transform:translate3d(0,0,0) rotate(0deg)}}
@@ -477,7 +493,15 @@ function Badge({children,col="green"}){
 }
 function Modal({show,onClose,title,children}){
   if(!show)return null;
-  return <div style={{position:"fixed",inset:0,background:"rgba(27,67,50,0.55)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={onClose}><div onClick={e=>e.stopPropagation()} style={{background:T.white,borderRadius:"22px 22px 0 0",padding:"24px 18px 32px",width:"100%",maxWidth:480,animation:"slideUp 0.3s ease",maxHeight:"90vh",overflowY:"auto"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}><div style={{fontWeight:900,fontSize:"1.1rem",color:T.text}}>{title}</div><button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:32,height:32,cursor:"pointer",fontSize:"1rem",color:T.g700}}>X</button></div>{children}</div></div>;
+  return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,0.62)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center",paddingTop:24}} onClick={onClose}>
+    <div onClick={e=>e.stopPropagation()} style={{background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:"24px 24px 0 0",padding:"18px 16px calc(112px + env(safe-area-inset-bottom))",width:"100%",maxWidth:480,animation:"slideUp 0.28s ease",maxHeight:"calc(100dvh - 24px)",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",boxShadow:"0 -18px 42px rgba(0,0,0,.28)"}}>
+      <div style={{position:"sticky",top:-18,zIndex:5,display:"flex",justifyContent:"space-between",alignItems:"center",margin:"-18px -16px 16px",padding:"14px 16px 12px",background:"linear-gradient(180deg,#FFF8E6,#FFF4D6)",borderBottom:`1px solid ${T.g200}`,boxShadow:"0 8px 18px rgba(20,8,4,.08)"}}>
+        <div style={{fontWeight:950,fontSize:"1.08rem",color:T.text}}>{title}</div>
+        <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:34,height:34,cursor:"pointer",fontSize:"1rem",color:T.g700,fontWeight:950}}>×</button>
+      </div>
+      {children}
+    </div>
+  </div>;
 }
 function Spinner(){return <div style={{width:28,height:28,border:`3px solid ${T.g200}`,borderTop:`3px solid ${T.g600}`,borderRadius:"50%",animation:"spin 0.7s linear infinite",margin:"20px auto"}}/>;}
 function EmptyState({icon,title,sub}){return <div style={{textAlign:"center",padding:"40px 20px",color:T.textSub}}><div style={{fontSize:"2.8rem",marginBottom:10}}>{icon}</div><div style={{fontWeight:800,fontSize:"1rem",color:T.g700,marginBottom:6}}>{title}</div><div style={{fontSize:"0.83rem"}}>{sub}</div></div>;}
@@ -1240,9 +1264,6 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null}){
         }}>✂️ Cortes, rastas y estilo urbano ✂️</div>
         <div style={{marginTop:compact?4:8,position:"relative"}}>
           <HeroMascot/>
-          <div className="rasta-speech-bubble" style={{position:"absolute",right:compact?"2%":"5%",bottom:compact?10:18,maxWidth:compact?190:230,background:"rgba(255,244,214,.92)",border:"1.5px solid rgba(212,175,55,.72)",borderRadius:18,padding:"9px 11px",color:"#3A1E10",fontWeight:950,fontSize:compact?".72rem":".78rem",lineHeight:1.25,boxShadow:"0 12px 24px rgba(0,0,0,.24)",textAlign:"left"}}>
-            <span style={{display:"inline-block",marginRight:5,animation:"signalPulse 1.5s ease-in-out infinite"}}>✨</span>{compact?"Entra, juega y mira qué se cuece hoy.":"Entra a pasarlo bien: reserva, juega, escucha música y gana recompensas."}
-          </div>
         </div>
         <div style={{
           margin:"-10px auto 12px",
@@ -1254,8 +1275,8 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null}){
           color:"#FFF4D6",
           boxShadow:"0 12px 24px rgba(0,0,0,.25)"
         }}>
-          <div style={{fontWeight:950,fontSize:compact?".94rem":"1.05rem",color:"#FFD66B"}}>Reserva, juega y gana recompensas.</div>
-          <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.32}}>Actualidad, música reggae/rap clásico, rankings, avatar y premios de la tienda en una sola app.</div>
+          <div style={{fontWeight:950,fontSize:compact?".94rem":"1.05rem",color:"#FFD66B"}}>Reserva, juega, descubre música y canjea recompensas.</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.32}}>Citas, tienda, arcade, rankings, noticias, música y avatar en una experiencia más viva.</div>
         </div>
         {user&&(
           <div style={{display:"flex",gap:8,justifyContent:"center",alignItems:"center",marginBottom:10,flexWrap:"wrap"}}>
@@ -1345,8 +1366,11 @@ function Auth({onLogin,showToast}){
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
           <LandingFeature icon="📅" title="Reservas" sub="Elige tratamientos y guarda tu cita." accent="#D4AF37"/>
           <LandingFeature icon="🎮" title="Juegos" sub="Arcade, récords, Top 10 y puntos." accent="#4F602D"/>
+          <LandingFeature icon="🛍️" title="Tienda" sub="Canjea puntos por premios y extras." accent="#B99A45"/>
           <LandingFeature icon="🌐" title="Actualidad" sub="Noticias tipo shorts, debate y comunidad." accent="#263F4D"/>
-          <LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico y novedades." accent="#8A5A2E"/>
+          <div style={{gridColumn:"1 / -1"}}>
+            <LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico, ska y rock para descubrir sin ruido comercial." accent="#4E3A76"/>
+          </div>
         </div>
 
         <Card style={{padding:"22px 18px",animation:"softPop3d 0.42s ease",background:"linear-gradient(180deg,#FFF4D6 0%,#F0D69C 100%)",border:"2px solid #B99A45",boxShadow:"0 18px 40px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.75)"}}>
@@ -1382,51 +1406,107 @@ function Auth({onLogin,showToast}){
           )}
         </Card>
 
-        <div style={{textAlign:"center",color:"rgba(255,244,214,.72)",fontSize:".74rem",fontWeight:800,lineHeight:1.35,marginTop:14}}>
-          Al registrarte verás reservas, juegos, rankings, noticias, música, avatar y tienda de recompensas.
+        <div style={{textAlign:"center",color:"rgba(255,244,214,.84)",fontSize:".82rem",fontWeight:950,lineHeight:1.35,marginTop:16,padding:"12px 14px",border:"1px solid rgba(212,175,55,.25)",borderRadius:18,background:"rgba(255,244,214,.06)",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
+          Forma parte de la comunidad Rasta Cuts: reserva, juega, participa y desbloquea recompensas.
         </div>
       </div>
     </div>
   );
 }
 
-function DashboardAdmin({user}){
-  const [stats,setStats]=useState({citas:0,clientes:0,ingresos:0,stockBajo:0});
+function DashboardAdmin({user,showToast}){
+  const [stats,setStats]=useState({citas:0,clientes:0,ingresos:0,stockBajo:0,pendientes:0,confirmadas:0});
   const [citasHoy,setCitasHoy]=useState([]);
   const [loading,setLoading]=useState(true);
-  useEffect(()=>{
-    async function load(){
-      const today=new Date().toISOString().split("T")[0];
-      const [citas,clientes,ventas,stock]=await Promise.all([
-        dbGet("citas",`?fecha=gte.${today}&select=*`),
-        dbGet("usuarios","?role=eq.client&select=id"),
-        dbGet("facturas",`?fecha=gte.${today}&select=total`),
-        dbGet("inventario","?stock=lte.5&select=id"),
-      ]);
-      setStats({citas:(citas||[]).length,clientes:(clientes||[]).length,ingresos:(ventas||[]).reduce((s,v)=>s+(v.total||0),0),stockBajo:(stock||[]).length});
-      setCitasHoy((citas||[]).slice(0,5));setLoading(false);
-    }
-    load();
-  },[]);
+
+  async function load(){
+    setLoading(true);
+    const today=new Date().toISOString().split("T")[0];
+    const [citas,clientes,ventas,stock]=await Promise.all([
+      dbGet("citas",`?fecha=gte.${today}&order=fecha.asc,hora.asc&select=*`),
+      dbGet("usuarios","?role=eq.client&select=id"),
+      dbGet("facturas",`?fecha=gte.${today}&select=total`),
+      dbGet("inventario","?stock=lte.5&select=id"),
+    ]);
+    const list=citas||[];
+    setStats({
+      citas:list.length,
+      pendientes:list.filter(c=>String(c.estado||"pendiente").toLowerCase()==="pendiente").length,
+      confirmadas:list.filter(c=>String(c.estado||"pendiente").toLowerCase()==="confirmada").length,
+      clientes:(clientes||[]).length,
+      ingresos:(ventas||[]).reduce((sum,v)=>sum+(Number(v.total)||0),0),
+      stockBajo:(stock||[]).length
+    });
+    setCitasHoy(list.slice(0,8));
+    setLoading(false);
+  }
+
+  useEffect(()=>{load();},[]);
+
+  async function updateCita(cita,patch,msg){
+    const ok=await dbPatch("citas",`?id=eq.${cita.id}`,patch);
+    if(ok){showToast?.(msg);SFX.success();await load();}
+    else{showToast?.("No se pudo actualizar la cita");SFX.error();}
+  }
+
   if(loading)return <Spinner/>;
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🏠" title={`Hola, ${user.nombre?.split(" ")[0]}`} sub={new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"})}/>
+      <SectionHeader icon="🏠" title={`Resumen de gestión`} sub={new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"})}/>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:18}}>
-        <StatCard icon="📅" label="Citas hoy" value={stats.citas} col="green"/>
-        <StatCard icon="👥" label="Clientes" value={stats.clientes} col="blue"/>
+        <StatCard icon="📅" label="Próximas citas" value={stats.citas} col="green"/>
+        <StatCard icon="🟡" label="Pendientes" value={stats.pendientes} col="gold"/>
+        <StatCard icon="✅" label="Confirmadas" value={stats.confirmadas} col="blue"/>
         <StatCard icon="💰" label="Ingresos hoy" value={`${stats.ingresos.toFixed(2)}€`} col="gold"/>
-        <StatCard icon="📦" label="Stock bajo" value={stats.stockBajo} col={stats.stockBajo>0?"pink":"green"}/>
       </div>
-      <Card>
-        <div style={{fontWeight:800,fontSize:"0.95rem",color:T.g800,marginBottom:12}}>Proximas citas</div>
-        {citasHoy.length===0?<EmptyState icon="📅" title="Sin citas hoy" sub="Dia tranquilo"/>
-          :citasHoy.map(c=>(
-            <div key={c.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${T.g100}`}}>
-              <div><div style={{fontWeight:700,fontSize:"0.88rem"}}>{c.cliente_nombre||"Cliente"}</div><div style={{fontSize:"0.75rem",color:T.textSub}}>{c.servicio}</div></div>
-              <div style={{fontWeight:800,color:T.g600}}>{c.hora}</div>
-            </div>
-          ))
+
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2.2rem"}}>🧾</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,fontSize:"1.02rem"}}>Inicio interno de gestión</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Aquí va el resumen que antes estaba en Inicio: próximas citas, estado, hora, precio y acciones rápidas.</div>
+          </div>
+        </div>
+      </Card>
+
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
+          <div>
+            <div style={{fontWeight:950,fontSize:"1rem",color:T.g800}}>📅 Próximas citas</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Fecha, hora, tratamientos, precio y gestión rápida.</div>
+          </div>
+          <Badge col={(stats.pendientes||0)?"gold":"green"}>{stats.pendientes||0} pendientes</Badge>
+        </div>
+
+        {citasHoy.length===0?<EmptyState icon="📅" title="Sin próximas citas" sub="No hay citas pendientes en la agenda próxima."/>
+          :citasHoy.map(c=>{
+            const st=String(c.estado||"pendiente").toLowerCase();
+            const list=citaServices(c);
+            const dur=citaDuration(list);
+            const precio=Number(c.servicio_precio)||citaTotal(list);
+            const fin=dur?endTime(c.hora,dur):"";
+            const badgeCol=st==="pendiente"?"gold":st==="confirmada"?"green":st==="cancelada"?"red":"blue";
+            return <div key={c.id} style={{padding:"12px 0",borderBottom:`1px solid ${T.g200}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap",marginBottom:7}}>
+                    <Badge col={badgeCol}>{st==="completada"?"realizada":st}</Badge>
+                    <span style={{fontWeight:950,color:T.g800}}>👤 {c.cliente_nombre||"Cliente"}</span>
+                  </div>
+                  <div style={{fontSize:".86rem",fontWeight:950,color:T.g800}}>📆 {c.fecha||"sin fecha"} · 🕒 {c.hora||"sin hora"}{fin?` - ${fin}`:""}</div>
+                  <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:5,lineHeight:1.35}}>✂️ {c.servicio_label||c.servicio||"Tratamiento"}{dur?` · ${formatDuration(dur)}`:""}{!!precio?` · ${precio}€`:""}</div>
+                  {c.notas&&<div style={{marginTop:6,fontSize:".72rem",fontWeight:750,color:T.textSub,whiteSpace:"pre-wrap",lineHeight:1.35,maxHeight:54,overflow:"hidden"}}>{String(c.notas)}</div>}
+                </div>
+              </div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:10}}>
+                {st==="pendiente"&&<Btn small col="green" onClick={()=>updateCita(c,{estado:"confirmada"},"Cita confirmada")}>✅ Confirmar</Btn>}
+                {["pendiente","confirmada","propuesta"].includes(st)&&<Btn small col="red" onClick={()=>updateCita(c,{estado:"cancelada"},"Cita cancelada")}>❌ Cancelar</Btn>}
+                {["confirmada","propuesta"].includes(st)&&<Btn small col="dark" onClick={()=>updateCita(c,{estado:"completada"},"Cita marcada como realizada")}>🏁 Realizada</Btn>}
+                {st==="cancelada"&&<Btn small col="gold" onClick={()=>updateCita(c,{estado:"pendiente"},"Cita reabierta")}>↩️ Reabrir</Btn>}
+              </div>
+            </div>;
+          })
         }
       </Card>
     </div>
@@ -1574,6 +1654,19 @@ function formatNewsDate(date){
 }
 function categoryInfo(id){return NEWS_CATEGORIES.find(c=>c.id===id)||NEWS_CATEGORIES[0];}
 function categoryVisual(id){return CATEGORY_COLORS[id]||CATEGORY_COLORS.todo;}
+function lightHash(str=""){
+  let h=2166136261;
+  for(let i=0;i<String(str).length;i++){h^=String(str).charCodeAt(i);h=Math.imul(h,16777619);}
+  return h>>>0;
+}
+function dailyOrderedList(list=[],key="daily",extra=0){
+  const day=new Date().toISOString().split("T")[0];
+  return [...(Array.isArray(list)?list:[])]
+    .map((item,i)=>({item,sort:lightHash(`${day}_${key}_${extra}_${item?.id||item?.artist||i}`)}))
+    .sort((a,b)=>a.sort-b.sort)
+    .map(x=>x.item);
+}
+
 function newsTimeSlot(){
   const h=new Date().getHours();
   if(h<7)return "madrugada";
@@ -1586,7 +1679,8 @@ async function fetchNews(category="todo",seed=0,slot=newsTimeSlot()){
   const res=await fetch(`/api/news?category=${encodeURIComponent(category)}&day=${encodeURIComponent(day)}&slot=${encodeURIComponent(slot)}&seed=${encodeURIComponent(seed)}&limit=28`);
   const data=await res.json();
   const items=Array.isArray(data.news)?data.news:[];
-  return items.length?items:NEWS_FALLBACK;
+  const fallback=category==="todo"?NEWS_FALLBACK:NEWS_FALLBACK.filter(n=>n.category===category);
+  return items.length?dailyOrderedList(items,`news_${category}_${slot}`,seed):dailyOrderedList(fallback.length?fallback:NEWS_FALLBACK,`fallback_news_${category}_${slot}`,seed);
 }
 function trimSummary(text=""){
   const clean=String(text||"").replace(/\s+/g," ").trim();
@@ -1865,7 +1959,7 @@ function Noticias({user,setUser,showToast,showPoints}){
         if(alive){setItems(list);loadStats(list);}
       }catch(e){
         const fallback=category==="todo"?NEWS_FALLBACK:NEWS_FALLBACK.filter(n=>n.category===category);
-        if(alive){const final=fallback.length?fallback:NEWS_FALLBACK;setItems(final);loadStats(final);setError("No se han podido cargar todas las fuentes. Te dejo una selección de respaldo.");}
+        if(alive){const final=dailyOrderedList(fallback.length?fallback:NEWS_FALLBACK,`fallback_news_${category}_${newsTimeSlot()}`,refreshSeed);setItems(final);loadStats(final);setError("No se han podido cargar todas las fuentes. Te dejo una selección de respaldo.");}
       }finally{if(alive)setLoading(false);}
     }
     load();return()=>{alive=false;};
@@ -2162,7 +2256,9 @@ function Citas({user,showToast}){
           </div>
         )}
         <Input label="Notas" value={form.notas} onChange={v=>setForm(f=>({...f,notas:v}))} placeholder="Ej: quiero revisar raíces, pelo sensible, voy con prisa..."/>
-        <Btn full onClick={saveCita}>Enviar cita pendiente</Btn>
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)",boxShadow:"0 -10px 22px rgba(255,248,230,.9)"}}>
+          <Btn full onClick={saveCita}>Enviar cita pendiente</Btn>
+        </div>
       </Modal>
 
       <Modal show={!!proposal} onClose={()=>setProposal(null)} title="Proponer otra hora">
@@ -4434,8 +4530,18 @@ const MUSIC_LIBRARY=[
   ]}
 ];
 
+
+function dailyMusicSelection(filter="todo",seed=0){
+  const base=Array.isArray(MUSIC_LIBRARY)?MUSIC_LIBRARY:[];
+  const ordered=dailyOrderedList(base,`music_${filter}`,seed);
+  // En "Todo" se muestra una selección diaria para que no parezca una lista fija.
+  // En filtros concretos se muestra todo ese estilo, pero rotado cada día.
+  return filter==="todo"?ordered.slice(0,8):ordered;
+}
+
 function MusicaComunidad({showToast}){
   const [filter,setFilter]=useState("todo");
+  const [musicSeed,setMusicSeed]=useState(0);
   const filters=[
     {id:"todo",label:"Todo",icon:"✨"},
     {id:"reggae",label:"Reggae",icon:"🟢"},
@@ -4452,7 +4558,12 @@ function MusicaComunidad({showToast}){
     if(filter==="rock")return g.includes("rock")||g.includes("grunge");
     return true;
   }
-  const list=(Array.isArray(MUSIC_LIBRARY)?MUSIC_LIBRARY:[]).filter(matches);
+  const list=dailyMusicSelection(filter,musicSeed).filter(matches);
+  function reloadMusic(){
+    SFX.action();
+    setMusicSeed(v=>v+1);
+    showToast?.("Cambiando selección musical...");
+  }
   function openLink(link){
     SFX.action();
     showToast?.(`Abriendo ${link.label}`);
@@ -4465,11 +4576,12 @@ function MusicaComunidad({showToast}){
         <div style={{position:"relative",zIndex:1}}>
           <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,244,214,.72)"}}>Biblioteca Rasta Cuts</div>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1,color:"#FFD66B",textShadow:"0 4px 12px rgba(0,0,0,.35)"}}>Música buena</div>
-          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35,marginTop:4}}>Reggae, rap clásico, ska y rock con enlaces rápidos para descubrir artistas sin tragarte música comercial.</div>
+          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35,marginTop:4}}>Selección diaria de reggae, rap clásico, ska y rock. Cada día cambia el orden y puedes refrescar propuestas.</div>
+          <button onClick={reloadMusic} style={{marginTop:11,border:"1px solid rgba(255,244,214,.35)",background:"rgba(255,244,214,.12)",color:T.white,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>🔄 Cambiar selección</button>
         </div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,padding:"0 12px 14px"}}>
-        {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);}} style={{border:`1.5px solid ${filter===f.id?T.gold:"rgba(255,244,214,.25)"}`,borderRadius:14,padding:"8px 4px",background:filter===f.id?"rgba(255,214,107,.22)":"rgba(255,244,214,.08)",color:T.white,fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
+        {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);setMusicSeed(0);}} style={{border:`1.5px solid ${filter===f.id?T.gold:"rgba(255,244,214,.25)"}`,borderRadius:14,padding:"8px 4px",background:filter===f.id?"rgba(255,214,107,.22)":"rgba(255,244,214,.08)",color:T.white,fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
           <div style={{fontSize:"1.1rem",lineHeight:1}}>{f.icon}</div>
           <div style={{marginTop:3}}>{f.label}</div>
         </button>)}
@@ -4554,8 +4666,9 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
   const isAdmin=role===ROLES.ADMIN;
   const isStaff=role===ROLES.STAFF;
   const canAccess=isAdmin||isStaff;
-  const [tab,setTab]=useState("facturacion");
+  const [tab,setTab]=useState("resumen");
   const tabs=[
+    {id:"resumen",icon:"🏠",label:"Resumen",sub:"Inicio interno con próximas citas y acciones rápidas",staff:true},
     {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true},
     {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true},
     {id:"clientes",icon:"👥",label:"Clientes",sub:"Fichas e historial de clientes",staff:true},
@@ -4613,6 +4726,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
         <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{active.sub}</div>
       </Card>
 
+      {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast}/>} 
       {tab==="facturacion"&&<Caja showToast={showToast}/>}
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
       {tab==="clientes"&&<Clientes showToast={showToast}/>}
@@ -4630,8 +4744,8 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
 
 
 const NAV_CFG={
-  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  admin:[{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  staff:[{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"perfil",icon:"👤",label:"Perfil"}],
   client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
@@ -4850,51 +4964,125 @@ const RASTA_GENERAL_TIPS=[
   "Pulsa Activar ayuda y toca cualquier botón para saber qué hace sin ejecutar la acción.",
   "Los puntos se ganan poco a poco: juegos, participación y actividad real en la app.",
   "En Perfil puedes ajustar tu avatar, tu privacidad y cómo apareces en rankings.",
-  "La pantalla de Comunidad reúne tablón, foro y actualidad para no perderte entre pestañas.",
+  "Comunidad reúne tablón, foro, actualidad y música para no perderse entre pestañas.",
   "En Arcade puedes repetir partidas para mejorar récord, aunque los puntos diarios tienen límite.",
   "Top 10 enseña marcas por juego; Top general resume actividad global de clientes.",
   "Si una sección no queda clara, abre el modo ayuda y toca justo esa zona.",
-  "La app está pensada para reservar, jugar, leer novedades y volver a la tienda con más ganas."
+  "La tienda tiene más sentido cuando los puntos se convierten en premios visibles.",
+  "En Citas puedes elegir varios tratamientos y ver tiempo y precio aproximado.",
+  "Gestión es la zona interna para caja, citas, clientes, stock y permisos.",
+  "El modo incógnito oculta nombre y avatar público, pero mantiene tu personalización privada.",
+  "Las noticias funcionan mejor cuando se leen rápido y se puede debatir sin salir de la app.",
+  "El perfil público debe mostrar lo justo: avatar, nombre, puntos y actividad sin datos personales.",
+  "El ranking semanal sirve para picarse esta semana; el histórico guarda las mejores marcas.",
+  "Si el menú parece cargado, entra por Gestión: ahí está ordenado lo interno.",
+  "Cuando termines una cita, márcala como realizada para que luego cuente en historial y facturación.",
+  "Los juegos deben divertir y motivar, no regalar puntos sin control.",
+  "Una app útil se entiende tocando: reserva, juega, lee, participa y canjea.",
+  "El avatar debe verse igual en Perfil, rankings, comunidad y clientes.",
+  "Música es una biblioteca rápida para descubrir reggae, rap clásico, ska y rock sin ruido comercial.",
+  "El tablón es para avisos oficiales; el foro es para conversar.",
+  "Si una noticia merece conversación, abre debate y deja un comentario útil.",
+  "Los premios de tienda deben tener valor real para que los puntos importen.",
+  "El botón de Sonido activa música suave; con doble toque puedes cambiar el tema.",
+  "Las citas pendientes necesitan respuesta: confirmar, proponer hora o cancelar.",
+  "El resumen de Gestión muestra lo importante sin entrar en cada pestaña.",
+  "La comunidad funciona mejor si cada acción tiene sentido: like, comentario, debate o tema.",
+  "El cliente sólo debería ver su parte; admin y staff ven herramientas de trabajo.",
+  "Una pantalla limpia vale más que diez textos largos.",
+  "Los botones importantes deben quedar siempre visibles en móvil."
 ];
 
 const RASTA_RARE_CULTURE_TIPS=[
-  "Tip musical: la sección Música/Actualidad está pensada para reggae y rap clásico, no para ruido comercial.",
-  "Tip de comunidad: un buen comentario aporta algo, pregunta algo o abre conversación.",
-  "Tip de juegos: repetir una partida mejora el récord, pero no rompe la economía de puntos.",
-  "Tip de perfil: un avatar reconocible hace que rankings y comunidad se sientan más vivos.",
-  "Tip de tienda: los puntos tienen más sentido cuando hay premios, bonos y personalización.",
-  "Tip de reservas: si eliges varios tratamientos, la app calcula duración y precio aproximado.",
-  "Tip de noticias: abre debate cuando una noticia merezca conversación, no sólo lectura rápida.",
-  "Tip de privacidad: el modo incógnito oculta tu nombre público y muestra una silueta.",
-  "Tip de rankings: el semanal sirve para pique reciente; el histórico guarda las mejores marcas.",
-  "Tip de sonido: toca Sonido para activar música y doble toque para cambiar de tema."
+  "Tip musical: Morodo encaja muy bien para una sesión tranquila con ritmo reggae.",
+  "Tip musical: Kase.O es buena puerta de entrada para rap español con letra cuidada.",
+  "Tip musical: Pure Negga funciona bien para ambiente suave y melódico.",
+  "Tip musical: Bob Marley es base obligatoria si alguien quiere empezar con reggae clásico.",
+  "Tip musical: Ska-P mete energía para quienes prefieren ska con más caña.",
+  "Tip musical: Nirvana aporta variedad rock sin perder una vibra clásica.",
+  "Tip musical: Rapsusklei encaja en tardes tranquilas y letras con más fondo.",
+  "Tip musical: Violadores del Verso tiene sentido aquí por cultura urbana y toque zaragozano.",
+  "Tip musical: Cultura Profética va perfecto para una sección más elegante y relajada.",
+  "Tip musical: Fyahbwoy tiene más energía para entrar al Arcade con ritmo.",
+  "Tip de comunidad: un buen comentario aporta una idea, una pregunta o una experiencia.",
+  "Tip de noticias: mejor pocas noticias buenas que mucho contenido de relleno.",
+  "Tip de juegos: si ya cobraste puntos hoy, aún puedes jugar para mejorar récord.",
+  "Tip de perfil: cuanto más reconocible sea el avatar, más vivos se sienten los rankings.",
+  "Tip de tienda: los canjes deberían ser claros, deseables y fáciles de entender.",
+  "Tip de reservas: varios tratamientos juntos deben sumar precio y duración automáticamente.",
+  "Tip de gestión: staff puede trabajar; admin puede tocar permisos y ajustes.",
+  "Tip de privacidad: incógnito no borra al usuario, sólo oculta cómo se muestra al público.",
+  "Tip de rankings: el top semanal mantiene movimiento; el histórico da prestigio.",
+  "Tip de sonido: música suave mejor que melodías chillones en móvil.",
+  "Tip de diseño: si algo tapa un botón en Android, hay que darle más margen inferior.",
+  "Tip de citas: una cita sin estado claro genera confusión; pendiente, confirmada o cancelada.",
+  "Tip de facturación: primero control interno; luego ya se puede hacer más legal/formal.",
+  "Tip de admin: Usuarios es permisos; Clientes es historial y ficha comercial.",
+  "Tip de foro: temas cortos y claros consiguen más respuestas.",
+  "Tip de premios: personalización del avatar puede ser una recompensa muy buena.",
+  "Tip de actualidad: el formato tipo shorts funciona mejor si la tarjeta respira.",
+  "Tip de música: los enlaces a búsquedas oficiales evitan links rotos al principio.",
+  "Tip de app: menos texto, más iconos claros y explicaciones bajo demanda.",
+  "Tip de Rasta: el modo ayuda debe explicar, no molestar."
 ];
 
 const RASTA_DAILY_FUN_TIPS=[
   "Hoy puedes probar una partida, mirar una noticia y revisar si tu avatar sigue como quieres.",
   "Una app clara se entiende en pocos toques: reserva, juega, participa y canjea.",
-  "Actualidad funciona mejor con titulares cortos, imagen clara y un resumen útil.",
+  "Actualidad funciona mejor con titulares cortos, imagen clara y resumen útil.",
   "El Arcade tiene que picar sin regalar puntos infinitos: récord sí, abuso no.",
-  "Una buena pantalla de inicio debe enseñar rápido qué se puede hacer dentro.",
-  "Los clientes deberían reconocer su avatar igual en Perfil, Usuarios, Comunidad y rankings.",
+  "Una buena pantalla de inicio enseña rápido qué se puede hacer dentro.",
+  "Los clientes deberían reconocer su avatar igual en Perfil, Comunidad y rankings.",
   "Si algo aparece raro en móvil, se corrige en diseño antes de seguir acumulando funciones.",
   "Los mensajes del asistente deben ayudar, no molestar ni tapar botones importantes.",
   "La tienda gana valor cuando los puntos sirven para cosas visibles y deseables.",
-  "El perfil público debe enseñar lo justo: avatar, nombre, puntos y actividad sin datos privados."
+  "El perfil público debe enseñar lo justo: avatar, nombre, puntos y actividad sin datos privados.",
+  "Hoy toca revisar si Gestión resume bien citas, caja y clientes.",
+  "Un ranking bueno da ganas de volver sin hacer trampas con puntos.",
+  "Una cita bien creada debe enseñar fecha, hora, tratamientos, duración y precio.",
+  "La música de fondo debe acompañar, no competir con la app.",
+  "La comunidad necesita ritmo: novedades, juego, conversación y algún premio.",
+  "Si el usuario no sabe qué tocar, el modo ayuda tiene que salvarlo.",
+  "El mejor botón es el que se entiende antes de pulsarlo.",
+  "Un cliente vuelve más si siente que tiene perfil, puntos y progreso.",
+  "Los avisos oficiales van al tablón; las dudas y debates van al foro.",
+  "Hoy puede ser buen día para descubrir un artista nuevo en Música.",
+  "Un diseño moderno no es llenar de efectos, es que todo fluya mejor.",
+  "Si algo se repite demasiado, hay que convertirlo en rotación diaria.",
+  "La app debería sentirse viva sin parecer una feria de luces.",
+  "Un admin necesita ver rápido qué citas requieren acción.",
+  "Un staff no debería tener que tocar permisos para hacer su trabajo.",
+  "El cliente no debe ver paneles internos ni información de gestión.",
+  "Las recompensas pequeñas mantienen movimiento si están bien equilibradas.",
+  "El Gacha tiene sentido si es divertido, limitado y no rompe la economía.",
+  "Los tops por juego motivan más cuando cada juego tiene identidad propia.",
+  "Una ficha de cliente debe servir para recordar historial, no para cambiar roles."
 ];
 
 
+
+function rastaHash(str=""){
+  let h=2166136261;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}
+  return h>>>0;
+}
+
 function getDailyRastaTip(key){
-  const pool=[...RASTA_RARE_CULTURE_TIPS,...RASTA_DAILY_FUN_TIPS].filter(Boolean);
+  const pool=[...RASTA_RARE_CULTURE_TIPS,...RASTA_DAILY_FUN_TIPS,...RASTA_GENERAL_TIPS].filter(Boolean);
   if(!pool.length)return "";
-  const storageKey=`rasta_daily_fun_${key}_${TODAY_KEY()}`;
+  const day=TODAY_KEY();
+  const storageKey=`rasta_daily_fun_v2_${key}_${day}`;
   try{
     const saved=localStorage.getItem(storageKey);
-    if(saved)return saved;
-    const tip=pickRastaUnique(pool,`rasta_daily_fun_history_${key}`,Math.min(30,Math.max(1,pool.length-1)));
+    if(saved && pool.includes(saved))return saved;
+    const index=rastaHash(`${day}_${key}_${pool.length}`)%pool.length;
+    const tip=pool[index]||pool[0]||"";
     localStorage.setItem(storageKey,tip);
     return tip;
-  }catch{return pool[0]||"";}
+  }catch{
+    const index=rastaHash(`${TODAY_KEY()}_${key}`)%pool.length;
+    return pool[index]||pool[0]||"";
+  }
 }
 
 const RASTA_RARE_CHANCE=1/42;
@@ -5041,7 +5229,13 @@ function HelperMascot({page}){
   const key=helperPageKey(page);
   const baseTips=HELP_TIPS[key]||HELP_TIPS.dashboard;
   const dailyTip=getDailyRastaTip(key);
-  const tips=[dailyTip,...baseTips,...RASTA_GENERAL_TIPS].filter(Boolean);
+  const tips=Array.from(new Set([
+    dailyTip,
+    ...baseTips,
+    ...RASTA_GENERAL_TIPS,
+    ...RASTA_DAILY_FUN_TIPS,
+    ...RASTA_RARE_CULTURE_TIPS
+  ].filter(Boolean)));
   const [open,setOpen]=useState(false);
   const [helpMode,setHelpMode]=useState(false);
   const [tipIndex,setTipIndex]=useState(0);
@@ -5118,7 +5312,7 @@ function HelperMascot({page}){
     e?.stopPropagation?.();
     setHelpMode(false);
     setContextTip(null);
-    const rare=pickRastaUnique([...RASTA_RARE_CULTURE_TIPS,...RASTA_DAILY_FUN_TIPS],`rasta_manual_rare_${TODAY_KEY()}`,30);
+    const rare=pickRastaUnique([...RASTA_RARE_CULTURE_TIPS,...RASTA_DAILY_FUN_TIPS,...RASTA_GENERAL_TIPS],`rasta_manual_tip_${TODAY_KEY()}`,45);
     setRareTip(rare);
   }
 
@@ -5245,7 +5439,7 @@ function HelperMascot({page}){
             {!helpMode&&(
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:12,gap:8}}>
                 <button onClick={(e)=>{e.stopPropagation();goTip(-1);}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"6px 10px",fontWeight:950,cursor:"pointer"}}>← Atrás</button>
-                <div style={{fontSize:".72rem",fontWeight:900,color:T.textSub,whiteSpace:"nowrap"}}>{rareTip?"tip":`${(tipIndex%Math.max(1,tips.length))+1}/${tips.length}`}</div>
+                <div style={{fontSize:".72rem",fontWeight:900,color:T.textSub,whiteSpace:"nowrap"}}>{rareTip?"tip diario":"guía"}</div>
                 <button onClick={(e)=>{e.stopPropagation();goTip(1);}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"6px 10px",fontWeight:950,cursor:"pointer"}}>Siguiente →</button>
               </div>
             )}
@@ -5380,7 +5574,7 @@ export default function App(){
   if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/></div>;
   if(!user)return (
     <>
-      <Auth onLogin={u=>{setUser(u);setPage("dashboard");}} showToast={showToast}/>
+      <Auth onLogin={u=>{setUser(u);setPage(normalizeRole(u.rol||u.role)===ROLES.CLIENT?"dashboard":"gestion");}} showToast={showToast}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </>
   );
@@ -5388,14 +5582,14 @@ export default function App(){
   const role=normalizeRole(user.rol || user.role);
   const nav=NAV_CFG[role]||NAV_CFG.client;
   const grad=GRAD_ROLE[role]||GRAD_ROLE.client;
-  const ap=page;
+  const ap=(role!==ROLES.CLIENT && page==="dashboard")?"gestion":page;
   const theme=pageTheme(ap,communityTab,role);
   const currentUser={...user,rol:role};
   const sp={showToast,showPoints,user:currentUser,setUser};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
   const pages={
-    dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<DashboardAdmin user={currentUser}/>,
+    dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<GestionAdmin {...sp}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
