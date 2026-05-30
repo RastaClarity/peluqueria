@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
@@ -8647,3 +8647,7 @@ export default function App(){
     </div>
   );
 }
+
+// force deploy fase79
+
+// force deploy fase80 fix comunidad useMemo
