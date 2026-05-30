@@ -2772,94 +2772,239 @@ function SocialFeed({user,setUser,showToast,showPoints}){
 // FORO
 function Foro({user,showToast}){
   const [topics,setTopics]=useState([]);
-  const [repliesMap,setRepliesMap]=useState({});
+  const [replies,setReplies]=useState([]);
+  const [votes,setVotes]=useState([]);
   const [loading,setLoading]=useState(true);
   const [title,setTitle]=useState("");
   const [body,setBody]=useState("");
+  const [category,setCategory]=useState("general");
+  const [filter,setFilter]=useState("todo");
+  const [search,setSearch]=useState("");
   const [active,setActive]=useState(null);
   const [reply,setReply]=useState("");
   const [selectedProfile,setSelectedProfile]=useState(null);
-  const [profiles,setProfiles]=useState([]);
+
+  const role=normalizeRole(user?.rol||user?.role);
+  const canModerate=role!==ROLES.CLIENT;
+
+  const categories=[
+    {id:"todo",label:"Todo",icon:"✨"},
+    {id:"avisos",label:"Avisos",icon:"📌"},
+    {id:"general",label:"General",icon:"💬"},
+    {id:"ideas",label:"Ideas",icon:"💡"},
+    {id:"musica",label:"Música",icon:"🎧"},
+    {id:"juegos",label:"Juegos",icon:"🎮"},
+    {id:"cuidados",label:"Cuidados",icon:"🪮"}
+  ];
 
   useEffect(()=>{load();},[]);
 
   async function load(){
     setLoading(true);
-    const [raw,users,replies]=await Promise.all([
-      dbGet("publicaciones","?tipo=eq.foro&order=created_at.desc&limit=40&select=*"),
-      dbGet("usuarios","?select=*"),
-      dbGet("foro_respuestas","?order=created_at.asc&limit=500&select=*")
+    const [temas,resps,vots]=await Promise.all([
+      dbGet("foro_temas","?order=fijado.desc,created_at.desc&limit=80&select=*"),
+      dbGet("foro_respuestas","?order=created_at.asc&limit=800&select=*"),
+      dbGet("foro_votos",`?usuario_id=eq.${user.id}&select=*`)
     ]);
-    const safeTopics=Array.isArray(raw)?raw:[];
-    const grouped={};
-    (Array.isArray(replies)?replies:[]).forEach(r=>{
-      const key=String(r.tema_id);
-      if(!grouped[key]) grouped[key]=[];
-      grouped[key].push(r);
-    });
-    setTopics(safeTopics);
-    setProfiles(Array.isArray(users)?users:[]);
-    setRepliesMap(grouped);
+    setTopics(Array.isArray(temas)?temas:[]);
+    setReplies(Array.isArray(resps)?resps:[]);
+    setVotes(Array.isArray(vots)?vots:[]);
     setLoading(false);
   }
 
-  function authorOf(item){return profiles.find(u=>String(u.id)===String(item.autor_id))||user;}
-  function getReplies(id){return repliesMap[String(id)]||[];}
+  function topicReplies(id){return replies.filter(r=>String(r.tema_id)===String(id));}
+  function voted(target_tipo,target_id){return votes.some(v=>String(v.target_tipo)===target_tipo&&String(v.target_id)===String(target_id));}
+  function categoryLabel(id){return categories.find(c=>c.id===id)?.label||id||"General";}
+  function categoryIcon(id){return categories.find(c=>c.id===id)?.icon||"💬";}
+  function topicAuthor(t){return {id:t.usuario_id,nombre:t.autor_nombre,avatar:t.autor_avatar,avatar_config:t.autor_avatar_config,perfil_publico:true,modo_incognito:false,role:"client"};}
+  function replyAuthor(r){return {id:r.usuario_id,nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,perfil_publico:true,modo_incognito:false,role:"client"};}
 
   async function createTopic(){
     if(!title.trim()||!body.trim()){showToast("Pon título y texto");return;}
-    const created=await dbPost("publicaciones",{titulo:title.trim(),contenido:body.trim(),autor_id:user.id,tipo:"foro",likes_count:0});
-    setTitle("");setBody("");SFX.success();showToast("Tema creado");
+    const payload={
+      usuario_id:String(user.id),
+      autor_nombre:user.nombre||"Usuario",
+      autor_avatar:user.avatar||0,
+      autor_avatar_config:user.avatarConfig||user.avatar_config||null,
+      titulo:title.trim(),
+      contenido:body.trim(),
+      categoria:category,
+      fijado:false,
+      cerrado:false,
+      likes:0,
+      respuestas_count:0,
+      updated_at:new Date().toISOString()
+    };
+    const created=await dbPost("foro_temas",payload);
+    setTitle("");setBody("");setCategory("general");
+    SFX.success();showToast("Tema creado");
+    await load();
     if(Array.isArray(created)&&created[0]) setActive(created[0]);
-    load();
   }
 
   async function addReply(topic){
     if(!reply.trim())return;
-    await dbPost("foro_respuestas",{
+    if(topic.cerrado){showToast("Este tema está cerrado");SFX.error();return;}
+    const ok=await dbPost("foro_respuestas",{
       tema_id:topic.id,
-      autor_id:user.id,
-      autor_nombre:user.nombre,
-      autor_avatar:user.avatar,
+      usuario_id:String(user.id),
+      autor_nombre:user.nombre||"Usuario",
+      autor_avatar:user.avatar||0,
       autor_avatar_config:user.avatarConfig||user.avatar_config||null,
-      contenido:reply.trim()
+      contenido:reply.trim(),
+      likes:0
     });
-    setReply("");
-    SFX.success();
-    showToast("Respuesta publicada");
-    await load();
-    setActive(a=>a?{...a,_tick:Date.now()}:topic);
+    if(ok){
+      const nextCount=(Number(topic.respuestas_count)||0)+1;
+      await dbPatch("foro_temas",`?id=eq.${topic.id}`,{respuestas_count:nextCount,updated_at:new Date().toISOString()});
+      setReply("");
+      SFX.success();
+      showToast("Respuesta publicada");
+      await load();
+      setActive(a=>a?{...a,respuestas_count:nextCount,updated_at:new Date().toISOString()}:topic);
+    }
   }
 
-  async function vote(topic){
-    const nextLikes=(topic.likes_count||0)+1;
-    await dbPatch("publicaciones",`?id=eq.${topic.id}`,{likes_count:nextLikes});
-    setTopics(ts=>ts.map(t=>t.id===topic.id?{...t,likes_count:nextLikes}:t));
-    setActive(a=>a?.id===topic.id?{...a,likes_count:nextLikes}:a);
+  async function voteTarget(target,tipo="tema"){
+    const id=target.id;
+    if(voted(tipo,id)){showToast("Ya has votado esto");SFX.error();return;}
+    const ok=await dbPost("foro_votos",{usuario_id:String(user.id),target_tipo:tipo,target_id:id});
+    if(!ok){showToast("No se pudo votar o ya estaba votado");SFX.error();return;}
+    const table=tipo==="tema"?"foro_temas":"foro_respuestas";
+    const nextLikes=(Number(target.likes)||0)+1;
+    await dbPatch(table,`?id=eq.${id}`,{likes:nextLikes});
+    SFX.coins();
+    showToast("Voto guardado");
+    await load();
+    if(tipo==="tema") setActive(a=>a?.id===id?{...a,likes:nextLikes}:a);
   }
+
+  async function togglePinned(topic){
+    if(!canModerate)return;
+    const ok=await dbPatch("foro_temas",`?id=eq.${topic.id}`,{fijado:!topic.fijado,updated_at:new Date().toISOString()});
+    if(ok){showToast(!topic.fijado?"Tema fijado":"Tema desfijado");await load();setActive(a=>a?.id===topic.id?{...a,fijado:!topic.fijado}:a);}
+  }
+
+  async function toggleClosed(topic){
+    if(!canModerate)return;
+    const ok=await dbPatch("foro_temas",`?id=eq.${topic.id}`,{cerrado:!topic.cerrado,updated_at:new Date().toISOString()});
+    if(ok){showToast(!topic.cerrado?"Tema cerrado":"Tema reabierto");await load();setActive(a=>a?.id===topic.id?{...a,cerrado:!topic.cerrado}:a);}
+  }
+
+  const filteredTopics=topics.filter(t=>{
+    const q=normalizeText(search);
+    const catOk=filter==="todo"||String(t.categoria||"general")===filter;
+    const qOk=!q||normalizeText(`${t.titulo||""} ${t.contenido||""} ${t.autor_nombre||""}`).includes(q);
+    return catOk&&qOk;
+  }).sort((a,b)=>{
+    if(Boolean(a.fijado)!==Boolean(b.fijado)) return a.fijado?-1:1;
+    return new Date(b.updated_at||b.created_at)-new Date(a.updated_at||a.created_at);
+  });
 
   const shown=active||null;
   return <div style={{animation:"fadeSlide .4s ease"}}>
-    <SectionHeader icon="🗣️" title="Foro Rasta" sub="Temas, dudas, votaciones y conversación entre clientes"/>
-    {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
-      <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Abrir nuevo tema</div>
+    <SectionHeader icon="🗣️" title="Foro Rasta" sub="Temas, respuestas, votos y conversación de la comunidad"/>
+
+    {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div className="icon3d" style={{fontSize:"2rem"}}>🗣️</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:950,fontSize:"1rem"}}>Foro de comunidad</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Abre temas, responde dudas, vota ideas y participa sin mezclarlo con el tablón oficial.</div>
+        </div>
+      </div>
+    </Card>}
+
+    {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Abrir nuevo tema</div>
       <Input label="Título" value={title} onChange={setTitle} placeholder="Ej: ¿Qué cuidados necesita una rasta nueva?"/>
-      <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Escribe tu duda, idea o propuesta..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:T.g150,resize:"none",outline:"none"}}/>
+      <Select label="Categoría" value={category} onChange={setCategory} options={categories.filter(c=>c.id!=="todo").map(c=>({value:c.id,label:`${c.icon} ${c.label}`}))}/>
+      <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Escribe tu duda, idea o propuesta..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:T.g150,resize:"vertical",outline:"none"}}/>
       <div style={{marginTop:10}}><Btn full col="gold" onClick={createTopic}>➕ Crear tema</Btn></div>
     </Card>}
+
+    {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`}}>
+      <Input label="Buscar en el foro" value={search} onChange={setSearch} placeholder="Buscar tema, texto o autor..."/>
+      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4}}>
+        {categories.map(c=><button key={c.id} onClick={()=>{SFX.tab();setFilter(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===c.id?T.gold:T.g300}`,background:filter===c.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>
+          {c.icon} {c.label}
+        </button>)}
+      </div>
+    </Card>}
+
     {shown? <div>
       <Btn small col="ghost" onClick={()=>setActive(null)} style={{marginBottom:10}}>← Volver al foro</Btn>
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>{shown.titulo||"Tema del foro"}</div>
-        <div style={{fontSize:".9rem",fontWeight:700,lineHeight:1.5,whiteSpace:'pre-wrap',marginTop:8}}>{shown.contenido}</div>
-        <div style={{display:"flex",justifyContent:"space-between",marginTop:12,alignItems:"center"}}><Badge col="blue">{getReplies(shown.id).length} respuestas</Badge><Btn small col="gold" onClick={()=>vote(shown)}>👍 Votar {shown.likes_count||0}</Btn></div>
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${shown.fijado?T.gold:T.g300}`}}>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+          {shown.fijado&&<Badge col="gold">📌 fijado</Badge>}
+          {shown.cerrado&&<Badge col="red">cerrado</Badge>}
+          <Badge col="blue">{categoryIcon(shown.categoria)} {categoryLabel(shown.categoria)}</Badge>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:8,cursor:"pointer"}} onClick={()=>setSelectedProfile(topicAuthor(shown))}>
+          <PublicAvatar profile={topicAuthor(shown)} size={34}/>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>{publicName(topicAuthor(shown))}</div>
+            <div style={{fontSize:".7rem",fontWeight:800,color:T.textSub}}>{shown.created_at?new Date(shown.created_at).toLocaleString("es-ES"):""}</div>
+          </div>
+        </div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.42rem",color:T.g800,lineHeight:1.05}}>{shown.titulo||"Tema del foro"}</div>
+        <div style={{fontSize:".9rem",fontWeight:750,lineHeight:1.5,whiteSpace:'pre-wrap',marginTop:8,color:T.text}}>{shown.contenido}</div>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:12,alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          <Badge col="blue">💬 {topicReplies(shown.id).length} respuestas</Badge>
+          <Btn small col={voted("tema",shown.id)?"ghost":"gold"} onClick={()=>voteTarget(shown,"tema")}>👍 {shown.likes||0}</Btn>
+        </div>
+        {canModerate&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
+          <Btn small col="ghost" onClick={()=>togglePinned(shown)}>{shown.fijado?"Desfijar":"Fijar"}</Btn>
+          <Btn small col={shown.cerrado?"green":"red"} onClick={()=>toggleClosed(shown)}>{shown.cerrado?"Reabrir":"Cerrar"}</Btn>
+        </div>}
       </Card>
-      {getReplies(shown.id).map(r=><Card key={r.id} style={{marginBottom:8,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}><div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6,cursor:"pointer"}} onClick={()=>setSelectedProfile({id:r.autor_id,nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,puntos:0})}><PublicAvatar profile={{nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,perfil_publico:r.perfil_publico,modo_incognito:r.modo_incognito}} size={30}/><b>{publicName({nombre:r.autor_nombre,perfil_publico:r.perfil_publico,modo_incognito:r.modo_incognito})}</b></div><div style={{fontSize:".86rem",fontWeight:700,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div></Card>)}
-      <Card><textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder="Responder al tema..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:T.g150,resize:"none"}}/><div style={{marginTop:8}}><Btn full onClick={()=>addReply(shown)}>Responder</Btn></div></Card>
-    </div> : loading?<Spinner/>:topics.length===0?<EmptyState icon="🗣️" title="Foro vacío" sub="Sé el primero en abrir un tema."/>:topics.map(t=>{const a=authorOf(t);return <Card key={t.id} hover onClick={()=>setActive(t)} style={{marginBottom:10}}><div style={{display:"flex",gap:10,alignItems:"center"}}><PublicAvatar profile={a} size={36}/><div style={{flex:1}}><div style={{fontWeight:900,color:T.g800}}>{t.titulo||t.contenido?.slice(0,48)||"Tema"}</div><div style={{fontSize:".75rem",fontWeight:800,color:T.textSub}}>{publicName(a)} · 👍 {t.likes_count||0} · 💬 {getReplies(t.id).length}</div></div></div></Card>;})}
+
+      {topicReplies(shown.id).length===0?<EmptyState icon="💬" title="Sin respuestas" sub="Sé el primero en responder este tema."/>:topicReplies(shown.id).map(r=>{
+        const a=replyAuthor(r);
+        return <Card key={r.id} style={{marginBottom:8,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`1.5px solid ${T.g200}`}}>
+          <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6,cursor:"pointer"}} onClick={()=>setSelectedProfile(a)}>
+            <PublicAvatar profile={a} size={30}/>
+            <div>
+              <b style={{color:T.g800}}>{publicName(a)}</b>
+              <div style={{fontSize:".66rem",fontWeight:800,color:T.textSub}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES"):""}</div>
+            </div>
+          </div>
+          <div style={{fontSize:".86rem",fontWeight:750,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div>
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:8}}>
+            <button onClick={()=>voteTarget(r,"respuesta")} disabled={voted("respuesta",r.id)} style={{background:T.g150,border:`1.5px solid ${T.g200}`,cursor:voted("respuesta",r.id)?"default":"pointer",fontSize:"0.76rem",color:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999,opacity:voted("respuesta",r.id)?.65:1}}>👍 {r.likes||0}</button>
+          </div>
+        </Card>;
+      })}
+
+      <Card style={{background:shown.cerrado?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        {shown.cerrado?<div style={{fontWeight:950,color:T.red,textAlign:"center"}}>Este tema está cerrado. No se pueden añadir respuestas.</div>:<>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Responder al tema</div>
+          <textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder="Responder al tema..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:T.g150,resize:"vertical",outline:"none",fontWeight:800,color:T.text}}/>
+          <div style={{marginTop:8}}><Btn full onClick={()=>addReply(shown)}>Responder</Btn></div>
+        </>}
+      </Card>
+    </div> : loading?<Spinner/>:filteredTopics.length===0?<EmptyState icon="🗣️" title="Sin temas" sub="No hay temas con ese filtro."/>:filteredTopics.map(t=>{
+      const a=topicAuthor(t);
+      const respuestas=Number(t.respuestas_count)||topicReplies(t.id).length;
+      return <Card key={t.id} hover onClick={()=>setActive(t)} style={{marginBottom:10,background:t.fijado?"linear-gradient(180deg,#FFF4D6,#EBD18D)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:t.fijado?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          <PublicAvatar profile={a} size={38}/>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:4}}>
+              {t.fijado&&<Badge col="gold">📌</Badge>}
+              {t.cerrado&&<Badge col="red">cerrado</Badge>}
+              <Badge col="blue">{categoryIcon(t.categoria)} {categoryLabel(t.categoria)}</Badge>
+            </div>
+            <div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{t.titulo||"Tema"}</div>
+            <div style={{fontSize:".75rem",fontWeight:800,color:T.textSub,marginTop:3}}>{publicName(a)} · 👍 {t.likes||0} · 💬 {respuestas}</div>
+          </div>
+        </div>
+      </Card>;
+    })}
     <PublicProfileModal profile={selectedProfile} onClose={()=>setSelectedProfile(null)}/>
   </div>;
 }
+
 
 // TIENDA
 function Tienda({user,setUser,showToast,showPoints,settings}){
