@@ -103,8 +103,12 @@ const BRAND = {
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
 let masterVolume=0.7;
 let backgroundAudio=null,backgroundAudioAvailable=true;
-const BACKGROUND_AUDIO_SRC="/audio/barbershop-arcade-dub.mp3";
-const BACKGROUND_AUDIO_NAME="Barbershop Arcade Dub";
+let backgroundTrackIndex=0,backgroundSourceTry=0;
+const BACKGROUND_PLAYLIST=[
+  {name:"Barbershop Arcade Dub",srcs:["/audio/barbershop-arcade-dub.mp3","/audio/barbershop-arcade-dub(1).mp3"]},
+  {name:"Vinyl Arcade Skank",srcs:["/audio/Vinyl%20Arcade%20Skank.mp3","/audio/vinyl-arcade-skank.mp3"]},
+  {name:"Neon Barbertron",srcs:["/audio/Neon%20Barbertron.mp3","/audio/neon-barbertron.mp3"]}
+];
 let currentMusicTrack=0,musicStep=0;
 const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
 const NOTE_FREQ={
@@ -366,14 +370,43 @@ function tickLofiTrack(){
   }catch(e){}
 }
 
+function getBackgroundTrack(){
+  return BACKGROUND_PLAYLIST[backgroundTrackIndex%BACKGROUND_PLAYLIST.length]||BACKGROUND_PLAYLIST[0];
+}
+function getBackgroundSrc(){
+  const track=getBackgroundTrack();
+  const srcs=track?.srcs||[];
+  return srcs[backgroundSourceTry%Math.max(1,srcs.length)]||"/audio/barbershop-arcade-dub.mp3";
+}
+function createBackgroundAudio(){
+  if(typeof Audio==="undefined")return null;
+  const a=new Audio(getBackgroundSrc());
+  a.loop=false;
+  a.preload="auto";
+  a.volume=Math.max(0,Math.min(1,masterVolume*0.55));
+  a.addEventListener("ended",()=>{
+    backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
+    backgroundSourceTry=0;
+    backgroundAudio=null;
+    if(musicPlaying&&!globalMuted)startMusic(true);
+  });
+  a.addEventListener("error",()=>{
+    const track=getBackgroundTrack();
+    const srcs=track?.srcs||[];
+    if(backgroundSourceTry<srcs.length-1){
+      backgroundSourceTry++;
+    }else{
+      backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
+      backgroundSourceTry=0;
+    }
+    backgroundAudio=null;
+    if(musicPlaying&&!globalMuted)startMusic(true);
+  });
+  return a;
+}
 function getBackgroundAudio(){
   if(typeof Audio==="undefined")return null;
-  if(!backgroundAudio){
-    backgroundAudio=new Audio(BACKGROUND_AUDIO_SRC);
-    backgroundAudio.loop=true;
-    backgroundAudio.preload="auto";
-    backgroundAudio.volume=Math.max(0,Math.min(1,masterVolume*0.55));
-  }
+  if(!backgroundAudio) backgroundAudio=createBackgroundAudio();
   return backgroundAudio;
 }
 function setBackgroundVolume(){
@@ -389,8 +422,8 @@ function startGeneratedMusic(){
   setupMusicInterval();
   tickLofiTrack();
 }
-function startMusic(){
-  if(musicPlaying)return;
+function startMusic(forceRestart=false){
+  if(musicPlaying&&!forceRestart)return;
   musicPlaying=true;
   stopGeneratedMusic();
   if(backgroundAudioAvailable){
@@ -398,8 +431,16 @@ function startMusic(){
     if(a){
       setBackgroundVolume();
       a.play().catch(()=>{
-        backgroundAudioAvailable=false;
-        if(musicPlaying&&!globalMuted)startGeneratedMusic();
+        const track=getBackgroundTrack();
+        const srcs=track?.srcs||[];
+        if(backgroundSourceTry<srcs.length-1){
+          backgroundSourceTry++;
+          backgroundAudio=null;
+          startMusic(true);
+        }else{
+          backgroundAudioAvailable=false;
+          if(musicPlaying&&!globalMuted)startGeneratedMusic();
+        }
       });
       return;
     }
@@ -414,12 +455,14 @@ function stopMusic(){
 }
 function nextMusicTrack(){
   if(backgroundAudioAvailable){
+    const old=backgroundAudio;
+    if(old&&!old.paused)old.pause();
+    backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
+    backgroundSourceTry=0;
+    backgroundAudio=null;
     const a=getBackgroundAudio();
-    if(a){
-      a.currentTime=0;
-      if(musicPlaying&&!globalMuted){setBackgroundVolume();a.play().catch(()=>{});}
-      return;
-    }
+    if(a&&musicPlaying&&!globalMuted){setBackgroundVolume();a.play().catch(()=>{});}
+    return;
   }
   currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;
   musicStep=0;
