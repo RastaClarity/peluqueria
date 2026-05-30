@@ -680,6 +680,206 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
   }
   .gestion-grid-pro{grid-template-columns:repeat(7,1fr)!important}
 }
+
+/* ===== Paso 15.3: modo PC real a pantalla completa ===== */
+@media (min-width:900px){
+  :root{
+    --app-max-width:100vw!important;
+    --app-shell-pad-left:236px!important;
+    --app-bottom-pad:0px!important;
+    --desktop-sidebar-width:220px;
+  }
+
+  body{
+    min-width:100vw;
+    overflow-x:hidden;
+  }
+
+  .app-shell{
+    width:100vw!important;
+    max-width:none!important;
+    min-height:100dvh!important;
+    margin:0!important;
+    padding-left:var(--desktop-sidebar-width)!important;
+    padding-bottom:0!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+  }
+
+  .app-header-pro{
+    position:sticky!important;
+    top:0!important;
+    margin:0!important;
+    border-radius:0 0 24px 24px!important;
+    min-height:68px!important;
+    padding:14px 26px!important;
+    z-index:80!important;
+  }
+
+  .app-header-pro>div:first-child>div:first-child{
+    font-size:1.75rem!important;
+  }
+
+  .page-content-pro{
+    width:100%!important;
+    max-width:none!important;
+    padding:28px 34px 42px!important;
+    min-height:calc(100dvh - 74px)!important;
+  }
+
+  .page-content-pro>div:not(.motion-strip){
+    max-width:none!important;
+    width:100%!important;
+  }
+
+  .motion-strip{
+    max-width:none!important;
+    margin:0 0 22px!important;
+  }
+
+  .bottom-nav-pro{
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    bottom:0!important;
+    transform:none!important;
+    width:var(--desktop-sidebar-width)!important;
+    max-width:var(--desktop-sidebar-width)!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    border-radius:0!important;
+    border:none!important;
+    border-right:2px solid rgba(245,230,200,.20)!important;
+    border-top:none!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    align-items:stretch!important;
+    gap:8px!important;
+    padding:88px 14px 18px!important;
+    box-shadow:18px 0 44px rgba(0,0,0,.25)!important;
+    overflow-y:auto!important;
+    backdrop-filter:blur(14px);
+  }
+
+  .bottom-nav-pro::before{
+    content:"Rasta Cuts";
+    position:absolute;
+    top:22px;
+    left:16px;
+    right:16px;
+    color:#FFF4D6;
+    font-family:'Pirata One',cursive;
+    font-size:1.55rem;
+    line-height:1;
+    padding-bottom:14px;
+    border-bottom:1px solid rgba(255,244,214,.18);
+    text-shadow:0 4px 14px rgba(0,0,0,.35);
+  }
+
+  .bottom-nav-pro .nav-tab-pro{
+    width:100%!important;
+    min-width:0!important;
+    flex-direction:row!important;
+    justify-content:flex-start!important;
+    align-items:center!important;
+    gap:12px!important;
+    padding:11px 12px!important;
+    border-radius:16px!important;
+    background:rgba(255,244,214,.06)!important;
+    border:1px solid rgba(255,244,214,.08)!important;
+  }
+
+  .bottom-nav-pro .nav-tab-pro:hover,
+  .bottom-nav-pro .nav-tab-pro:focus-visible{
+    background:rgba(255,244,214,.14)!important;
+    transform:translateX(4px)!important;
+  }
+
+  .bottom-nav-pro .nav-icon-pro{
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    display:grid!important;
+    place-items:center!important;
+    font-size:1.35rem!important;
+    padding:0!important;
+    border-radius:14px!important;
+  }
+
+  .bottom-nav-pro span{
+    display:block!important;
+    font-size:.86rem!important;
+    font-weight:950!important;
+    color:#F5E6C8!important;
+    text-align:left!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+  }
+
+  .bottom-nav-pro .nav-tab-pro:after{
+    left:auto!important;
+    right:-6px!important;
+    top:50%!important;
+    bottom:auto!important;
+    width:4px!important;
+    height:0!important;
+    border-radius:999px!important;
+    transform:translateY(-50%)!important;
+    transition:height .2s ease, opacity .2s ease!important;
+  }
+
+  .bottom-nav-pro .nav-tab-pro:hover:after{
+    height:26px!important;
+    width:4px!important;
+    opacity:.9!important;
+  }
+
+  .gestion-grid-pro{
+    grid-template-columns:repeat(auto-fit,minmax(135px,1fr))!important;
+    gap:12px!important;
+  }
+
+  .gestion-grid-pro button{
+    min-height:92px!important;
+    padding:14px 10px!important;
+  }
+
+  .gestion-grid-pro button div:first-child{
+    font-size:1.7rem!important;
+  }
+
+  .studio-panel{
+    border-radius:22px!important;
+  }
+
+  .modal-overlay-pro{
+    align-items:center!important;
+    justify-content:center!important;
+    padding:44px!important;
+  }
+
+  .modal-panel-pro{
+    width:min(860px,calc(100vw - 320px))!important;
+    max-width:860px!important;
+    max-height:calc(100dvh - 88px)!important;
+    border-radius:30px!important;
+  }
+}
+
+@media (min-width:1400px){
+  :root{--desktop-sidebar-width:248px!important}
+  .page-content-pro{
+    padding-left:46px!important;
+    padding-right:46px!important;
+  }
+  .bottom-nav-pro::before{
+    font-size:1.75rem!important;
+  }
+  .bottom-nav-pro span{
+    font-size:.92rem!important;
+  }
+}
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
