@@ -1705,7 +1705,7 @@ function DashboardAdmin({user,showToast}){
         <StatCard icon="📅" label="Próximas citas" value={stats.citas} col="green"/>
         <StatCard icon="🟡" label="Pendientes" value={stats.pendientes} col="gold"/>
         <StatCard icon="✅" label="Confirmadas" value={stats.confirmadas} col="blue"/>
-        <StatCard icon="💰" label="Ingresos hoy" value={`${stats.ingresos.toFixed(2)}€`} col="gold"/>
+        <StatCard icon="👥" label="Clientes" value={stats.clientes} col="blue"/>
       </div>
 
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
@@ -7529,6 +7529,128 @@ function GestionSeguridad({user,showToast}){
 }
 
 
+
+function GestionFacturacionPanel({user,showToast}){
+  const [loading,setLoading]=useState(true);
+  const [range,setRange]=useState("hoy");
+  const [rows,setRows]=useState({cobros:[],citas:[],pedidos:[],canjes:[]});
+
+  const money=n=>`${(Number(n)||0).toFixed(2)}€`;
+  function dayKey(offset=0){
+    const d=new Date();
+    d.setDate(d.getDate()+offset);
+    return d.toISOString().split("T")[0];
+  }
+  function monthStart(){
+    const d=new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-01`;
+  }
+  function startDate(){
+    if(range==="hoy") return dayKey(0);
+    if(range==="7d") return dayKey(-7);
+    if(range==="30d") return dayKey(-30);
+    return monthStart();
+  }
+  async function safeList(table,query){
+    try{
+      const r=await dbGet(table,query);
+      return Array.isArray(r)?r:[];
+    }catch(e){return [];}
+  }
+  async function load(){
+    setLoading(true);
+    const start=startDate();
+    const [cobros,citas,pedidos,canjes]=await Promise.all([
+      safeList("cobros",`?fecha=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+      safeList("citas",`?fecha=gte.${start}&order=fecha.desc,hora.desc&limit=5000&select=*`),
+      safeList("tienda_pedidos",`?created_at=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+      safeList("canjes",`?created_at=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+    ]);
+    setRows({cobros,citas,pedidos,canjes});
+    setLoading(false);
+  }
+  useEffect(()=>{load();},[range]);
+
+  const cobrosOk=rows.cobros.filter(c=>String(c.estado||"pagado").toLowerCase()!=="anulado");
+  const ingresos=cobrosOk.reduce((sum,c)=>sum+(Number(c.importe)||0),0);
+  const ticketMedio=cobrosOk.length?ingresos/cobrosOk.length:0;
+  const citasRealizadas=rows.citas.filter(c=>String(c.estado||"").toLowerCase()==="completada");
+  const citasPendientes=rows.citas.filter(c=>["pendiente","propuesta"].includes(String(c.estado||"pendiente").toLowerCase()));
+  const pedidosActivos=rows.pedidos.filter(p=>["pendiente","preparando","listo"].includes(String(p.estado||"pendiente").toLowerCase()));
+  const puntosCanjeados=rows.canjes.reduce((sum,c)=>sum+(Number(c.puntos)||Number(c.puntos_coste)||0),0);
+
+  function estadoCobros(){
+    const anulados=rows.cobros.filter(c=>String(c.estado||"").toLowerCase()==="anulado").length;
+    if(!rows.cobros.length) return "Sin cobros registrados en este periodo.";
+    return `${cobrosOk.length} cobro${cobrosOk.length===1?"":"s"} válido${cobrosOk.length===1?"":"s"} y ${anulados} anulado${anulados===1?"":"s"}.`;
+  }
+
+  return <div style={{display:"grid",gap:14}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#3A2414 50%,#B99A45)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>💰</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.6rem",lineHeight:1}}>Resumen de facturación</div>
+          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Vista rápida de caja, cobros, citas realizadas, pedidos activos y puntos canjeados.
+          </div>
+        </div>
+        <Btn small col="ghost" onClick={load}>Actualizar</Btn>
+      </div>
+    </Card>
+
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`,padding:12}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
+        {[["hoy","Hoy"],["7d","7 días"],["mes","Mes"],["30d","30 días"]].map(([id,label])=>
+          <button key={id} onClick={()=>{SFX.tab();setRange(id);}} style={{border:`2px solid ${range===id?T.gold:T.g300}`,background:range===id?T.gradGold:"rgba(255,244,214,.72)",color:range===id?T.g900:T.g700,borderRadius:14,padding:"9px 4px",fontWeight:950,cursor:"pointer",fontSize:".72rem"}}>
+            {label}
+          </button>
+        )}
+      </div>
+    </Card>
+
+    {loading?<Spinner/>:<>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10}}>
+        <StatCard icon="💶" label="Ingresos" value={money(ingresos)} col="gold"/>
+        <StatCard icon="🧾" label="Cobros" value={cobrosOk.length} col="green"/>
+        <StatCard icon="📊" label="Ticket medio" value={money(ticketMedio)} col="blue"/>
+        <StatCard icon="🏁" label="Citas realizadas" value={citasRealizadas.length} col="green"/>
+        <StatCard icon="🟡" label="Citas pendientes" value={citasPendientes.length} col="gold"/>
+        <StatCard icon="🎁" label="Pedidos activos" value={pedidosActivos.length} col="pink"/>
+        <StatCard icon="⭐" label="Puntos canjeados" value={puntosCanjeados} col="gold"/>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🧾 Estado de caja</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            {estadoCobros()} Ingresos válidos: <b style={{color:T.g800}}>{money(ingresos)}</b>.
+          </div>
+        </Card>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📅 Citas y trabajo</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            Hay <b style={{color:T.g800}}>{citasRealizadas.length}</b> cita{citasRealizadas.length===1?"":"s"} realizada{citasRealizadas.length===1?"":"s"} y <b style={{color:T.g800}}>{citasPendientes.length}</b> pendiente{citasPendientes.length===1?"":"s"} en el periodo.
+          </div>
+        </Card>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🛍️ Tienda y canjes</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            Pedidos activos: <b style={{color:T.g800}}>{pedidosActivos.length}</b>. Puntos canjeados: <b style={{color:T.g800}}>{puntosCanjeados}</b>.
+          </div>
+        </Card>
+      </div>
+
+      <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>💡 Cómo usar esta zona</div>
+        <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+          Usa <b>Caja</b> para registrar o revisar cobros concretos. Usa <b>Estadísticas</b> para ver gráficas generales de negocio, comunidad, tienda y juegos. Este resumen sirve como panel rápido de facturación.
+        </div>
+      </Card>
+    </>}
+  </div>;
+}
+
 function GestionJuegosAdmin({user,showToast}){
   const isAdmin=isAdminUser(user);
   return <div style={{display:"grid",gap:14}}>
@@ -7592,7 +7714,8 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes, confirmadas y propuestas",staff:true,group:"principal"},
     {id:"clientes",icon:"👥",label:"Clientes",sub:"Clientes reales de tienda con citas registradas",staff:true,group:"principal"},
 
-    {id:"facturacion",icon:"💰",label:"Caja",sub:"Cobros, ventas y facturación del día",staff:true,group:"facturacion"},
+    {id:"facturacion",icon:"💰",label:"Resumen",sub:"Panel rápido de facturación, caja, cobros y actividad económica",staff:true,group:"facturacion"},
+    {id:"caja",icon:"🧾",label:"Caja",sub:"Cobros, ventas y registros concretos del día",staff:true,group:"facturacion"},
     {id:"estadisticas",icon:"📊",label:"Estadísticas",sub:"Resumen gráfico de citas, ingresos, pedidos, puntos y comunidad",staff:true,group:"facturacion"},
 
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones, objetos y canjes editables",staff:false,group:"tienda"},
@@ -7699,7 +7822,8 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
       {tab==="clientes"&&<Clientes user={user} showToast={showToast}/>}
 
-      {tab==="facturacion"&&<Caja user={user} showToast={showToast}/>}
+      {tab==="facturacion"&&<GestionFacturacionPanel user={user} showToast={showToast}/>}
+      {tab==="caja"&&<Caja user={user} showToast={showToast}/>}
       {tab==="estadisticas"&&<GestionEstadisticas showToast={showToast}/>}
 
       {tab==="tienda"&&(isAdmin?<GestionTienda user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede gestionar stock y pedidos, pero no editar premios ni cupones de tienda."/> )}
