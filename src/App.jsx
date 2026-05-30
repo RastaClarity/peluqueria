@@ -5356,7 +5356,7 @@ function MessageBubble({msg,isMine=false}){
   </div>;
 }
 
-function BuzonPrivado({user,showToast}){
+function BuzonPrivado({user,showToast,refreshUnread,unread}){
   const [mensajes,setMensajes]=useState([]);
   const [texto,setTexto]=useState("");
   const [loading,setLoading]=useState(true);
@@ -5369,6 +5369,7 @@ function BuzonPrivado({user,showToast}){
     const rows=await dbGet("mensajes_privados",`?usuario_id=eq.${user.id}&order=created_at.asc&select=*`);
     setMensajes(Array.isArray(rows)?rows:[]);
     try{await dbPatch("mensajes_privados",`?usuario_id=eq.${user.id}&autor_rol=neq.client&leido_cliente=eq.false`,{leido_cliente:true});}catch{}
+    refreshUnread?.();
     setLoading(false);
   }
 
@@ -5391,14 +5392,16 @@ function BuzonPrivado({user,showToast}){
       SFX.success();
       showToast?.("Mensaje enviado");
       await load();
+      refreshUnread?.();
     }else{
       SFX.error();
       showToast?.("No se pudo enviar el mensaje");
     }
   }
 
+  const lastEstado=mensajes[mensajes.length-1]?.estado||"abierto";
   return <div style={{animation:"fadeSlide .34s ease"}}>
-    <SectionHeader icon="📩" title="Buzón privado" sub="Mensajes directos con Rasta Cuts"/>
+    <SectionHeader icon="📩" title="Buzón privado" sub={(unread?.client||0)>0?`${unread.client} mensajes nuevos`:`Mensajes directos con Rasta Cuts · ${lastEstado==="cerrado"?"cerrado":"abierto"}`}/>
     <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <div className="icon3d" style={{fontSize:"2rem"}}>💬</div>
@@ -5425,13 +5428,15 @@ function BuzonPrivado({user,showToast}){
   </div>;
 }
 
-function GestionMensajes({user,showToast}){
+function GestionMensajes({user,showToast,refreshUnread,unread}){
   const [rows,setRows]=useState([]);
   const [selected,setSelected]=useState(null);
   const [thread,setThread]=useState([]);
   const [texto,setTexto]=useState("");
   const [loading,setLoading]=useState(true);
   const [threadLoading,setThreadLoading]=useState(false);
+  const [search,setSearch]=useState("");
+  const [statusFilter,setStatusFilter]=useState("abierto");
 
   useEffect(()=>{load();},[]);
 
@@ -5448,15 +5453,19 @@ function GestionMensajes({user,showToast}){
       const id=String(m.usuario_id||"");
       if(!id)continue;
       if(!map.has(id)){
-        map.set(id,{usuario_id:id,cliente_nombre:m.cliente_nombre||"Cliente",ultimo:m,unread:0,total:0});
+        map.set(id,{usuario_id:id,cliente_nombre:m.cliente_nombre||"Cliente",ultimo:m,unread:0,total:0,estado:m.estado||"abierto"});
       }
       const c=map.get(id);
       c.total+=1;
-      if(new Date(m.created_at)>new Date(c.ultimo.created_at)) c.ultimo=m;
+      if(new Date(m.created_at)>new Date(c.ultimo.created_at)){ c.ultimo=m; c.estado=m.estado||"abierto"; }
       if(String(m.autor_rol||"client")==="client" && !m.leido_admin)c.unread+=1;
     }
-    return [...map.values()].sort((a,b)=>new Date(b.ultimo.created_at)-new Date(a.ultimo.created_at));
-  },[rows]);
+    const q=normalizeText(search);
+    return [...map.values()]
+      .filter(c=>statusFilter==="todo"||String(c.estado||"abierto")===statusFilter)
+      .filter(c=>!q||normalizeText(`${c.cliente_nombre} ${c.ultimo?.mensaje||""} ${c.usuario_id}`).includes(q))
+      .sort((a,b)=>new Date(b.ultimo.created_at)-new Date(a.ultimo.created_at));
+  },[rows,search,statusFilter]);
 
   async function openThread(conv){
     setSelected(conv);
@@ -5464,8 +5473,24 @@ function GestionMensajes({user,showToast}){
     const msgs=await dbGet("mensajes_privados",`?usuario_id=eq.${conv.usuario_id}&order=created_at.asc&select=*`);
     setThread(Array.isArray(msgs)?msgs:[]);
     try{await dbPatch("mensajes_privados",`?usuario_id=eq.${conv.usuario_id}&autor_rol=eq.client&leido_admin=eq.false`,{leido_admin:true});}catch{}
+    refreshUnread?.();
     setThreadLoading(false);
     await load();
+  }
+
+  async function cambiarEstadoConversacion(nuevoEstado){
+    if(!selected)return;
+    const ok=await dbPatch("mensajes_privados",`?usuario_id=eq.${selected.usuario_id}`,{estado:nuevoEstado});
+    if(ok){
+      SFX.success();
+      showToast?.(nuevoEstado==="cerrado"?"Conversación cerrada":"Conversación reabierta");
+      setSelected(s=>s?{...s,estado:nuevoEstado}:s);
+      await openThread({...selected,estado:nuevoEstado});
+      await load();
+    }else{
+      SFX.error();
+      showToast?.("No se pudo cambiar el estado");
+    }
   }
 
   async function responder(){
@@ -5487,7 +5512,9 @@ function GestionMensajes({user,showToast}){
       setTexto("");
       SFX.success();
       showToast?.("Respuesta enviada");
-      await openThread(selected);
+      setSelected(s=>s?{...s,estado:"abierto"}:s);
+      await openThread({...selected,estado:"abierto"});
+      refreshUnread?.();
     }else{
       SFX.error();
       showToast?.("No se pudo enviar la respuesta");
@@ -5495,7 +5522,7 @@ function GestionMensajes({user,showToast}){
   }
 
   return <div style={{animation:"fadeSlide .34s ease"}}>
-    <SectionHeader icon="📩" title="Mensajes privados" sub={`${conversaciones.length} conversaciones`} action={<Btn small col="ghost" onClick={load}>Actualizar</Btn>}/>
+    <SectionHeader icon="📩" title="Mensajes privados" sub={`${conversaciones.length} conversaciones · ${(unread?.admin||0)} sin leer`} action={<Btn small col="ghost" onClick={load}>Actualizar</Btn>}/>
     <Card style={{marginBottom:14,background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#D4AF37)",border:"2px solid rgba(255,244,214,.52)",color:T.white}}>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <div className="icon3d" style={{fontSize:"2rem"}}>📬</div>
@@ -5507,6 +5534,15 @@ function GestionMensajes({user,showToast}){
     </Card>
 
     {!selected&&(
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <Input label="Buscar conversación" value={search} onChange={setSearch} placeholder="Cliente, mensaje o ID..."/>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+          {[{id:"abierto",label:"Abiertas"},{id:"cerrado",label:"Cerradas"},{id:"todo",label:"Todas"}].map(f=><button key={f.id} onClick={()=>{SFX.tab();setStatusFilter(f.id);}} style={{border:`2px solid ${statusFilter===f.id?T.gold:T.g300}`,background:statusFilter===f.id?T.gradGold:"rgba(255,244,214,.84)",color:statusFilter===f.id?T.g900:T.g700,borderRadius:14,padding:"9px 6px",fontWeight:950,cursor:"pointer",fontSize:".76rem"}}>{f.label}</button>)}
+        </div>
+      </Card>
+    )}
+
+    {!selected&&(
       loading?<Spinner/>:conversaciones.length===0?<EmptyState icon="📩" title="Sin mensajes" sub="Cuando un cliente escriba, aparecerá aquí."/>:
       conversaciones.map(c=>{
         const when=c.ultimo?.created_at?new Date(c.ultimo.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
@@ -5516,7 +5552,7 @@ function GestionMensajes({user,showToast}){
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontWeight:950,color:T.g800}}>{c.cliente_nombre}</div>
               <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.ultimo?.mensaje}</div>
-              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,marginTop:3}}>{when} · {c.total} mensajes</div>
+              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,marginTop:3}}>{when} · {c.total} mensajes · {c.estado==="cerrado"?"cerrada":"abierta"}</div>
             </div>
             {c.unread>0&&<Badge col="red">{c.unread}</Badge>}
           </div>
@@ -5528,10 +5564,15 @@ function GestionMensajes({user,showToast}){
       <div>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <button onClick={()=>{SFX.navBack();setSelected(null);setThread([]);}} style={{background:T.g150,border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",fontWeight:950,fontSize:"1rem",color:T.g700,boxShadow:"0 8px 18px rgba(20,8,4,.2)"}}>{"<"}</button>
-          <div>
+          <div style={{flex:1}}>
             <div style={{fontWeight:950,color:T.g800}}>Conversación con {selected.cliente_nombre}</div>
             <div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>ID cliente: {selected.usuario_id}</div>
           </div>
+          <Badge col={selected.estado==="cerrado"?"red":"green"}>{selected.estado==="cerrado"?"cerrada":"abierta"}</Badge>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+          <Btn small col="ghost" onClick={()=>cambiarEstadoConversacion("abierto")}>Reabrir</Btn>
+          <Btn small col="red" onClick={()=>cambiarEstadoConversacion("cerrado")}>Cerrar</Btn>
         </div>
 
         <Card style={{background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,marginBottom:14,minHeight:300}}>
@@ -5550,7 +5591,7 @@ function GestionMensajes({user,showToast}){
   </div>;
 }
 
-function GestionAdmin({user,setUser,showToast,showPoints}){
+function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
   const isStaff=role===ROLES.STAFF;
@@ -5560,7 +5601,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
     {id:"resumen",icon:"🏠",label:"Resumen",sub:"Inicio interno con próximas citas y acciones rápidas",staff:true},
     {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true},
     {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true},
-    {id:"mensajes",icon:"📩",label:"Mensajes",sub:"Buzón privado de clientes",staff:true},
+    {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true},
     {id:"clientes",icon:"👥",label:"Clientes",sub:"Fichas e historial de clientes",staff:true},
     {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true},
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones y objetos editables",staff:false},
@@ -6430,6 +6471,7 @@ export default function App(){
   const [helperPage,setHelperPage]=useState(null);
   const [topsInitial,setTopsInitial]=useState("games");
   const [appSettings,setAppSettings]=useState(DEFAULT_APP_SETTINGS);
+  const [unread,setUnread]=useState({client:0,admin:0});
 
   useEffect(()=>{
     async function loadSettings(){
@@ -6463,6 +6505,25 @@ export default function App(){
 
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
+
+  const refreshUnread=useCallback(async()=>{
+    if(!user?.id)return;
+    const roleNow=normalizeRole(user.rol||user.role);
+    try{
+      const rows=roleNow===ROLES.CLIENT
+        ? await dbGet("mensajes_privados",`?usuario_id=eq.${user.id}&autor_rol=neq.client&leido_cliente=eq.false&select=id`)
+        : await dbGet("mensajes_privados","?autor_rol=eq.client&leido_admin=eq.false&select=id");
+      const count=Array.isArray(rows)?rows.length:0;
+      setUnread(roleNow===ROLES.CLIENT?{client:count,admin:0}:{client:0,admin:count});
+    }catch(e){}
+  },[user?.id,user?.rol,user?.role]);
+
+  useEffect(()=>{refreshUnread();},[refreshUnread,page]);
+  useEffect(()=>{
+    if(!user?.id)return;
+    const timer=setInterval(()=>refreshUnread(),45000);
+    return()=>clearInterval(timer);
+  },[user?.id,refreshUnread]);
   function toggleMusic(){
     if(appSettings?.secciones?.musica_activa===false){showToast("La música está desactivada desde Ajustes");SFX.error();return;}
     globalMuted=!globalMuted;
@@ -6505,7 +6566,7 @@ export default function App(){
   const ap=(role!==ROLES.CLIENT && page==="dashboard")?"gestion":page;
   const theme=pageTheme(ap,communityTab,role);
   const currentUser={...user,rol:role};
-  const sp={showToast,showPoints,user:currentUser,setUser,settings:appSettings};
+  const sp={showToast,showPoints,user:currentUser,setUser,settings:appSettings,refreshUnread,unread};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
   const pages={
@@ -6544,12 +6605,15 @@ export default function App(){
         <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
       </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:theme.nav,borderTop:`2px solid ${theme.accent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
-        {nav.map(n=>(
-          <button className="nav-tab-pro" key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38}}>
+        {nav.map(n=>{
+          const badge=(role===ROLES.CLIENT && n.id==="buzon")?unread.client:((role!==ROLES.CLIENT && n.id==="gestion")?unread.admin:0);
+          return(
+          <button className="nav-tab-pro" key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38,position:"relative"}}>
+            {badge>0&&<span style={{position:"absolute",top:-2,right:2,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{badge>9?"9+":badge}</span>}
             <div className="nav-icon-pro" style={{fontSize:"1.1rem",background:ap===n.id?theme.header:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${theme.accent}44`:"none"}}>{n.icon}</div>
             <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?"#F5E6C8":"#DEB887",transition:"color 0.2s"}}>{n.label}</span>
           </button>
-        ))}
+        );})}
       </div>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
