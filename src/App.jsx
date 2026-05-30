@@ -8557,6 +8557,165 @@ function GestionBaneos({user,showToast}){
   </div>;
 }
 
+
+function GestionChecklist({user,showToast}){
+  const isAdmin=isAdminUser(user);
+  const STORAGE_KEY="rasta_cuts_checklist_gestion_v1";
+  const groups=[
+    {
+      id:"principal",icon:"🏠",title:"Principal",items:[
+        "Resumen carga sin pantalla en blanco",
+        "Agenda abre correctamente",
+        "Citas permite revisar pendientes/confirmadas",
+        "Clientes muestra clientes de tienda, no usuarios online mezclados"
+      ]
+    },
+    {
+      id:"facturacion",icon:"💰",title:"Facturación",items:[
+        "Resumen de facturación carga bien",
+        "Caja permite revisar cobros",
+        "Estadísticas cargan sin romper la vista",
+        "No aparece dinero mezclado en Principal"
+      ]
+    },
+    {
+      id:"tienda",icon:"🛍️",title:"Tienda",items:[
+        "Resumen muestra pedidos, premios y stock bajo",
+        "Premios abre sólo para admin",
+        "Stock permite sumar/restar unidades",
+        "Pedidos permite cambiar estados",
+        "Ajustes permite activar/desactivar tienda y canjes"
+      ]
+    },
+    {
+      id:"juegos",icon:"🎮",title:"Juegos",items:[
+        "Resumen muestra partidas y juegos disponibles",
+        "Ajustes tiene Arcade/Gacha y límites",
+        "Rankings carga sin quedarse vacío por error",
+        "Retos permite crear y activar/desactivar",
+        "Actividad muestra partidas recientes"
+      ]
+    },
+    {
+      id:"comunidad",icon:"🌐",title:"Comunidad",items:[
+        "Resumen carga sin pantalla en blanco",
+        "Moderación abre reportes",
+        "Mensajes abre buzón interno",
+        "Música sólo editable por admin",
+        "Ajustes permite activar foro, actualidad, música, mensajes y reportes"
+      ]
+    },
+    {
+      id:"admin",icon:"🔐",title:"Admin",items:[
+        "Resumen admin carga datos",
+        "Usuarios permite buscar y cambiar roles",
+        "Roles muestra matriz de permisos clara",
+        "Baneos muestra bloqueados y desbloqueo rápido",
+        "Auditoría carga registros",
+        "Ajustes globales siguen funcionando"
+      ]
+    },
+    {
+      id:"roles",icon:"🧪",title:"Pruebas por rol",items:[
+        "Admin ve todas las secciones de Gestión",
+        "Staff no ve Admin ni ajustes delicados",
+        "Staff sí ve agenda, citas, caja, stock, pedidos, comunidad y juegos",
+        "Cliente no puede entrar en Gestión",
+        "Modo incógnito sólo oculta a usuarios normales, no a admin/staff"
+      ]
+    },
+    {
+      id:"movil",icon:"📱",title:"Móvil / Android",items:[
+        "Botones grandes y tocables",
+        "No hay modales tapados por el menú inferior",
+        "Los formularios se pueden rellenar sin zoom raro",
+        "Las tarjetas no se salen de pantalla",
+        "El scroll llega hasta el final de cada pantalla"
+      ]
+    }
+  ];
+  const flat=groups.flatMap(g=>g.items.map((text,i)=>`${g.id}_${i}`));
+  const [checked,setChecked]=useState(()=> {
+    try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");}
+    catch(e){return {};}
+  });
+  const done=flat.filter(k=>checked[k]).length;
+  const total=flat.length;
+  const pct=total?Math.round(done/total*100):0;
+
+  function toggle(key){
+    const next={...checked,[key]:!checked[key]};
+    setChecked(next);
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}catch(e){}
+    SFX.tab();
+  }
+  function reset(){
+    setChecked({});
+    try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+    showToast?.("Checklist reiniciado");
+  }
+
+  if(!isAdmin)return <EmptyState icon="🔒" title="Sólo admin" sub="El checklist final de gestión sólo debería verlo el administrador."/>;
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#24110A 52%,#B99A45)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>✅</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Checklist de Gestión</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Revisión final antes de tocar seguridad real en Supabase. Marca cada prueba cuando la compruebes en la web.
+          </div>
+        </div>
+        <Badge col={pct===100?"green":"gold"}>{pct}%</Badge>
+      </div>
+    </Card>
+
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,marginBottom:10}}>
+        <div>
+          <div style={{fontWeight:950,color:T.g800}}>Progreso de revisión</div>
+          <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>{done} de {total} pruebas marcadas</div>
+        </div>
+        <Btn small col="ghost" onClick={reset}>Reiniciar</Btn>
+      </div>
+      <div style={{height:12,borderRadius:999,background:"rgba(75,48,27,.14)",overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${pct}%`,borderRadius:999,background:"linear-gradient(90deg,#263F4D,#B99A45,#2F6B42)",transition:"width .25s ease"}}/>
+      </div>
+    </Card>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
+      {groups.map(g=><Card key={g.id} style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+          <div style={{fontSize:"1.75rem"}}>{g.icon}</div>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>{g.title}</div>
+            <div style={{fontSize:".74rem",fontWeight:820,color:T.textSub}}>
+              {g.items.filter((_,i)=>checked[`${g.id}_${i}`]).length}/{g.items.length} comprobado
+            </div>
+          </div>
+        </div>
+        <div style={{display:"grid",gap:8}}>
+          {g.items.map((text,i)=>{
+            const key=`${g.id}_${i}`;
+            const on=!!checked[key];
+            return <button key={key} onClick={()=>toggle(key)} style={{textAlign:"left",display:"flex",gap:9,alignItems:"flex-start",border:`1.5px solid ${on?T.gold:T.g300}`,background:on?"linear-gradient(180deg,#E8D3A2,#D8BE87)":"rgba(255,244,214,.72)",borderRadius:13,padding:"9px 10px",cursor:"pointer",fontWeight:850,color:on?T.g800:T.textSub,lineHeight:1.28}}>
+              <span style={{fontSize:"1rem",lineHeight:1.1}}>{on?"✅":"⬜"}</span>
+              <span style={{fontSize:".82rem"}}>{text}</span>
+            </button>;
+          })}
+        </div>
+      </Card>)}
+    </div>
+
+    <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Siguiente paso cuando esté todo marcado</div>
+      <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+        Cuando Gestión esté revisada, el siguiente bloque será <b>Supabase/RLS</b>: primero usuarios y roles, después citas, tienda, comunidad y auditoría. No conviene tocar RLS hasta saber que la interfaz ya está estable.
+      </div>
+    </Card>
+  </div>;
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -8594,6 +8753,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"roles_permisos",icon:"👑",label:"Roles",sub:"Matriz clara de permisos admin, staff y cliente",staff:false,group:"admin"},
     {id:"baneos",icon:"🚫",label:"Baneos",sub:"Usuarios bloqueados y desbloqueo rápido",staff:false,group:"admin"},
     {id:"seguridad",icon:"🧾",label:"Auditoría",sub:"Registro de roles, bloqueos y cambios importantes",staff:false,group:"admin"},
+    {id:"checklist",icon:"✅",label:"Checklist",sub:"Revisión final de Gestión antes de seguridad real",staff:false,group:"admin"},
     {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna global de la web",staff:false,group:"admin"},
   ].filter(t=>isAdmin||t.staff);
 
@@ -8605,7 +8765,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Resumen, premios, stock, pedidos y ajustes de tienda."},
     {id:"juegos",icon:"🎮",label:"Juegos",sub:"Arcade, rankings, retos y recompensas internas de juego."},
     {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Resumen, moderación, mensajes, música y ajustes de comunidad."},
-    {id:"admin",icon:"🔐",label:"Admin",sub:"Resumen, usuarios, roles, baneos, auditoría y ajustes globales."}
+    {id:"admin",icon:"🔐",label:"Admin",sub:"Resumen, usuarios, roles, baneos, auditoría, checklist y ajustes globales."}
   ].filter(g=>tabs.some(t=>t.group===g.id));
 
   const visibleTabs=tabs.filter(t=>t.group===gestionGroup);
@@ -8709,6 +8869,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       {tab==="roles_permisos"&&(isAdmin?<GestionRolesPermisos user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La matriz de permisos sólo debería verla el administrador."/> )}
       {tab==="baneos"&&(isAdmin?<GestionBaneos user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="Los bloqueos sólo debería revisarlos el administrador."/> )}
       {tab==="seguridad"&&(isAdmin?<GestionSeguridad user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La auditoría de seguridad sólo debería verla el administrador."/> )}
+      {tab==="checklist"&&(isAdmin?<GestionChecklist user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El checklist final sólo debería verlo el administrador."/> )}
       {tab==="ajustes"&&(isAdmin?<GestionAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo debería tocarlos el administrador."/> )}
     </div>
   );
