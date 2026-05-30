@@ -2853,35 +2853,102 @@ function Foro({user,showToast}){
 
 // TIENDA
 function Tienda({user,setUser,showToast,showPoints}){
-  const [productos,setProductos]=useState([]);const [loading,setLoading]=useState(true);
+  const [productos,setProductos]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [cat,setCat]=useState("todo");
   useEffect(()=>{load();},[]);
-  async function load(){setLoading(true);setProductos(await dbGet("premios","?activo=eq.true&order=puntos_precio.asc&select=*")||[]);setLoading(false);}
-  async function canjear(p){
-    if((user.puntos||0)<p.puntos_precio){showToast("No tienes suficientes puntos");SFX.error();return;}
-    const nuevos=user.puntos-p.puntos_precio;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    await dbPost("canjes",{usuario_id:user.id,premio_id:p.id,premio_nombre:p.nombre,puntos_gastados:p.puntos_precio});
-    setUser(u=>({...u,puntos:nuevos}));SFX.coins();showToast(`${p.nombre} canjeado!`);
+
+  async function load(){
+    setLoading(true);
+    let data=await dbGet("tienda_items","?activo=eq.true&order=puntos_precio.asc&select=*");
+    if(!Array.isArray(data)||!data.length){
+      data=await dbGet("premios","?activo=eq.true&order=puntos_precio.asc&select=*");
+    }
+    setProductos(Array.isArray(data)?data:[]);
+    setLoading(false);
   }
+
+  async function canjear(p){
+    const precio=Number(p.puntos_precio)||0;
+    const stockLimitado=p.stock!==null && p.stock!==undefined && String(p.stock)!=="";
+    if((user.puntos||0)<precio){showToast("No tienes suficientes puntos");SFX.error();return;}
+    if(stockLimitado && Number(p.stock)<=0){showToast("Este premio está agotado");SFX.error();return;}
+    const nuevos=Math.max(0,(user.puntos||0)-precio);
+    const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    await dbPost("canjes",{
+      usuario_id:user.id,
+      premio_id:p.id,
+      premio_nombre:p.nombre,
+      puntos_gastados:precio,
+      item_key:p.item_key||null,
+      categoria:p.categoria||"premios",
+      tipo:p.tipo||"canje"
+    });
+    if(stockLimitado){
+      await dbPatch("tienda_items",`?id=eq.${p.id}`,{stock:Math.max(0,Number(p.stock)-1)});
+    }
+    if(okUser){
+      setUser(u=>({...u,puntos:nuevos}));
+      SFX.coins();
+      showToast(`${p.nombre} canjeado`);
+      await load();
+    }else{
+      showToast("Canje guardado, pero revisa los puntos del usuario");
+    }
+  }
+
+  const cats=[
+    {id:"todo",label:"Todo",icon:"✨"},
+    {id:"cupones",label:"Cupones",icon:"🎟️"},
+    {id:"avatar",label:"Avatar",icon:"🎭"},
+    {id:"juegos",label:"Juegos",icon:"🎮"},
+    {id:"premios",label:"Premios",icon:"🎁"}
+  ];
+  const visibles=cat==="todo"?productos:productos.filter(p=>String(p.categoria||"premios")===cat);
+
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="🛍️" title="Tienda" sub={`Tienes ${user.puntos||0} pts`}/>
-      <Card style={{background:T.gradGold,border:"none",marginBottom:16,padding:"14px 16px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div style={{color:T.white}}><div style={{fontSize:"0.78rem",fontWeight:700,opacity:0.85}}>TUS PUNTOS</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem"}}>{user.puntos||0}</div></div>
-          <div style={{fontSize:"2.5rem"}}>🎁</div>
+      <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
+          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>Puntos de fidelidad</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0}</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Canjea por cupones, avatar, juegos y premios. No equivalen a euros.</div></div>
+          <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
-      {loading?<Spinner/>:productos.length===0?<EmptyState icon="🛍️" title="Sin premios aun" sub="Pronto habra novedades"/>
-        :productos.map(p=>{
-          const ok=(user.puntos||0)>=p.puntos_precio;
+
+      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
+        {cats.map(c=><button key={c.id} onClick={()=>{SFX.tab();setCat(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${cat===c.id?T.gold:T.g300}`,background:cat===c.id?T.gradGold:"rgba(255,244,214,.84)",color:cat===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>
+          {c.icon} {c.label}
+        </button>)}
+      </div>
+
+      {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin premios todavía" sub="Pronto habrá novedades en esta categoría."/>
+        :visibles.map(p=>{
+          const precio=Number(p.puntos_precio)||0;
+          const ok=(user.puntos||0)>=precio;
+          const stockLimitado=p.stock!==null && p.stock!==undefined && String(p.stock)!=="";
+          const agotado=stockLimitado && Number(p.stock)<=0;
           return(
-            <Card key={p.id} style={{marginBottom:12,border:ok?`2px solid ${T.g400}`:`1px solid ${T.g150}`,opacity:ok?1:0.75}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                <div style={{flex:1}}><div style={{fontWeight:800}}>{p.nombre}</div><div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2}}>{p.descripcion}</div></div>
-                <div style={{fontWeight:900,color:T.orange,fontSize:"1.1rem",marginLeft:12}}>{p.puntos_precio} pts</div>
+            <Card key={p.id} style={{marginBottom:12,border:ok&&!agotado?`2px solid ${T.g400}`:`1px solid ${T.g150}`,opacity:ok&&!agotado?1:0.78,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
+                <div style={{display:"flex",gap:10,flex:1,minWidth:0}}>
+                  <div className="icon3d" style={{fontSize:"2rem"}}>{p.icono||"🎁"}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:950,color:T.g800}}>{p.nombre}</div>
+                    <div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2,fontWeight:800,lineHeight:1.35}}>{p.descripcion}</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+                      <Badge col="gold">{p.categoria||"premios"}</Badge>
+                      <Badge col={p.rareza==="epico"?"pink":p.rareza==="raro"?"blue":p.rareza==="legendario"?"gold":"green"}>{rarityLabel(p.rareza||"comun")}</Badge>
+                      {stockLimitado&&<Badge col={agotado?"red":"green"}>Stock {Number(p.stock)||0}</Badge>}
+                    </div>
+                  </div>
+                </div>
+                <div style={{fontWeight:950,color:T.orange,fontSize:"1.08rem",whiteSpace:"nowrap"}}>{precio} pts</div>
               </div>
-              <div style={{marginTop:12}}>{ok?<Btn full small col="gold" onClick={()=>canjear(p)}>Canjear</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:700}}>Faltan {p.puntos_precio-(user.puntos||0)} pts</div>}</div>
+              <div style={{marginTop:12}}>
+                {agotado?<div style={{textAlign:"center",fontSize:"0.78rem",color:T.red,fontWeight:950}}>Agotado</div>:
+                ok?<Btn full small col="gold" onClick={()=>canjear(p)}>Canjear</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850}}>Faltan {precio-(user.puntos||0)} pts</div>}
+              </div>
             </Card>
           );
         })
@@ -4895,6 +4962,177 @@ function Comunidad(props){
 }
 
 
+
+function GestionTienda({showToast}){
+  const empty={id:null,item_key:"",nombre:"",descripcion:"",categoria:"premios",tipo:"canje",icono:"🎁",puntos_precio:"100",stock:"",activo:"true",rareza:"comun",slot:"",valor:""};
+  const [items,setItems]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [showEdit,setShowEdit]=useState(false);
+  const [form,setForm]=useState(empty);
+  const [filter,setFilter]=useState("todo");
+
+  useEffect(()=>{load();},[]);
+
+  async function load(){
+    setLoading(true);
+    const data=await dbGet("tienda_items","?order=created_at.desc&select=*");
+    setItems(Array.isArray(data)?data:[]);
+    setLoading(false);
+  }
+
+  function openNew(){
+    setForm({...empty,item_key:`item_${Date.now()}`});
+    setShowEdit(true);
+  }
+
+  function openEdit(item){
+    setForm({
+      id:item.id,
+      item_key:item.item_key||"",
+      nombre:item.nombre||"",
+      descripcion:item.descripcion||"",
+      categoria:item.categoria||"premios",
+      tipo:item.tipo||"canje",
+      icono:item.icono||"🎁",
+      puntos_precio:String(item.puntos_precio??0),
+      stock:item.stock===null||item.stock===undefined?"":String(item.stock),
+      activo:String(item.activo!==false),
+      rareza:item.rareza||"comun",
+      slot:item.slot||"",
+      valor:item.valor||""
+    });
+    setShowEdit(true);
+  }
+
+  async function saveItem(){
+    if(!form.nombre.trim()){showToast?.("Pon un nombre");return;}
+    const payload={
+      item_key:form.item_key.trim()||`item_${Date.now()}`,
+      nombre:form.nombre.trim(),
+      descripcion:form.descripcion.trim(),
+      categoria:form.categoria,
+      tipo:form.tipo,
+      icono:form.icono||"🎁",
+      puntos_precio:Math.max(0,parseInt(form.puntos_precio||"0",10)||0),
+      stock:form.stock===""?null:Math.max(0,parseInt(form.stock||"0",10)||0),
+      activo:form.activo==="true",
+      rareza:form.rareza,
+      slot:form.slot.trim()||null,
+      valor:form.valor.trim()||null,
+      visible_para:"clientes",
+      updated_at:new Date().toISOString()
+    };
+    const ok=form.id
+      ? await dbPatch("tienda_items",`?id=eq.${form.id}`,payload)
+      : await dbPost("tienda_items",payload);
+    if(ok){
+      showToast?.(form.id?"Producto actualizado":"Producto creado");
+      SFX.success();
+      setShowEdit(false);
+      await load();
+    }else{
+      showToast?.("No se pudo guardar el producto");
+      SFX.error();
+    }
+  }
+
+  async function toggleActive(item){
+    const ok=await dbPatch("tienda_items",`?id=eq.${item.id}`,{activo:!item.activo,updated_at:new Date().toISOString()});
+    if(ok){showToast?.(!item.activo?"Producto activado":"Producto desactivado");await load();}
+    else{showToast?.("No se pudo cambiar el estado");SFX.error();}
+  }
+
+  const cats=[
+    {id:"todo",label:"Todo"},
+    {id:"cupones",label:"Cupones"},
+    {id:"avatar",label:"Avatar"},
+    {id:"juegos",label:"Juegos"},
+    {id:"premios",label:"Premios"}
+  ];
+  const visibles=filter==="todo"?items:items.filter(i=>String(i.categoria||"premios")===filter);
+
+  return(
+    <div style={{animation:"fadeSlide .34s ease"}}>
+      <SectionHeader icon="🛍️" title="Tienda editable" sub={`${items.length} productos configurados`} action={<Btn small col="gold" onClick={openNew}>+ Producto</Btn>}/>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2rem"}}>🛠️</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Administra premios sin tocar código</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Crea cupones, objetos de avatar, extras de juegos o premios. La tienda del cliente lee desde Supabase.</div>
+          </div>
+        </div>
+      </Card>
+
+      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
+        {cats.map(c=><button key={c.id} onClick={()=>{SFX.tab();setFilter(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===c.id?T.gold:T.g300}`,background:filter===c.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>{c.label}</button>)}
+      </div>
+
+      {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin productos" sub="Crea el primer producto de tienda."/>:
+        visibles.map(item=><Card key={item.id} style={{marginBottom:10,background:item.activo?"linear-gradient(180deg,#FFF4D6,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",opacity:item.activo?1:.72}}>
+          <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+            <div className="icon3d" style={{fontSize:"2rem"}}>{item.icono||"🎁"}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                <b style={{color:T.g800}}>{item.nombre}</b>
+                <Badge col={item.activo?"green":"red"}>{item.activo?"activo":"oculto"}</Badge>
+              </div>
+              <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:3}}>{item.descripcion}</div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+                <Badge col="gold">{item.puntos_precio} pts</Badge>
+                <Badge col="blue">{item.categoria}</Badge>
+                <Badge col={item.rareza==="epico"?"pink":item.rareza==="raro"?"blue":item.rareza==="legendario"?"gold":"green"}>{rarityLabel(item.rareza||"comun")}</Badge>
+                {item.stock!==null&&item.stock!==undefined&&<Badge col={Number(item.stock)>0?"green":"red"}>Stock {item.stock}</Badge>}
+              </div>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:12}}>
+            <Btn small col="dark" onClick={()=>openEdit(item)}>Editar</Btn>
+            <Btn small col={item.activo?"red":"green"} onClick={()=>toggleActive(item)}>{item.activo?"Desactivar":"Activar"}</Btn>
+          </div>
+        </Card>)
+      }
+
+      <Modal show={showEdit} onClose={()=>setShowEdit(false)} title={form.id?"Editar producto":"Nuevo producto"}>
+        <Input label="Clave interna" value={form.item_key} onChange={v=>setForm(f=>({...f,item_key:v}))} placeholder="cupon_5_descuento"/>
+        <Input label="Nombre" value={form.nombre} onChange={v=>setForm(f=>({...f,nombre:v}))}/>
+        <Input label="Descripción" value={form.descripcion} onChange={v=>setForm(f=>({...f,descripcion:v}))}/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Input label="Icono" value={form.icono} onChange={v=>setForm(f=>({...f,icono:v}))}/>
+          <Input label="Precio puntos" value={form.puntos_precio} onChange={v=>setForm(f=>({...f,puntos_precio:v}))} type="number"/>
+        </div>
+        <Select label="Categoría" value={form.categoria} onChange={v=>setForm(f=>({...f,categoria:v}))} options={[
+          {value:"cupones",label:"Cupones"},
+          {value:"avatar",label:"Avatar"},
+          {value:"juegos",label:"Juegos"},
+          {value:"premios",label:"Premios"}
+        ]}/>
+        <Select label="Tipo" value={form.tipo} onChange={v=>setForm(f=>({...f,tipo:v}))} options={[
+          {value:"cupon",label:"Cupón"},
+          {value:"avatar",label:"Avatar"},
+          {value:"bonus",label:"Bonus juego"},
+          {value:"canje",label:"Canje/premio"}
+        ]}/>
+        <Select label="Rareza" value={form.rareza} onChange={v=>setForm(f=>({...f,rareza:v}))} options={[
+          {value:"comun",label:"Común"},
+          {value:"raro",label:"Raro"},
+          {value:"epico",label:"Épico"},
+          {value:"legendario",label:"Legendario"}
+        ]}/>
+        <Input label="Stock vacío = ilimitado" value={form.stock} onChange={v=>setForm(f=>({...f,stock:v}))} type="number"/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Input label="Slot avatar/opcional" value={form.slot} onChange={v=>setForm(f=>({...f,slot:v}))} placeholder="aura, bg, frame..."/>
+          <Input label="Valor/opcional" value={form.valor} onChange={v=>setForm(f=>({...f,valor:v}))} placeholder="warm, flame..."/>
+        </div>
+        <Select label="Estado" value={form.activo} onChange={v=>setForm(f=>({...f,activo:v}))} options={[{value:"true",label:"Activo"},{value:"false",label:"Oculto"}]}/>
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
+          <Btn full col="gold" onClick={saveItem}>Guardar producto</Btn>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -4907,6 +5145,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
     {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true},
     {id:"clientes",icon:"👥",label:"Clientes",sub:"Fichas e historial de clientes",staff:true},
     {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true},
+    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones y objetos editables",staff:false},
     {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Roles y permisos",staff:false},
     {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna",staff:false},
   ].filter(t=>isAdmin||t.staff);
@@ -4965,6 +5204,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
       {tab==="clientes"&&<Clientes showToast={showToast}/>}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
+      {tab==="tienda"&&(isAdmin?<GestionTienda showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la tienda."/> )}
       {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no cambiar roles ni permisos."/> )}
       {tab==="ajustes"&&(isAdmin?<Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>⚙️ Ajustes internos</div>
