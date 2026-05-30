@@ -7528,38 +7528,101 @@ function GestionSeguridad({user,showToast}){
   );
 }
 
+
+function GestionJuegosAdmin({user,showToast}){
+  const isAdmin=isAdminUser(user);
+  return <div style={{display:"grid",gap:14}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#263F4D)",border:"2px solid rgba(255,244,214,.42)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.3rem"}}>🎮</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",lineHeight:1}}>Gestión de juegos</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.82)",lineHeight:1.35}}>
+            Zona para controlar Arcade, rankings, retos y recompensas de juego sin mezclarlo con caja, citas o tienda.
+          </div>
+        </div>
+        <Badge col={isAdmin?"gold":"blue"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
+      </div>
+    </Card>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:12}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}} hover>
+        <div style={{fontSize:"1.8rem"}}>🕹️</div>
+        <div style={{fontWeight:950,color:T.g800}}>Arcade</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>
+          Los usuarios juegan desde la pestaña Arcade. Aquí dejamos preparada la zona para futuras reglas, límites y premios especiales.
+        </div>
+      </Card>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}} hover>
+        <div style={{fontSize:"1.8rem"}}>🏆</div>
+        <div style={{fontWeight:950,color:T.g800}}>Rankings</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>
+          Los rankings y puntuaciones se consultan desde Arcade/Ranking. Más adelante podemos añadir filtros de temporada desde aquí.
+        </div>
+      </Card>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}} hover>
+        <div style={{fontSize:"1.8rem"}}>🎯</div>
+        <div style={{fontWeight:950,color:T.g800}}>Retos</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>
+          Los retos sirven para dar objetivos y recompensas dentro de la web, siempre con puntos internos, no dinero.
+        </div>
+      </Card>
+    </div>
+
+    {!isAdmin&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+      <div style={{fontWeight:950,color:T.g800}}>🔒 Ajustes de juegos bloqueados</div>
+      <div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>
+        El staff puede consultar esta zona, pero los ajustes avanzados de juegos quedarán reservados para admin.
+      </div>
+    </Card>}
+  </div>;
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
   const isStaff=role===ROLES.STAFF;
   const canAccess=isAdmin||isStaff;
   const [tab,setTab]=useState("resumen");
-  const [gestionGroup,setGestionGroup]=useState("trabajo");
+  const [gestionGroup,setGestionGroup]=useState("principal");
+
   const tabs=[
-    {id:"resumen",icon:"🏠",label:"Resumen",sub:"Inicio interno con próximas citas y acciones rápidas",staff:true,group:"trabajo"},
-    {id:"agenda",icon:"🗓️",label:"Agenda",sub:"Vista diaria ordenada por horas",staff:true,group:"trabajo"},
-    {id:"estadisticas",icon:"📊",label:"Estadísticas",sub:"Citas, ingresos, pedidos, puntos y comunidad",staff:true,group:"control"},
-    {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true,group:"trabajo"},
-    {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true,group:"trabajo"},
-    {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true,group:"comunidad"},
+    {id:"resumen",icon:"🏠",label:"Resumen",sub:"Vista principal con próximas citas, avisos y accesos rápidos",staff:true,group:"principal"},
+    {id:"agenda",icon:"🗓️",label:"Agenda",sub:"Vista diaria ordenada por horas",staff:true,group:"principal"},
+    {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes, confirmadas y propuestas",staff:true,group:"principal"},
+    {id:"clientes",icon:"👥",label:"Clientes",sub:"Clientes reales de tienda con citas registradas",staff:true,group:"principal"},
+
+    {id:"facturacion",icon:"💰",label:"Caja",sub:"Cobros, ventas y facturación del día",staff:true,group:"facturacion"},
+    {id:"estadisticas",icon:"📊",label:"Estadísticas",sub:"Resumen gráfico de citas, ingresos, pedidos, puntos y comunidad",staff:true,group:"facturacion"},
+
+    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones, objetos y canjes editables",staff:false,group:"tienda"},
+    {id:"stock",icon:"📦",label:"Stock",sub:"Inventario interno y productos de trabajo",staff:true,group:"tienda"},
+    {id:"pedidos",icon:"🎁",label:"Pedidos",sub:"Canjes y entregas de tienda",staff:true,group:"tienda"},
+
+    {id:"juegos_admin",icon:"🎮",label:"Juegos",sub:"Zona de control para Arcade, rankings, retos y recompensas",staff:true,group:"juegos"},
+
     {id:"moderacion",icon:"🛡️",label:"Moderación",sub:"Reportes y control de comunidad",staff:true,group:"comunidad"},
-    {id:"clientes",icon:"👥",label:"Clientes",sub:"Clientes de tienda con citas registradas",staff:true,group:"trabajo"},
-    {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true,group:"trabajo"},
-    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones y objetos editables",staff:false,group:"control"},
-    {id:"pedidos",icon:"🎁",label:"Pedidos",sub:"Canjes y entregas de tienda",staff:true,group:"trabajo"},
+    {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true,group:"comunidad"},
     {id:"musica_admin",icon:"🎧",label:"Música",sub:"Artistas, enlaces y audios propios",staff:false,group:"comunidad"},
-    {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Cuentas online, roles y permisos",staff:false,group:"admin"},
-    {id:"seguridad",icon:"🛡️",label:"Seguridad",sub:"Auditoría de roles y cambios importantes",staff:false,group:"admin"},
-    {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna",staff:false,group:"admin"},
+
+    {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Cuentas online, roles, permisos y bloqueos",staff:false,group:"admin"},
+    {id:"seguridad",icon:"🧾",label:"Seguridad",sub:"Auditoría de roles, bloqueos y cambios importantes",staff:false,group:"admin"},
+    {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna de la web",staff:false,group:"admin"},
   ].filter(t=>isAdmin||t.staff);
+
   const active=tabs.find(t=>t.id===tab)||tabs[0];
+
   const gestionGroups=[
-    {id:"trabajo",icon:"💈",label:"Trabajo",sub:"Agenda, citas, caja, clientes, pedidos y stock"},
-    {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Mensajes, moderación y música"},
-    {id:"control",icon:"📊",label:"Control",sub:"Estadísticas, tienda y configuración comercial"},
-    {id:"admin",icon:"🔐",label:"Admin",sub:"Usuarios, seguridad y ajustes"}
+    {id:"principal",icon:"🏠",label:"Principal",sub:"Resumen, agenda, citas y clientes. Lo básico para trabajar cada día."},
+    {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y estadísticas. Todo lo económico en una zona clara."},
+    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Stock, premios, cupones, canjes y pedidos de tienda."},
+    {id:"juegos",icon:"🎮",label:"Juegos",sub:"Arcade, rankings, retos y recompensas internas de juego."},
+    {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Moderación, mensajes privados y música. Separado de la caja y la tienda."},
+    {id:"admin",icon:"🔐",label:"Admin",sub:"Usuarios, seguridad, auditoría y ajustes internos."}
   ].filter(g=>tabs.some(t=>t.group===g.id));
+
   const visibleTabs=tabs.filter(t=>t.group===gestionGroup);
+
   function openGestionGroup(id){
     SFX.tab();
     setGestionGroup(id);
@@ -7568,8 +7631,8 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   }
 
   useEffect(()=>{
-    if(!tabs.find(t=>t.id===tab)) setTab(tabs[0]?.id||"facturacion");
-    if(!tabs.some(t=>t.group===gestionGroup)) setGestionGroup(tabs[0]?.group||"trabajo");
+    if(!tabs.find(t=>t.id===tab)) setTab(tabs[0]?.id||"resumen");
+    if(!tabs.some(t=>t.group===gestionGroup)) setGestionGroup(tabs[0]?.group||"principal");
   },[role]);
 
   if(!canAccess){
@@ -7597,7 +7660,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
           <div style={{flex:1}}>
             <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1}}>Gestión</div>
             <div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-              Panel interno para caja, citas, clientes, stock y administración. Staff ve herramientas de trabajo; admin ve permisos y ajustes.
+              Panel interno organizado por zonas: principal, facturación, tienda, juegos, comunidad y administración.
             </div>
           </div>
           <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
@@ -7605,21 +7668,21 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       </Card>
 
       <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`,padding:12}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
-          {gestionGroups.map(g=><button key={g.id} onClick={()=>openGestionGroup(g.id)} style={{border:`2px solid ${gestionGroup===g.id?T.gold:T.g300}`,background:gestionGroup===g.id?T.gradGold:"rgba(255,244,214,.72)",color:gestionGroup===g.id?T.g900:T.g700,borderRadius:14,padding:"9px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
-            <div style={{fontSize:"1.1rem"}}>{g.icon}</div>
-            <div>{g.label}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8}}>
+          {gestionGroups.map(g=><button key={g.id} onClick={()=>openGestionGroup(g.id)} style={{border:`2px solid ${gestionGroup===g.id?T.gold:T.g300}`,background:gestionGroup===g.id?T.gradGold:"rgba(255,244,214,.72)",color:gestionGroup===g.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",fontSize:".72rem",boxShadow:gestionGroup===g.id?"0 10px 24px rgba(212,175,55,.22)":"0 5px 12px rgba(20,8,4,.08)"}}>
+            <div style={{fontSize:"1.2rem",lineHeight:1}}>{g.icon}</div>
+            <div style={{marginTop:4}}>{g.label}</div>
           </button>)}
         </div>
-        <div style={{fontSize:".75rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:8}}>
+        <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:10}}>
           {gestionGroups.find(g=>g.id===gestionGroup)?.sub}
         </div>
       </Card>
 
-      <div className="gestion-grid-pro" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-        {visibleTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.84)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
-          <div style={{fontSize:"1.28rem",lineHeight:1}}>{t.icon}</div>
-          <div style={{fontSize:".68rem",marginTop:3}}>{t.label}</div>
+      <div className="gestion-grid-pro" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:9,marginBottom:12}}>
+        {visibleTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.84)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"12px 8px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
+          <div style={{fontSize:"1.35rem",lineHeight:1}}>{t.icon}</div>
+          <div style={{fontSize:".76rem",marginTop:4}}>{t.label}</div>
         </button>)}
       </div>
 
@@ -7627,25 +7690,31 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
         <div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div>
         <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{active.sub}</div>
         <div style={{marginTop:8,fontSize:".72rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>
-          {isAdmin?"Permisos admin: acceso completo a gestión, ajustes, tienda, música, usuarios y seguridad.":"Permisos staff: citas, agenda, facturación, pedidos, clientes, mensajes, moderación y estadísticas. Sin ajustes, tienda editable, música editable ni roles."}
+          {isAdmin?"Permisos admin: acceso completo a gestión, ajustes, tienda, música, usuarios y seguridad.":"Permisos staff: agenda, citas, caja, clientes, stock, pedidos, juegos, mensajes, moderación y estadísticas. Sin ajustes, tienda editable, música editable ni roles."}
         </div>
       </Card>
 
-      {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast}/>} 
-      {tab==="agenda"&&<GestionAgenda showToast={showToast}/>} 
-      {tab==="estadisticas"&&<GestionEstadisticas showToast={showToast}/>} 
-      {tab==="facturacion"&&<Caja user={user} showToast={showToast}/>}
+      {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast}/>}
+      {tab==="agenda"&&<GestionAgenda showToast={showToast}/>}
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
-      {tab==="mensajes"&&<GestionMensajes user={user} showToast={showToast}/>}
-      {tab==="moderacion"&&<GestionModeracion user={user} showToast={showToast}/>}
       {tab==="clientes"&&<Clientes user={user} showToast={showToast}/>}
+
+      {tab==="facturacion"&&<Caja user={user} showToast={showToast}/>}
+      {tab==="estadisticas"&&<GestionEstadisticas showToast={showToast}/>}
+
+      {tab==="tienda"&&(isAdmin?<GestionTienda user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede gestionar stock y pedidos, pero no editar premios ni cupones de tienda."/> )}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
-      {tab==="tienda"&&(isAdmin?<GestionTienda user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la tienda."/> )}
       {tab==="pedidos"&&<GestionPedidos user={user} showToast={showToast}/>}
-      {tab==="musica_admin"&&(isAdmin?<GestionMusica user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la música."/> )}
-      {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no cambiar roles ni permisos."/> )}
+
+      {tab==="juegos_admin"&&<GestionJuegosAdmin user={user} showToast={showToast}/>}
+
+      {tab==="moderacion"&&<GestionModeracion user={user} showToast={showToast}/>}
+      {tab==="mensajes"&&<GestionMensajes user={user} showToast={showToast} unread={unread}/>}
+      {tab==="musica_admin"&&(isAdmin?<GestionMusica user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede moderar comunidad y mensajes, pero no editar la música."/> )}
+
+      {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff no puede cambiar roles, permisos ni bloqueos de usuarios."/> )}
       {tab==="seguridad"&&(isAdmin?<GestionSeguridad user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La auditoría de seguridad sólo debería verla el administrador."/> )}
-      {tab==="ajustes"&&(isAdmin?<GestionAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo deberían tocarlos administradores."/> )}
+      {tab==="ajustes"&&(isAdmin?<GestionAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo debería tocarlos el administrador."/> )}
     </div>
   );
 }
@@ -8647,3 +8716,5 @@ export default function App(){
     </div>
   );
 }
+
+// force deploy fase81 gestion reorganizada
