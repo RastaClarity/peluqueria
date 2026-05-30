@@ -77,6 +77,7 @@ const BRAND = {
 };
 
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
+let masterVolume=0.7;
 let currentMusicTrack=0,musicStep=0;
 const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
 const NOTE_FREQ={
@@ -185,7 +186,7 @@ function playTone(freq,type="sine",dur=0.12,vol=0.15,delay=0){
     filter.frequency.setValueAtTime(type==="bass"?520:1650,ctx.currentTime+delay);
     filter.Q.setValueAtTime(0.55,ctx.currentTime+delay);
     const start=ctx.currentTime+delay;
-    const cleanVol=Math.min(vol*.55,0.045);
+    const cleanVol=Math.min(vol*.55,0.045)*Math.max(0,Math.min(1.2,masterVolume));
     osc.frequency.setValueAtTime(resolveFreq(freq),start);
     g.gain.setValueAtTime(0,start);
     g.gain.linearRampToValueAtTime(cleanVol,start+0.045);
@@ -1222,7 +1223,11 @@ function LandingFeature({icon,title,sub,accent="#D4AF37"}){
   );
 }
 
-function RastaLandingHero({compact=false,onNavigate=null,user=null}){
+function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null}){
+  const branding=settings?.branding||{};
+  const name=branding.nombre_tienda||BRAND.name;
+  const slogan=branding.slogan||"Reserva, juega, descubre música y canjea recompensas.";
+  const emoji=branding.emoji_principal||"✂️";
   return(
     <div style={{
       position:"relative",
@@ -1246,7 +1251,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null}){
           textShadow:"0 4px 0 #3A1607,0 10px 22px rgba(0,0,0,.54)",
           transform:"rotate(-1deg)",
           marginBottom:compact?-4:-2
-        }}>{BRAND.name}</div>
+        }}>{name}</div>
         <div style={{
           display:"inline-flex",
           alignItems:"center",
@@ -1261,7 +1266,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null}){
           fontSize:".75rem",
           letterSpacing:".08em",
           textTransform:"uppercase"
-        }}>✂️ Cortes, rastas y estilo urbano ✂️</div>
+        }}>{emoji} Cortes, rastas y estilo urbano {emoji}</div>
         <div style={{marginTop:compact?4:8,position:"relative"}}>
           <HeroMascot/>
         </div>
@@ -1275,7 +1280,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null}){
           color:"#FFF4D6",
           boxShadow:"0 12px 24px rgba(0,0,0,.25)"
         }}>
-          <div style={{fontWeight:950,fontSize:compact?".94rem":"1.05rem",color:"#FFD66B"}}>Reserva, juega, descubre música y canjea recompensas.</div>
+          <div style={{fontWeight:950,fontSize:compact?".94rem":"1.05rem",color:"#FFD66B"}}>{slogan}</div>
           <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.32}}>Citas, tienda, arcade, rankings, noticias, música y avatar en una experiencia más viva.</div>
         </div>
         {user&&(
@@ -1303,7 +1308,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null}){
 }
 
 // AUTH
-function Auth({onLogin,showToast}){
+function Auth({onLogin,showToast,settings}){
   const [mode,setMode]=useState("login");
   const [email,setEmail]=useState("");
   const [pass,setPass]=useState("");
@@ -1361,7 +1366,7 @@ function Auth({onLogin,showToast}){
       <style>{CSS}</style>
       <Particles/>
       <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:480}}>
-        <RastaLandingHero compact={false}/>
+        <RastaLandingHero compact={false} settings={settings}/>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
           <LandingFeature icon="📅" title="Reservas" sub="Elige tratamientos y guarda tu cita." accent="#D4AF37"/>
@@ -1407,7 +1412,7 @@ function Auth({onLogin,showToast}){
         </Card>
 
         <div style={{textAlign:"center",color:"rgba(255,244,214,.84)",fontSize:".82rem",fontWeight:950,lineHeight:1.35,marginTop:16,padding:"12px 14px",border:"1px solid rgba(212,175,55,.25)",borderRadius:18,background:"rgba(255,244,214,.06)",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
-          Forma parte de la comunidad Rasta Cuts: reserva, juega, participa y desbloquea recompensas.
+          {settings?.branding?.mensaje_login||"Forma parte de la comunidad Rasta Cuts: reserva, juega, participa y desbloquea recompensas."}
         </div>
       </div>
     </div>
@@ -1514,7 +1519,7 @@ function DashboardAdmin({user,showToast}){
 }
 
 // DASHBOARD CLIENTE
-function ClientDashboard({user,onNavigate}){
+function ClientDashboard({user,onNavigate,settings}){
   const [proxCita,setProxCita]=useState(null);
   const [noticias,setNoticias]=useState([]);
   useEffect(()=>{
@@ -1531,11 +1536,11 @@ function ClientDashboard({user,onNavigate}){
   const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Gold":user.puntos>=200?"Silver":"Bronze";
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <RastaLandingHero compact user={user} onNavigate={onNavigate}/>
+      <RastaLandingHero compact user={user} onNavigate={onNavigate} settings={settings}/>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
-        <LandingFeature icon="📰" title="Actualidad" sub="Noticias rápidas tipo shorts." accent="#263F4D"/>
-        <LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico y novedades." accent="#4E3A76"/>
+        {settings?.secciones?.noticias_activas!==false&&<LandingFeature icon="📰" title="Actualidad" sub="Noticias rápidas tipo shorts." accent="#263F4D"/>}
+        {settings?.secciones?.musica_activa!==false&&<LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico y novedades." accent="#4E3A76"/>}
         <LandingFeature icon="🏆" title="Tops" sub="Rankings semanales y generales." accent="#D4AF37"/>
         <LandingFeature icon="💬" title="Comunidad" sub="Foro, tablón y comentarios." accent="#4F602D"/>
       </div>
@@ -1578,8 +1583,8 @@ function ClientDashboard({user,onNavigate}){
         </Card>
       )}
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:18}}>
-        {[["📅","Cita","citas"],["🎮","Arcade","juegos"],["🎁","Tienda","tienda"]].map(([icon,lbl,id])=>(
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:18}}>
+        {[["📅","Cita","citas"],["🎮","Arcade","juegos"],["🎁","Tienda","tienda"],["📩","Buzón","buzon"]].map(([icon,lbl,id])=>(
           <Card key={lbl} onClick={()=>onNavigate?.(id)} style={{textAlign:"center",padding:"14px 8px",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",minHeight:92,border:`1.5px solid ${T.g300}`}} hover>
             <div className="icon3d" style={{fontSize:"2rem"}}>{icon}</div>
             <div style={{fontSize:"0.75rem",fontWeight:950,color:T.g700,marginTop:6}}>{lbl}</div>
@@ -2857,11 +2862,13 @@ function Foro({user,showToast}){
 }
 
 // TIENDA
-function Tienda({user,setUser,showToast,showPoints}){
+function Tienda({user,setUser,showToast,showPoints,settings}){
   const [productos,setProductos]=useState([]);
   const [loading,setLoading]=useState(true);
   const [cat,setCat]=useState("todo");
-  useEffect(()=>{load();},[]);
+  const tiendaActiva=settings?.secciones?.tienda_activa!==false;
+  useEffect(()=>{if(tiendaActiva)load();},[tiendaActiva]);
+  if(!tiendaActiva)return <DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión > Ajustes."/>;
 
   async function load(){
     setLoading(true);
@@ -3569,7 +3576,7 @@ function DreadStitchGame({onWin,user}){
 }
 
 
-function GachaSlotsGame({user,onWin}){
+function GachaSlotsGame({user,onWin,settings}){
   const uid=user?.id||"anon";
   const SYMBOLS={scissors:{icon:'✂️',name:'Tijeras'},comb:{icon:'🪮',name:'Peines'},hook:{icon:'🪝',name:'Ganchillos'},band:{icon:'🧵',name:'Gomas'},ticket:{icon:'🎟️',name:'Ticket dorado'},gem:{icon:'💎',name:'Cristal'},coin:{icon:'🪙',name:'Moneda'}};
   const normal=['scissors','comb','hook','band','coin'];
@@ -3577,7 +3584,8 @@ function GachaSlotsGame({user,onWin}){
   const [spinning,setSpinning]=useState(false);
   const [result,setResult]=useState(null);
   const [pulls,setPulls]=useState(()=>getGachaPullsToday(uid));
-  const pullsLeft=Math.max(0,GACHA_DAILY_PULL_LIMIT-pulls);
+  const dailyLimit=Math.max(1,parseInt(settings?.puntos?.gacha_tiradas_dia??GACHA_DAILY_PULL_LIMIT,10)||GACHA_DAILY_PULL_LIMIT);
+  const pullsLeft=Math.max(0,dailyLimit-pulls);
   function pickPrize(){
     const r=Math.random();
     if(r<1/5000)return{pts:50,key:'ticket',label:'Premio gordo: 3 tickets dorados'};
@@ -3636,7 +3644,7 @@ function GachaSlotsGame({user,onWin}){
     </div>
     {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{pullsLeft<=0&&result.label==='Límite diario alcanzado'?'Vuelve mañana para tirar otra vez.':result.pts>0?`Premio: ${result.pts} puntos reales si lo cobras hoy.`:'Lo normal es que salga 0. Puedes volver a tirar mientras te queden tiradas.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col='gold' onClick={()=>onWin(result.pts)}>Cobrar {result.pts} puntos</Btn></div>}</Card>}
     <Btn full col={pullsLeft>0?'gold':'ghost'} disabled={spinning||pullsLeft<=0} onClick={spin}>{spinning?'Girando...':pullsLeft>0?'🎰 Tirar':'Límite diario alcanzado'}</Btn>
-    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{GACHA_DAILY_PULL_LIMIT}. Probabilidades: 50 pts 1/5000 · 20 pts 1/500 · 10 pts 1/200 · 5 pts 1/100 · 2 pts 1/30 · 1 pt 1/10.</div>
+    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{dailyLimit}. Probabilidades: 50 pts 1/5000 · 20 pts 1/500 · 10 pts 1/200 · 5 pts 1/100 · 2 pts 1/30 · 1 pt 1/10.</div>
   </Card>;
 }
 
@@ -3700,14 +3708,18 @@ function ArcadeInfoPanel({onOpenGacha}){
 }
 
 
-function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops}){
+function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,settings}){
   const [activeGame,setActiveGame]=useState(null);
   const [boardGame,setBoardGame]=useState("runner");
   const [topMode,setTopMode]=useState("weekly");
   const [leaderboard,setLeaderboard]=useState([]);
   const [lbLoading,setLbLoading]=useState(false);
   const [boardTick,setBoardTick]=useState(0);
-  const GAMES=ARCADE_GAMES;
+  const arcadeActiva=settings?.secciones?.arcade_activo!==false;
+  const gachaActiva=settings?.secciones?.gacha_activo!==false;
+  const gameDailyCap=Math.max(0,parseInt(settings?.puntos?.limite_diario_juegos??GAME_DAILY_CAP,10)||GAME_DAILY_CAP);
+  const GAMES=ARCADE_GAMES.filter(g=>g.id!=="gacha"||gachaActiva);
+  if(!arcadeActiva)return <DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión > Ajustes."/>;
   useEffect(()=>{
     if(activeGame) startGameMusic(activeGame);
     else stopGameMusic();
@@ -3735,7 +3747,9 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops}){
   async function handleWin(gameId,score){
     const alreadyPlayed=getPlayedToday(gameId,user.id);
     const rawScore=Math.max(0,Number(score)||0);
-    const reward=gameRewardFor(gameId,rawScore,user.id);
+    const maxReward=GAME_DAILY_REWARDS[gameId]||10;
+    const remaining=Math.max(0,gameDailyCap-getDailyGamePointsTotal(user.id));
+    const reward=Math.min(maxReward,rawScore,remaining);
     saveLocalGameScore(gameId,user,rawScore);
     try{ await dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,usuario_avatar_config:user.avatarConfig||user.avatar_config||null,game_id:gameId,score:rawScore,week:weekKey()}); }catch{}
     setBoardGame(gameId);
@@ -3749,7 +3763,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops}){
     markPlayedToday(gameId,user.id);
     if(reward<=0){
       SFX.success();
-      showToast(`Récord guardado. Límite diario de ${GAME_DAILY_CAP} pts alcanzado.`);
+      showToast(`Récord guardado. Límite diario de ${gameDailyCap} pts alcanzado.`);
       setActiveGame(null);
       return;
     }
@@ -3775,7 +3789,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops}){
         {activeGame==="runner"&&<RastaRunnerGame user={user} onWin={pts=>handleWin("runner",pts)}/>} 
         {activeGame==="jump"&&<PlatformJumpGame user={user} onWin={pts=>handleWin("jump",pts)}/>} 
         {activeGame==="stitch"&&<DreadStitchGame user={user} onWin={pts=>handleWin("stitch",pts)}/>} 
-        {activeGame==="gacha"&&<GachaSlotsGame user={user} onWin={pts=>handleWin("gacha",pts)}/>} 
+        {activeGame==="gacha"&&<GachaSlotsGame user={user} settings={settings} onWin={pts=>handleWin("gacha",pts)}/>} 
       </div>
     );
   }
@@ -4929,16 +4943,17 @@ function MusicaComunidad({showToast}){
 
 
 function Comunidad(props){
-  const {initialTab="feed",showToast}=props;
+  const {initialTab="feed",showToast,settings}=props;
+  const sec=settings?.secciones||{};
   const [sub,setSub]=useState(initialTab||"feed");
   useEffect(()=>{setSub(initialTab||"feed");},[initialTab]);
   const tabs=[
-    {id:"feed",icon:"📌",label:"Tablón",sub:"Anuncios oficiales, promociones y novedades de la tienda."},
-    {id:"foro",icon:"🗣️",label:"Foro",sub:"Temas abiertos, dudas, votaciones y conversación entre usuarios."},
-    {id:"noticias",icon:"📰",label:"Actualidad",sub:"Curiosidades, rural, comida, sitios, peluquería y negocios locales."},
-    {id:"musica",icon:"🎧",label:"Música",sub:"Reggae, rap clásico, ska y rock con enlaces rápidos para descubrir buena música."},
-  ];
-  const active=tabs.find(t=>t.id===sub)||tabs[0];
+    {id:"feed",icon:"📌",label:"Tablón",sub:"Anuncios oficiales, promociones y novedades de la tienda.",enabled:true},
+    {id:"foro",icon:"🗣️",label:"Foro",sub:"Temas abiertos, dudas, votaciones y conversación entre usuarios.",enabled:sec.foro_activo!==false},
+    {id:"noticias",icon:"📰",label:"Actualidad",sub:"Curiosidades, rural, comida, sitios, peluquería y negocios locales.",enabled:sec.noticias_activas!==false},
+    {id:"musica",icon:"🎧",label:"Música",sub:"Reggae, rap clásico, ska y rock con enlaces rápidos para descubrir buena música.",enabled:sec.musica_activa!==false},
+  ].filter(t=>t.enabled);
+  const active=tabs.find(t=>t.id===sub)||tabs[0]||{id:"feed",icon:"📌",label:"Tablón"};
   return <div style={{animation:"fadeSlide .32s ease"}}>
     <Card style={{marginBottom:14,background:"linear-gradient(160deg,#24110A,#5C3317 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.6)",color:T.white,padding:"18px 16px"}}>
       <div style={{display:"flex",gap:12,alignItems:"center",justifyContent:"space-between"}}>
@@ -4959,10 +4974,10 @@ function Comunidad(props){
       <div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div>
       <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{active.sub}</div>
     </Card>
-    {sub==="feed"&&<SocialFeed {...props}/>} 
-    {sub==="foro"&&<Foro {...props}/>} 
-    {sub==="noticias"&&<Noticias {...props}/>} 
-    {sub==="musica"&&<MusicaComunidad {...props}/>} 
+    {active.id==="feed"&&<SocialFeed {...props}/>} 
+    {active.id==="foro"&&<Foro {...props}/>} 
+    {active.id==="noticias"&&<Noticias {...props}/>} 
+    {active.id==="musica"&&<MusicaComunidad {...props}/>} 
   </div>;
 }
 
@@ -5139,6 +5154,36 @@ function GestionTienda({showToast}){
 }
 
 
+
+const DEFAULT_APP_SETTINGS={
+  branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️"},
+  puntos:{puntos_por_cita_cobrada:10,puntos_por_comentario:3,puntos_por_like:1,limite_diario_juegos:75,gacha_tiradas_dia:50},
+  secciones:{tienda_activa:true,arcade_activo:true,musica_activa:true,noticias_activas:true,foro_activo:true,gacha_activo:true},
+  musica:{musica_activa_por_defecto:false,volumen_general:0.7,modo:"jazz_lofi_reggae",descripcion:"Música suave tipo jazz lofi reggae."},
+  rasta_helper:{modo_ayuda_activo:true,tips_diarios:true,mostrar_bocadillos_automaticos:false,tono:"util_profesional_divertido"}
+};
+async function loadAppSettingsFromDb(){
+  const next=JSON.parse(JSON.stringify(DEFAULT_APP_SETTINGS));
+  try{
+    const rows=await dbGet("app_settings","?select=setting_key,setting_value");
+    (Array.isArray(rows)?rows:[]).forEach(r=>{
+      if(next[r.setting_key]) next[r.setting_key]={...next[r.setting_key],...(r.setting_value||{})};
+    });
+  }catch(e){}
+  return next;
+}
+function DisabledSection({icon="🔒",title="Sección desactivada",sub="Esta sección está desactivada desde Gestión > Ajustes."}){
+  return <div style={{animation:"fadeSlide .32s ease"}}>
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <div style={{textAlign:"center",padding:"12px 6px"}}>
+        <div className="icon3d" style={{fontSize:"3rem",marginBottom:8}}>{icon}</div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.g800}}>{title}</div>
+        <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub,lineHeight:1.4,marginTop:6}}>{sub}</div>
+      </div>
+    </Card>
+  </div>;
+}
+
 function GestionAjustes({showToast}){
   const DEFAULTS={
     branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️"},
@@ -5290,6 +5335,221 @@ function GestionAjustes({showToast}){
   );
 }
 
+
+function MessageBubble({msg,isMine=false}){
+  const when=msg.created_at?new Date(msg.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+  return <div style={{display:"flex",justifyContent:isMine?"flex-end":"flex-start",marginBottom:10}}>
+    <div style={{
+      maxWidth:"82%",
+      background:isMine?"linear-gradient(135deg,#4F602D,#2F6B42)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",
+      color:isMine?T.white:T.g800,
+      border:isMine?"1px solid rgba(255,244,214,.25)":`1.5px solid ${T.g300}`,
+      borderRadius:isMine?"18px 18px 4px 18px":"18px 18px 18px 4px",
+      padding:"10px 12px",
+      boxShadow:"0 8px 18px rgba(20,8,4,.14)"
+    }}>
+      <div style={{fontSize:".72rem",fontWeight:950,opacity:isMine?.78:.66,marginBottom:4}}>
+        {msg.autor_nombre||"Usuario"} · {when}
+      </div>
+      <div style={{fontSize:".88rem",fontWeight:800,lineHeight:1.38,whiteSpace:"pre-wrap"}}>{msg.mensaje}</div>
+    </div>
+  </div>;
+}
+
+function BuzonPrivado({user,showToast}){
+  const [mensajes,setMensajes]=useState([]);
+  const [texto,setTexto]=useState("");
+  const [loading,setLoading]=useState(true);
+
+  useEffect(()=>{load();},[user?.id]);
+
+  async function load(){
+    if(!user?.id)return;
+    setLoading(true);
+    const rows=await dbGet("mensajes_privados",`?usuario_id=eq.${user.id}&order=created_at.asc&select=*`);
+    setMensajes(Array.isArray(rows)?rows:[]);
+    try{await dbPatch("mensajes_privados",`?usuario_id=eq.${user.id}&autor_rol=neq.client&leido_cliente=eq.false`,{leido_cliente:true});}catch{}
+    setLoading(false);
+  }
+
+  async function enviar(){
+    const msg=texto.trim();
+    if(!msg){showToast?.("Escribe un mensaje");return;}
+    const ok=await dbPost("mensajes_privados",{
+      usuario_id:String(user.id),
+      cliente_nombre:user.nombre||user.email||"Cliente",
+      autor_id:String(user.id),
+      autor_nombre:user.nombre||user.email||"Cliente",
+      autor_rol:"client",
+      mensaje:msg,
+      leido_cliente:true,
+      leido_admin:false,
+      estado:"abierto"
+    });
+    if(ok){
+      setTexto("");
+      SFX.success();
+      showToast?.("Mensaje enviado");
+      await load();
+    }else{
+      SFX.error();
+      showToast?.("No se pudo enviar el mensaje");
+    }
+  }
+
+  return <div style={{animation:"fadeSlide .34s ease"}}>
+    <SectionHeader icon="📩" title="Buzón privado" sub="Mensajes directos con Rasta Cuts"/>
+    <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div className="icon3d" style={{fontSize:"2rem"}}>💬</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:950,fontSize:"1rem"}}>Habla con la tienda</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Usa este buzón para dudas de citas, canjes, premios o cualquier cosa que quieras comentar de forma privada.</div>
+        </div>
+      </div>
+    </Card>
+
+    <Card style={{background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,marginBottom:14,minHeight:280}}>
+      {loading?<Spinner/>:mensajes.length===0?<EmptyState icon="📩" title="Aún no hay mensajes" sub="Escribe el primero y aparecerá aquí el historial."/>:
+        <div>{mensajes.map(m=><MessageBubble key={m.id} msg={m} isMine={String(m.autor_rol||"client")==="client"}/>)}</div>
+      }
+    </Card>
+
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Nuevo mensaje</div>
+      <textarea value={texto} onChange={e=>setTexto(e.target.value)} rows={4} placeholder="Escribe tu mensaje privado..." style={{width:"100%",borderRadius:14,border:`1.5px solid ${T.g200}`,background:T.g50,padding:"11px 12px",fontSize:".9rem",fontWeight:800,color:T.text,resize:"vertical",outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}/>
+      <div style={{marginTop:10}}>
+        <Btn full col="gold" onClick={enviar}>Enviar mensaje</Btn>
+      </div>
+    </Card>
+  </div>;
+}
+
+function GestionMensajes({user,showToast}){
+  const [rows,setRows]=useState([]);
+  const [selected,setSelected]=useState(null);
+  const [thread,setThread]=useState([]);
+  const [texto,setTexto]=useState("");
+  const [loading,setLoading]=useState(true);
+  const [threadLoading,setThreadLoading]=useState(false);
+
+  useEffect(()=>{load();},[]);
+
+  async function load(){
+    setLoading(true);
+    const data=await dbGet("mensajes_privados","?order=created_at.desc&select=*");
+    setRows(Array.isArray(data)?data:[]);
+    setLoading(false);
+  }
+
+  const conversaciones=useMemo(()=>{
+    const map=new Map();
+    for(const m of rows){
+      const id=String(m.usuario_id||"");
+      if(!id)continue;
+      if(!map.has(id)){
+        map.set(id,{usuario_id:id,cliente_nombre:m.cliente_nombre||"Cliente",ultimo:m,unread:0,total:0});
+      }
+      const c=map.get(id);
+      c.total+=1;
+      if(new Date(m.created_at)>new Date(c.ultimo.created_at)) c.ultimo=m;
+      if(String(m.autor_rol||"client")==="client" && !m.leido_admin)c.unread+=1;
+    }
+    return [...map.values()].sort((a,b)=>new Date(b.ultimo.created_at)-new Date(a.ultimo.created_at));
+  },[rows]);
+
+  async function openThread(conv){
+    setSelected(conv);
+    setThreadLoading(true);
+    const msgs=await dbGet("mensajes_privados",`?usuario_id=eq.${conv.usuario_id}&order=created_at.asc&select=*`);
+    setThread(Array.isArray(msgs)?msgs:[]);
+    try{await dbPatch("mensajes_privados",`?usuario_id=eq.${conv.usuario_id}&autor_rol=eq.client&leido_admin=eq.false`,{leido_admin:true});}catch{}
+    setThreadLoading(false);
+    await load();
+  }
+
+  async function responder(){
+    if(!selected)return;
+    const msg=texto.trim();
+    if(!msg){showToast?.("Escribe una respuesta");return;}
+    const ok=await dbPost("mensajes_privados",{
+      usuario_id:String(selected.usuario_id),
+      cliente_nombre:selected.cliente_nombre||"Cliente",
+      autor_id:String(user.id),
+      autor_nombre:user.nombre||"Rasta Cuts",
+      autor_rol:normalizeRole(user.rol||user.role),
+      mensaje:msg,
+      leido_cliente:false,
+      leido_admin:true,
+      estado:"abierto"
+    });
+    if(ok){
+      setTexto("");
+      SFX.success();
+      showToast?.("Respuesta enviada");
+      await openThread(selected);
+    }else{
+      SFX.error();
+      showToast?.("No se pudo enviar la respuesta");
+    }
+  }
+
+  return <div style={{animation:"fadeSlide .34s ease"}}>
+    <SectionHeader icon="📩" title="Mensajes privados" sub={`${conversaciones.length} conversaciones`} action={<Btn small col="ghost" onClick={load}>Actualizar</Btn>}/>
+    <Card style={{marginBottom:14,background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#D4AF37)",border:"2px solid rgba(255,244,214,.52)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div className="icon3d" style={{fontSize:"2rem"}}>📬</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:950}}>Buzón de clientes</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Aquí puedes responder conversaciones privadas de cada cliente. Los clientes sólo ven su propio hilo.</div>
+        </div>
+      </div>
+    </Card>
+
+    {!selected&&(
+      loading?<Spinner/>:conversaciones.length===0?<EmptyState icon="📩" title="Sin mensajes" sub="Cuando un cliente escriba, aparecerá aquí."/>:
+      conversaciones.map(c=>{
+        const when=c.ultimo?.created_at?new Date(c.ultimo.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+        return <Card key={c.usuario_id} hover onClick={()=>openThread(c)} style={{marginBottom:10,background:c.unread?"linear-gradient(180deg,#FFF4D6,#EBD18D)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:c.unread?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div className="icon3d" style={{fontSize:"2rem"}}>{c.unread?"🔔":"💬"}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:950,color:T.g800}}>{c.cliente_nombre}</div>
+              <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.ultimo?.mensaje}</div>
+              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,marginTop:3}}>{when} · {c.total} mensajes</div>
+            </div>
+            {c.unread>0&&<Badge col="red">{c.unread}</Badge>}
+          </div>
+        </Card>;
+      })
+    )}
+
+    {selected&&(
+      <div>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+          <button onClick={()=>{SFX.navBack();setSelected(null);setThread([]);}} style={{background:T.g150,border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",fontWeight:950,fontSize:"1rem",color:T.g700,boxShadow:"0 8px 18px rgba(20,8,4,.2)"}}>{"<"}</button>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>Conversación con {selected.cliente_nombre}</div>
+            <div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>ID cliente: {selected.usuario_id}</div>
+          </div>
+        </div>
+
+        <Card style={{background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,marginBottom:14,minHeight:300}}>
+          {threadLoading?<Spinner/>:thread.map(m=><MessageBubble key={m.id} msg={m} isMine={String(m.autor_rol||"client")!=="client"}/>)}
+        </Card>
+
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Responder</div>
+          <textarea value={texto} onChange={e=>setTexto(e.target.value)} rows={4} placeholder="Escribe la respuesta..." style={{width:"100%",borderRadius:14,border:`1.5px solid ${T.g200}`,background:T.g50,padding:"11px 12px",fontSize:".9rem",fontWeight:800,color:T.text,resize:"vertical",outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}/>
+          <div style={{marginTop:10}}>
+            <Btn full col="gold" onClick={responder}>Enviar respuesta</Btn>
+          </div>
+        </Card>
+      </div>
+    )}
+  </div>;
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -5300,6 +5560,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
     {id:"resumen",icon:"🏠",label:"Resumen",sub:"Inicio interno con próximas citas y acciones rápidas",staff:true},
     {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true},
     {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true},
+    {id:"mensajes",icon:"📩",label:"Mensajes",sub:"Buzón privado de clientes",staff:true},
     {id:"clientes",icon:"👥",label:"Clientes",sub:"Fichas e historial de clientes",staff:true},
     {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true},
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones y objetos editables",staff:false},
@@ -5359,6 +5620,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
       {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast}/>} 
       {tab==="facturacion"&&<Caja user={user} showToast={showToast}/>}
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
+      {tab==="mensajes"&&<GestionMensajes user={user} showToast={showToast}/>}
       {tab==="clientes"&&<Clientes showToast={showToast}/>}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
       {tab==="tienda"&&(isAdmin?<GestionTienda showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la tienda."/> )}
@@ -5372,7 +5634,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
 const NAV_CFG={
   admin:[{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"perfil",icon:"👤",label:"Perfil"}],
   staff:[{id:"juegos",icon:"🎮",label:"Arcade"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"buzon",icon:"📩",label:"Buzón"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
 
@@ -5393,7 +5655,9 @@ const HELP_TEXTS={
   inventario:"Aquí controlas productos y stock.",
   caja:"Sección para cobros e ingresos.",
   usuarios:"Aquí un admin puede cambiar roles y permisos.",
-  gestion:"Panel interno para facturación, caja, citas, clientes, stock y herramientas de administración."
+  gestion:"Panel interno para facturación, caja, citas, clientes, stock y herramientas de administración.",
+  buzon:"Buzón privado para hablar con Rasta Cuts. El cliente ve su hilo y admin/staff responden desde Gestión > Mensajes.",
+  mensajes:"Buzón interno para responder mensajes privados de clientes."
 };
 
 function LoginHelperAvatar({size=46,speaking=false}={}){
@@ -6165,6 +6429,20 @@ export default function App(){
   const [checkingSession,setCheckingSession]=useState(true);
   const [helperPage,setHelperPage]=useState(null);
   const [topsInitial,setTopsInitial]=useState("games");
+  const [appSettings,setAppSettings]=useState(DEFAULT_APP_SETTINGS);
+
+  useEffect(()=>{
+    async function loadSettings(){
+      const cfg=await loadAppSettingsFromDb();
+      setAppSettings(cfg);
+    }
+    loadSettings();
+  },[]);
+
+  useEffect(()=>{
+    const vol=Number(appSettings?.musica?.volumen_general);
+    masterVolume=Number.isFinite(vol)?Math.max(0,Math.min(1.2,vol)):0.7;
+  },[appSettings?.musica?.volumen_general]);
 
   useEffect(()=>{
     async function restoreSession(){
@@ -6185,10 +6463,24 @@ export default function App(){
 
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
-  function toggleMusic(){globalMuted=!globalMuted;if(globalMuted){stopMusic();stopGameMusic();setMusicOn(false);}else{startMusic();setMusicOn(true);}}
+  function toggleMusic(){
+    if(appSettings?.secciones?.musica_activa===false){showToast("La música está desactivada desde Ajustes");SFX.error();return;}
+    globalMuted=!globalMuted;
+    if(globalMuted){stopMusic();stopGameMusic();setMusicOn(false);}
+    else{startMusic();setMusicOn(true);}
+  }
   function changeMusicTrack(){nextMusicTrack();SFX.tab();showToast(`Tema: ${REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta"}`);}
   const navTo=id=>{
     setHelperPage(null);
+    const sec=appSettings?.secciones||{};
+    const blocked={
+      tienda:sec.tienda_activa===false,
+      juegos:sec.arcade_activo===false,
+      musica:sec.musica_activa===false,
+      noticias:sec.noticias_activas===false,
+      foro:sec.foro_activo===false
+    };
+    if(blocked[id]){showToast("Esta sección está desactivada temporalmente");SFX.error();return;}
     const communityMap={feed:"feed",foro:"foro",noticias:"noticias",musica:"musica",comunidad:communityTab||"feed"};
     const target=communityMap[id]?"comunidad":id;
     if(communityMap[id]) setCommunityTab(communityMap[id]);
@@ -6200,27 +6492,29 @@ export default function App(){
   if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/></div>;
   if(!user)return (
     <>
-      <Auth onLogin={u=>{setUser(u);setPage(normalizeRole(u.rol||u.role)===ROLES.CLIENT?"dashboard":"gestion");}} showToast={showToast}/>
+      <Auth onLogin={u=>{setUser(u);setPage(normalizeRole(u.rol||u.role)===ROLES.CLIENT?"dashboard":"gestion");}} showToast={showToast} settings={appSettings}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </>
   );
 
   const role=normalizeRole(user.rol || user.role);
-  const nav=NAV_CFG[role]||NAV_CFG.client;
+  const rawNav=NAV_CFG[role]||NAV_CFG.client;
+  const sec=appSettings?.secciones||{};
+  const nav=rawNav.filter(n=>!(n.id==="tienda"&&sec.tienda_activa===false)&&!(n.id==="juegos"&&sec.arcade_activo===false));
   const grad=GRAD_ROLE[role]||GRAD_ROLE.client;
   const ap=(role!==ROLES.CLIENT && page==="dashboard")?"gestion":page;
   const theme=pageTheme(ap,communityTab,role);
   const currentUser={...user,rol:role};
-  const sp={showToast,showPoints,user:currentUser,setUser};
+  const sp={showToast,showPoints,user:currentUser,setUser,settings:appSettings};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
   const pages={
-    dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo}/>:<GestionAdmin {...sp}/>,
+    dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo} settings={appSettings}/>:<GestionAdmin {...sp}/>,
     citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
-    tienda:<Tienda {...sp}/>,juegos:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>,tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
-    ranking:<Ranking user={currentUser}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
+    tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión > Ajustes."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión > Ajustes."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
+    ranking:<Ranking user={currentUser}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
     cupones:<Cupones user={currentUser} showToast={showToast}/>,
@@ -6233,7 +6527,7 @@ export default function App(){
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
       <div style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.26), inset 0 -1px 0 ${theme.accent}33`}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>✂️ {BRAND.name}</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{appSettings?.branding?.emoji_principal||"✂️"} {appSettings?.branding?.nombre_tienda||BRAND.name}</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
