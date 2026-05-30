@@ -511,7 +511,7 @@ function PublicProfileModal({profile,onClose}){
   const hidden=isPrivateProfile(profile);
   const cfg=normalizeAvatarConfig(profile.avatar_config||profile.avatarConfig,profile.avatar);
   const pts=Number(profile.puntos||0);
-  const nivel=pts>=1000?"VIP":pts>=500?"Gold":pts>=200?"Silver":"Bronze";
+  const nivel=pts>=1000?"VIP":pts>=500?"Oro":pts>=200?"Plata":"Bronce";
   if(hidden){
     return <Modal show={!!profile} onClose={onClose} title="Perfil privado">
       <div style={{textAlign:"center",padding:"8px 0 4px"}}>
@@ -1533,7 +1533,7 @@ function ClientDashboard({user,onNavigate,settings}){
     }
     load();
   },[user.id]);
-  const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Gold":user.puntos>=200?"Silver":"Bronze";
+  const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Oro":user.puntos>=200?"Plata":"Bronce";
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <RastaLandingHero compact user={user} onNavigate={onNavigate} settings={settings}/>
@@ -5110,7 +5110,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
     setUser(u=>({...u,...next}));
     SFX.success();showToast(next.modo_incognito?"Modo incógnito activado":"Privacidad actualizada");
   }
-  const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Gold":user.puntos>=200?"Silver":"Bronze";
+  const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Oro":user.puntos>=200?"Plata":"Bronce";
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
   const tabs=[
     {id:"resumen",icon:"👤",label:"Resumen"},
@@ -5316,13 +5316,21 @@ function MusicaComunidad({showToast}){
   }
 
   function matches(item){
-    const g=normalizeText(`${item?.genero||""} ${item?.artista||""} ${item?.titulo||""} ${item?.descripcion||""} ${item?.tipo||""}`);
+    const genero=normalizeText(item?.genero||"");
+    const artista=normalizeText(item?.artista||"");
+    const titulo=normalizeText(item?.titulo||"");
+    const descripcion=normalizeText(item?.descripcion||"");
+    const tipo=normalizeText(item?.tipo||"");
+    const full=`${genero} ${artista} ${titulo} ${descripcion} ${tipo}`;
+    const hasWord=(txt,words)=>words.some(w=>new RegExp(`(^|\\s|/|-)${w}($|\\s|/|-)`).test(txt));
+    const isSka=hasWord(`${genero} ${artista} ${titulo}`,["ska","ska-p","skap"])||full.includes("ska punk");
+    const isRap=hasWord(`${genero} ${artista} ${titulo}`,["rap","hiphop","hip-hop"])||full.includes("hip hop")||full.includes("hip-hop");
     if(filter==="todo")return true;
-    if(filter==="propia")return g.includes("propio")||g.includes("archivo")||String(item.tipo)==="archivo"||Boolean(item.audio_url);
-    if(filter==="reggae")return g.includes("reggae")||g.includes("dancehall");
-    if(filter==="rap")return g.includes("rap");
-    if(filter==="ska")return g.includes("ska");
-    if(filter==="rock")return g.includes("rock")||g.includes("grunge");
+    if(filter==="propia")return full.includes("propio")||full.includes("archivo")||String(item.tipo)==="archivo"||Boolean(item.audio_url);
+    if(filter==="reggae")return full.includes("reggae")||full.includes("dancehall");
+    if(filter==="rap")return isRap&&!isSka;
+    if(filter==="ska")return isSka;
+    if(filter==="rock")return full.includes("rock")||full.includes("grunge");
     return true;
   }
 
@@ -5333,7 +5341,7 @@ function MusicaComunidad({showToast}){
   function reloadMusic(){
     SFX.action();
     setMusicSeed(v=>v+1);
-    showToast?.("Cambiando selección musical...");
+    showToast?.("Cambiando la selección musical...");
   }
 
   function openUrl(label,url){
@@ -5344,7 +5352,7 @@ function MusicaComunidad({showToast}){
   }
 
   function toggleAudio(item){
-    if(!item.audio_url){showToast?.("Este item no tiene audio subido");return;}
+    if(!item.audio_url){showToast?.("Este elemento no tiene audio subido");return;}
     SFX.action();
     setPlaying(p=>p===item.id?null:item.id);
   }
@@ -5355,7 +5363,7 @@ function MusicaComunidad({showToast}){
         <div style={{position:"absolute",right:-18,top:-28,fontSize:"7rem",opacity:.10,transform:"rotate(-12deg)"}}>🎧</div>
         <div style={{position:"relative",zIndex:1}}>
           <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,244,214,.72)"}}>Biblioteca Rasta Cuts</div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1,color:"#FFD66B",textShadow:"0 4px 12px rgba(0,0,0,.35)"}}>Música buena</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1,color:"#FFD66B",textShadow:"0 4px 12px rgba(0,0,0,.35)"}}>Biblioteca musical</div>
           <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35,marginTop:4}}>Selección editable desde admin: enlaces oficiales y archivos propios/libres subidos con permiso.</div>
           <button onClick={reloadMusic} style={{marginTop:11,border:"1px solid rgba(255,244,214,.35)",background:"rgba(255,244,214,.12)",color:T.white,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>🔄 Cambiar selección</button>
         </div>
@@ -5368,7 +5376,7 @@ function MusicaComunidad({showToast}){
       </div>
     </Card>
 
-    {loading?<Spinner/>:list.length===0?<EmptyState icon="🎧" title="Sin música en esta categoría" sub="Añade artistas o archivos desde Gestión > Música."/>:
+    {loading?<Spinner/>:list.length===0?<EmptyState icon="🎧" title="Sin música en esta categoría" sub="Añade artistas, enlaces o archivos desde Gestión > Música."/>:
       <div style={{display:"grid",gap:12}}>
         {list.map(item=><Card key={item.id} style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${item.destacado?T.gold:T.g300}`}} hover>
           <div style={{display:"grid",gridTemplateColumns:"88px 1fr",gap:0}}>
