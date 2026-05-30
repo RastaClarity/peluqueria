@@ -7652,6 +7652,227 @@ function GestionFacturacionPanel({user,showToast}){
 }
 
 
+
+function GestionComunidadPanel({user,showToast,unread}){
+  const [loading,setLoading]=useState(true);
+  const [data,setData]=useState({reportes:[],mensajes:[],temas:[],respuestas:[],posts:[],musica:[],settings:{}});
+
+  async function safeList(table,query){
+    try{
+      const rows=await dbGet(table,query);
+      return Array.isArray(rows)?rows:[];
+    }catch(e){return [];}
+  }
+
+  async function load(){
+    setLoading(true);
+    const [reportes,mensajes,temas,respuestas,posts,musica,settingsRows]=await Promise.all([
+      safeList("reportes_comunidad","?order=created_at.desc&limit=500&select=*"),
+      safeList("mensajes_privados","?order=created_at.desc&limit=500&select=*"),
+      safeList("foro_temas","?order=created_at.desc&limit=500&select=*"),
+      safeList("foro_respuestas","?order=created_at.desc&limit=500&select=*"),
+      safeList("publicaciones","?order=created_at.desc&limit=500&select=*"),
+      safeList("musica_items","?order=created_at.desc&limit=500&select=*"),
+      safeList("app_settings","?setting_key=in.(secciones,comunidad)&select=*")
+    ]);
+
+    const settings={};
+    settingsRows.forEach(r=>{settings[r.setting_key]=r.setting_value||{};});
+    setData({reportes,mensajes,temas,respuestas,posts,musica,settings});
+    setLoading(false);
+  }
+
+  useEffect(()=>{load();},[]);
+
+  const reportesPendientes=data.reportes.filter(r=>String(r.estado||"pendiente").toLowerCase()==="pendiente");
+  const mensajesClienteNoLeidos=data.mensajes.filter(m=>String(m.autor_rol||"client")==="client"&&!m.leido_admin);
+  const temasAbiertos=data.temas.filter(t=>t.cerrado!==true);
+  const temasCerrados=data.temas.filter(t=>t.cerrado===true);
+  const postsTablon=data.posts.filter(p=>String(p.tipo||"")!=="foro");
+  const musicaActiva=data.musica.filter(m=>m.activo!==false);
+  const foroActivo=data.settings?.secciones?.foro_activo!==false;
+  const noticiasActivas=data.settings?.secciones?.noticias_activas!==false;
+  const musicaActivaCfg=data.settings?.secciones?.musica_activa!==false;
+
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#263F4D 52%,#B99A45)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>🌐</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Resumen de comunidad</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Control rápido de reportes, mensajes, foro, tablón, actualidad y música.
+          </div>
+        </div>
+        <Btn small col="ghost" onClick={load}>Actualizar</Btn>
+      </div>
+    </Card>
+
+    {loading?<Spinner/>:<>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10}}>
+        <StatCard icon="🚩" label="Reportes pendientes" value={reportesPendientes.length} col={reportesPendientes.length?"red":"green"}/>
+        <StatCard icon="📩" label="Mensajes sin leer" value={mensajesClienteNoLeidos.length||unread?.admin||0} col="gold"/>
+        <StatCard icon="🗣️" label="Temas abiertos" value={temasAbiertos.length} col="blue"/>
+        <StatCard icon="💬" label="Respuestas foro" value={data.respuestas.length} col="green"/>
+        <StatCard icon="📌" label="Publicaciones" value={postsTablon.length} col="pink"/>
+        <StatCard icon="🎧" label="Música activa" value={musicaActiva.length} col="gold"/>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
+        <Card style={{background:reportesPendientes.length?"linear-gradient(180deg,#FFE7DE,#F0C3B3)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🛡️ Moderación</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            {reportesPendientes.length?`Hay ${reportesPendientes.length} reporte${reportesPendientes.length===1?"":"s"} pendiente${reportesPendientes.length===1?"":"s"} de revisar.`:"No hay reportes pendientes."}
+          </div>
+        </Card>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📩 Mensajes privados</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            Mensajes de clientes sin leer: <b style={{color:T.g800}}>{mensajesClienteNoLeidos.length||unread?.admin||0}</b>.
+          </div>
+        </Card>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🗣️ Foro y actividad</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            Foro: <b style={{color:T.g800}}>{foroActivo?"activo":"pausado"}</b>. Temas abiertos: <b style={{color:T.g800}}>{temasAbiertos.length}</b>. Cerrados: <b style={{color:T.g800}}>{temasCerrados.length}</b>.
+          </div>
+        </Card>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🎧 Música y actualidad</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            Música: <b style={{color:T.g800}}>{musicaActivaCfg?"activa":"pausada"}</b>. Actualidad: <b style={{color:T.g800}}>{noticiasActivas?"activa":"pausada"}</b>.
+          </div>
+        </Card>
+      </div>
+
+      <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🧭 Cómo usar esta zona</div>
+        <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+          Usa <b>Moderación</b> para revisar reportes. Usa <b>Mensajes</b> para contestar clientes. Usa <b>Música</b> para editar artistas y enlaces. Usa <b>Ajustes</b> para activar o pausar foro, actualidad y música.
+        </div>
+      </Card>
+    </>}
+  </div>;
+}
+
+function GestionComunidadAjustes({user,showToast}){
+  const isAdmin=isAdminUser(user);
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [settings,setSettings]=useState({
+    secciones:{foro_activo:true,noticias_activas:true,musica_activa:true},
+    comunidad:{mensajes_activos:true,reportes_activos:true,solo_staff_publica_tablon:true,mensaje_comunidad:"Participa con respeto y usa la comunidad para aportar."}
+  });
+
+  async function safeList(table,query){
+    try{
+      const rows=await dbGet(table,query);
+      return Array.isArray(rows)?rows:[];
+    }catch(e){return [];}
+  }
+
+  async function load(){
+    setLoading(true);
+    const rows=await safeList("app_settings","?setting_key=in.(secciones,comunidad)&select=*");
+    const next={
+      secciones:{foro_activo:true,noticias_activas:true,musica_activa:true},
+      comunidad:{mensajes_activos:true,reportes_activos:true,solo_staff_publica_tablon:true,mensaje_comunidad:"Participa con respeto y usa la comunidad para aportar."}
+    };
+    rows.forEach(r=>{
+      if(r.setting_key==="secciones") next.secciones={...next.secciones,...(r.setting_value||{})};
+      if(r.setting_key==="comunidad") next.comunidad={...next.comunidad,...(r.setting_value||{})};
+    });
+    setSettings(next);
+    setLoading(false);
+  }
+
+  useEffect(()=>{load();},[]);
+
+  function setSection(field,value){
+    setSettings(prev=>({...prev,secciones:{...prev.secciones,[field]:value}}));
+  }
+  function setComunidad(field,value){
+    setSettings(prev=>({...prev,comunidad:{...prev.comunidad,[field]:value}}));
+  }
+
+  async function saveSetting(key,value,categoria){
+    const payload={
+      setting_key:key,
+      setting_value:value,
+      descripcion:key==="comunidad"?"Configuración de comunidad":"Activación de secciones",
+      categoria,
+      editable:true,
+      updated_at:new Date().toISOString()
+    };
+    let ok=await dbPatch("app_settings",`?setting_key=eq.${key}`,payload);
+    if(!ok) ok=await dbPost("app_settings",payload);
+    return ok;
+  }
+
+  async function save(){
+    if(!isAdmin){showToast?.("Sólo admin puede guardar ajustes de comunidad");SFX.error();return;}
+    setSaving(true);
+    const ok1=await saveSetting("secciones",settings.secciones,"secciones");
+    const ok2=await saveSetting("comunidad",settings.comunidad,"comunidad");
+    setSaving(false);
+    if(ok1&&ok2){showToast?.("Ajustes de comunidad guardados");SFX.success();await load();}
+    else{showToast?.("No se pudieron guardar los ajustes");SFX.error();}
+  }
+
+  function Toggle({label,sub,value,onChange}){
+    return <button onClick={()=>isAdmin&&onChange(!value)} style={{textAlign:"left",border:`2px solid ${value?T.gold:T.g300}`,background:value?"linear-gradient(180deg,#FFF4D6,#F4D58D)":"rgba(255,244,214,.78)",borderRadius:16,padding:"12px",cursor:isAdmin?"pointer":"not-allowed",opacity:isAdmin?1:.65}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center"}}>
+        <div>
+          <div style={{fontWeight:950,color:T.g800}}>{label}</div>
+          <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{sub}</div>
+        </div>
+        <Badge col={value?"green":"red"}>{value?"ON":"OFF"}</Badge>
+      </div>
+    </button>;
+  }
+
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#263F4D 52%,#B99A45)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>⚙️</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Ajustes de comunidad</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Activa, pausa o configura foro, mensajes, actualidad, música y normas básicas.
+          </div>
+        </div>
+        <Badge col={isAdmin?"gold":"blue"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
+      </div>
+    </Card>
+
+    {loading?<Spinner/>:<>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🌐 Secciones públicas</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:10}}>
+          <Toggle label="Foro activo" sub="Permite abrir temas y responder." value={settings.secciones.foro_activo!==false} onChange={v=>setSection("foro_activo",v)}/>
+          <Toggle label="Actualidad activa" sub="Muestra la zona de noticias/actualidad." value={settings.secciones.noticias_activas!==false} onChange={v=>setSection("noticias_activas",v)}/>
+          <Toggle label="Música activa" sub="Muestra la biblioteca musical." value={settings.secciones.musica_activa!==false} onChange={v=>setSection("musica_activa",v)}/>
+        </div>
+      </Card>
+
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🛡️ Reglas internas</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:10,marginBottom:12}}>
+          <Toggle label="Mensajes activos" sub="Permite usar el buzón privado." value={settings.comunidad.mensajes_activos!==false} onChange={v=>setComunidad("mensajes_activos",v)}/>
+          <Toggle label="Reportes activos" sub="Permite reportar temas, respuestas o contenido." value={settings.comunidad.reportes_activos!==false} onChange={v=>setComunidad("reportes_activos",v)}/>
+          <Toggle label="Tablón sólo staff" sub="Sólo admin/staff pueden publicar anuncios." value={settings.comunidad.solo_staff_publica_tablon!==false} onChange={v=>setComunidad("solo_staff_publica_tablon",v)}/>
+        </div>
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>Mensaje visible de comunidad</div>
+          <textarea value={settings.comunidad.mensaje_comunidad||""} onChange={e=>setComunidad("mensaje_comunidad",e.target.value)} style={{width:"100%",minHeight:90,padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}/>
+        </div>
+        <Btn col="gold" onClick={save} disabled={!isAdmin||saving}>{saving?"Guardando...":"Guardar ajustes de comunidad"}</Btn>
+        {!isAdmin&&<div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:8}}>El staff puede revisar esta pantalla, pero sólo admin puede guardar ajustes.</div>}
+      </Card>
+    </>}
+  </div>;
+}
+
 function GestionTiendaPanel({user,showToast}){
   const isAdmin=isAdminUser(user);
   const [loading,setLoading]=useState(true);
@@ -8147,9 +8368,11 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
 
     {id:"juegos_admin",icon:"🎮",label:"Juegos",sub:"Zona de control para Arcade, rankings, retos y recompensas",staff:true,group:"juegos"},
 
+    {id:"comunidad_resumen",icon:"🌐",label:"Resumen",sub:"Vista rápida de reportes, mensajes, foro, tablón, actualidad y música",staff:true,group:"comunidad"},
     {id:"moderacion",icon:"🛡️",label:"Moderación",sub:"Reportes y control de comunidad",staff:true,group:"comunidad"},
     {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true,group:"comunidad"},
     {id:"musica_admin",icon:"🎧",label:"Música",sub:"Artistas, enlaces y audios propios",staff:false,group:"comunidad"},
+    {id:"comunidad_ajustes",icon:"⚙️",label:"Ajustes",sub:"Activación de foro, actualidad, música, mensajes y reportes",staff:false,group:"comunidad"},
 
     {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Cuentas online, roles, permisos y bloqueos",staff:false,group:"admin"},
     {id:"seguridad",icon:"🧾",label:"Seguridad",sub:"Auditoría de roles, bloqueos y cambios importantes",staff:false,group:"admin"},
@@ -8163,7 +8386,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y estadísticas. Todo lo económico en una zona clara."},
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Resumen, premios, stock, pedidos y ajustes de tienda."},
     {id:"juegos",icon:"🎮",label:"Juegos",sub:"Arcade, rankings, retos y recompensas internas de juego."},
-    {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Moderación, mensajes privados y música. Separado de la caja y la tienda."},
+    {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Resumen, moderación, mensajes, música y ajustes de comunidad."},
     {id:"admin",icon:"🔐",label:"Admin",sub:"Usuarios, seguridad, auditoría y ajustes internos."}
   ].filter(g=>tabs.some(t=>t.group===g.id));
 
@@ -8257,9 +8480,11 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
 
       {tab==="juegos_admin"&&<GestionJuegosAdmin user={user} showToast={showToast}/>}
 
+      {tab==="comunidad_resumen"&&<GestionComunidadPanel user={user} showToast={showToast} unread={unread}/>}
       {tab==="moderacion"&&<GestionModeracion user={user} showToast={showToast}/>}
       {tab==="mensajes"&&<GestionMensajes user={user} showToast={showToast} unread={unread}/>}
       {tab==="musica_admin"&&(isAdmin?<GestionMusica user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede moderar comunidad y mensajes, pero no editar la música."/> )}
+      {tab==="comunidad_ajustes"&&(isAdmin?<GestionComunidadAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="Los ajustes de comunidad sólo debería tocarlos el administrador."/> )}
 
       {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff no puede cambiar roles, permisos ni bloqueos de usuarios."/> )}
       {tab==="seguridad"&&(isAdmin?<GestionSeguridad user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La auditoría de seguridad sólo debería verla el administrador."/> )}
