@@ -2413,16 +2413,41 @@ function Clientes({showToast}){
   const [search,setSearch]=useState("");
   const [selected,setSelected]=useState(null);
   const [historial,setHistorial]=useState([]);
+  const [cobros,setCobros]=useState([]);
   const [loading,setLoading]=useState(true);
+  const [detailLoading,setDetailLoading]=useState(false);
+
   useEffect(()=>{load();},[]);
+
   async function load(){
     setLoading(true);
     const raw=await dbGet("usuarios","?role=eq.client&order=nombre.asc&select=*")||[];
     setClientes(await enrichProfilesWithAvatarConfigs(raw));
     setLoading(false);
   }
-  async function selectCliente(c){setSelected(c);setHistorial(await dbGet("citas",`?usuario_id=eq.${c.id}&order=fecha.desc&limit=10&select=*`)||[]);}
+
+  async function selectCliente(c){
+    setSelected(c);
+    setDetailLoading(true);
+    const [citas,cobs]=await Promise.all([
+      dbGet("citas",`?usuario_id=eq.${c.id}&order=fecha.desc,hora.desc&limit=50&select=*`),
+      dbGet("cobros",`?usuario_id=eq.${c.id}&order=created_at.desc&limit=80&select=*`)
+    ]);
+    setHistorial(Array.isArray(citas)?citas:[]);
+    setCobros((Array.isArray(cobs)?cobs:[]).filter(x=>String(x.estado||"pagado").toLowerCase()!=="anulado"));
+    setDetailLoading(false);
+  }
+
+  function pagoDe(cita){
+    return cobros.find(x=>String(x.cita_id||"")===String(cita.id)||String(x.id||"")===String(cita.cobro_id||""));
+  }
+
   const filtered=clientes.filter(c=>(c.nombre||"").toLowerCase().includes(search.toLowerCase())||(c.email||"").toLowerCase().includes(search.toLowerCase()));
+  const totalGastado=cobros.reduce((sum,c)=>sum+(Number(c.importe)||0),0);
+  const totalPuntosGanados=cobros.reduce((sum,c)=>sum+(Number(c.puntos_generados)||0),0);
+  const citasCompletadas=historial.filter(c=>String(c.estado||"").toLowerCase()==="completada").length;
+  const citasPendientes=historial.filter(c=>["pendiente","propuesta","confirmada"].includes(String(c.estado||"").toLowerCase())).length;
+
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="👥" title="Clientes" sub={`${clientes.length} clientes reales de la app`}/>
@@ -2430,33 +2455,94 @@ function Clientes({showToast}){
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2rem"}}>👥</div>
           <div style={{flex:1}}>
-            <div style={{fontWeight:950,fontSize:"1rem"}}>Clientes</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Aquí ves sólo clientes: puntos, citas, historial y ficha pública. No sirve para cambiar roles.</div>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Clientes y historial</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Ficha completa del cliente: puntos, citas, cobros, historial y estado de cada reserva.</div>
           </div>
         </div>
       </Card>
       <Input value={search} onChange={setSearch} placeholder="Buscar cliente por nombre o email..."/>
-      {loading?<Spinner/>:filtered.map(c=>(
-        <Card key={c.id} style={{marginBottom:10}} hover onClick={()=>selectCliente(c)}>
+      {loading?<Spinner/>:filtered.length===0?<EmptyState icon="👥" title="Sin clientes" sub="No hay clientes con esa búsqueda."/>:filtered.map(c=>(
+        <Card key={c.id} style={{marginBottom:10,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`1.5px solid ${T.g300}`}} hover onClick={()=>selectCliente(c)}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <PublicAvatar profile={c} currentUser={null} size={44}/>
-            <div style={{flex:1}}><div style={{fontWeight:800}}>{c.nombre}</div><div style={{fontSize:"0.78rem",color:T.textSub}}>{c.email}</div></div>
-            <div style={{fontWeight:900,color:T.g600}}>pts {c.puntos||0}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(c)}</div>
+              <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.email}</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontWeight:950,color:T.g600}}>⭐ {c.puntos||0}</div>
+              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div>
+            </div>
           </div>
         </Card>
       ))}
-      <Modal show={!!selected} onClose={()=>setSelected(null)} title={selected?.nombre||""}>
+
+      <Modal show={!!selected} onClose={()=>{setSelected(null);setHistorial([]);setCobros([]);}} title={selected?.nombre||"Cliente"}>
         {selected&&(
           <div>
             <div style={{display:"flex",gap:12,marginBottom:16,alignItems:"center"}}>
-              <PublicAvatar profile={selected} currentUser={null} size={56}/>
-              <div><div style={{fontWeight:800}}>{selected.nombre}</div><div style={{fontSize:"0.82rem",color:T.textSub}}>{selected.email}</div></div>
+              <PublicAvatar profile={selected} currentUser={null} size={58}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:950,color:T.g800,fontSize:"1rem"}}>{publicName(selected)}</div>
+                <div style={{fontSize:"0.82rem",color:T.textSub,fontWeight:800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{selected.email}</div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:7}}>
+                  <Badge col="gold">⭐ {selected.puntos||0} pts</Badge>
+                  {selected.modo_incognito&&<Badge col="dark">incógnito</Badge>}
+                </div>
+              </div>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-              <StatCard icon="⭐" label="Puntos" value={selected.puntos||0} col="gold"/>
-              <StatCard icon="📅" label="Citas" value={historial.length} col="green"/>
-            </div>
-            {historial.map(h=><div key={h.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${T.g100}`,fontSize:"0.83rem"}}><span>{h.servicio_label||h.servicio}</span><span style={{color:T.textSub}}>{h.fecha}</span></div>)}
+
+            {detailLoading?<Spinner/>:<>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+                <StatCard icon="📅" label="Citas" value={historial.length} col="green"/>
+                <StatCard icon="🏁" label="Realizadas" value={citasCompletadas} col="blue"/>
+                <StatCard icon="🟡" label="Activas" value={citasPendientes} col="gold"/>
+                <StatCard icon="💶" label="Cobrado" value={`${totalGastado.toFixed(2)}€`} col="gold"/>
+              </div>
+
+              <Card style={{marginBottom:14,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`1.5px solid ${T.gold}`,padding:12}}>
+                <div style={{fontWeight:950,color:T.g800}}>Resumen de fidelidad</div>
+                <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>
+                  Este cliente ha generado aproximadamente <b>{totalPuntosGanados}</b> puntos por cobros registrados. Los puntos son fidelidad, no dinero.
+                </div>
+              </Card>
+
+              <div style={{fontWeight:950,color:T.g800,margin:"8px 0"}}>Historial de citas</div>
+              {historial.length===0?<EmptyState icon="📅" title="Sin citas" sub="Este cliente todavía no tiene citas registradas."/>:
+                historial.map(h=>{
+                  const pago=pagoDe(h);
+                  const st=String(h.estado||"pendiente").toLowerCase();
+                  const col={pendiente:"gold",propuesta:"blue",confirmada:"green",completada:"blue",cancelada:"red"}[st]||"gold";
+                  const dur=citaDuration(citaServices(h));
+                  return <Card key={h.id} style={{marginBottom:9,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`1.5px solid ${T.g200}`,padding:12}}>
+                    <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>
+                          <Badge col={col}>{st==="completada"?"realizada":st}</Badge>
+                          {pago&&<Badge col="green">cobrada {Number(pago.importe||0).toFixed(2)}€</Badge>}
+                        </div>
+                        <div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{h.servicio_label||h.servicio||"Servicio"}</div>
+                        <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:4}}>📆 {h.fecha||"sin fecha"} · 🕒 {h.hora||"sin hora"}{dur?` · ${formatDuration(dur)}`:""}</div>
+                        {h.propuesta_fecha&&h.propuesta_hora&&<div style={{fontSize:".74rem",fontWeight:850,color:T.textSub,marginTop:5}}>🔁 Propuesta: {h.propuesta_fecha} · {h.propuesta_hora} · {h.respuesta_cliente||"pendiente"}</div>}
+                        {h.motivo_cancelacion&&<div style={{fontSize:".74rem",fontWeight:850,color:T.red,marginTop:5}}>Motivo: {h.motivo_cancelacion}</div>}
+                        {h.notas_admin&&<div style={{fontSize:".74rem",fontWeight:850,color:T.g800,marginTop:5,background:"rgba(255,244,214,.5)",borderRadius:10,padding:7}}>🔒 {h.notas_admin}</div>}
+                      </div>
+                      <div style={{textAlign:"right",whiteSpace:"nowrap"}}>
+                        {!!h.servicio_precio&&<div style={{fontWeight:950,color:T.g600}}>{Number(h.servicio_precio)}€</div>}
+                      </div>
+                    </div>
+                  </Card>;
+                })
+              }
+
+              <div style={{fontWeight:950,color:T.g800,margin:"14px 0 8px"}}>Últimos cobros</div>
+              {cobros.length===0?<div style={{fontSize:".82rem",fontWeight:800,color:T.textSub}}>Sin cobros registrados.</div>:
+                cobros.slice(0,8).map(c=><div key={c.id} style={{display:"flex",justifyContent:"space-between",gap:10,padding:"8px 0",borderBottom:`1px solid ${T.g100}`,fontSize:"0.83rem"}}>
+                  <span style={{fontWeight:850,color:T.text}}>{c.descripcion||c.concepto||"Cobro"}</span>
+                  <span style={{fontWeight:950,color:T.g600}}>{Number(c.importe||0).toFixed(2)}€</span>
+                </div>)
+              }
+            </>}
           </div>
         )}
       </Modal>
