@@ -8342,6 +8342,221 @@ function GestionJuegosAdmin({user,showToast}){
   </div>;
 }
 
+
+function GestionAdminPanel({user,showToast}){
+  const isAdmin=isAdminUser(user);
+  const [loading,setLoading]=useState(true);
+  const [data,setData]=useState({usuarios:[],auditoria:[],settings:[]});
+
+  async function safeList(table,query){
+    try{
+      const rows=await dbGet(table,query);
+      return Array.isArray(rows)?rows:[];
+    }catch(e){return [];}
+  }
+
+  async function load(){
+    setLoading(true);
+    const [usuarios,auditoria,settings]=await Promise.all([
+      safeList("usuarios","?order=created_at.desc&limit=5000&select=*"),
+      safeList("seguridad_auditoria","?order=created_at.desc&limit=300&select=*"),
+      safeList("app_settings","?order=categoria.asc,setting_key.asc&limit=300&select=*")
+    ]);
+    setData({usuarios,auditoria,settings});
+    setLoading(false);
+  }
+
+  useEffect(()=>{if(isAdmin)load(); else setLoading(false);},[isAdmin]);
+
+  if(!isAdmin)return <EmptyState icon="🔒" title="Sólo admin" sub="El resumen administrativo sólo debería verlo el administrador."/>;
+  const countRole=r=>data.usuarios.filter(u=>normalizeRole(u.role||u.rol)===r).length;
+  const baneados=data.usuarios.filter(u=>isBannedProfile(u));
+  const ultimos7=data.auditoria.filter(r=>{
+    const d=new Date(r.created_at||0);
+    const now=new Date();
+    return (now-d)/(1000*60*60*24)<=7;
+  });
+  const cambiosRol=data.auditoria.filter(r=>String(r.tipo||"")==="cambio_rol");
+  const ajustesEditables=data.settings.filter(s=>s.editable!==false).length;
+
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#24110A 52%,#A72822)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>🔐</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Panel admin</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Vista rápida de usuarios, roles, bloqueos, auditoría y ajustes globales.
+          </div>
+        </div>
+        <Btn small col="ghost" onClick={load}>Actualizar</Btn>
+      </div>
+    </Card>
+
+    {loading?<Spinner/>:<>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10}}>
+        <StatCard icon="👥" label="Usuarios online" value={data.usuarios.length} col="blue"/>
+        <StatCard icon="👑" label="Admin" value={countRole(ROLES.ADMIN)} col="gold"/>
+        <StatCard icon="💈" label="Staff" value={countRole(ROLES.STAFF)} col="green"/>
+        <StatCard icon="🙂" label="Clientes web" value={countRole(ROLES.CLIENT)} col="blue"/>
+        <StatCard icon="🚫" label="Bloqueados" value={baneados.length} col={baneados.length?"red":"green"}/>
+        <StatCard icon="🧾" label="Auditoría 7 días" value={ultimos7.length} col="gold"/>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
+        <Card style={{background:baneados.length?"linear-gradient(180deg,#FFE7DE,#F0C3B3)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🚫 Bloqueos</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            {baneados.length?`Hay ${baneados.length} usuario${baneados.length===1?"":"s"} bloqueado${baneados.length===1?"":"s"}.`:"No hay usuarios bloqueados."}
+          </div>
+        </Card>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>👑 Roles</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            Cambios de rol registrados: <b style={{color:T.g800}}>{cambiosRol.length}</b>. Revisa los cambios delicados desde Seguridad.
+          </div>
+        </Card>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>⚙️ Ajustes</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            Ajustes registrados: <b style={{color:T.g800}}>{data.settings.length}</b>. Editables: <b style={{color:T.g800}}>{ajustesEditables}</b>.
+          </div>
+        </Card>
+      </div>
+
+      <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🧭 Orden recomendado</div>
+        <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+          Usa <b>Usuarios</b> para buscar cuentas. Usa <b>Roles</b> para revisar permisos. Usa <b>Bloqueos</b> para ver cuentas baneadas. Usa <b>Seguridad</b> para auditoría y <b>Ajustes</b> para configuración global.
+        </div>
+      </Card>
+    </>}
+  </div>;
+}
+
+function GestionRolesPermisos({user,showToast}){
+  const isAdmin=isAdminUser(user);
+  const [users,setUsers]=useState([]);
+  const [loading,setLoading]=useState(true);
+
+  async function load(){
+    setLoading(true);
+    const rows=await dbGet("usuarios","?order=created_at.desc&limit=5000&select=*");
+    setUsers(Array.isArray(rows)?rows:[]);
+    setLoading(false);
+  }
+
+  useEffect(()=>{if(isAdmin)load(); else setLoading(false);},[isAdmin]);
+
+  if(!isAdmin)return <EmptyState icon="🔒" title="Sólo admin" sub="Sólo admin puede revisar roles y permisos."/>;
+  const roleUsers=r=>users.filter(u=>normalizeRole(u.role||u.rol)===r);
+  const matrix=[
+    {zona:"Gestión",admin:"Completo",staff:"Limitado",client:"No"},
+    {zona:"Usuarios y roles",admin:"Sí",staff:"No",client:"No"},
+    {zona:"Baneos",admin:"Sí",staff:"No",client:"No"},
+    {zona:"Citas",admin:"Sí",staff:"Sí",client:"Propias"},
+    {zona:"Caja",admin:"Sí",staff:"Sí",client:"No"},
+    {zona:"Tienda premios",admin:"Sí",staff:"Pedidos/stock",client:"Canjear"},
+    {zona:"Comunidad",admin:"Completo",staff:"Moderar/mensajes",client:"Participar"},
+    {zona:"Juegos",admin:"Ajustes",staff:"Consulta",client:"Jugar"},
+    {zona:"Ajustes globales",admin:"Sí",staff:"No",client:"No"}
+  ];
+
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#24110A 52%,#B99A45)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>👑</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Roles y permisos</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Revisión clara de lo que puede hacer admin, staff y cliente.
+          </div>
+        </div>
+        <Btn small col="ghost" onClick={load}>Actualizar</Btn>
+      </div>
+    </Card>
+
+    {loading?<Spinner/>:<>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10}}>
+        <StatCard icon="👑" label="Admins" value={roleUsers(ROLES.ADMIN).length} col="gold"/>
+        <StatCard icon="💈" label="Staff" value={roleUsers(ROLES.STAFF).length} col="green"/>
+        <StatCard icon="🙂" label="Clientes" value={roleUsers(ROLES.CLIENT).length} col="blue"/>
+      </div>
+
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",overflowX:"auto"}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🧩 Matriz de permisos</div>
+        <div style={{minWidth:560}}>
+          <div style={{display:"grid",gridTemplateColumns:"1.2fr 1fr 1fr 1fr",gap:6,fontSize:".76rem",fontWeight:950,color:T.g800,marginBottom:6}}>
+            <div>Zona</div><div>Admin</div><div>Staff</div><div>Cliente</div>
+          </div>
+          {matrix.map(row=><div key={row.zona} style={{display:"grid",gridTemplateColumns:"1.2fr 1fr 1fr 1fr",gap:6,padding:"8px 0",borderTop:`1px solid ${T.g200}`,fontSize:".78rem",fontWeight:850,color:T.textSub}}>
+            <div style={{color:T.g800,fontWeight:950}}>{row.zona}</div><div>{row.admin}</div><div>{row.staff}</div><div>{row.client}</div>
+          </div>)}
+        </div>
+      </Card>
+
+      <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>✍️ Cambiar roles</div>
+        <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+          Para cambiar el rol de una cuenta usa <b>Admin &gt; Usuarios</b>. Esta pantalla es para revisar permisos y evitar confusiones.
+        </div>
+      </Card>
+    </>}
+  </div>;
+}
+
+function GestionBaneos({user,showToast}){
+  const isAdmin=isAdminUser(user);
+  const [users,setUsers]=useState([]);
+  const [loading,setLoading]=useState(true);
+
+  async function load(){
+    setLoading(true);
+    const rows=await dbGet("usuarios","?order=created_at.desc&limit=5000&select=*");
+    setUsers(Array.isArray(rows)?rows:[]);
+    setLoading(false);
+  }
+
+  useEffect(()=>{if(isAdmin)load(); else setLoading(false);},[isAdmin]);
+
+  async function unban(u){
+    if(!isAdmin)return;
+    const ok=await dbPatch("usuarios",`?id=eq.${u.id}`,{baneado:false,motivo_baneo:null,baneado_por:null,baneado_at:null,baneo_hasta:null});
+    if(ok){showToast?.("Usuario desbloqueado");SFX.success();await load();}
+    else{showToast?.("No se pudo desbloquear");SFX.error();}
+  }
+
+  if(!isAdmin)return <EmptyState icon="🔒" title="Sólo admin" sub="Sólo admin puede revisar bloqueos."/>;
+  const banned=users.filter(u=>isBannedProfile(u));
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#42130F 52%,#A72822)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>🚫</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Baneos y bloqueos</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Lista de cuentas bloqueadas y desbloqueo rápido.
+          </div>
+        </div>
+        <Btn small col="ghost" onClick={load}>Actualizar</Btn>
+      </div>
+    </Card>
+
+    {loading?<Spinner/>:banned.length===0?<EmptyState icon="✅" title="Sin usuarios bloqueados" sub="No hay cuentas bloqueadas ahora mismo."/>:
+      banned.map(u=><Card key={u.id} style={{background:"linear-gradient(180deg,#FFE7DE,#F0C3B3)",border:`2px solid ${T.red}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start"}}>
+          <div style={{minWidth:0}}>
+            <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{u.nombre||"Usuario"} · {u.email||"sin email"}</div>
+            <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,lineHeight:1.4,marginTop:5}}>Motivo: {u.motivo_baneo||"Sin motivo registrado"}</div>
+            <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub,marginTop:5}}>Desde: {u.baneado_at?new Date(u.baneado_at).toLocaleString("es-ES"):"sin fecha"}{u.baneo_hasta?` · Hasta: ${new Date(u.baneo_hasta).toLocaleDateString("es-ES")}`:""}</div>
+          </div>
+          <Btn small col="green" onClick={()=>unban(u)}>Desbloquear</Btn>
+        </div>
+      </Card>)
+    }
+  </div>;
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -8374,9 +8589,12 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"musica_admin",icon:"🎧",label:"Música",sub:"Artistas, enlaces y audios propios",staff:false,group:"comunidad"},
     {id:"comunidad_ajustes",icon:"⚙️",label:"Ajustes",sub:"Activación de foro, actualidad, música, mensajes y reportes",staff:false,group:"comunidad"},
 
-    {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Cuentas online, roles, permisos y bloqueos",staff:false,group:"admin"},
-    {id:"seguridad",icon:"🧾",label:"Seguridad",sub:"Auditoría de roles, bloqueos y cambios importantes",staff:false,group:"admin"},
-    {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna de la web",staff:false,group:"admin"},
+    {id:"admin_resumen",icon:"🔐",label:"Resumen",sub:"Vista rápida de usuarios, roles, bloqueos, auditoría y ajustes",staff:false,group:"admin"},
+    {id:"usuarios",icon:"👥",label:"Usuarios",sub:"Cuentas online, búsqueda, roles y bloqueos",staff:false,group:"admin"},
+    {id:"roles_permisos",icon:"👑",label:"Roles",sub:"Matriz clara de permisos admin, staff y cliente",staff:false,group:"admin"},
+    {id:"baneos",icon:"🚫",label:"Baneos",sub:"Usuarios bloqueados y desbloqueo rápido",staff:false,group:"admin"},
+    {id:"seguridad",icon:"🧾",label:"Auditoría",sub:"Registro de roles, bloqueos y cambios importantes",staff:false,group:"admin"},
+    {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna global de la web",staff:false,group:"admin"},
   ].filter(t=>isAdmin||t.staff);
 
   const active=tabs.find(t=>t.id===tab)||tabs[0];
@@ -8387,7 +8605,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Resumen, premios, stock, pedidos y ajustes de tienda."},
     {id:"juegos",icon:"🎮",label:"Juegos",sub:"Arcade, rankings, retos y recompensas internas de juego."},
     {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Resumen, moderación, mensajes, música y ajustes de comunidad."},
-    {id:"admin",icon:"🔐",label:"Admin",sub:"Usuarios, seguridad, auditoría y ajustes internos."}
+    {id:"admin",icon:"🔐",label:"Admin",sub:"Resumen, usuarios, roles, baneos, auditoría y ajustes globales."}
   ].filter(g=>tabs.some(t=>t.group===g.id));
 
   const visibleTabs=tabs.filter(t=>t.group===gestionGroup);
@@ -8486,7 +8704,10 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       {tab==="musica_admin"&&(isAdmin?<GestionMusica user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede moderar comunidad y mensajes, pero no editar la música."/> )}
       {tab==="comunidad_ajustes"&&(isAdmin?<GestionComunidadAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="Los ajustes de comunidad sólo debería tocarlos el administrador."/> )}
 
+      {tab==="admin_resumen"&&(isAdmin?<GestionAdminPanel user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El resumen admin sólo debería verlo el administrador."/> )}
       {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff no puede cambiar roles, permisos ni bloqueos de usuarios."/> )}
+      {tab==="roles_permisos"&&(isAdmin?<GestionRolesPermisos user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La matriz de permisos sólo debería verla el administrador."/> )}
+      {tab==="baneos"&&(isAdmin?<GestionBaneos user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="Los bloqueos sólo debería revisarlos el administrador."/> )}
       {tab==="seguridad"&&(isAdmin?<GestionSeguridad user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La auditoría de seguridad sólo debería verla el administrador."/> )}
       {tab==="ajustes"&&(isAdmin?<GestionAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo debería tocarlos el administrador."/> )}
     </div>
