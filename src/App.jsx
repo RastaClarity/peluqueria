@@ -880,6 +880,45 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
     font-size:.92rem!important;
   }
 }
+
+/* ===== FASE78: forzado real de escritorio ===== */
+@media (min-width:820px){
+  .app-shell{
+    width:100vw!important;
+    max-width:none!important;
+    margin:0!important;
+    padding-left:224px!important;
+    padding-bottom:0!important;
+    transform:none!important;
+  }
+  .app-header-pro{
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+  }
+  .page-content-pro{
+    width:calc(100vw - 224px)!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:28px 36px 42px!important;
+  }
+  .bottom-nav-pro{
+    top:0!important;
+    left:0!important;
+    bottom:0!important;
+    transform:none!important;
+    width:224px!important;
+    max-width:224px!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    align-items:stretch!important;
+    padding:88px 14px 18px!important;
+    border-top:none!important;
+    border-right:2px solid rgba(245,230,200,.20)!important;
+  }
+}
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -891,7 +930,7 @@ function Card({children,style:sx={},onClick,hover=false}){
   return <div onClick={onClick?(e)=>{SFX.click();onClick(e);}:undefined} className={`${hover?"ch":""} studio-panel`} style={{background:T.panel,borderRadius:20,padding:"16px",boxShadow:"0 8px 18px rgba(18,8,4,0.24)",border:`2px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",animation:"cardLift .35s ease",...sx}}>{children}</div>;
 }
 function Input({label,value,onChange,type="text",placeholder="",style:sx={}}){
-  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
+  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"calc(100vw - 224px)",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
 }
 function Select({label,value,onChange,options=[]}){
   return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<select value={value} onChange={e=>onChange(e.target.value)} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}>{options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>;
@@ -8636,7 +8675,7 @@ export default function App(){
   const [notifOpen,setNotifOpen]=useState(false);
   const [notifications,setNotifications]=useState([]);
   const [notifCount,setNotifCount]=useState(0);
-  const [isDesktop,setIsDesktop]=useState(()=>typeof window!=="undefined" ? window.innerWidth>=900 : false);
+  const [isDesktop,setIsDesktop]=useState(()=>typeof window!=="undefined" ? window.innerWidth>=820 : false);
 
   useEffect(()=>{
     async function loadSettings(){
@@ -8647,7 +8686,7 @@ export default function App(){
   },[]);
 
   useEffect(()=>{
-    const update=()=>setIsDesktop(typeof window!=="undefined" && window.innerWidth>=900);
+    const update=()=>setIsDesktop(typeof window!=="undefined" && window.innerWidth>=820);
     update();
     window.addEventListener("resize",update);
     window.addEventListener("orientationchange",update);
@@ -8791,9 +8830,11 @@ export default function App(){
     minHeight:"100vh",
     width:"100vw",
     maxWidth:"none",
+    minWidth:"100vw",
     margin:0,
     paddingLeft:desktopSidebar,
     paddingBottom:0,
+    overflowX:"hidden",
     position:"relative",
     boxShadow:"none",
     "--shineA":theme.shineA,
@@ -8850,7 +8891,8 @@ export default function App(){
     padding:"28px 36px 42px",
     position:"relative",
     minHeight:"calc(100dvh - 68px)",
-    width:"100%"
+    width:"calc(100vw - 224px)",
+    maxWidth:"none"
   }:{
     padding:"18px 14px",
     position:"relative"
@@ -8861,8 +8903,8 @@ export default function App(){
     bottom:0,
     left:0,
     transform:"none",
-    width:desktopSidebar,
-    maxWidth:desktopSidebar,
+    width:"224px",
+    maxWidth:"224px",
     height:"100dvh",
     background:theme.nav,
     borderRight:`2px solid ${theme.accent}`,
@@ -8916,7 +8958,7 @@ export default function App(){
         <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
       </div>
       <div className="bottom-nav-pro" style={navStyle}>
-        {isDesktop&&<div style={{position:"absolute",top:22,left:16,right:16,color:"#FFF4D6",fontFamily:"'Pirata One',cursive",fontSize:"1.6rem",lineHeight:1,paddingBottom:14,borderBottom:"1px solid rgba(255,244,214,.18)",textShadow:"0 4px 14px rgba(0,0,0,.35)"}}>✂️ Rasta Cuts</div>}
+        {isDesktop&&<div style={{position:"absolute",top:22,left:16,right:16,color:"#FFF4D6",fontFamily:"'Pirata One',cursive",fontSize:"1.6rem",lineHeight:1,paddingBottom:14,borderBottom:"1px solid rgba(255,244,214,.18)",textShadow:"0 4px 14px rgba(0,0,0,.35)"}}>✂️ Rasta Cuts<br/><span style={{fontFamily:"Cinzel,serif",fontSize:".56rem",fontWeight:900,letterSpacing:1.2,opacity:.72}}>VISTA PC ACTIVA · F78</span></div>}
         {nav.map(n=>{
           const badge=(role===ROLES.CLIENT && n.id==="buzon")?unread.client:((role!==ROLES.CLIENT && n.id==="gestion")?unread.admin:0);
           return(
