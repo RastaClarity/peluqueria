@@ -7672,8 +7672,8 @@ function GestionJuegosAdmin({user,showToast}){
     activo:true
   });
 
-  const gameNames=Object.fromEntries((typeof ARCADE_GAMES!=="undefined"?ARCADE_GAMES:[]).map(g=>[g.id,g.title]));
   const gameList=typeof ARCADE_GAMES!=="undefined"?ARCADE_GAMES:[];
+  const gameNames=Object.fromEntries(gameList.map(g=>[g.id,g.title]));
 
   async function safeList(table,query){
     try{
@@ -7694,6 +7694,7 @@ function GestionJuegosAdmin({user,showToast}){
       secciones:{arcade_activo:true,gacha_activo:true},
       puntos:{limite_diario_juegos:75,gacha_tiradas_dia:50}
     };
+
     settingsRows.forEach(r=>{
       if(r.setting_key==="secciones") next.secciones={...next.secciones,...(r.setting_value||{})};
       if(r.setting_key==="puntos") next.puntos={...next.puntos,...(r.setting_value||{})};
