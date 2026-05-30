@@ -6849,6 +6849,177 @@ function GestionModeracion({user,showToast}){
   </div>;
 }
 
+
+function GestionEstadisticas({showToast}){
+  const [loading,setLoading]=useState(true);
+  const [range,setRange]=useState("mes");
+  const [data,setData]=useState({
+    citas:[],cobros:[],clientes:[],pedidos:[],foroTemas:[],foroRespuestas:[],newsEvents:[],gameScores:[],canjes:[]
+  });
+
+  const money=n=>`${(Number(n)||0).toFixed(2)}€`;
+  const todayKey=()=>new Date().toISOString().split("T")[0];
+  function daysAgo(n){
+    const d=new Date();
+    d.setDate(d.getDate()-n);
+    return d.toISOString().split("T")[0];
+  }
+  function monthStart(){
+    const d=new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-01`;
+  }
+  function yearStart(){
+    const d=new Date();
+    return `${d.getFullYear()}-01-01`;
+  }
+  function startDate(){
+    if(range==="hoy")return todayKey();
+    if(range==="7d")return daysAgo(7);
+    if(range==="30d")return daysAgo(30);
+    if(range==="anio")return yearStart();
+    return monthStart();
+  }
+  async function safeList(table,query){
+    try{
+      const rows=await dbGet(table,query);
+      return Array.isArray(rows)?rows:[];
+    }catch(e){return [];}
+  }
+
+  useEffect(()=>{load();},[range]);
+
+  async function load(){
+    setLoading(true);
+    const start=startDate();
+    const [citas,cobros,clientes,pedidos,foroTemas,foroRespuestas,newsEvents,gameScores,canjes]=await Promise.all([
+      safeList("citas",`?fecha=gte.${start}&order=fecha.desc,hora.desc&limit=5000&select=*`),
+      safeList("cobros",`?fecha=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+      safeList("usuarios","?role=eq.client&limit=5000&select=id,nombre,email,puntos,created_at"),
+      safeList("tienda_pedidos",`?created_at=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+      safeList("foro_temas",`?created_at=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+      safeList("foro_respuestas",`?created_at=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+      safeList("news_point_events",`?created_at=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+      safeList("game_scores",`?created_at=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+      safeList("canjes",`?created_at=gte.${start}&order=created_at.desc&limit=5000&select=*`),
+    ]);
+    setData({citas,cobros,clientes,pedidos,foroTemas,foroRespuestas,newsEvents,gameScores,canjes});
+    setLoading(false);
+  }
+
+  const cobrosOk=data.cobros.filter(c=>String(c.estado||"pagado").toLowerCase()!=="anulado");
+  const ingresos=cobrosOk.reduce((sum,c)=>sum+(Number(c.importe)||0),0);
+  const citasActivas=data.citas.filter(c=>String(c.estado||"").toLowerCase()!=="cancelada");
+  const citasRealizadas=data.citas.filter(c=>String(c.estado||"").toLowerCase()==="completada");
+  const citasPendientes=data.citas.filter(c=>["pendiente","propuesta"].includes(String(c.estado||"pendiente").toLowerCase()));
+  const pedidosPendientes=data.pedidos.filter(p=>["pendiente","preparando","listo"].includes(String(p.estado||"pendiente").toLowerCase()));
+  const pedidosEntregados=data.pedidos.filter(p=>String(p.estado||"").toLowerCase()==="entregado");
+  const puntosPedidos=data.pedidos.reduce((sum,p)=>sum+(Number(p.puntos_coste)||0),0);
+  const puntosNoticias=data.newsEvents.reduce((sum,p)=>sum+(Number(p.puntos)||0),0);
+  const puntosCanjes=data.canjes.reduce((sum,c)=>sum+(Number(c.puntos)||Number(c.puntos_coste)||0),0);
+
+  function countBy(arr,keyFn){
+    const map=new Map();
+    arr.forEach(x=>{
+      const key=keyFn(x)||"Sin dato";
+      map.set(key,(map.get(key)||0)+1);
+    });
+    return [...map.entries()].map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value);
+  }
+  const topServicios=countBy(data.citas,c=>c.servicio_label||c.servicio).slice(0,5);
+  const topPedidos=countBy(data.pedidos,p=>p.item_nombre||p.nombre||p.item_id).slice(0,5);
+  const topJuegos=countBy(data.gameScores,s=>s.game_id||s.juego||s.game||"Juego").slice(0,5);
+  const topClientes=[...data.clientes].sort((a,b)=>Number(b.puntos||0)-Number(a.puntos||0)).slice(0,5);
+
+  function BarList({items,empty="Sin datos todavía"}){
+    const max=Math.max(1,...items.map(i=>Number(i.value)||0));
+    if(!items.length)return <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,padding:"8px 0"}}>{empty}</div>;
+    return <div style={{display:"grid",gap:8}}>
+      {items.map((i,idx)=><div key={`${i.label}-${idx}`}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:8,fontSize:".78rem",fontWeight:900,color:T.g800,marginBottom:4}}>
+          <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{i.label}</span>
+          <span>{i.value}</span>
+        </div>
+        <div style={{height:8,borderRadius:999,background:"rgba(75,48,27,.13)",overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${Math.max(8,(Number(i.value)||0)/max*100)}%`,borderRadius:999,background:"linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)"}}/>
+        </div>
+      </div>)}
+    </div>;
+  }
+
+  return(
+    <div style={{animation:"fadeSlide .34s ease"}}>
+      <SectionHeader icon="📊" title="Estadísticas" sub="Resumen visual del negocio, tienda, comunidad y juegos" action={<Btn small col="ghost" onClick={load}>Actualizar</Btn>}/>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#17252D,#263F4D 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2.2rem"}}>📊</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Panel de control</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Mide citas, ingresos, pedidos, puntos y actividad sin salir de Gestión.</div>
+          </div>
+        </div>
+      </Card>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
+          {[
+            ["hoy","Hoy"],["7d","7 días"],["mes","Mes"],["30d","30 días"],["anio","Año"]
+          ].map(([id,label])=><button key={id} onClick={()=>{SFX.tab();setRange(id);}} style={{border:`2px solid ${range===id?T.gold:T.g300}`,background:range===id?T.gradGold:"rgba(255,244,214,.72)",color:range===id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".7rem"}}>{label}</button>)}
+        </div>
+      </Card>
+
+      {loading?<Spinner/>:<>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+          <StatCard icon="💶" label="Ingresos" value={money(ingresos)} col="gold"/>
+          <StatCard icon="📅" label="Citas activas" value={citasActivas.length} col="green"/>
+          <StatCard icon="🏁" label="Realizadas" value={citasRealizadas.length} col="blue"/>
+          <StatCard icon="🟡" label="Pendientes" value={citasPendientes.length} col="gold"/>
+          <StatCard icon="🎁" label="Pedidos activos" value={pedidosPendientes.length} col="pink"/>
+          <StatCard icon="✅" label="Pedidos entregados" value={pedidosEntregados.length} col="green"/>
+          <StatCard icon="👥" label="Clientes" value={data.clientes.length} col="blue"/>
+          <StatCard icon="⭐" label="Puntos movidos" value={puntosPedidos+puntosNoticias+puntosCanjes} col="gold"/>
+        </div>
+
+        <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>📈 Resumen rápido</div>
+          <div style={{display:"grid",gap:8,fontSize:".84rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>
+            <div>Ingresos registrados: <b style={{color:T.g800}}>{money(ingresos)}</b> en {cobrosOk.length} cobro{cobrosOk.length===1?"":"s"}.</div>
+            <div>Citas: <b style={{color:T.g800}}>{data.citas.length}</b> totales, <b style={{color:T.g800}}>{citasRealizadas.length}</b> realizadas y <b style={{color:T.g800}}>{citasPendientes.length}</b> pendientes/propuestas.</div>
+            <div>Comunidad: <b style={{color:T.g800}}>{data.foroTemas.length}</b> temas, <b style={{color:T.g800}}>{data.foroRespuestas.length}</b> respuestas y <b style={{color:T.g800}}>{data.newsEvents.length}</b> eventos de actualidad.</div>
+            <div>Tienda: <b style={{color:T.g800}}>{data.pedidos.length}</b> pedidos y <b style={{color:T.g800}}>{puntosPedidos}</b> puntos canjeados en pedidos.</div>
+          </div>
+        </Card>
+
+        <div style={{display:"grid",gap:14}}>
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+            <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>✂️ Servicios más pedidos</div>
+            <BarList items={topServicios}/>
+          </Card>
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+            <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🎁 Productos/canjes más pedidos</div>
+            <BarList items={topPedidos}/>
+          </Card>
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+            <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🎮 Juegos más usados</div>
+            <BarList items={topJuegos}/>
+          </Card>
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+            <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>👑 Clientes con más puntos</div>
+            {topClientes.length===0?<div style={{fontSize:".82rem",fontWeight:800,color:T.textSub}}>Sin clientes todavía.</div>:topClientes.map((c,i)=><div key={c.id||i} style={{display:"flex",justifyContent:"space-between",gap:8,padding:"8px 0",borderBottom:i<topClientes.length-1?`1px solid ${T.g150}`:"none",fontSize:".84rem"}}>
+              <span style={{fontWeight:900,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{i+1}. {c.nombre||c.email||"Cliente"}</span>
+              <span style={{fontWeight:950,color:T.g600}}>{Number(c.puntos||0)} pts</span>
+            </div>)}
+          </Card>
+        </div>
+
+        <Card style={{marginTop:14,background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`}}>
+          <div style={{fontWeight:950,color:T.g800}}>📌 Nota</div>
+          <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Este panel lee datos de Supabase y los resume. Si una tabla aún no tiene datos, simplemente aparecerá como cero o sin resultados.</div>
+        </Card>
+      </>}
+    </div>
+  );
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -6858,6 +7029,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const tabs=[
     {id:"resumen",icon:"🏠",label:"Resumen",sub:"Inicio interno con próximas citas y acciones rápidas",staff:true},
     {id:"agenda",icon:"🗓️",label:"Agenda",sub:"Vista diaria ordenada por horas",staff:true},
+    {id:"estadisticas",icon:"📊",label:"Estadísticas",sub:"Citas, ingresos, pedidos, puntos y comunidad",staff:true},
     {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true},
     {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true},
     {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true},
@@ -6922,6 +7094,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
 
       {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast}/>} 
       {tab==="agenda"&&<GestionAgenda showToast={showToast}/>} 
+      {tab==="estadisticas"&&<GestionEstadisticas showToast={showToast}/>} 
       {tab==="facturacion"&&<Caja user={user} showToast={showToast}/>}
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
       {tab==="mensajes"&&<GestionMensajes user={user} showToast={showToast}/>}
