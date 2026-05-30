@@ -2391,6 +2391,7 @@ function Caja({user,showToast}){
   const [clienteNombre,setClienteNombre]=useState("");
   const [citaCobro,setCitaCobro]=useState(null);
   const [cobroForm,setCobroForm]=useState({metodo_pago:"efectivo",importe:"",puntos_generados:"10",descripcion:""});
+  const [puntosCitaDefault,setPuntosCitaDefault]=useState(10);
 
   const today=()=>new Date().toISOString().split("T")[0];
   const monthStart=()=>{
@@ -2398,7 +2399,7 @@ function Caja({user,showToast}){
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-01`;
   };
   const money=n=>`${(Number(n)||0).toFixed(2)}€`;
-  const metodoLabel=m=>({efectivo:"Efectivo",tarjeta:"Tarjeta",bizum:"Bizum",puntos:"Puntos",mixto:"Mixto"})[m]||m||"Sin método";
+  const metodoLabel=m=>({efectivo:"Efectivo",tarjeta:"Tarjeta",bizum:"Bizum",mixto:"Mixto"})[m]||m||"Sin método";
 
   async function sumarPuntosFidelidad(usuarioId,puntos=0){
     if(!usuarioId)return false;
@@ -2420,10 +2421,14 @@ function Caja({user,showToast}){
 
   async function loadCaja(){
     setLoading(true);
-    const [cobs,citas]=await Promise.all([
+    const [cobs,citas,settingsRows]=await Promise.all([
       dbGet("cobros",`?fecha=gte.${monthStart()}&order=created_at.desc&select=*`),
-      dbGet("citas",`?estado=eq.completada&order=fecha.desc,hora.desc&select=*`)
+      dbGet("citas",`?estado=eq.completada&order=fecha.desc,hora.desc&select=*`),
+      dbGet("app_settings","?setting_key=eq.puntos&select=setting_value&limit=1")
     ]);
+    const puntosCfg=settingsRows?.[0]?.setting_value||{};
+    const puntosDefault=Math.max(0,parseInt(puntosCfg.puntos_por_cita_cobrada??10,10)||10);
+    setPuntosCitaDefault(puntosDefault);
     const cleanCobros=Array.isArray(cobs)?cobs:[];
     setCobros(cleanCobros);
     const cobradas=new Set(cleanCobros.map(c=>String(c.cita_id||"")).filter(Boolean));
@@ -2488,7 +2493,7 @@ function Caja({user,showToast}){
     setCobroForm({
       metodo_pago:"efectivo",
       importe:String(precio||0),
-      puntos_generados:"10",
+      puntos_generados:String(puntosCitaDefault),
       descripcion:cita.servicio_label||cita.servicio||"Servicio de peluquería"
     });
   }
@@ -5133,6 +5138,158 @@ function GestionTienda({showToast}){
   );
 }
 
+
+function GestionAjustes({showToast}){
+  const DEFAULTS={
+    branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️"},
+    puntos:{puntos_por_cita_cobrada:10,puntos_por_comentario:3,puntos_por_like:1,limite_diario_juegos:75,gacha_tiradas_dia:50},
+    secciones:{tienda_activa:true,arcade_activo:true,musica_activa:true,noticias_activas:true,foro_activo:true,gacha_activo:true},
+    musica:{musica_activa_por_defecto:false,volumen_general:0.7,modo:"jazz_lofi_reggae",descripcion:"Música suave tipo jazz lofi reggae."},
+    rasta_helper:{modo_ayuda_activo:true,tips_diarios:true,mostrar_bocadillos_automaticos:false,tono:"util_profesional_divertido"}
+  };
+  const META={
+    branding:{icon:"🏷️",title:"Marca",sub:"Nombre, slogan y textos principales.",categoria:"general"},
+    puntos:{icon:"⭐",title:"Puntos",sub:"Fidelidad y límites de puntos. No equivalen a euros.",categoria:"puntos"},
+    secciones:{icon:"🧩",title:"Secciones",sub:"Activar o preparar secciones principales.",categoria:"secciones"},
+    musica:{icon:"🎧",title:"Música",sub:"Ajustes generales de sonido.",categoria:"musica"},
+    rasta_helper:{icon:"🧭",title:"Rasta ayuda",sub:"Asistente, tips diarios y ayuda interactiva.",categoria:"rasta"}
+  };
+  const [settings,setSettings]=useState(DEFAULTS);
+  const [active,setActive]=useState("branding");
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+
+  useEffect(()=>{load();},[]);
+
+  async function load(){
+    setLoading(true);
+    const rows=await dbGet("app_settings","?order=categoria.asc,setting_key.asc&select=*");
+    const next={...DEFAULTS};
+    (Array.isArray(rows)?rows:[]).forEach(r=>{
+      if(next[r.setting_key]) next[r.setting_key]={...next[r.setting_key],...(r.setting_value||{})};
+    });
+    setSettings(next);
+    setLoading(false);
+  }
+
+  function setVal(key,field,value){
+    setSettings(prev=>({...prev,[key]:{...(prev[key]||{}),[field]:value}}));
+  }
+  function bool(v){return v===true||v==="true";}
+
+  async function save(key=active){
+    setSaving(true);
+    const meta=META[key];
+    const payload={
+      setting_key:key,
+      setting_value:settings[key],
+      descripcion:meta?.sub||"Ajuste de aplicación",
+      categoria:meta?.categoria||"general",
+      editable:true,
+      updated_at:new Date().toISOString()
+    };
+    let ok=await dbPatch("app_settings",`?setting_key=eq.${key}`,payload);
+    if(!ok) ok=await dbPost("app_settings",payload);
+    setSaving(false);
+    if(ok){showToast?.("Ajustes guardados");SFX.success();await load();}
+    else{showToast?.("No se pudieron guardar los ajustes");SFX.error();}
+  }
+
+  function NumberField({k,f,label,min=0}){
+    return <Input label={label} value={String(settings[k]?.[f]??"")} onChange={v=>setVal(k,f,Math.max(min,parseFloat(v||"0")||0))} type="number"/>;
+  }
+  function TextField({k,f,label,placeholder=""}){
+    return <Input label={label} value={String(settings[k]?.[f]??"")} onChange={v=>setVal(k,f,v)} placeholder={placeholder}/>;
+  }
+  function BoolField({k,f,label}){
+    return <Select label={label} value={String(bool(settings[k]?.[f]))} onChange={v=>setVal(k,f,v==="true")} options={[{value:"true",label:"Activado"},{value:"false",label:"Desactivado"}]}/>;
+  }
+
+  const cfg=settings[active]||{};
+  return(
+    <div style={{animation:"fadeSlide .34s ease"}}>
+      <SectionHeader icon="⚙️" title="Ajustes internos" sub="Configuración editable de la app" action={<Btn small col="gold" onClick={()=>save(active)} disabled={saving}>{saving?"Guardando...":"Guardar"}</Btn>}/>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2rem"}}>🛠️</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Panel de configuración</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Estos valores se guardan en Supabase en app_settings. Algunas opciones ya se usan; otras quedan preparadas para los siguientes pasos.</div>
+          </div>
+        </div>
+      </Card>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:12}}>
+        {Object.entries(META).map(([key,m])=><button key={key} onClick={()=>{SFX.tab();setActive(key);}} style={{border:`2px solid ${active===key?T.gold:T.g300}`,background:active===key?T.gradGold:"rgba(255,244,214,.84)",color:active===key?T.g900:T.g700,borderRadius:16,padding:"10px 8px",fontWeight:950,cursor:"pointer",boxShadow:active===key?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
+          <div style={{fontSize:"1.35rem",lineHeight:1}}>{m.icon}</div>
+          <div style={{fontSize:".74rem",marginTop:4}}>{m.title}</div>
+        </button>)}
+      </div>
+
+      {loading?<Spinner/>:<Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+          <div className="icon3d" style={{fontSize:"2rem"}}>{META[active].icon}</div>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>{META[active].title}</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{META[active].sub}</div>
+          </div>
+        </div>
+
+        {active==="branding"&&<>
+          <TextField k="branding" f="nombre_tienda" label="Nombre de tienda"/>
+          <TextField k="branding" f="slogan" label="Slogan"/>
+          <TextField k="branding" f="mensaje_login" label="Mensaje de login"/>
+          <TextField k="branding" f="emoji_principal" label="Emoji principal"/>
+        </>}
+
+        {active==="puntos"&&<>
+          <Card style={{marginBottom:14,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`1.5px solid ${T.gold}`,padding:12}}>
+            <div style={{fontWeight:950,color:T.g800}}>Regla importante</div>
+            <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>Los puntos son fidelidad y recompensas. No equivalen a euros ni se usan como dinero.</div>
+          </Card>
+          <NumberField k="puntos" f="puntos_por_cita_cobrada" label="Puntos por cita cobrada"/>
+          <NumberField k="puntos" f="puntos_por_comentario" label="Puntos por comentario"/>
+          <NumberField k="puntos" f="puntos_por_like" label="Puntos por like"/>
+          <NumberField k="puntos" f="limite_diario_juegos" label="Límite diario de puntos en juegos"/>
+          <NumberField k="puntos" f="gacha_tiradas_dia" label="Tiradas de Gacha al día"/>
+        </>}
+
+        {active==="secciones"&&<>
+          <BoolField k="secciones" f="tienda_activa" label="Tienda activa"/>
+          <BoolField k="secciones" f="arcade_activo" label="Arcade activo"/>
+          <BoolField k="secciones" f="musica_activa" label="Música activa"/>
+          <BoolField k="secciones" f="noticias_activas" label="Noticias activas"/>
+          <BoolField k="secciones" f="foro_activo" label="Foro activo"/>
+          <BoolField k="secciones" f="gacha_activo" label="Gacha activo"/>
+        </>}
+
+        {active==="musica"&&<>
+          <BoolField k="musica" f="musica_activa_por_defecto" label="Música activa por defecto"/>
+          <NumberField k="musica" f="volumen_general" label="Volumen general 0 a 1"/>
+          <TextField k="musica" f="modo" label="Modo musical"/>
+          <TextField k="musica" f="descripcion" label="Descripción"/>
+        </>}
+
+        {active==="rasta_helper"&&<>
+          <BoolField k="rasta_helper" f="modo_ayuda_activo" label="Modo ayuda disponible"/>
+          <BoolField k="rasta_helper" f="tips_diarios" label="Tips diarios"/>
+          <BoolField k="rasta_helper" f="mostrar_bocadillos_automaticos" label="Bocadillos automáticos"/>
+          <TextField k="rasta_helper" f="tono" label="Tono del asistente"/>
+        </>}
+
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
+          <Btn full col="gold" onClick={()=>save(active)} disabled={saving}>{saving?"Guardando...":"Guardar ajustes"}</Btn>
+        </div>
+      </Card>}
+
+      <Card style={{marginTop:12,background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`}}>
+        <div style={{fontWeight:950,color:T.g800}}>📌 Próximo paso</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Después conectaremos más partes de la app a estos ajustes para que los cambios se apliquen automáticamente en juegos, música, comunidad y login.</div>
+      </Card>
+    </div>
+  );
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -5206,12 +5363,7 @@ function GestionAdmin({user,setUser,showToast,showPoints}){
       {tab==="stock"&&<Inventario showToast={showToast}/>}
       {tab==="tienda"&&(isAdmin?<GestionTienda showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la tienda."/> )}
       {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no cambiar roles ni permisos."/> )}
-      {tab==="ajustes"&&(isAdmin?<Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
-        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>⚙️ Ajustes internos</div>
-        <div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.4}}>
-          Esta zona queda preparada para el final: nombre de la tienda, puntos por acciones, frases del Rasta, recompensas, horarios y enlaces destacados.
-        </div>
-      </Card>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo deberían tocarlos administradores."/> )}
+      {tab==="ajustes"&&(isAdmin?<GestionAjustes showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo deberían tocarlos administradores."/> )}
     </div>
   );
 }
