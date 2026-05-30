@@ -39,6 +39,27 @@ const dbGet   = (t,q="") => db(t,"GET",null,q);
 const dbPost  = (t,b)    => db(t,"POST",b,"");
 const dbPatch = (t,q,b)  => db(t,"PATCH",b,q);
 
+async function createNotification(payload={}){
+  try{
+    if(!payload?.titulo)return null;
+    return await dbPost("notificaciones",{
+      usuario_id:payload.usuario_id?String(payload.usuario_id):null,
+      rol_destino:payload.rol_destino||"admin",
+      tipo:payload.tipo||"general",
+      titulo:payload.titulo,
+      mensaje:payload.mensaje||null,
+      entidad_tipo:payload.entidad_tipo||null,
+      entidad_id:payload.entidad_id?String(payload.entidad_id):null,
+      leida:false,
+      importante:Boolean(payload.importante)
+    });
+  }catch(e){console.warn("No se pudo crear notificación",e);return null;}
+}
+function notificationIcon(tipo="general"){
+  const map={cita:"📅",cita_nueva:"📅",cita_cancelada:"❌",cita_propuesta:"🔁",cita_propuesta_aceptada:"✅",cita_propuesta_rechazada:"⚠️",mensaje:"📩",canje:"🎁",cobro:"💰",general:"🔔"};
+  return map[tipo]||"🔔";
+}
+
 const T = {
   // Paleta mate pirata/rasta: menos brillo, más lectura y contraste cálido.
   g900:"#130B06",g800:"#21140C",g700:"#332013",g600:"#4B301B",
@@ -2133,7 +2154,7 @@ function Citas({user,showToast,onNavigate}){
     const fin=endTime(form.hora,duracion);
     const notasLimpias=String(form.notas||"").trim();
     const resumenDuracion=`Duración estimada: ${formatDuration(duracion)}${fin?` · Hasta aprox. ${fin}`:""}`;
-    await dbPost("citas",{
+    const created=await dbPost("citas",{
       servicio:servicios.map(s=>s.id).join(","),
       servicio_label:servicios.map(s=>s.label).join(" + "),
       servicio_precio:total,
@@ -2146,6 +2167,7 @@ function Citas({user,showToast,onNavigate}){
       respuesta_cliente:"pendiente",
       updated_at:new Date().toISOString()
     });
+    await createNotification({rol_destino:"admin",tipo:"cita_nueva",titulo:"Nueva cita pendiente",mensaje:`${form.cliente_nombre||user?.nombre||user?.email||"Cliente"} pidió cita para ${form.fecha} a las ${form.hora}.`,entidad_tipo:"cita",entidad_id:Array.isArray(created)?created?.[0]?.id:null,importante:true});
     showToast("Cita enviada y pendiente de confirmar");SFX.success();setShowNew(false);setForm({servicios:["corte"],fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});loadCitas();
   }
 
@@ -2200,10 +2222,12 @@ function Citas({user,showToast,onNavigate}){
       estado:"confirmada",
       respuesta_cliente:"aceptada"
     },"Propuesta aceptada");
+    await createNotification({rol_destino:"admin",tipo:"cita_propuesta_aceptada",titulo:"Propuesta aceptada",mensaje:`${cita.cliente_nombre||"Cliente"} aceptó la cita del ${cita.propuesta_fecha} a las ${cita.propuesta_hora}.`,entidad_tipo:"cita",entidad_id:cita.id,importante:true});
   }
 
   async function rechazarPropuesta(cita){
     await updateCita(cita,{estado:"pendiente",respuesta_cliente:"rechazada"},"Propuesta rechazada");
+    await createNotification({rol_destino:"admin",tipo:"cita_propuesta_rechazada",titulo:"Propuesta rechazada",mensaje:`${cita.cliente_nombre||"Cliente"} rechazó la propuesta de cita.`,entidad_tipo:"cita",entidad_id:cita.id,importante:true});
   }
 
   async function guardarNotasAdmin(){
@@ -3255,6 +3279,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
     if(okUser){
       setUser(u=>({...u,puntos:nuevos}));
       SFX.coins();
+      await createNotification({rol_destino:"admin",tipo:"canje",titulo:"Nuevo canje de tienda",mensaje:`${user.nombre||user.email||"Cliente"} canjeó ${p.nombre} por ${precio} puntos.`,entidad_tipo:"canje",entidad_id:p.id,importante:true});
       showToast(`${p.nombre} canjeado`);
       await load();
     }else{
@@ -5872,6 +5897,7 @@ function BuzonPrivado({user,showToast,refreshUnread,unread}){
       setTexto("");
       SFX.success();
       showToast?.("Mensaje enviado");
+      await createNotification({rol_destino:"admin",tipo:"mensaje",titulo:"Nuevo mensaje privado",mensaje:`${user.nombre||user.email||"Cliente"} escribió en el buzón.`,entidad_tipo:"mensaje",entidad_id:Array.isArray(ok)?ok?.[0]?.id:null,importante:false});
       await load();
       refreshUnread?.();
     }else{
@@ -5993,6 +6019,7 @@ function GestionMensajes({user,showToast,refreshUnread,unread}){
       setTexto("");
       SFX.success();
       showToast?.("Respuesta enviada");
+      await createNotification({usuario_id:selected.usuario_id,rol_destino:"client",tipo:"mensaje",titulo:"Nueva respuesta de Rasta Cuts",mensaje:"Tienes una respuesta nueva en tu buzón privado.",entidad_tipo:"mensaje",entidad_id:Array.isArray(ok)?ok?.[0]?.id:null,importante:false});
       setSelected(s=>s?{...s,estado:"abierto"}:s);
       await openThread({...selected,estado:"abierto"});
       refreshUnread?.();
@@ -7341,6 +7368,22 @@ function pageTheme(page,communityTab,role){
   if(key==="musica") return PAGE_THEMES.noticias||PAGE_THEMES.comunidad;
   return PAGE_THEMES[key]||PAGE_THEMES[page]||PAGE_THEMES.dashboard;
 }
+function NotificacionesPanel({show,onClose,items=[],onMarkAll,onRefresh}){
+  if(!show)return null;
+  const unread=items.filter(n=>!n.leida).length;
+  const when=v=>{try{return new Date(v).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});}catch{return "";}};
+  return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:700,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
+        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🔔 Notificaciones</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>{unread} sin leer · {items.length} recientes</div></div>
+        <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}><Btn small col="ghost" onClick={onRefresh}>Actualizar</Btn><Btn small col="gold" onClick={onMarkAll} disabled={!unread}>Marcar leídas</Btn></div>
+      {items.length===0?<EmptyState icon="🔔" title="Sin notificaciones" sub="Cuando haya citas, mensajes o canjes nuevos aparecerán aquí."/>:items.map(n=><Card key={n.id} style={{marginBottom:9,padding:12,background:n.leida?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",border:n.importante?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}><div style={{display:"flex",gap:10,alignItems:"flex-start"}}><div className="icon3d" style={{fontSize:"1.6rem"}}>{notificationIcon(n.tipo)}</div><div style={{flex:1,minWidth:0}}><div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>{!n.leida&&<Badge col="red">nuevo</Badge>}{n.importante&&<Badge col="gold">importante</Badge>}<span style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{when(n.created_at)}</span></div><div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{n.titulo}</div>{n.mensaje&&<div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4,whiteSpace:"pre-wrap"}}>{n.mensaje}</div>}</div></div></Card>)}
+    </div>
+  </div>;
+}
+
 export default function App(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
@@ -7353,6 +7396,9 @@ export default function App(){
   const [topsInitial,setTopsInitial]=useState("games");
   const [appSettings,setAppSettings]=useState(DEFAULT_APP_SETTINGS);
   const [unread,setUnread]=useState({client:0,admin:0});
+  const [notifOpen,setNotifOpen]=useState(false);
+  const [notifications,setNotifications]=useState([]);
+  const [notifCount,setNotifCount]=useState(0);
 
   useEffect(()=>{
     async function loadSettings(){
@@ -7387,6 +7433,27 @@ export default function App(){
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
   const showPoints=useCallback(pts=>{setPtsPopup({show:true,pts});setTimeout(()=>setPtsPopup({show:false,pts:0}),1800);},[]);
 
+  const loadNotifications=useCallback(async()=>{
+    if(!user?.id)return;
+    const roleNow=normalizeRole(user.rol||user.role);
+    try{
+      const q=roleNow===ROLES.CLIENT
+        ? `?usuario_id=eq.${user.id}&rol_destino=eq.client&order=created_at.desc&limit=60&select=*`
+        : `?or=(rol_destino.eq.admin,rol_destino.eq.staff)&order=created_at.desc&limit=60&select=*`;
+      const rows=await dbGet("notificaciones",q);
+      const list=Array.isArray(rows)?rows:[];
+      setNotifications(list);
+      setNotifCount(list.filter(n=>!n.leida).length);
+    }catch(e){setNotifications([]);setNotifCount(0);}
+  },[user?.id,user?.rol,user?.role]);
+
+  async function markNotificationsRead(){
+    const ids=notifications.filter(n=>!n.leida).map(n=>n.id).filter(Boolean);
+    if(!ids.length)return;
+    await dbPatch("notificaciones",`?id=in.(${ids.join(",")})`,{leida:true});
+    await loadNotifications();
+  }
+
   const refreshUnread=useCallback(async()=>{
     if(!user?.id)return;
     const roleNow=normalizeRole(user.rol||user.role);
@@ -7399,12 +7466,12 @@ export default function App(){
     }catch(e){}
   },[user?.id,user?.rol,user?.role]);
 
-  useEffect(()=>{refreshUnread();},[refreshUnread,page]);
+  useEffect(()=>{refreshUnread();loadNotifications();},[refreshUnread,loadNotifications,page]);
   useEffect(()=>{
     if(!user?.id)return;
-    const timer=setInterval(()=>refreshUnread(),45000);
+    const timer=setInterval(()=>{refreshUnread();loadNotifications();},45000);
     return()=>clearInterval(timer);
-  },[user?.id,refreshUnread]);
+  },[user?.id,refreshUnread,loadNotifications]);
   function toggleMusic(){
     if(appSettings?.secciones?.musica_activa===false){showToast("La música está desactivada desde Ajustes");SFX.error();return;}
     globalMuted=!globalMuted;
@@ -7447,7 +7514,7 @@ export default function App(){
   const ap=(role!==ROLES.CLIENT && page==="dashboard")?"gestion":page;
   const theme=pageTheme(ap,communityTab,role);
   const currentUser={...user,rol:role};
-  const sp={showToast,showPoints,user:currentUser,setUser,settings:appSettings,refreshUnread,unread};
+  const sp={showToast,showPoints,user:currentUser,setUser,settings:appSettings,refreshUnread,unread,loadNotifications};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
   const pages={
@@ -7473,6 +7540,7 @@ export default function App(){
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
           <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: cambiar tema (${REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta"})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
           <div className="header-action-pro" onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
@@ -7496,6 +7564,7 @@ export default function App(){
           </button>
         );})}
       </div>
+      <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
