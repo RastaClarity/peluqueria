@@ -1171,6 +1171,14 @@ function PublicAvatar({profile,currentUser=null,size=40}){
   return isPrivateProfile(profile,currentUser)?<IncognitoAvatar size={size}/>:<Av av={profile?.avatar||profile?.usuario_avatar||profile?.autor_avatar||0} config={profile?.avatar_config||profile?.avatarConfig||profile?.usuario_avatar_config||profile?.autor_avatar_config} size={size}/>;
 }
 
+function isBannedProfile(u){
+  if(!u?.baneado)return false;
+  if(u.baneo_hasta){
+    const until=new Date(u.baneo_hasta);
+    if(!Number.isNaN(until.getTime()) && until.getTime()<Date.now()) return false;
+  }
+  return true;
+}
 function toAppUser(u){
   const avatarConfig=normalizeAvatarConfig(u.avatar_config || u.avatarConfig, u.avatar);
   const privacy=normalizePrivacy(u);
@@ -1185,6 +1193,9 @@ function toAppUser(u){
     avatar_config:avatarConfig,
     perfil_publico:privacy.perfil_publico,
     modo_incognito:privacy.modo_incognito,
+    baneado:!!u.baneado,
+    motivo_baneo:u.motivo_baneo||null,
+    baneo_hasta:u.baneo_hasta||null,
     fecha_registro:u.created_at
   };
 }
@@ -1192,7 +1203,7 @@ async function getUserProfileByEmail(email){
   if(!supabase || !email) return null;
   const {data,error}=await supabase
     .from("usuarios")
-    .select("id,nombre,email,role,puntos,avatar,created_at")
+    .select("*")
     .eq("email", email.toLowerCase())
     .maybeSingle();
   if(error) return null;
@@ -1207,7 +1218,7 @@ async function createUserProfile({nombre,email}){
   const {data,error}=await supabase
     .from("usuarios")
     .insert({nombre,email:email.toLowerCase(),role:"client",puntos:0,avatar:Math.floor(Math.random()*AVATARS.length)})
-    .select("id,nombre,email,role,puntos,avatar,created_at")
+    .select("*")
     .maybeSingle();
   if(error){ console.error("Error creando perfil en usuarios:", error); return null; }
   if(data){
@@ -1357,6 +1368,13 @@ function Auth({onLogin,showToast,settings}){
     }
     setLoading(false);
     if(!perfil){showAuthError("No se pudo cargar tu perfil");SFX.error();return;}
+    if(isBannedProfile(perfil)){
+      try{await supabase.auth.signOut();}catch{}
+      const msg=perfil.motivo_baneo?`Cuenta bloqueada: ${perfil.motivo_baneo}`:"Esta cuenta está bloqueada. Contacta con Rasta Cuts.";
+      showAuthError(msg);
+      SFX.error();
+      return;
+    }
     SFX.success();
     onLogin(toAppUser(perfil));
   }
@@ -1380,6 +1398,12 @@ function Auth({onLogin,showToast,settings}){
     }
     setLoading(false);
     if(!perfil){showAuthError("Cuenta creada, pero no se pudo crear el perfil");SFX.error();return;}
+    if(isBannedProfile(perfil)){
+      try{await supabase.auth.signOut();}catch{}
+      showAuthError("Esta cuenta está bloqueada. Contacta con Rasta Cuts.");
+      SFX.error();
+      return;
+    }
     SFX.success();showToast(`Bienvenido a ${BRAND.name}!`);
     onLogin(toAppUser(perfil));
   }
@@ -2929,48 +2953,187 @@ function Caja({user,showToast}){
 
 // ADMIN USUARIOS
 function AdminUsuarios({user,showToast}){
-  const canManageUsers=user?.rol===ROLES.ADMIN;
-  const [users,setUsers]=useState([]);const [loading,setLoading]=useState(true);
+  const canManageUsers=normalizeRole(user?.rol||user?.role)===ROLES.ADMIN;
+  const [users,setUsers]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [search,setSearch]=useState("");
+  const [roleFilter,setRoleFilter]=useState("todos");
+  const [selected,setSelected]=useState(null);
+  const [banForm,setBanForm]=useState({motivo:"",hasta:""});
+
   useEffect(()=>{if(canManageUsers) load(); else setLoading(false);},[canManageUsers]);
+
   async function load(){
     setLoading(true);
-    const raw=await dbGet("usuarios","?order=nombre.asc&select=*")||[];
+    const raw=await dbGet("usuarios","?order=created_at.desc&select=*")||[];
     setUsers(await enrichProfilesWithAvatarConfigs(raw));
     setLoading(false);
   }
-  async function changeRole(id,rol){if(!canManageUsers)return;await dbPatch("usuarios",`?id=eq.${id}`,{role:rol});showToast("Rol actualizado");load();}
-  if(!canManageUsers){
-    return <EmptyState icon="🔒" title="Solo administradores" sub="Esta sección permite cambiar roles y gestionar usuarios."/>;
+
+  async function changeRole(id,rol){
+    if(!canManageUsers)return;
+    if(String(id)===String(user.id)&&normalizeRole(rol)!==ROLES.ADMIN){
+      showToast?.("No te quites el rol de admin desde aquí");
+      SFX.error();
+      return;
+    }
+    const ok=await dbPatch("usuarios",`?id=eq.${id}`,{role:normalizeRole(rol)});
+    if(ok){
+      showToast("Rol actualizado");
+      SFX.success();
+      await load();
+      setSelected(s=>s&&String(s.id)===String(id)?{...s,role:normalizeRole(rol)}:s);
+    }else{
+      showToast?.("No se pudo cambiar el rol");
+      SFX.error();
+    }
   }
+
+  async function toggleBan(usuario){
+    if(!canManageUsers||!usuario)return;
+    if(String(usuario.id)===String(user.id)){
+      showToast?.("No puedes bloquear tu propia cuenta");
+      SFX.error();
+      return;
+    }
+    const banned=isBannedProfile(usuario);
+    const patch=banned
+      ? {baneado:false,motivo_baneo:null,baneado_por:null,baneado_at:null,baneo_hasta:null}
+      : {
+          baneado:true,
+          motivo_baneo:banForm.motivo||"Bloqueado desde Gestión > Usuarios",
+          baneado_por:String(user.id),
+          baneado_at:new Date().toISOString(),
+          baneo_hasta:banForm.hasta?new Date(`${banForm.hasta}T23:59:59`).toISOString():null
+        };
+    const ok=await dbPatch("usuarios",`?id=eq.${usuario.id}`,patch);
+    if(ok){
+      showToast?.(banned?"Usuario desbloqueado":"Usuario bloqueado");
+      SFX.success();
+      setSelected(null);
+      setBanForm({motivo:"",hasta:""});
+      await load();
+    }else{
+      showToast?.("No se pudo actualizar el bloqueo");
+      SFX.error();
+    }
+  }
+
+  function roleBadge(u){
+    const r=normalizeRole(u?.role||u?.rol);
+    if(r===ROLES.ADMIN)return <Badge col="gold">admin</Badge>;
+    if(r===ROLES.STAFF)return <Badge col="green">staff</Badge>;
+    return <Badge col="blue">cliente</Badge>;
+  }
+
+  const roleCounts=users.reduce((acc,u)=>{const r=normalizeRole(u.role||u.rol);acc[r]=(acc[r]||0)+1;acc.todos=(acc.todos||0)+1;return acc;},{todos:users.length});
+  const filtered=users.filter(u=>{
+    const q=search.toLowerCase();
+    const text=`${u.nombre||""} ${u.email||""}`.toLowerCase();
+    const r=normalizeRole(u.role||u.rol);
+    const roleOk=roleFilter==="todos"||r===roleFilter;
+    return text.includes(q)&&roleOk;
+  });
+
+  if(!canManageUsers){
+    return <EmptyState icon="🔒" title="Solo administradores" sub="Esta sección permite cambiar roles, bloquear usuarios y gestionar cuentas online."/>;
+  }
+
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="👑" title="Usuarios y permisos" sub={`${users.length} cuentas registradas`}/>
+      <SectionHeader icon="👑" title="Usuarios online" sub={`${users.length} cuentas registradas en la web`}/>
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2rem"}}>🔐</div>
           <div style={{flex:1}}>
-            <div style={{fontWeight:950,fontSize:"1rem"}}>Usuarios</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Esta pestaña es para permisos: cliente, staff o admin. No es la ficha comercial del cliente.</div>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Usuarios de la página</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Gestiona cuentas online: jugadores, comunidad, roles, permisos y bloqueos. Los clientes de tienda están en Gestión &gt; Clientes.</div>
           </div>
         </div>
       </Card>
-      {loading?<Spinner/>:users.map(u=>(
-        <Card key={u.id} style={{marginBottom:10}}>
+
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <Input value={search} onChange={setSearch} placeholder="Buscar usuario por nombre o email..."/>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:7}}>
+          {[
+            {id:"todos",label:"Todos",n:roleCounts.todos||0},
+            {id:"client",label:"Clientes",n:roleCounts.client||0},
+            {id:"staff",label:"Staff",n:roleCounts.staff||0},
+            {id:"admin",label:"Admin",n:roleCounts.admin||0},
+          ].map(f=><button key={f.id} onClick={()=>{SFX.tab();setRoleFilter(f.id);}} style={{border:`2px solid ${roleFilter===f.id?T.gold:T.g300}`,background:roleFilter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:roleFilter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
+            {f.label}<br/><span style={{opacity:.75}}>{f.n}</span>
+          </button>)}
+        </div>
+      </Card>
+
+      {loading?<Spinner/>:filtered.length===0?<EmptyState icon="👑" title="Sin usuarios" sub="No hay cuentas con ese filtro."/>:filtered.map(u=>{
+        const banned=isBannedProfile(u);
+        return <Card key={u.id} style={{marginBottom:10,background:banned?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:banned?`2px solid ${T.red}`:`1.5px solid ${T.g300}`,opacity:banned?.82:1}} hover onClick={()=>{setSelected(u);setBanForm({motivo:u.motivo_baneo||"",hasta:u.baneo_hasta?String(u.baneo_hasta).slice(0,10):""});}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <PublicAvatar profile={u} currentUser={user} size={40}/>
-            <div style={{flex:1}}><div style={{fontWeight:800,fontSize:"0.9rem"}}>{u.nombre}</div><div style={{fontSize:"0.75rem",color:T.textSub}}>{u.email}</div></div>
-            <select value={u.role||"client"} onChange={e=>changeRole(u.id,e.target.value)} style={{padding:"5px 8px",borderRadius:8,border:`1.5px solid ${T.g300}`,background:T.g50,fontSize:"0.78rem",fontWeight:700,cursor:"pointer"}}>
-              <option value="client">Cliente</option>
+            <PublicAvatar profile={u} currentUser={user} size={42}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                <div style={{fontWeight:900,fontSize:"0.9rem",color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(u,user)}</div>
+                {roleBadge(u)}
+                {banned&&<Badge col="red">bloqueado</Badge>}
+                {u.modo_incognito&&<Badge col="dark">incógnito</Badge>}
+              </div>
+              <div style={{fontSize:"0.75rem",color:T.textSub,fontWeight:800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{u.email}</div>
+            </div>
+            <div style={{fontWeight:950,color:T.g600}}>⭐ {u.puntos||0}</div>
+          </div>
+        </Card>;
+      })}
+
+      <Modal show={!!selected} onClose={()=>setSelected(null)} title={selected?.nombre||"Usuario"}>
+        {selected&&<>
+          <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:14}}>
+            <PublicAvatar profile={selected} currentUser={user} size={58}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:950,color:T.g800,fontSize:"1rem"}}>{publicName(selected,user)}</div>
+              <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{selected.email}</div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:7}}>
+                {roleBadge(selected)}
+                <Badge col="gold">⭐ {selected.puntos||0} pts</Badge>
+                {selected.modo_incognito&&<Badge col="dark">incógnito para usuarios</Badge>}
+                {isBannedProfile(selected)&&<Badge col="red">bloqueado</Badge>}
+              </div>
+            </div>
+          </div>
+
+          <Card style={{marginBottom:14,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`2px solid ${T.gold}`,padding:12}}>
+            <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>👑 Rol y permisos</div>
+            <select value={normalizeRole(selected.role||selected.rol)} onChange={e=>changeRole(selected.id,e.target.value)} style={{width:"100%",padding:"10px 12px",borderRadius:14,border:`2px solid ${T.g300}`,background:T.g50,fontSize:".9rem",fontWeight:900,color:T.g800}}>
+              <option value="client">Cliente / usuario normal</option>
               <option value="staff">Staff</option>
               <option value="admin">Admin</option>
             </select>
-          </div>
-        </Card>
-      ))}
+          </Card>
+
+          <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${isBannedProfile(selected)?T.red:T.g300}`,padding:12}}>
+            <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🚫 Bloqueo de usuario</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginBottom:10}}>Si bloqueas una cuenta, no podrá iniciar sesión mientras el bloqueo esté activo.</div>
+            {!isBannedProfile(selected)&&<>
+              <Input label="Motivo" value={banForm.motivo} onChange={v=>setBanForm(f=>({...f,motivo:v}))} placeholder="Ej: spam, insultos, uso indebido..."/>
+              <Input label="Bloqueado hasta (opcional)" value={banForm.hasta} onChange={v=>setBanForm(f=>({...f,hasta:v}))} type="date"/>
+            </>}
+            {isBannedProfile(selected)&&<div style={{fontSize:".82rem",fontWeight:850,color:T.red,lineHeight:1.35,marginBottom:10}}>
+              Motivo: {selected.motivo_baneo||"Sin motivo guardado"}{selected.baneo_hasta?` · Hasta ${new Date(selected.baneo_hasta).toLocaleDateString("es-ES")}`:""}
+            </div>}
+            <Btn full col={isBannedProfile(selected)?"green":"red"} onClick={()=>toggleBan(selected)}>
+              {isBannedProfile(selected)?"Quitar bloqueo":"Bloquear usuario"}
+            </Btn>
+          </Card>
+
+          <Card style={{background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`,padding:12}}>
+            <div style={{fontWeight:950,color:T.g800}}>🕶️ Privacidad</div>
+            <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Si el usuario tiene modo incógnito, otros clientes lo verán oculto, pero admin y staff pueden verlo completo en paneles internos.</div>
+          </Card>
+        </>}
+      </Modal>
     </div>
   );
 }
-
 // FEED / TABLON
 function SocialFeed({user,setUser,showToast,showPoints}){
   const [posts,setPosts]=useState([]);const [newPost,setNewPost]=useState("");const [loading,setLoading]=useState(true);const [profiles,setProfiles]=useState([]);const [selectedProfile,setSelectedProfile]=useState(null);
@@ -7065,6 +7228,7 @@ function GestionSeguridad({user,showToast}){
   const filters=[
     {id:"todos",label:"Todos",icon:"🧾"},
     {id:"cambio_rol",label:"Roles",icon:"👑"},
+    {id:"baneo",label:"Bloqueos",icon:"🚫"},
     {id:"ajustes",label:"Ajustes",icon:"⚙️"},
     {id:"general",label:"General",icon:"🔐"}
   ];
@@ -8100,7 +8264,13 @@ export default function App(){
         if(!perfil){
           perfil=await createUserProfile({nombre:sessionUser.user_metadata?.nombre||sessionUser.email.split("@")[0],email:sessionUser.email});
         }
-        if(perfil) setUser(toAppUser(perfil));
+        if(perfil){
+          if(isBannedProfile(perfil)){
+            try{await supabase.auth.signOut();}catch{}
+          }else{
+            setUser(toAppUser(perfil));
+          }
+        }
       }
       setCheckingSession(false);
     }
