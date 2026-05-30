@@ -56,7 +56,7 @@ async function createNotification(payload={}){
   }catch(e){console.warn("No se pudo crear notificación",e);return null;}
 }
 function notificationIcon(tipo="general"){
-  const map={cita:"📅",cita_nueva:"📅",cita_cancelada:"❌",cita_propuesta:"🔁",cita_propuesta_aceptada:"✅",cita_propuesta_rechazada:"⚠️",mensaje:"📩",canje:"🎁",pedido:"🛍️",cobro:"💰",general:"🔔"};
+  const map={cita:"📅",cita_nueva:"📅",cita_cancelada:"❌",cita_propuesta:"🔁",cita_propuesta_aceptada:"✅",cita_propuesta_rechazada:"⚠️",mensaje:"📩",canje:"🎁",pedido:"🛍️",cobro:"💰",reporte:"🚩",moderacion:"🛡️",general:"🔔"};
   return map[tipo]||"🔔";
 }
 
@@ -3006,6 +3006,7 @@ function Foro({user,showToast}){
   const [topics,setTopics]=useState([]);
   const [replies,setReplies]=useState([]);
   const [votes,setVotes]=useState([]);
+  const [follows,setFollows]=useState([]);
   const [loading,setLoading]=useState(true);
   const [title,setTitle]=useState("");
   const [body,setBody]=useState("");
@@ -3015,12 +3016,16 @@ function Foro({user,showToast}){
   const [active,setActive]=useState(null);
   const [reply,setReply]=useState("");
   const [selectedProfile,setSelectedProfile]=useState(null);
+  const [report,setReport]=useState(null);
 
   const role=normalizeRole(user?.rol||user?.role);
   const canModerate=role!==ROLES.CLIENT;
 
   const categories=[
     {id:"todo",label:"Todo",icon:"✨"},
+    {id:"pendientes",label:"Pendientes",icon:"🔴"},
+    {id:"seguidos",label:"Seguidos",icon:"✓"},
+    {id:"mis_temas",label:"Mis temas",icon:"👤"},
     {id:"avisos",label:"Avisos",icon:"📌"},
     {id:"general",label:"General",icon:"💬"},
     {id:"ideas",label:"Ideas",icon:"💡"},
@@ -3028,28 +3033,112 @@ function Foro({user,showToast}){
     {id:"juegos",label:"Juegos",icon:"🎮"},
     {id:"cuidados",label:"Cuidados",icon:"🪮"}
   ];
+  const specialFilters=new Set(["todo","pendientes","seguidos","mis_temas"]);
 
   useEffect(()=>{load();},[]);
 
   async function load(){
     setLoading(true);
-    const [temas,resps,vots]=await Promise.all([
+    const [temas,resps,vots,segs]=await Promise.all([
       dbGet("foro_temas","?order=fijado.desc,created_at.desc&limit=80&select=*"),
       dbGet("foro_respuestas","?order=created_at.asc&limit=800&select=*"),
-      dbGet("foro_votos",`?usuario_id=eq.${user.id}&select=*`)
+      dbGet("foro_votos",`?usuario_id=eq.${user.id}&select=*`),
+      dbGet("foro_seguimientos",`?usuario_id=eq.${user.id}&select=*`)
     ]);
     setTopics(Array.isArray(temas)?temas:[]);
     setReplies(Array.isArray(resps)?resps:[]);
     setVotes(Array.isArray(vots)?vots:[]);
+    setFollows(Array.isArray(segs)?segs:[]);
     setLoading(false);
   }
 
   function topicReplies(id){return replies.filter(r=>String(r.tema_id)===String(id));}
+  function getFollow(topic){return follows.find(f=>String(f.tema_id)===String(topic?.id));}
+  function isFollowing(topic){return Boolean(getFollow(topic)?.siguiendo);}
+  function unreadCount(topic){
+    const f=getFollow(topic);
+    if(!f||!f.siguiendo)return 0;
+    const total=topicReplies(topic.id).length;
+    const vistos=Number(f.respuestas_vistas||0);
+    return Math.max(0,total-vistos);
+  }
+  function totalPendingThreads(){return topics.filter(t=>unreadCount(t)>0).length;}
+
+  async function saveFollow(topic,{siguiendo=true,respuestas_vistas=null,markRead=false}={}){
+    if(!topic?.id||!user?.id)return;
+    const total=topicReplies(topic.id).length;
+    const seen=respuestas_vistas===null?(markRead?total:Number(getFollow(topic)?.respuestas_vistas||0)):respuestas_vistas;
+    const payload={
+      usuario_id:String(user.id),
+      usuario_nombre:user.nombre||user.email||"Usuario",
+      tema_id:topic.id,
+      tema_titulo:topic.titulo||"Tema del foro",
+      siguiendo,
+      respuestas_vistas:seen,
+      ultima_lectura:markRead?new Date().toISOString():(getFollow(topic)?.ultima_lectura||null),
+      updated_at:new Date().toISOString()
+    };
+    try{
+      await supabase.from("foro_seguimientos").upsert(payload,{onConflict:"usuario_id,tema_id"});
+      setFollows(prev=>{
+        const rest=prev.filter(f=>String(f.tema_id)!==String(topic.id));
+        return [...rest,{...getFollow(topic),...payload}];
+      });
+    }catch(e){console.warn("foro_seguimientos",e);}
+  }
+  async function openTopic(topic){
+    setActive(topic);
+    await saveFollow(topic,{siguiendo:true,markRead:true});
+  }
+  async function toggleFollow(topic){
+    const next=!isFollowing(topic);
+    await saveFollow(topic,{siguiendo:next,respuestas_vistas:next?topicReplies(topic.id).length:Number(getFollow(topic)?.respuestas_vistas||0),markRead:next});
+    showToast(next?"Tema seguido":"Has dejado de seguir el tema");
+    SFX.success();
+  }
   function voted(target_tipo,target_id){return votes.some(v=>String(v.target_tipo)===target_tipo&&String(v.target_id)===String(target_id));}
   function categoryLabel(id){return categories.find(c=>c.id===id)?.label||id||"General";}
   function categoryIcon(id){return categories.find(c=>c.id===id)?.icon||"💬";}
   function topicAuthor(t){return {id:t.usuario_id,nombre:t.autor_nombre,avatar:t.autor_avatar,avatar_config:t.autor_avatar_config,perfil_publico:true,modo_incognito:false,role:"client"};}
   function replyAuthor(r){return {id:r.usuario_id,nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,perfil_publico:true,modo_incognito:false,role:"client"};}
+
+  function openReport(target_tipo,target){
+    setReport({
+      target_tipo,
+      target,
+      motivo:"contenido inapropiado",
+      detalle:"",
+      target_titulo:target_tipo==="tema"?(target.titulo||"Tema del foro"):`Respuesta en: ${shown?.titulo||"tema"}`,
+      target_autor_id:target.usuario_id||target.autor_id||"",
+      target_autor_nombre:target.autor_nombre||"Usuario"
+    });
+  }
+
+  async function sendReport(){
+    if(!report?.target?.id){showToast?.("No se pudo preparar el reporte");return;}
+    const payload={
+      reportado_por_id:String(user.id),
+      reportado_por_nombre:user.nombre||user.email||"Usuario",
+      target_tipo:report.target_tipo,
+      target_id:String(report.target.id),
+      target_titulo:report.target_titulo,
+      target_autor_id:report.target_autor_id?String(report.target_autor_id):null,
+      target_autor_nombre:report.target_autor_nombre||null,
+      motivo:report.motivo||"contenido inapropiado",
+      detalle:report.detalle||null,
+      estado:"pendiente"
+    };
+    const ok=await dbPost("reportes_comunidad",payload);
+    if(ok){
+      await createNotification({rol_destino:"admin",tipo:"reporte",titulo:"Nuevo reporte de comunidad",mensaje:`${payload.reportado_por_nombre} ha reportado ${payload.target_tipo}: ${payload.target_titulo}`,entidad_tipo:"reporte",entidad_id:Array.isArray(ok)?ok?.[0]?.id:null,importante:true});
+      SFX.success();
+      showToast?.("Reporte enviado a moderación");
+      setReport(null);
+    }else{
+      SFX.error();
+      showToast?.("No se pudo enviar el reporte");
+    }
+  }
 
   async function createTopic(){
     if(!title.trim()||!body.trim()){showToast("Pon título y texto");return;}
@@ -3071,7 +3160,10 @@ function Foro({user,showToast}){
     setTitle("");setBody("");setCategory("general");
     SFX.success();showToast("Tema creado");
     await load();
-    if(Array.isArray(created)&&created[0]) setActive(created[0]);
+    if(Array.isArray(created)&&created[0]){
+      await saveFollow(created[0],{siguiendo:true,respuestas_vistas:0,markRead:true});
+      setActive(created[0]);
+    }
   }
 
   async function addReply(topic){
@@ -3090,6 +3182,7 @@ function Foro({user,showToast}){
       const nextCount=(Number(topic.respuestas_count)||0)+1;
       await dbPatch("foro_temas",`?id=eq.${topic.id}`,{respuestas_count:nextCount,updated_at:new Date().toISOString()});
       setReply("");
+      await saveFollow(topic,{siguiendo:true,respuestas_vistas:nextCount,markRead:true});
       SFX.success();
       showToast("Respuesta publicada");
       await load();
@@ -3125,7 +3218,11 @@ function Foro({user,showToast}){
 
   const filteredTopics=topics.filter(t=>{
     const q=normalizeText(search);
-    const catOk=filter==="todo"||String(t.categoria||"general")===filter;
+    const catOk=filter==="todo"
+      ||(filter==="pendientes"&&unreadCount(t)>0)
+      ||(filter==="seguidos"&&isFollowing(t))
+      ||(filter==="mis_temas"&&String(t.usuario_id)===String(user.id))
+      ||(!specialFilters.has(filter)&&String(t.categoria||"general")===filter);
     const qOk=!q||normalizeText(`${t.titulo||""} ${t.contenido||""} ${t.autor_nombre||""}`).includes(q);
     return catOk&&qOk;
   }).sort((a,b)=>{
@@ -3135,7 +3232,7 @@ function Foro({user,showToast}){
 
   const shown=active||null;
   return <div style={{animation:"fadeSlide .4s ease"}}>
-    <SectionHeader icon="🗣️" title="Foro Rasta" sub="Temas, respuestas, votos y conversación de la comunidad"/>
+    <SectionHeader icon="🗣️" title="Foro Rasta" sub={totalPendingThreads()>0?`${totalPendingThreads()} hilos pendientes de leer`:"Temas, respuestas, votos y conversación de la comunidad"}/>
 
     {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -3147,10 +3244,20 @@ function Foro({user,showToast}){
       </div>
     </Card>}
 
+    {!shown&&totalPendingThreads()>0&&<Card hover onClick={()=>setFilter("pendientes")} style={{marginBottom:14,background:"linear-gradient(180deg,#FFE9D8,#EBD18D)",border:"2px solid #A72822"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{width:36,height:36,borderRadius:999,background:"#A72822",color:"#FFF4D6",display:"grid",placeItems:"center",fontWeight:950}}>{totalPendingThreads()}</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:950,color:T.g800}}>Hilos pendientes de leer</div>
+          <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Tienes temas seguidos con respuestas nuevas. Pulsa para verlos.</div>
+        </div>
+      </div>
+    </Card>}
+
     {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Abrir nuevo tema</div>
       <Input label="Título" value={title} onChange={setTitle} placeholder="Ej: ¿Qué cuidados necesita una rasta nueva?"/>
-      <Select label="Categoría" value={category} onChange={setCategory} options={categories.filter(c=>c.id!=="todo").map(c=>({value:c.id,label:`${c.icon} ${c.label}`}))}/>
+      <Select label="Categoría" value={category} onChange={setCategory} options={categories.filter(c=>!specialFilters.has(c.id)).map(c=>({value:c.id,label:`${c.icon} ${c.label}`}))}/>
       <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Escribe tu duda, idea o propuesta..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:T.g150,resize:"vertical",outline:"none"}}/>
       <div style={{marginTop:10}}><Btn full col="gold" onClick={createTopic}>➕ Crear tema</Btn></div>
     </Card>}
@@ -3171,6 +3278,8 @@ function Foro({user,showToast}){
           {shown.fijado&&<Badge col="gold">📌 fijado</Badge>}
           {shown.cerrado&&<Badge col="red">cerrado</Badge>}
           <Badge col="blue">{categoryIcon(shown.categoria)} {categoryLabel(shown.categoria)}</Badge>
+          {isFollowing(shown)&&<Badge col="green">✓ seguido</Badge>}
+          {unreadCount(shown)>0&&<Badge col="red">🔴 {unreadCount(shown)} nuevas</Badge>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:8,cursor:"pointer"}} onClick={()=>setSelectedProfile(topicAuthor(shown))}>
           <PublicAvatar profile={topicAuthor(shown)} size={34}/>
@@ -3183,7 +3292,11 @@ function Foro({user,showToast}){
         <div style={{fontSize:".9rem",fontWeight:750,lineHeight:1.5,whiteSpace:'pre-wrap',marginTop:8,color:T.text}}>{shown.contenido}</div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:12,alignItems:"center",gap:8,flexWrap:"wrap"}}>
           <Badge col="blue">💬 {topicReplies(shown.id).length} respuestas</Badge>
-          <Btn small col={voted("tema",shown.id)?"ghost":"gold"} onClick={()=>voteTarget(shown,"tema")}>👍 {shown.likes||0}</Btn>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <Btn small col={isFollowing(shown)?"green":"ghost"} onClick={()=>toggleFollow(shown)}>{isFollowing(shown)?"✓ Siguiendo":"Seguir"}</Btn>
+            <Btn small col={voted("tema",shown.id)?"ghost":"gold"} onClick={()=>voteTarget(shown,"tema")}>👍 {shown.likes||0}</Btn>
+            {!canModerate&&<Btn small col="ghost" onClick={()=>openReport("tema",shown)}>🚩 Reportar</Btn>}
+          </div>
         </div>
         {canModerate&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
           <Btn small col="ghost" onClick={()=>togglePinned(shown)}>{shown.fijado?"Desfijar":"Fijar"}</Btn>
@@ -3202,7 +3315,8 @@ function Foro({user,showToast}){
             </div>
           </div>
           <div style={{fontSize:".86rem",fontWeight:750,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div>
-          <div style={{display:"flex",justifyContent:"flex-end",marginTop:8}}>
+          <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:8,flexWrap:"wrap"}}>
+            {!canModerate&&<button onClick={()=>openReport("respuesta",r)} style={{background:"rgba(255,244,214,.72)",border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.76rem",color:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999}}>🚩 Reportar</button>}
             <button onClick={()=>voteTarget(r,"respuesta")} disabled={voted("respuesta",r.id)} style={{background:T.g150,border:`1.5px solid ${T.g200}`,cursor:voted("respuesta",r.id)?"default":"pointer",fontSize:"0.76rem",color:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999,opacity:voted("respuesta",r.id)?.65:1}}>👍 {r.likes||0}</button>
           </div>
         </Card>;
@@ -3215,16 +3329,20 @@ function Foro({user,showToast}){
           <div style={{marginTop:8}}><Btn full onClick={()=>addReply(shown)}>Responder</Btn></div>
         </>}
       </Card>
-    </div> : loading?<Spinner/>:filteredTopics.length===0?<EmptyState icon="🗣️" title="Sin temas" sub="No hay temas con ese filtro."/>:filteredTopics.map(t=>{
+    </div> : loading?<Spinner/>:filteredTopics.length===0?<EmptyState icon="🗣️" title="Sin temas" sub={filter==="pendientes"?"No tienes hilos pendientes de leer.":filter==="seguidos"?"Todavía no sigues ningún tema.":"No hay temas con ese filtro."}/>:filteredTopics.map(t=>{
       const a=topicAuthor(t);
       const respuestas=Number(t.respuestas_count)||topicReplies(t.id).length;
-      return <Card key={t.id} hover onClick={()=>setActive(t)} style={{marginBottom:10,background:t.fijado?"linear-gradient(180deg,#FFF4D6,#EBD18D)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:t.fijado?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+      const unread=unreadCount(t);
+      const followed=isFollowing(t);
+      return <Card key={t.id} hover onClick={()=>openTopic(t)} style={{marginBottom:10,background:unread>0?"linear-gradient(180deg,#FFE9D8,#EBD18D)":t.fijado?"linear-gradient(180deg,#FFF4D6,#EBD18D)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:unread>0?"2px solid #A72822":t.fijado?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <PublicAvatar profile={a} size={38}/>
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:4}}>
               {t.fijado&&<Badge col="gold">📌</Badge>}
               {t.cerrado&&<Badge col="red">cerrado</Badge>}
+              {followed&&<Badge col="green">✓ seguido</Badge>}
+              {unread>0&&<Badge col="red">🔴 {unread} nuevas</Badge>}
               <Badge col="blue">{categoryIcon(t.categoria)} {categoryLabel(t.categoria)}</Badge>
             </div>
             <div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{t.titulo||"Tema"}</div>
@@ -3233,6 +3351,23 @@ function Foro({user,showToast}){
         </div>
       </Card>;
     })}
+    <Modal show={!!report} onClose={()=>setReport(null)} title="Reportar contenido">
+      {report&&<>
+        <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",padding:12}}>
+          <div style={{fontWeight:950,color:T.g800}}>🚩 {report.target_titulo}</div>
+          <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:4}}>Tipo: {report.target_tipo} · Autor: {report.target_autor_nombre||"Usuario"}</div>
+        </Card>
+        <Select label="Motivo" value={report.motivo} onChange={v=>setReport(r=>({...r,motivo:v}))} options={[
+          {value:"contenido inapropiado",label:"Contenido inapropiado"},
+          {value:"spam",label:"Spam o publicidad"},
+          {value:"falta de respeto",label:"Falta de respeto"},
+          {value:"datos personales",label:"Datos personales"},
+          {value:"otro",label:"Otro motivo"}
+        ]}/>
+        <textarea value={report.detalle} onChange={e=>setReport(r=>({...r,detalle:e.target.value}))} placeholder="Añade algún detalle si hace falta..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:T.g150,resize:"vertical",outline:"none",fontWeight:800,color:T.text}}/>
+        <div style={{marginTop:10}}><Btn full col="red" onClick={sendReport}>Enviar reporte</Btn></div>
+      </>}
+    </Modal>
     <PublicProfileModal profile={selectedProfile} onClose={()=>setSelectedProfile(null)}/>
   </div>;
 }
@@ -6624,6 +6759,96 @@ function GestionPedidos({user,showToast}){
   </div>;
 }
 
+
+function GestionModeracion({user,showToast}){
+  const [reportes,setReportes]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [filter,setFilter]=useState("pendiente");
+  const [selected,setSelected]=useState(null);
+  const [nota,setNota]=useState("");
+
+  useEffect(()=>{load();},[]);
+
+  async function load(){
+    setLoading(true);
+    const rows=await dbGet("reportes_comunidad","?order=created_at.desc&limit=200&select=*");
+    setReportes(Array.isArray(rows)?rows:[]);
+    setLoading(false);
+  }
+
+  async function updateReporte(rep,patch,msg){
+    const ok=await dbPatch("reportes_comunidad",`?id=eq.${rep.id}`,{...patch,updated_at:new Date().toISOString(),revisado_por:user?.email||user?.nombre||"staff",revisado_at:new Date().toISOString()});
+    if(ok){SFX.success();showToast?.(msg);setSelected(null);await load();}
+    else{SFX.error();showToast?.("No se pudo actualizar el reporte");}
+  }
+
+  async function cerrarTema(rep){
+    if(String(rep.target_tipo)!=="tema"){showToast?.("Sólo se puede cerrar automáticamente un tema del foro");return;}
+    await dbPatch("foro_temas",`?id=eq.${rep.target_id}`,{cerrado:true,updated_at:new Date().toISOString()});
+    await updateReporte(rep,{estado:"oculto",notas_admin:nota||"Tema cerrado desde moderación",accion_tomada:"tema_cerrado"},"Tema cerrado y reporte marcado");
+  }
+
+  const counts=reportes.reduce((a,r)=>{const st=String(r.estado||"pendiente");a[st]=(a[st]||0)+1;a.todo=(a.todo||0)+1;return a;},{todo:reportes.length});
+  const tabs=[
+    {id:"pendiente",label:"Pendientes",icon:"🚩"},
+    {id:"revisado",label:"Revisados",icon:"✅"},
+    {id:"descartado",label:"Descartados",icon:"🟢"},
+    {id:"oculto",label:"Actuados",icon:"🙈"},
+    {id:"todo",label:"Todos",icon:"📚"}
+  ];
+  const list=filter==="todo"?reportes:reportes.filter(r=>String(r.estado||"pendiente")===filter);
+
+  return <div style={{animation:"fadeSlide .34s ease"}}>
+    <SectionHeader icon="🛡️" title="Moderación" sub={`${counts.pendiente||0} reportes pendientes`} action={<Btn small col="ghost" onClick={load}>Actualizar</Btn>}/>
+    <Card style={{marginBottom:14,background:"linear-gradient(145deg,#42130F,#7A241B 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div className="icon3d" style={{fontSize:"2rem"}}>🛡️</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:950,fontSize:"1rem"}}>Reportes de comunidad</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Revisa avisos de usuarios, descarta lo que no proceda o cierra temas problemáticos.</div>
+        </div>
+      </div>
+    </Card>
+    <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
+      {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setFilter(t.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===t.id?T.gold:T.g300}`,background:filter===t.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===t.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>{t.icon} {t.label} ({counts[t.id]||0})</button>)}
+    </div>
+
+    {loading?<Spinner/>:list.length===0?<EmptyState icon="🛡️" title="Sin reportes" sub="No hay reportes en esta vista."/>:list.map(r=>{
+      const st=String(r.estado||"pendiente");
+      const col=st==="pendiente"?"red":st==="descartado"?"green":st==="oculto"?"gold":"blue";
+      return <Card key={r.id} hover onClick={()=>{setSelected(r);setNota(r.notas_admin||"");}} style={{marginBottom:10,background:st==="pendiente"?"linear-gradient(180deg,#FFF4D6,#EBD18D)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:st==="pendiente"?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+        <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+          <div style={{fontSize:"1.6rem"}}>🚩</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:5}}><Badge col={col}>{st}</Badge><Badge col="blue">{r.target_tipo}</Badge></div>
+            <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{r.target_titulo||"Contenido reportado"}</div>
+            <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:3}}>Motivo: {r.motivo||"sin motivo"}</div>
+            <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub,marginTop:3}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES"):""} · Reporta: {r.reportado_por_nombre||"Usuario"}</div>
+          </div>
+        </div>
+      </Card>;
+    })}
+
+    <Modal show={!!selected} onClose={()=>setSelected(null)} title="Revisar reporte">
+      {selected&&<>
+        <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",padding:12}}>
+          <div style={{fontWeight:950,color:T.g800}}>🚩 {selected.target_titulo||"Contenido reportado"}</div>
+          <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:4}}>Tipo: {selected.target_tipo} · Autor: {selected.target_autor_nombre||"desconocido"}</div>
+          <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:4}}>Motivo: {selected.motivo}</div>
+          {selected.detalle&&<div style={{fontSize:".8rem",fontWeight:800,color:T.g800,marginTop:8,whiteSpace:"pre-wrap"}}>Detalle: {selected.detalle}</div>}
+        </Card>
+        <textarea value={nota} onChange={e=>setNota(e.target.value)} rows={4} placeholder="Notas internas de moderación..." style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:T.g150,resize:"vertical",outline:"none",fontWeight:800,color:T.text}}/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:12}}>
+          <Btn small col="green" onClick={()=>updateReporte(selected,{estado:"revisado",notas_admin:nota,accion_tomada:"revisado"},"Reporte revisado")}>Revisado</Btn>
+          <Btn small col="ghost" onClick={()=>updateReporte(selected,{estado:"descartado",notas_admin:nota,accion_tomada:"descartado"},"Reporte descartado")}>Descartar</Btn>
+          <Btn small col="red" onClick={()=>cerrarTema(selected)}>Cerrar tema</Btn>
+          <Btn small col="gold" onClick={()=>updateReporte(selected,{estado:"oculto",notas_admin:nota,accion_tomada:"marcado_para_revisar"},"Marcado como actuado")}>Marcar actuado</Btn>
+        </div>
+      </>}
+    </Modal>
+  </div>;
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -6636,6 +6861,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true},
     {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true},
     {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true},
+    {id:"moderacion",icon:"🛡️",label:"Moderación",sub:"Reportes y control de comunidad",staff:true},
     {id:"clientes",icon:"👥",label:"Clientes",sub:"Fichas e historial de clientes",staff:true},
     {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true},
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones y objetos editables",staff:false},
@@ -6699,6 +6925,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       {tab==="facturacion"&&<Caja user={user} showToast={showToast}/>}
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
       {tab==="mensajes"&&<GestionMensajes user={user} showToast={showToast}/>}
+      {tab==="moderacion"&&<GestionModeracion user={user} showToast={showToast}/>}
       {tab==="clientes"&&<Clientes showToast={showToast}/>}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
       {tab==="tienda"&&(isAdmin?<GestionTienda showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la tienda."/> )}
