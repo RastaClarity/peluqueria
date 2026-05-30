@@ -495,6 +495,191 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
 .header-action-pro:hover{transform:translateY(-2px) scale(1.03);background:rgba(255,255,255,.26)!important;box-shadow:0 8px 18px rgba(0,0,0,.18)}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 
+
+/* ===== Responsive 2026: Android compacto + escritorio amplio ===== */
+:root{--app-max-width:480px;--app-shell-pad-left:0px;--app-bottom-pad:82px}
+@media (max-width:520px){
+  .app-shell{width:100%!important;max-width:100%!important;box-shadow:none!important;border-radius:0!important}
+  .page-content-pro{padding:14px 12px 96px!important}
+  .motion-strip{margin-left:8px!important;margin-right:8px!important}
+  .bottom-nav-pro{max-width:100%!important;border-radius:18px 18px 0 0!important;padding-bottom:calc(10px + env(safe-area-inset-bottom))!important}
+  .nav-tab-pro span{font-size:.50rem!important}
+  .nav-icon-pro{font-size:1.03rem!important;padding:4px 6px!important}
+  input,select,textarea{font-size:16px!important}
+  button{touch-action:manipulation}
+}
+@media (min-width:900px){
+  :root{--app-max-width:1180px;--app-shell-pad-left:118px;--app-bottom-pad:28px}
+  body{background-attachment:fixed}
+  .app-shell{
+    max-width:var(--app-max-width)!important;
+    width:min(1180px,100vw)!important;
+    padding-left:var(--app-shell-pad-left)!important;
+    padding-bottom:var(--app-bottom-pad)!important;
+    border-radius:0!important;
+    overflow:visible!important;
+  }
+  .page-content-pro{
+    padding:24px 24px 36px!important;
+    min-height:calc(100dvh - 64px);
+  }
+  .page-content-pro>div:not(.motion-strip):not([class]){
+    max-width:980px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+  .bottom-nav-pro{
+    position:fixed!important;
+    top:82px!important;
+    bottom:auto!important;
+    left:calc(50% - 590px + 14px)!important;
+    transform:none!important;
+    width:92px!important;
+    max-width:92px!important;
+    min-height:calc(100dvh - 106px)!important;
+    border-radius:26px!important;
+    border:2px solid rgba(245,230,200,.22)!important;
+    border-top:2px solid rgba(245,230,200,.22)!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    gap:8px!important;
+    padding:14px 8px!important;
+    box-shadow:0 18px 42px rgba(0,0,0,.32)!important;
+    backdrop-filter:blur(12px);
+  }
+  .bottom-nav-pro .nav-tab-pro{
+    width:100%!important;
+    min-width:0!important;
+    padding:9px 4px!important;
+    border-radius:18px!important;
+  }
+  .bottom-nav-pro .nav-tab-pro:hover{
+    background:rgba(255,244,214,.10)!important;
+    transform:translateX(4px)!important;
+  }
+  .bottom-nav-pro .nav-tab-pro:after{
+    left:auto!important;
+    right:-5px!important;
+    top:50%!important;
+    bottom:auto!important;
+    width:4px!important;
+    height:4px!important;
+    transform:translateY(-50%)!important;
+  }
+  .bottom-nav-pro .nav-tab-pro:hover:after{height:22px!important;width:4px!important}
+  .bottom-nav-pro .nav-icon-pro{font-size:1.35rem!important}
+  .bottom-nav-pro span{font-size:.62rem!important;line-height:1.05!important}
+  .app-header-pro{
+    border-radius:0 0 28px 28px!important;
+    margin:0 14px!important;
+    top:10px!important;
+  }
+  .app-header-pro>div:first-child div{
+    font-size:1.62rem!important;
+  }
+  .modal-panel-pro{
+    max-width:min(720px,calc(100vw - 72px))!important;
+    border-radius:28px!important;
+  }
+  .gestion-grid-pro{
+    grid-template-columns:repeat(6,1fr)!important;
+  }
+  .gestion-grid-pro button{
+    min-height:78px!important;
+  }
+}
+@media (min-width:1250px){
+  .bottom-nav-pro{left:calc(50% - 590px + 14px)!important}
+}
+@media (min-width:900px) and (max-width:1249px){
+  .bottom-nav-pro{left:14px!important}
+}
+
+/* ===== Paso 15.2: pulido fino móvil/PC ===== */
+@media (max-width:520px){
+  .app-header-pro{
+    padding:10px 10px!important;
+    gap:8px!important;
+  }
+  .app-header-pro>div:first-child{min-width:0!important;flex:1!important}
+  .app-header-pro>div:first-child>div:first-child{
+    font-size:1.14rem!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    max-width:42vw!important;
+  }
+  .app-header-pro>div:last-child{gap:5px!important;flex-shrink:0!important}
+  .header-action-pro{padding:6px 7px!important;font-size:.68rem!important}
+  .gestion-grid-pro{grid-template-columns:repeat(2,1fr)!important}
+  .gestion-grid-pro button{min-height:70px!important}
+  .studio-panel{
+    border-radius:18px!important;
+    padding:14px!important;
+  }
+  .bp{
+    min-height:42px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  .modal-overlay-pro{
+    align-items:flex-end!important;
+    padding:0!important;
+  }
+  .modal-panel-pro{
+    border-radius:24px 24px 0 0!important;
+    max-width:100%!important;
+    max-height:calc(100dvh - 10px)!important;
+    padding-bottom:calc(126px + env(safe-area-inset-bottom))!important;
+  }
+  .modal-panel-pro textarea{
+    min-height:96px!important;
+  }
+}
+@media (min-width:700px) and (max-width:899px){
+  :root{--app-max-width:680px;--app-bottom-pad:92px}
+  .app-shell{max-width:680px!important}
+  .bottom-nav-pro{max-width:680px!important}
+  .gestion-grid-pro{grid-template-columns:repeat(4,1fr)!important}
+}
+@media (min-width:900px){
+  .modal-overlay-pro{
+    align-items:center!important;
+    padding:38px!important;
+  }
+  .modal-panel-pro{
+    max-width:min(760px,calc(100vw - 110px))!important;
+    width:100%!important;
+    max-height:calc(100dvh - 76px)!important;
+    border-radius:28px!important;
+    padding:22px 22px 34px!important;
+    animation:fadeSlide .22s ease!important;
+  }
+  .modal-panel-pro>div:first-child{
+    margin:-22px -22px 18px!important;
+    padding:16px 22px 14px!important;
+  }
+  .studio-panel{
+    box-shadow:0 12px 30px rgba(18,8,4,.18)!important;
+  }
+  .studio-panel:hover{
+    transform:translateY(-1px);
+  }
+  .bp:hover{
+    transform:translateY(-1px);
+  }
+  input,select,textarea{
+    min-height:44px;
+  }
+}
+@media (min-width:1100px){
+  .page-content-pro{
+    padding-left:34px!important;
+    padding-right:34px!important;
+  }
+  .gestion-grid-pro{grid-template-columns:repeat(7,1fr)!important}
+}
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -518,8 +703,8 @@ function Badge({children,col="green"}){
 }
 function Modal({show,onClose,title,children}){
   if(!show)return null;
-  return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,0.62)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center",paddingTop:24}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:"24px 24px 0 0",padding:"18px 16px calc(112px + env(safe-area-inset-bottom))",width:"100%",maxWidth:480,animation:"slideUp 0.28s ease",maxHeight:"calc(100dvh - 24px)",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",boxShadow:"0 -18px 42px rgba(0,0,0,.28)"}}>
+  return <div className="modal-overlay-pro" style={{position:"fixed",inset:0,background:"rgba(10,7,4,0.62)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center",paddingTop:24}} onClick={onClose}>
+    <div className="modal-panel-pro" onClick={e=>e.stopPropagation()} style={{background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:"24px 24px 0 0",padding:"18px 16px calc(112px + env(safe-area-inset-bottom))",width:"100%",maxWidth:480,animation:"slideUp 0.28s ease",maxHeight:"calc(100dvh - 24px)",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",boxShadow:"0 -18px 42px rgba(0,0,0,.28)"}}>
       <div style={{position:"sticky",top:-18,zIndex:5,display:"flex",justifyContent:"space-between",alignItems:"center",margin:"-18px -16px 16px",padding:"14px 16px 12px",background:"linear-gradient(180deg,#FFF8E6,#FFF4D6)",borderBottom:`1px solid ${T.g200}`,boxShadow:"0 8px 18px rgba(20,8,4,.08)"}}>
         <div style={{fontWeight:950,fontSize:"1.08rem",color:T.text}}>{title}</div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:34,height:34,cursor:"pointer",fontSize:"1rem",color:T.g700,fontWeight:950}}>×</button>
@@ -7396,7 +7581,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
         </div>
       </Card>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+      <div className="gestion-grid-pro" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
         {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.84)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
           <div style={{fontSize:"1.28rem",lineHeight:1}}>{t.icon}</div>
           <div style={{fontSize:".68rem",marginTop:3}}>{t.label}</div>
@@ -8388,11 +8573,11 @@ export default function App(){
   };
 
   return(
-    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-page={ap} data-community={communityTab} style={{fontFamily:"'Crimson Text',serif",background:theme.shell,minHeight:"100vh",maxWidth:480,margin:"0 auto",paddingBottom:82,position:"relative",boxShadow:`0 0 0 1px rgba(232,211,162,.10),0 0 42px rgba(0,0,0,.42),0 0 36px ${theme.accent}22`,"--shineA":theme.shineA,"--shineB":theme.shineB,"--shineSpeed":"7.2s","--pageGlowA":theme.glowA,"--pageGlowB":theme.glowB,"--pageMark":theme.mark,"--pageMarkColor":`${theme.accent}12`,"--pageAccent":theme.accent}}>
+    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-page={ap} data-community={communityTab} style={{fontFamily:"'Crimson Text',serif",background:theme.shell,minHeight:"100vh",maxWidth:"var(--app-max-width,480px)",width:"100%",margin:"0 auto",paddingBottom:"var(--app-bottom-pad,82px)",position:"relative",boxShadow:`0 0 0 1px rgba(232,211,162,.10),0 0 42px rgba(0,0,0,.42),0 0 36px ${theme.accent}22`,"--shineA":theme.shineA,"--shineB":theme.shineB,"--shineSpeed":"7.2s","--pageGlowA":theme.glowA,"--pageGlowB":theme.glowB,"--pageMark":theme.mark,"--pageMarkColor":`${theme.accent}12`,"--pageAccent":theme.accent}}>
       <style>{CSS}</style>
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
-      <div style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.26), inset 0 -1px 0 ${theme.accent}33`}}>
+      <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.26), inset 0 -1px 0 ${theme.accent}33`}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{appSettings?.branding?.emoji_principal||"✂️"} {appSettings?.branding?.nombre_tienda||BRAND.name}</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
@@ -8411,7 +8596,7 @@ export default function App(){
         {pages[ap]||pages["dashboard"]}
         <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
       </div>
-      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:theme.nav,borderTop:`2px solid ${theme.accent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
+      <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:theme.nav,borderTop:`2px solid ${theme.accent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>{
           const badge=(role===ROLES.CLIENT && n.id==="buzon")?unread.client:((role!==ROLES.CLIENT && n.id==="gestion")?unread.admin:0);
           return(
