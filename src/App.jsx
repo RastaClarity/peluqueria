@@ -9050,9 +9050,3 @@ export default function App(){
     </div>
   );
 }
-
-// force deploy fase81 gestion reorganizada
-
-// force deploy fase82 principal facturacion pulidas
-
-// force deploy fase83 juegos funcional
