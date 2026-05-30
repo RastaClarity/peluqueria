@@ -8648,6 +8648,3 @@ export default function App(){
   );
 }
 
-// force deploy fase79
-
-// force deploy fase80 fix comunidad useMemo
