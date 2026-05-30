@@ -8636,6 +8636,7 @@ export default function App(){
   const [notifOpen,setNotifOpen]=useState(false);
   const [notifications,setNotifications]=useState([]);
   const [notifCount,setNotifCount]=useState(0);
+  const [isDesktop,setIsDesktop]=useState(()=>typeof window!=="undefined" ? window.innerWidth>=900 : false);
 
   useEffect(()=>{
     async function loadSettings(){
@@ -8643,6 +8644,17 @@ export default function App(){
       setAppSettings(cfg);
     }
     loadSettings();
+  },[]);
+
+  useEffect(()=>{
+    const update=()=>setIsDesktop(typeof window!=="undefined" && window.innerWidth>=900);
+    update();
+    window.addEventListener("resize",update);
+    window.addEventListener("orientationchange",update);
+    return ()=>{
+      window.removeEventListener("resize",update);
+      window.removeEventListener("orientationchange",update);
+    };
   },[]);
 
   useEffect(()=>{
@@ -8772,12 +8784,119 @@ export default function App(){
     cupones:<Cupones user={currentUser} showToast={showToast}/>,
   };
 
+  const desktopSidebar=224;
+  const shellStyle=isDesktop?{
+    fontFamily:"'Crimson Text',serif",
+    background:theme.shell,
+    minHeight:"100vh",
+    width:"100vw",
+    maxWidth:"none",
+    margin:0,
+    paddingLeft:desktopSidebar,
+    paddingBottom:0,
+    position:"relative",
+    boxShadow:"none",
+    "--shineA":theme.shineA,
+    "--shineB":theme.shineB,
+    "--shineSpeed":"7.2s",
+    "--pageGlowA":theme.glowA,
+    "--pageGlowB":theme.glowB,
+    "--pageMark":theme.mark,
+    "--pageMarkColor":`${theme.accent}12`,
+    "--pageAccent":theme.accent
+  }:{
+    fontFamily:"'Crimson Text',serif",
+    background:theme.shell,
+    minHeight:"100vh",
+    maxWidth:"var(--app-max-width,480px)",
+    width:"100%",
+    margin:"0 auto",
+    paddingBottom:"var(--app-bottom-pad,82px)",
+    position:"relative",
+    boxShadow:`0 0 0 1px rgba(232,211,162,.10),0 0 42px rgba(0,0,0,.42),0 0 36px ${theme.accent}22`,
+    "--shineA":theme.shineA,
+    "--shineB":theme.shineB,
+    "--shineSpeed":"7.2s",
+    "--pageGlowA":theme.glowA,
+    "--pageGlowB":theme.glowB,
+    "--pageMark":theme.mark,
+    "--pageMarkColor":`${theme.accent}12`,
+    "--pageAccent":theme.accent
+  };
+  const headerStyle=isDesktop?{
+    background:role===ROLES.CLIENT?theme.header:grad,
+    padding:"14px 28px",
+    display:"flex",
+    justifyContent:"space-between",
+    alignItems:"center",
+    position:"sticky",
+    top:0,
+    zIndex:50,
+    minHeight:68,
+    boxShadow:`0 4px 22px rgba(0,0,0,0.22), inset 0 -1px 0 ${theme.accent}33`,
+    borderRadius:"0 0 24px 24px"
+  }:{
+    background:role===ROLES.CLIENT?theme.header:grad,
+    padding:"12px 16px",
+    display:"flex",
+    justifyContent:"space-between",
+    alignItems:"center",
+    position:"sticky",
+    top:0,
+    zIndex:50,
+    boxShadow:`0 4px 20px rgba(0,0,0,0.26), inset 0 -1px 0 ${theme.accent}33`
+  };
+  const contentStyle=isDesktop?{
+    padding:"28px 36px 42px",
+    position:"relative",
+    minHeight:"calc(100dvh - 68px)",
+    width:"100%"
+  }:{
+    padding:"18px 14px",
+    position:"relative"
+  };
+  const navStyle=isDesktop?{
+    position:"fixed",
+    top:0,
+    bottom:0,
+    left:0,
+    transform:"none",
+    width:desktopSidebar,
+    maxWidth:desktopSidebar,
+    height:"100dvh",
+    background:theme.nav,
+    borderRight:`2px solid ${theme.accent}`,
+    display:"flex",
+    flexDirection:"column",
+    justifyContent:"flex-start",
+    alignItems:"stretch",
+    gap:8,
+    padding:"88px 14px 18px",
+    zIndex:100,
+    boxShadow:"18px 0 44px rgba(0,0,0,0.25)",
+    overflowY:"auto"
+  }:{
+    position:"fixed",
+    bottom:0,
+    left:"50%",
+    transform:"translateX(-50%)",
+    width:"100%",
+    maxWidth:480,
+    background:theme.nav,
+    borderTop:`2px solid ${theme.accent}`,
+    display:"flex",
+    justifyContent:"space-around",
+    padding:"6px 2px 10px",
+    zIndex:100,
+    boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"
+  };
+
   return(
-    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-page={ap} data-community={communityTab} style={{fontFamily:"'Crimson Text',serif",background:theme.shell,minHeight:"100vh",maxWidth:"var(--app-max-width,480px)",width:"100%",margin:"0 auto",paddingBottom:"var(--app-bottom-pad,82px)",position:"relative",boxShadow:`0 0 0 1px rgba(232,211,162,.10),0 0 42px rgba(0,0,0,.42),0 0 36px ${theme.accent}22`,"--shineA":theme.shineA,"--shineB":theme.shineB,"--shineSpeed":"7.2s","--pageGlowA":theme.glowA,"--pageGlowB":theme.glowB,"--pageMark":theme.mark,"--pageMarkColor":`${theme.accent}12`,"--pageAccent":theme.accent}}>
+    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-page={ap} data-community={communityTab} style={shellStyle}>
       <style>{CSS}</style>
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
-      <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.26), inset 0 -1px 0 ${theme.accent}33`}}>
+      <div className="app-header-pro" style={headerStyle}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{appSettings?.branding?.emoji_principal||"✂️"} {appSettings?.branding?.nombre_tienda||BRAND.name}</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
@@ -8791,19 +8910,20 @@ export default function App(){
           </div>
         </div>
       </div>
-      <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
+      <div key={`${ap}-${communityTab}`} className="page-content-pro" style={contentStyle}>
         <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${theme.accent}99,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${theme.accent}33`,opacity:.78}}/>
         {pages[ap]||pages["dashboard"]}
         <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
       </div>
-      <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:theme.nav,borderTop:`2px solid ${theme.accent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
+      <div className="bottom-nav-pro" style={navStyle}>
+        {isDesktop&&<div style={{position:"absolute",top:22,left:16,right:16,color:"#FFF4D6",fontFamily:"'Pirata One',cursive",fontSize:"1.6rem",lineHeight:1,paddingBottom:14,borderBottom:"1px solid rgba(255,244,214,.18)",textShadow:"0 4px 14px rgba(0,0,0,.35)"}}>✂️ Rasta Cuts</div>}
         {nav.map(n=>{
           const badge=(role===ROLES.CLIENT && n.id==="buzon")?unread.client:((role!==ROLES.CLIENT && n.id==="gestion")?unread.admin:0);
           return(
-          <button className="nav-tab-pro" key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38,position:"relative"}}>
+          <button className="nav-tab-pro" key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:isDesktop?"row":"column",alignItems:"center",justifyContent:isDesktop?"flex-start":"center",gap:isDesktop?12:2,background:isDesktop?"rgba(255,244,214,.06)":"none",border:isDesktop?"1px solid rgba(255,244,214,.08)":"none",borderRadius:isDesktop?16:0,cursor:"pointer",padding:isDesktop?"11px 12px":"2px 4px",minWidth:isDesktop?0:38,width:isDesktop?"100%":"auto",position:"relative"}}>
             {badge>0&&<span style={{position:"absolute",top:-2,right:2,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{badge>9?"9+":badge}</span>}
-            <div className="nav-icon-pro" style={{fontSize:"1.1rem",background:ap===n.id?theme.header:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${theme.accent}44`:"none"}}>{n.icon}</div>
-            <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?"#F5E6C8":"#DEB887",transition:"color 0.2s"}}>{n.label}</span>
+            <div className="nav-icon-pro" style={{fontSize:isDesktop?"1.35rem":"1.1rem",background:ap===n.id?theme.header:"transparent",borderRadius:isDesktop?14:10,padding:isDesktop?0:"4px 7px",width:isDesktop?42:"auto",height:isDesktop?42:"auto",minWidth:isDesktop?42:"auto",display:isDesktop?"grid":"block",placeItems:isDesktop?"center":undefined,transform:ap===n.id&&!isDesktop?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${theme.accent}44`:"none"}}>{n.icon}</div>
+            <span style={{fontSize:isDesktop?".86rem":"0.52rem",fontWeight:isDesktop?950:800,color:ap===n.id?"#F5E6C8":"#DEB887",transition:"color 0.2s",textAlign:isDesktop?"left":"center",whiteSpace:isDesktop?"nowrap":"normal"}}>{n.label}</span>
           </button>
         );})}
       </div>
