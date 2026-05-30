@@ -102,6 +102,9 @@ const BRAND = {
 
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
 let masterVolume=0.7;
+let backgroundAudio=null,backgroundAudioAvailable=true;
+const BACKGROUND_AUDIO_SRC="/audio/barbershop-arcade-dub.mp3";
+const BACKGROUND_AUDIO_NAME="Barbershop Arcade Dub";
 let currentMusicTrack=0,musicStep=0;
 const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
 const NOTE_FREQ={
@@ -363,14 +366,61 @@ function tickLofiTrack(){
   }catch(e){}
 }
 
+function getBackgroundAudio(){
+  if(typeof Audio==="undefined")return null;
+  if(!backgroundAudio){
+    backgroundAudio=new Audio(BACKGROUND_AUDIO_SRC);
+    backgroundAudio.loop=true;
+    backgroundAudio.preload="auto";
+    backgroundAudio.volume=Math.max(0,Math.min(1,masterVolume*0.55));
+  }
+  return backgroundAudio;
+}
+function setBackgroundVolume(){
+  const a=getBackgroundAudio();
+  if(a)a.volume=Math.max(0,Math.min(1,masterVolume*0.55));
+}
+function stopGeneratedMusic(){
+  if(musicInterval){clearInterval(musicInterval);musicInterval=null;}
+}
+function startGeneratedMusic(){
+  stopGeneratedMusic();
+  musicStep=0;
+  setupMusicInterval();
+  tickLofiTrack();
+}
 function startMusic(){
   if(musicPlaying)return;
   musicPlaying=true;
-  if(!musicInterval){musicStep=0;setupMusicInterval();}
-  tickLofiTrack();
+  stopGeneratedMusic();
+  if(backgroundAudioAvailable){
+    const a=getBackgroundAudio();
+    if(a){
+      setBackgroundVolume();
+      a.play().catch(()=>{
+        backgroundAudioAvailable=false;
+        if(musicPlaying&&!globalMuted)startGeneratedMusic();
+      });
+      return;
+    }
+  }
+  startGeneratedMusic();
 }
-function stopMusic(){musicPlaying=false;if(musicInterval){clearInterval(musicInterval);musicInterval=null;}}
+function stopMusic(){
+  musicPlaying=false;
+  stopGeneratedMusic();
+  const a=getBackgroundAudio();
+  if(a&&!a.paused)a.pause();
+}
 function nextMusicTrack(){
+  if(backgroundAudioAvailable){
+    const a=getBackgroundAudio();
+    if(a){
+      a.currentTime=0;
+      if(musicPlaying&&!globalMuted){setBackgroundVolume();a.play().catch(()=>{});}
+      return;
+    }
+  }
   currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;
   musicStep=0;
   if(musicPlaying){setupMusicInterval();tickLofiTrack();}
@@ -9708,6 +9758,7 @@ export default function App(){
   useEffect(()=>{
     const vol=Number(appSettings?.musica?.volumen_general);
     masterVolume=Number.isFinite(vol)?Math.max(0,Math.min(1.2,vol)):0.7;
+    setBackgroundVolume();
   },[appSettings?.musica?.volumen_general]);
 
   useEffect(()=>{
@@ -9781,7 +9832,7 @@ export default function App(){
     if(globalMuted){stopMusic();stopGameMusic();setMusicOn(false);}
     else{startMusic();setMusicOn(true);}
   }
-  function changeMusicTrack(){nextMusicTrack();SFX.tab();showToast(`Tema: ${REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta"}`);}
+  function changeMusicTrack(){nextMusicTrack();SFX.tab();showToast(`Tema: ${backgroundAudioAvailable?BACKGROUND_AUDIO_NAME:(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);}
   const navTo=id=>{
     setHelperPage(null);
     const sec=appSettings?.secciones||{};
@@ -9844,7 +9895,7 @@ export default function App(){
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
-          <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: cambiar tema (${REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta"})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
+          <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: reiniciar tema (${BACKGROUND_AUDIO_NAME})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
           <div className="header-action-pro" onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
             <Av av={currentUser.avatar} config={currentUser.avatarConfig} size={32}/>
