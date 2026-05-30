@@ -7653,50 +7653,260 @@ function GestionFacturacionPanel({user,showToast}){
 
 function GestionJuegosAdmin({user,showToast}){
   const isAdmin=isAdminUser(user);
-  return <div style={{display:"grid",gap:14}}>
+  const [active,setActive]=useState("resumen");
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [scores,setScores]=useState([]);
+  const [retos,setRetos]=useState([]);
+  const [settings,setSettings]=useState({
+    secciones:{arcade_activo:true,gacha_activo:true},
+    puntos:{limite_diario_juegos:75,gacha_tiradas_dia:50}
+  });
+  const [newReto,setNewReto]=useState({
+    titulo:"Reto semanal arcade",
+    descripcion:"Consigue puntos jugando en Arcade durante la semana.",
+    tipo:"juegos",
+    meta:100,
+    puntos_premio:25,
+    fecha_fin:new Date(Date.now()+7*86400000).toISOString().split("T")[0],
+    activo:true
+  });
+
+  const gameNames=Object.fromEntries((typeof ARCADE_GAMES!=="undefined"?ARCADE_GAMES:[]).map(g=>[g.id,g.title]));
+  const gameList=typeof ARCADE_GAMES!=="undefined"?ARCADE_GAMES:[];
+
+  async function safeList(table,query){
+    try{
+      const rows=await dbGet(table,query);
+      return Array.isArray(rows)?rows:[];
+    }catch(e){return [];}
+  }
+
+  async function load(){
+    setLoading(true);
+    const [scoresRows,retosRows,settingsRows]=await Promise.all([
+      safeList("game_scores","?order=created_at.desc&limit=500&select=*"),
+      safeList("retos","?order=created_at.desc&limit=200&select=*"),
+      safeList("app_settings","?setting_key=in.(secciones,puntos)&select=*")
+    ]);
+
+    const next={
+      secciones:{arcade_activo:true,gacha_activo:true},
+      puntos:{limite_diario_juegos:75,gacha_tiradas_dia:50}
+    };
+    settingsRows.forEach(r=>{
+      if(r.setting_key==="secciones") next.secciones={...next.secciones,...(r.setting_value||{})};
+      if(r.setting_key==="puntos") next.puntos={...next.puntos,...(r.setting_value||{})};
+    });
+
+    setScores(scoresRows);
+    setRetos(retosRows);
+    setSettings(next);
+    setLoading(false);
+  }
+
+  useEffect(()=>{load();},[]);
+
+  function setSectionValue(field,value){
+    setSettings(prev=>({...prev,secciones:{...prev.secciones,[field]:value}}));
+  }
+  function setPointValue(field,value){
+    setSettings(prev=>({...prev,puntos:{...prev.puntos,[field]:value}}));
+  }
+
+  async function saveSetting(key,value,categoria){
+    const payload={
+      setting_key:key,
+      setting_value:value,
+      descripcion:key==="secciones"?"Activación de secciones de juegos":"Límites y recompensas de juegos",
+      categoria,
+      editable:true,
+      updated_at:new Date().toISOString()
+    };
+    let ok=await dbPatch("app_settings",`?setting_key=eq.${key}`,payload);
+    if(!ok) ok=await dbPost("app_settings",payload);
+    return ok;
+  }
+
+  async function saveGameSettings(){
+    if(!isAdmin){showToast?.("Sólo admin puede guardar ajustes de juegos");SFX.error();return;}
+    setSaving(true);
+    const ok1=await saveSetting("secciones",settings.secciones,"secciones");
+    const ok2=await saveSetting("puntos",settings.puntos,"puntos");
+    setSaving(false);
+    if(ok1&&ok2){showToast?.("Ajustes de juegos guardados");SFX.success();await load();}
+    else{showToast?.("No se pudieron guardar los ajustes");SFX.error();}
+  }
+
+  async function createReto(){
+    if(!isAdmin){showToast?.("Sólo admin puede crear retos");SFX.error();return;}
+    const titulo=String(newReto.titulo||"").trim();
+    if(!titulo){showToast?.("Pon un título al reto");SFX.error();return;}
+    const payload={
+      titulo,
+      descripcion:String(newReto.descripcion||"").trim(),
+      tipo:newReto.tipo||"juegos",
+      meta:Math.max(1,parseInt(newReto.meta,10)||1),
+      puntos_premio:Math.max(0,parseInt(newReto.puntos_premio,10)||0),
+      fecha_fin:newReto.fecha_fin,
+      activo:true
+    };
+    const ok=await dbPost("retos",payload);
+    if(ok){showToast?.("Reto creado");SFX.success();await load();}
+    else{showToast?.("No se pudo crear el reto");SFX.error();}
+  }
+
+  async function toggleReto(reto){
+    if(!isAdmin){showToast?.("Sólo admin puede cambiar retos");return;}
+    const ok=await dbPatch("retos",`?id=eq.${reto.id}`,{activo:!reto.activo});
+    if(ok){showToast?.(reto.activo?"Reto desactivado":"Reto activado");SFX.success();await load();}
+    else{showToast?.("No se pudo actualizar el reto");SFX.error();}
+  }
+
+  const totalScores=scores.length;
+  const totalPoints=scores.reduce((sum,s)=>sum+(Number(s.points)||Number(s.puntos)||Number(s.score)||0),0);
+  const bestScore=[...scores].sort((a,b)=>(Number(b.score)||Number(b.points)||0)-(Number(a.score)||Number(a.points)||0))[0];
+  const activeRetos=retos.filter(r=>r.activo!==false).length;
+  const byGame=Object.entries(scores.reduce((acc,s)=>{
+    const id=s.game_id||s.juego||s.game||"desconocido";
+    acc[id]=(acc[id]||0)+1;
+    return acc;
+  },{})).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  function Toggle({label,sub,value,onChange,disabled=false}){
+    return <button onClick={()=>!disabled&&onChange(!value)} style={{textAlign:"left",border:`2px solid ${value?T.gold:T.g300}`,background:value?"linear-gradient(180deg,#FFF4D6,#F4D58D)":"rgba(255,244,214,.78)",borderRadius:16,padding:"12px",cursor:disabled?"not-allowed":"pointer",opacity:disabled?.6:1}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center"}}>
+        <div>
+          <div style={{fontWeight:950,color:T.g800}}>{label}</div>
+          <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{sub}</div>
+        </div>
+        <Badge col={value?"green":"red"}>{value?"ON":"OFF"}</Badge>
+      </div>
+    </button>;
+  }
+
+  function SmallTab({id,icon,label}){
+    return <button onClick={()=>{SFX.tab();setActive(id);}} style={{border:`2px solid ${active===id?T.gold:T.g300}`,background:active===id?T.gradGold:"rgba(255,244,214,.82)",color:active===id?T.g900:T.g700,borderRadius:15,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active===id?"0 10px 24px rgba(212,175,55,.22)":"0 5px 12px rgba(20,8,4,.08)"}}>
+      <div style={{fontSize:"1.25rem",lineHeight:1}}>{icon}</div>
+      <div style={{fontSize:".72rem",marginTop:4}}>{label}</div>
+    </button>;
+  }
+
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
     <Card style={{background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#263F4D)",border:"2px solid rgba(255,244,214,.42)",color:T.white}}>
       <div style={{display:"flex",alignItems:"center",gap:14}}>
-        <div className="icon3d" style={{fontSize:"2.3rem"}}>🎮</div>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>🎮</div>
         <div style={{flex:1}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",lineHeight:1}}>Gestión de juegos</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Gestión de juegos</div>
           <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.82)",lineHeight:1.35}}>
-            Zona para controlar Arcade, rankings, retos y recompensas de juego sin mezclarlo con caja, citas o tienda.
+            Control real de Arcade, rankings, retos, límites diarios y actividad de jugadores.
           </div>
         </div>
         <Badge col={isAdmin?"gold":"blue"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
       </div>
     </Card>
 
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:12}}>
-      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}} hover>
-        <div style={{fontSize:"1.8rem"}}>🕹️</div>
-        <div style={{fontWeight:950,color:T.g800}}>Arcade</div>
-        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>
-          Los usuarios juegan desde la pestaña Arcade. Aquí dejamos preparada la zona para futuras reglas, límites y premios especiales.
-        </div>
-      </Card>
-      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}} hover>
-        <div style={{fontSize:"1.8rem"}}>🏆</div>
-        <div style={{fontWeight:950,color:T.g800}}>Rankings</div>
-        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>
-          Los rankings y puntuaciones se consultan desde Arcade/Ranking. Más adelante podemos añadir filtros de temporada desde aquí.
-        </div>
-      </Card>
-      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}} hover>
-        <div style={{fontSize:"1.8rem"}}>🎯</div>
-        <div style={{fontWeight:950,color:T.g800}}>Retos</div>
-        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>
-          Los retos sirven para dar objetivos y recompensas dentro de la web, siempre con puntos internos, no dinero.
-        </div>
-      </Card>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8}}>
+      <SmallTab id="resumen" icon="📊" label="Resumen"/>
+      <SmallTab id="ajustes" icon="⚙️" label="Ajustes"/>
+      <SmallTab id="rankings" icon="🏆" label="Rankings"/>
+      <SmallTab id="retos" icon="🎯" label="Retos"/>
+      <SmallTab id="actividad" icon="🕹️" label="Actividad"/>
     </div>
 
-    {!isAdmin&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
-      <div style={{fontWeight:950,color:T.g800}}>🔒 Ajustes de juegos bloqueados</div>
-      <div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>
-        El staff puede consultar esta zona, pero los ajustes avanzados de juegos quedarán reservados para admin.
-      </div>
-    </Card>}
+    {loading?<Spinner/>:<>
+      {active==="resumen"&&<>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10}}>
+          <StatCard icon="🕹️" label="Partidas registradas" value={totalScores} col="blue"/>
+          <StatCard icon="⭐" label="Puntos de juego" value={totalPoints} col="gold"/>
+          <StatCard icon="🎯" label="Retos activos" value={activeRetos} col="green"/>
+          <StatCard icon="🏆" label="Mejor marca" value={bestScore?(Number(bestScore.score)||Number(bestScore.points)||0):0} col="pink"/>
+        </div>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🎮 Juegos disponibles</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10}}>
+            {gameList.map(g=><div key={g.id} style={{border:`1px solid ${T.g300}`,borderRadius:15,padding:10,background:"rgba(255,244,214,.70)"}}>
+              <div style={{fontSize:"1.5rem"}}>{g.icon}</div>
+              <div style={{fontWeight:950,color:T.g800}}>{g.title}</div>
+              <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.3}}>{g.desc}</div>
+              <div style={{marginTop:6}}><Badge col="gold">+{g.pts||0} pts</Badge></div>
+            </div>)}
+          </div>
+        </Card>
+      </>}
+
+      {active==="ajustes"&&<div style={{display:"grid",gap:12}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>⚙️ Activación</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:10}}>
+            <Toggle label="Arcade activo" sub="Muestra u oculta la sección Arcade para clientes." value={settings.secciones.arcade_activo!==false} onChange={v=>setSectionValue("arcade_activo",v)} disabled={!isAdmin}/>
+            <Toggle label="Gacha activo" sub="Permite o bloquea la máquina de premios." value={settings.secciones.gacha_activo!==false} onChange={v=>setSectionValue("gacha_activo",v)} disabled={!isAdmin}/>
+          </div>
+        </Card>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>⭐ Límites y recompensas</div>
+          <Input label="Límite diario de puntos por juegos" type="number" value={String(settings.puntos.limite_diario_juegos??75)} onChange={v=>setPointValue("limite_diario_juegos",Math.max(0,parseInt(v,10)||0))}/>
+          <Input label="Tiradas diarias de Gacha" type="number" value={String(settings.puntos.gacha_tiradas_dia??50)} onChange={v=>setPointValue("gacha_tiradas_dia",Math.max(0,parseInt(v,10)||0))}/>
+          <Btn col="gold" onClick={saveGameSettings} disabled={!isAdmin||saving}>{saving?"Guardando...":"Guardar ajustes de juegos"}</Btn>
+          {!isAdmin&&<div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:8}}>El staff puede revisar esta pantalla, pero sólo admin puede guardar ajustes.</div>}
+        </Card>
+      </div>}
+
+      {active==="rankings"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🏆 Partidas por juego</div>
+        {byGame.length===0?<EmptyState icon="🏆" title="Sin partidas" sub="Todavía no hay puntuaciones registradas."/>:<div style={{display:"grid",gap:9}}>
+          {byGame.map(([id,count])=><div key={id}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:".82rem",fontWeight:950,color:T.g800,marginBottom:4}}>
+              <span>{gameNames[id]||id}</span><span>{count}</span>
+            </div>
+            <div style={{height:9,borderRadius:999,background:"rgba(75,48,27,.14)",overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${Math.max(8,count/Math.max(1,byGame[0]?.[1]||1)*100)}%`,borderRadius:999,background:"linear-gradient(90deg,#263F4D,#B99A45,#8F2E24)"}}/>
+            </div>
+          </div>)}
+        </div>}
+      </Card>}
+
+      {active==="retos"&&<div style={{display:"grid",gap:12}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🎯 Crear reto</div>
+          <Input label="Título" value={newReto.titulo} onChange={v=>setNewReto(r=>({...r,titulo:v}))}/>
+          <Input label="Descripción" value={newReto.descripcion} onChange={v=>setNewReto(r=>({...r,descripcion:v}))}/>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
+            <Input label="Meta" type="number" value={String(newReto.meta)} onChange={v=>setNewReto(r=>({...r,meta:v}))}/>
+            <Input label="Premio en puntos" type="number" value={String(newReto.puntos_premio)} onChange={v=>setNewReto(r=>({...r,puntos_premio:v}))}/>
+            <Input label="Fecha fin" type="date" value={newReto.fecha_fin} onChange={v=>setNewReto(r=>({...r,fecha_fin:v}))}/>
+          </div>
+          <Btn col="gold" onClick={createReto} disabled={!isAdmin}>Crear reto</Btn>
+        </Card>
+
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>📋 Retos existentes</div>
+          {retos.length===0?<EmptyState icon="🎯" title="Sin retos" sub="Aún no hay retos creados."/>:retos.slice(0,20).map(r=><div key={r.id} style={{padding:"10px 0",borderBottom:`1px solid ${T.g200}`}}>
+            <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
+              <div>
+                <div style={{fontWeight:950,color:T.g800}}>{r.titulo}</div>
+                <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{r.descripcion}</div>
+                <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:6}}>
+                  <Badge col="blue">Meta {r.meta}</Badge><Badge col="gold">+{r.puntos_premio} pts</Badge><Badge col={r.activo!==false?"green":"red"}>{r.activo!==false?"Activo":"Inactivo"}</Badge>
+                </div>
+              </div>
+              <Btn small col={r.activo!==false?"red":"green"} onClick={()=>toggleReto(r)} disabled={!isAdmin}>{r.activo!==false?"Desactivar":"Activar"}</Btn>
+            </div>
+          </div>)}
+        </Card>
+      </div>}
+
+      {active==="actividad"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🕹️ Últimas partidas</div>
+        {scores.length===0?<EmptyState icon="🕹️" title="Sin actividad" sub="Aún no hay partidas registradas."/>:scores.slice(0,30).map((s,idx)=><div key={s.id||idx} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:10,padding:"9px 0",borderBottom:`1px solid ${T.g200}`}}>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>{gameNames[s.game_id||s.juego||s.game]||s.game_id||s.juego||"Juego"}</div>
+            <div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>{s.usuario_nombre||s.nombre||s.usuario_id||"Usuario"} · {String(s.created_at||"").slice(0,16).replace("T"," ")}</div>
+          </div>
+          <Badge col="gold">{Number(s.score)||Number(s.points)||Number(s.puntos)||0}</Badge>
+        </div>)}
+      </Card>}
+    </>}
   </div>;
 }
 
@@ -8840,3 +9050,9 @@ export default function App(){
     </div>
   );
 }
+
+// force deploy fase81 gestion reorganizada
+
+// force deploy fase82 principal facturacion pulidas
+
+// force deploy fase83 juegos funcional
