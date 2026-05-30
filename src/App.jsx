@@ -373,6 +373,9 @@ function tickLofiTrack(){
 function getBackgroundTrack(){
   return BACKGROUND_PLAYLIST[backgroundTrackIndex%BACKGROUND_PLAYLIST.length]||BACKGROUND_PLAYLIST[0];
 }
+function getBackgroundName(){
+  return getBackgroundTrack()?.name||"Rasta Cuts Dub";
+}
 function getBackgroundSrc(){
   const track=getBackgroundTrack();
   const srcs=track?.srcs||[];
@@ -388,19 +391,20 @@ function createBackgroundAudio(){
     backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
     backgroundSourceTry=0;
     backgroundAudio=null;
-    if(musicPlaying&&!globalMuted)startMusic(true);
+    if(musicPlaying&&!globalMuted)setTimeout(()=>startMusic(true),80);
   });
   a.addEventListener("error",()=>{
     const track=getBackgroundTrack();
     const srcs=track?.srcs||[];
     if(backgroundSourceTry<srcs.length-1){
       backgroundSourceTry++;
-    }else{
-      backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
-      backgroundSourceTry=0;
+      backgroundAudio=null;
+      if(musicPlaying&&!globalMuted)setTimeout(()=>startMusic(true),80);
+      return;
     }
+    backgroundAudioAvailable=false;
     backgroundAudio=null;
-    if(musicPlaying&&!globalMuted)startMusic(true);
+    if(musicPlaying&&!globalMuted)startGeneratedMusic();
   });
   return a;
 }
@@ -9875,7 +9879,7 @@ export default function App(){
     if(globalMuted){stopMusic();stopGameMusic();setMusicOn(false);}
     else{startMusic();setMusicOn(true);}
   }
-  function changeMusicTrack(){nextMusicTrack();SFX.tab();showToast(`Tema: ${backgroundAudioAvailable?BACKGROUND_AUDIO_NAME:(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);}
+  function changeMusicTrack(){nextMusicTrack();SFX.tab();showToast(`Tema: ${backgroundAudioAvailable?getBackgroundName():(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);}
   const navTo=id=>{
     setHelperPage(null);
     const sec=appSettings?.secciones||{};
@@ -9938,7 +9942,7 @@ export default function App(){
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
-          <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: reiniciar tema (${BACKGROUND_AUDIO_NAME})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
+          <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: reiniciar tema (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
           <div className="header-action-pro" onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
             <Av av={currentUser.avatar} config={currentUser.avatarConfig} size={32}/>
