@@ -1194,7 +1194,7 @@ async function getUserProfileByEmail(email){
   if(!supabase || !email) return null;
   const {data,error}=await supabase
     .from("usuarios")
-    .select("id,nombre,email,role,puntos,avatar,created_at,perfil_publico,modo_incognito,baneado,motivo_baneo,baneado_at")
+    .select("*")
     .eq("email", email.toLowerCase())
     .maybeSingle();
   if(error) return null;
@@ -1209,7 +1209,7 @@ async function createUserProfile({nombre,email}){
   const {data,error}=await supabase
     .from("usuarios")
     .insert({nombre,email:email.toLowerCase(),role:"client",puntos:0,avatar:Math.floor(Math.random()*AVATARS.length)})
-    .select("id,nombre,email,role,puntos,avatar,created_at,perfil_publico,modo_incognito,baneado,motivo_baneo,baneado_at")
+    .select("*")
     .maybeSingle();
   if(error){ console.error("Error creando perfil en usuarios:", error); return null; }
   if(data){
@@ -1359,6 +1359,12 @@ function Auth({onLogin,showToast,settings}){
     }
     setLoading(false);
     if(!perfil){showAuthError("No se pudo cargar tu perfil");SFX.error();return;}
+    if(perfil.baneado){
+      try{await supabase.auth.signOut();}catch{}
+      showAuthError("Esta cuenta está bloqueada. Contacta con Rasta Cuts.");
+      SFX.error();
+      return;
+    }
     SFX.success();
     onLogin(toAppUser(perfil));
   }
@@ -8111,11 +8117,10 @@ export default function App(){
         if(perfil){
           if(perfil.baneado){
             setCheckingSession(false);
-            await supabase.auth.signOut();
-            showToast?.("Esta cuenta está bloqueada. Contacta con Rasta Cuts.");
+            try{await supabase.auth.signOut();}catch{}
             return;
           }
-          if(perfil?.baneado){showToast("Esta cuenta está bloqueada. Contacta con Rasta Cuts.");await supabase.auth.signOut();return;} setUser(toAppUser(perfil));
+          setUser(toAppUser(perfil));
         }
       }
       setCheckingSession(false);
