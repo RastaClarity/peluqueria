@@ -6274,6 +6274,133 @@ function GestionMusica({showToast}){
   );
 }
 
+
+function GestionAgenda({showToast}){
+  const todayKey=()=>new Date().toISOString().split("T")[0];
+  const [fecha,setFecha]=useState(todayKey());
+  const [citas,setCitas]=useState([]);
+  const [cobros,setCobros]=useState([]);
+  const [loading,setLoading]=useState(true);
+
+  useEffect(()=>{load();},[fecha]);
+
+  async function load(){
+    setLoading(true);
+    const [citasRows,cobrosRows]=await Promise.all([
+      dbGet("citas",`?fecha=eq.${fecha}&order=hora.asc&select=*`),
+      dbGet("cobros","?select=id,cita_id,importe,estado")
+    ]);
+    setCitas(Array.isArray(citasRows)?citasRows:[]);
+    setCobros((Array.isArray(cobrosRows)?cobrosRows:[]).filter(c=>String(c.estado||"pagado").toLowerCase()!=="anulado"));
+    setLoading(false);
+  }
+
+  function pagoDe(cita){
+    return cobros.find(x=>String(x.cita_id||"")===String(cita.id)||String(x.id||"")===String(cita.cobro_id||""));
+  }
+
+  async function updateCita(cita,patch,msg){
+    const ok=await dbPatch("citas",`?id=eq.${cita.id}`,{...patch,updated_at:new Date().toISOString()});
+    if(ok){showToast?.(msg);SFX.success();await load();}
+    else{showToast?.("No se pudo actualizar la cita");SFX.error();}
+  }
+
+  function addDays(days){
+    const d=new Date(`${fecha}T12:00:00`);
+    d.setDate(d.getDate()+days);
+    setFecha(d.toISOString().split("T")[0]);
+  }
+
+  const active=citas.filter(c=>!["cancelada"].includes(String(c.estado||"pendiente").toLowerCase()));
+  const totalDia=active.reduce((sum,c)=>sum+(Number(c.servicio_precio)||citaTotal(citaServices(c))||0),0);
+  const realizados=active.filter(c=>String(c.estado||"").toLowerCase()==="completada").length;
+  const confirmadas=active.filter(c=>String(c.estado||"").toLowerCase()==="confirmada").length;
+  const pendientes=active.filter(c=>["pendiente","propuesta"].includes(String(c.estado||"").toLowerCase())).length;
+
+  const slots=HORARIOS.map(h=>{
+    const found=citas.filter(c=>String(c.hora||"").slice(0,5)===h);
+    return {hora:h,citas:found};
+  });
+
+  return(
+    <div style={{animation:"fadeSlide .34s ease"}}>
+      <SectionHeader icon="🗓️" title="Agenda diaria" sub="Vista ordenada por horas para trabajar el día"/>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2.2rem"}}>🗓️</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Agenda de trabajo</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>El día queda ordenado por horas, con estado, precio, duración y acciones rápidas.</div>
+          </div>
+        </div>
+      </Card>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"grid",gridTemplateColumns:"44px 1fr 44px",gap:8,alignItems:"end",marginBottom:12}}>
+          <Btn small col="ghost" onClick={()=>addDays(-1)}>←</Btn>
+          <Input label="Fecha" value={fecha} onChange={setFecha} type="date"/>
+          <Btn small col="ghost" onClick={()=>addDays(1)}>→</Btn>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+          <div style={{background:"rgba(255,244,214,.62)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"9px 6px",textAlign:"center"}}><div style={{fontWeight:950,color:T.g800}}>{active.length}</div><div style={{fontSize:".64rem",fontWeight:900,color:T.textSub}}>Citas</div></div>
+          <div style={{background:"rgba(255,244,214,.62)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"9px 6px",textAlign:"center"}}><div style={{fontWeight:950,color:T.g800}}>{confirmadas}</div><div style={{fontSize:".64rem",fontWeight:900,color:T.textSub}}>Confirmadas</div></div>
+          <div style={{background:"rgba(255,244,214,.62)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"9px 6px",textAlign:"center"}}><div style={{fontWeight:950,color:T.g800}}>{realizados}</div><div style={{fontSize:".64rem",fontWeight:900,color:T.textSub}}>Realizadas</div></div>
+          <div style={{background:"rgba(255,244,214,.62)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"9px 6px",textAlign:"center"}}><div style={{fontWeight:950,color:T.g800}}>{totalDia}€</div><div style={{fontSize:".64rem",fontWeight:900,color:T.textSub}}>Previsto</div></div>
+        </div>
+        {pendientes>0&&<div style={{marginTop:10,fontSize:".78rem",fontWeight:850,color:T.g700}}>🟡 Hay {pendientes} cita{pendientes===1?"":"s"} pendiente{pendientes===1?"":"s"} de revisar.</div>}
+      </Card>
+
+      {loading?<Spinner/>:<div>
+        {citas.length===0?<EmptyState icon="🗓️" title="Día libre" sub="No hay citas registradas para esta fecha."/>:
+          slots.map(slot=>{
+            const citasHora=slot.citas;
+            return <Card key={slot.hora} style={{marginBottom:9,padding:0,overflow:"hidden",background:citasHora.length?"linear-gradient(180deg,#FFF4D6,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`1.5px solid ${citasHora.length?T.g300:T.g150}`,opacity:citasHora.length?1:.62}}>
+              <div style={{display:"grid",gridTemplateColumns:"62px 1fr",gap:0}}>
+                <div style={{background:citasHora.length?"linear-gradient(180deg,#6E3518,#24110A)":"rgba(75,48,27,.22)",color:citasHora.length?T.white:T.g700,display:"grid",placeItems:"center",fontWeight:950,fontSize:".9rem",padding:"12px 4px"}}>
+                  {slot.hora}
+                </div>
+                <div style={{padding:"10px 12px"}}>
+                  {citasHora.length===0?<div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Hueco libre</div>:
+                    citasHora.map(c=>{
+                      const st=String(c.estado||"pendiente").toLowerCase();
+                      const list=citaServices(c);
+                      const dur=citaDuration(list);
+                      const precio=Number(c.servicio_precio)||citaTotal(list);
+                      const pago=pagoDe(c);
+                      return <div key={c.id} style={{paddingBottom:citasHora.length>1?10:0,marginBottom:citasHora.length>1?10:0,borderBottom:citasHora.length>1?`1px solid ${T.g200}`:"none"}}>
+                        <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:5}}>
+                              <Badge col={st==="pendiente"?"gold":st==="confirmada"?"green":st==="cancelada"?"red":st==="completada"?"blue":"blue"}>{st==="completada"?"realizada":st}</Badge>
+                              {pago&&<Badge col="green">cobrada</Badge>}
+                            </div>
+                            <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>👤 {c.cliente_nombre||"Cliente"}</div>
+                            <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>✂️ {c.servicio_label||c.servicio||"Servicio"}</div>
+                            {c.notas_admin&&<div style={{fontSize:".72rem",fontWeight:850,color:T.g800,marginTop:5,background:"rgba(255,244,214,.52)",borderRadius:9,padding:"5px 7px"}}>🔒 {c.notas_admin}</div>}
+                          </div>
+                          <div style={{textAlign:"right",whiteSpace:"nowrap"}}>
+                            {!!precio&&<div style={{fontWeight:950,color:T.g600}}>{precio}€</div>}
+                            {!!dur&&<div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>hasta {endTime(slot.hora,dur)}</div>}
+                          </div>
+                        </div>
+                        <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:9}}>
+                          {st==="pendiente"&&<Btn small col="green" onClick={()=>updateCita(c,{estado:"confirmada",respuesta_cliente:"aceptada"},"Cita confirmada")}>Confirmar</Btn>}
+                          {["confirmada","propuesta"].includes(st)&&<Btn small col="dark" onClick={()=>updateCita(c,{estado:"completada"},"Marcada como realizada")}>Realizada</Btn>}
+                          {["pendiente","propuesta","confirmada"].includes(st)&&<Btn small col="red" onClick={()=>updateCita(c,{estado:"cancelada",motivo_cancelacion:"Cancelada desde agenda"},"Cita cancelada")}>Cancelar</Btn>}
+                        </div>
+                      </div>;
+                    })
+                  }
+                </div>
+              </div>
+            </Card>;
+          })
+        }
+      </div>}
+    </div>
+  );
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -6282,6 +6409,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const [tab,setTab]=useState("resumen");
   const tabs=[
     {id:"resumen",icon:"🏠",label:"Resumen",sub:"Inicio interno con próximas citas y acciones rápidas",staff:true},
+    {id:"agenda",icon:"🗓️",label:"Agenda",sub:"Vista diaria ordenada por horas",staff:true},
     {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true},
     {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true},
     {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true},
@@ -6343,6 +6471,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       </Card>
 
       {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast}/>} 
+      {tab==="agenda"&&<GestionAgenda showToast={showToast}/>} 
       {tab==="facturacion"&&<Caja user={user} showToast={showToast}/>}
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
       {tab==="mensajes"&&<GestionMensajes user={user} showToast={showToast}/>}
