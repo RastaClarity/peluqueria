@@ -2807,7 +2807,7 @@ function Clientes({user,showToast}){
           <div className="icon3d" style={{fontSize:"2rem"}}>👥</div>
           <div style={{flex:1}}>
             <div style={{fontWeight:950,fontSize:"1rem"}}>Clientes de tienda</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Aquí sólo aparecen personas con al menos una cita registrada. Los usuarios online se gestionan en Gestión &gt; Usuarios.</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Aquí sólo aparecen personas con al menos una cita registrada. Los usuarios web se gestionan en Gestión &gt; Usuarios.</div>
           </div>
         </div>
       </Card>
@@ -3326,7 +3326,7 @@ function AdminUsuarios({user,showToast}){
 
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="👑" title="Usuarios online" sub={`${users.length} cuentas registradas en la web`}/>
+      <SectionHeader icon="👑" title="Usuarios web" sub={`${users.length} cuentas registradas en la web`}/>
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2rem"}}>🔐</div>
@@ -8483,7 +8483,7 @@ function GestionAdminPanel({user,showToast}){
 
     {loading?<Spinner/>:<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10}}>
-        <StatCard icon="👥" label="Usuarios online" value={data.usuarios.length} col="blue"/>
+        <StatCard icon="👥" label="Usuarios web" value={data.usuarios.length} col="blue"/>
         <StatCard icon="👑" label="Admin" value={countRole(ROLES.ADMIN)} col="gold"/>
         <StatCard icon="💈" label="Staff" value={countRole(ROLES.STAFF)} col="green"/>
         <StatCard icon="🙂" label="Clientes web" value={countRole(ROLES.CLIENT)} col="blue"/>
@@ -8646,6 +8646,166 @@ function GestionBaneos({user,showToast}){
 }
 
 
+
+function GestionSeguridadSupabase({user,showToast}){
+  const isAdmin=isAdminUser(user);
+  const STORAGE_KEY="rasta_cuts_supabase_rls_plan_v1";
+  const blocks=[
+    {
+      id:"usuarios",icon:"👥",title:"Usuarios y roles",risk:"Muy alto",desc:"Base de toda la seguridad. Hay que cerrar lectura/escritura de perfiles, roles y baneos.",
+      tables:["usuarios","seguridad_auditoria"],
+      items:[
+        "Cliente sólo puede leer su propio perfil completo",
+        "Cliente sólo puede editar datos seguros de su perfil",
+        "Cliente nunca puede cambiar su rol",
+        "Staff puede leer usuarios necesarios para gestión, pero no cambiar roles",
+        "Admin puede cambiar roles y bloqueos",
+        "Todo cambio de rol o baneo queda en auditoría"
+      ]
+    },
+    {
+      id:"citas",icon:"📅",title:"Citas y clientes de tienda",risk:"Alto",desc:"Separar clientes de tienda/citas de usuarios web para no mezclar privacidad.",
+      tables:["clientes","citas"],
+      items:[
+        "Cliente web sólo puede ver sus propias citas",
+        "Staff/admin pueden ver agenda y citas de trabajo",
+        "Citas privadas no se exponen a otros usuarios",
+        "Cambios de estado quedan controlados",
+        "Datos personales mínimos visibles"
+      ]
+    },
+    {
+      id:"tienda",icon:"🛍️",title:"Tienda, stock y pedidos",risk:"Alto",desc:"Evitar que un cliente modifique premios, puntos, pedidos o stock desde fuera.",
+      tables:["tienda_items","tienda_pedidos","inventario","canjes"],
+      items:[
+        "Cliente puede ver premios activos",
+        "Cliente sólo puede ver sus propios pedidos/canjes",
+        "Cliente no puede editar stock ni premios",
+        "Staff puede gestionar pedidos y stock",
+        "Sólo admin edita premios, costes y ajustes de tienda"
+      ]
+    },
+    {
+      id:"comunidad",icon:"🌐",title:"Comunidad y mensajes",risk:"Alto",desc:"Controlar foro, mensajes privados, reportes y tablón para que nadie lea lo que no debe.",
+      tables:["foro_temas","foro_respuestas","mensajes_privados","reportes_comunidad","publicaciones"],
+      items:[
+        "Temas públicos legibles según sección activa",
+        "Mensajes privados sólo visibles por emisor/receptor y admin/staff autorizado",
+        "Reportes sólo visibles por staff/admin",
+        "Usuarios baneados no pueden publicar",
+        "Staff/admin pueden moderar contenido"
+      ]
+    },
+    {
+      id:"ajustes",icon:"⚙️",title:"Ajustes y configuración",risk:"Muy alto",desc:"Los ajustes activan o apagan secciones; sólo admin debería cambiarlos.",
+      tables:["app_settings","musica_items"],
+      items:[
+        "Ajustes globales sólo editables por admin",
+        "Lectura pública sólo de ajustes seguros",
+        "Música editable sólo por admin",
+        "No exponer claves ni datos sensibles",
+        "Registrar cambios importantes"
+      ]
+    }
+  ];
+
+  const flat=blocks.flatMap(b=>b.items.map((_,i)=>`${b.id}_${i}`));
+  const [checked,setChecked]=useState(()=> {
+    try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");}
+    catch(e){return {};}
+  });
+  const done=flat.filter(k=>checked[k]).length;
+  const total=flat.length;
+  const pct=total?Math.round(done/total*100):0;
+
+  function toggle(key){
+    const next={...checked,[key]:!checked[key]};
+    setChecked(next);
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}catch(e){}
+    SFX.tab();
+  }
+  function reset(){
+    setChecked({});
+    try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+    showToast?.("Plan Supabase reiniciado");
+  }
+
+  if(!isAdmin)return <EmptyState icon="🔒" title="Sólo admin" sub="La preparación de seguridad sólo debería verla el administrador."/>;
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#24110A 52%,#263F4D)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>🧱</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Preparación Supabase / RLS</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Hoja de ruta para cerrar seguridad real en base de datos sin romper login, roles ni Gestión.
+          </div>
+        </div>
+        <Badge col={pct===100?"green":"gold"}>{pct}%</Badge>
+      </div>
+    </Card>
+
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,marginBottom:10}}>
+        <div>
+          <div style={{fontWeight:950,color:T.g800}}>Estado antes de tocar RLS</div>
+          <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>{done} de {total} puntos preparados</div>
+        </div>
+        <Btn small col="ghost" onClick={reset}>Reiniciar</Btn>
+      </div>
+      <div style={{height:12,borderRadius:999,background:"rgba(75,48,27,.14)",overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${pct}%`,borderRadius:999,background:"linear-gradient(90deg,#263F4D,#B99A45,#2F6B42)",transition:"width .25s ease"}}/>
+      </div>
+    </Card>
+
+    <Card style={{background:"linear-gradient(180deg,#FFE7DE,#F0C3B3)",border:`2px solid ${T.red}`}}>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:6}}>⚠️ Regla antes de empezar</div>
+      <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+        No activaremos políticas RLS de golpe. Primero se hará copia de seguridad mental del estado, luego <b>usuarios/roles</b>, después <b>citas</b>, luego <b>tienda</b>, después <b>comunidad</b> y al final <b>ajustes/auditoría</b>.
+      </div>
+    </Card>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:12}}>
+      {blocks.map(b=>{
+        const blockDone=b.items.filter((_,i)=>checked[`${b.id}_${i}`]).length;
+        return <Card key={b.id} style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+          <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
+            <div style={{fontSize:"1.75rem"}}>{b.icon}</div>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}>
+                <div style={{fontWeight:950,color:T.g800}}>{b.title}</div>
+                <Badge col={b.risk==="Muy alto"?"red":"gold"}>{b.risk}</Badge>
+              </div>
+              <div style={{fontSize:".75rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>{b.desc}</div>
+              <div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:7}}>
+                {b.tables.map(t=><Badge key={t} col="blue">{t}</Badge>)}
+              </div>
+              <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,marginTop:7}}>{blockDone}/{b.items.length} preparado</div>
+            </div>
+          </div>
+          <div style={{display:"grid",gap:8}}>
+            {b.items.map((text,i)=>{
+              const key=`${b.id}_${i}`;
+              const on=!!checked[key];
+              return <button key={key} onClick={()=>toggle(key)} style={{textAlign:"left",display:"flex",gap:9,alignItems:"flex-start",border:`1.5px solid ${on?T.gold:T.g300}`,background:on?"linear-gradient(180deg,#E8D3A2,#D8BE87)":"rgba(255,244,214,.72)",borderRadius:13,padding:"9px 10px",cursor:"pointer",fontWeight:850,color:on?T.g800:T.textSub,lineHeight:1.28}}>
+                <span style={{fontSize:"1rem",lineHeight:1.1}}>{on?"✅":"⬜"}</span>
+                <span style={{fontSize:".82rem"}}>{text}</span>
+              </button>;
+            })}
+          </div>
+        </Card>;
+      })}
+    </div>
+
+    <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Orden técnico recomendado</div>
+      <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+        Primero se comprueba que el rol real vive en <b>usuarios</b>. Luego se crean políticas de lectura/escritura por tabla. Después se prueba con tres cuentas: admin, staff y cliente. Si algo falla, se revierte sólo esa tabla, no toda la app.
+      </div>
+    </Card>
+  </div>;
+}
+
 function GestionChecklist({user,showToast}){
   const isAdmin=isAdminUser(user);
   const STORAGE_KEY="rasta_cuts_checklist_gestion_v1";
@@ -8655,7 +8815,7 @@ function GestionChecklist({user,showToast}){
         "Resumen carga sin pantalla en blanco",
         "Agenda abre correctamente",
         "Citas permite revisar pendientes/confirmadas",
-        "Clientes muestra clientes de tienda, no usuarios online mezclados"
+        "Clientes muestra clientes de tienda, no usuarios web mezclados"
       ]
     },
     {
@@ -8837,10 +8997,11 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"comunidad_ajustes",icon:"⚙️",label:"Ajustes",sub:"Activación de foro, actualidad, música, mensajes y reportes",staff:false,group:"comunidad"},
 
     {id:"admin_resumen",icon:"🔐",label:"Resumen",sub:"Vista rápida de usuarios, roles, bloqueos, auditoría y ajustes",staff:false,group:"admin"},
-    {id:"usuarios",icon:"👥",label:"Usuarios",sub:"Cuentas online, búsqueda, roles y bloqueos",staff:false,group:"admin"},
+    {id:"usuarios",icon:"👥",label:"Usuarios",sub:"Usuarios de la web: búsqueda, roles y bloqueos",staff:false,group:"admin"},
     {id:"roles_permisos",icon:"👑",label:"Roles",sub:"Matriz clara de permisos admin, staff y cliente",staff:false,group:"admin"},
     {id:"baneos",icon:"🚫",label:"Baneos",sub:"Usuarios bloqueados y desbloqueo rápido",staff:false,group:"admin"},
     {id:"seguridad",icon:"🧾",label:"Auditoría",sub:"Registro de roles, bloqueos y cambios importantes",staff:false,group:"admin"},
+    {id:"supabase_rls",icon:"🧱",label:"Supabase",sub:"Preparación de seguridad real, RLS y tablas sensibles",staff:false,group:"admin"},
     {id:"checklist",icon:"✅",label:"Checklist",sub:"Revisión final de Gestión antes de seguridad real",staff:false,group:"admin"},
     {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna global de la web",staff:false,group:"admin"},
   ].filter(t=>isAdmin||t.staff);
@@ -8853,7 +9014,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Resumen, premios, stock, pedidos y ajustes de tienda."},
     {id:"juegos",icon:"🎮",label:"Juegos",sub:"Arcade, rankings, retos y recompensas internas de juego."},
     {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Resumen, moderación, mensajes, música y ajustes de comunidad."},
-    {id:"admin",icon:"🔐",label:"Admin",sub:"Resumen, usuarios, roles, baneos, auditoría, checklist y ajustes globales."}
+    {id:"admin",icon:"🔐",label:"Admin",sub:"Resumen, usuarios, roles, baneos, auditoría, Supabase, checklist y ajustes globales."}
   ].filter(g=>tabs.some(t=>t.group===g.id));
 
   const visibleTabs=tabs.filter(t=>t.group===gestionGroup);
@@ -8957,6 +9118,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       {tab==="roles_permisos"&&(isAdmin?<GestionRolesPermisos user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La matriz de permisos sólo debería verla el administrador."/> )}
       {tab==="baneos"&&(isAdmin?<GestionBaneos user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="Los bloqueos sólo debería revisarlos el administrador."/> )}
       {tab==="seguridad"&&(isAdmin?<GestionSeguridad user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La auditoría de seguridad sólo debería verla el administrador."/> )}
+      {tab==="supabase_rls"&&(isAdmin?<GestionSeguridadSupabase user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La preparación de Supabase sólo debería verla el administrador."/> )}
       {tab==="checklist"&&(isAdmin?<GestionChecklist user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El checklist final sólo debería verlo el administrador."/> )}
       {tab==="ajustes"&&(isAdmin?<GestionAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo debería tocarlos el administrador."/> )}
     </div>
