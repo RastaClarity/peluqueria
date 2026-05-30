@@ -381,31 +381,22 @@ function getBackgroundSrc(){
   const srcs=track?.srcs||[];
   return srcs[backgroundSourceTry%Math.max(1,srcs.length)]||"/audio/barbershop-arcade-dub.mp3";
 }
+function resetBackgroundAudio(){
+  try{
+    if(backgroundAudio){
+      backgroundAudio.pause();
+      backgroundAudio.src="";
+      backgroundAudio.load?.();
+    }
+  }catch(e){}
+  backgroundAudio=null;
+}
 function createBackgroundAudio(){
   if(typeof Audio==="undefined")return null;
   const a=new Audio(getBackgroundSrc());
-  a.loop=false;
+  a.loop=true;
   a.preload="auto";
-  a.volume=Math.max(0,Math.min(1,masterVolume*0.55));
-  a.addEventListener("ended",()=>{
-    backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
-    backgroundSourceTry=0;
-    backgroundAudio=null;
-    if(musicPlaying&&!globalMuted)setTimeout(()=>startMusic(true),80);
-  });
-  a.addEventListener("error",()=>{
-    const track=getBackgroundTrack();
-    const srcs=track?.srcs||[];
-    if(backgroundSourceTry<srcs.length-1){
-      backgroundSourceTry++;
-      backgroundAudio=null;
-      if(musicPlaying&&!globalMuted)setTimeout(()=>startMusic(true),80);
-      return;
-    }
-    backgroundAudioAvailable=false;
-    backgroundAudio=null;
-    if(musicPlaying&&!globalMuted)startGeneratedMusic();
-  });
+  a.volume=Math.max(0,Math.min(1,masterVolume*0.42));
   return a;
 }
 function getBackgroundAudio(){
@@ -415,7 +406,7 @@ function getBackgroundAudio(){
 }
 function setBackgroundVolume(){
   const a=getBackgroundAudio();
-  if(a)a.volume=Math.max(0,Math.min(1,masterVolume*0.55));
+  if(a)a.volume=Math.max(0,Math.min(1,masterVolume*0.42));
 }
 function stopGeneratedMusic(){
   if(musicInterval){clearInterval(musicInterval);musicInterval=null;}
@@ -426,8 +417,8 @@ function startGeneratedMusic(){
   setupMusicInterval();
   tickLofiTrack();
 }
-function startMusic(forceRestart=false){
-  if(musicPlaying&&!forceRestart)return;
+function startMusic(){
+  if(musicPlaying)return;
   musicPlaying=true;
   stopGeneratedMusic();
   if(backgroundAudioAvailable){
@@ -435,16 +426,10 @@ function startMusic(forceRestart=false){
     if(a){
       setBackgroundVolume();
       a.play().catch(()=>{
-        const track=getBackgroundTrack();
-        const srcs=track?.srcs||[];
-        if(backgroundSourceTry<srcs.length-1){
-          backgroundSourceTry++;
-          backgroundAudio=null;
-          startMusic(true);
-        }else{
-          backgroundAudioAvailable=false;
-          if(musicPlaying&&!globalMuted)startGeneratedMusic();
-        }
+        // Si el MP3 falla o el navegador bloquea algo, no rompemos la página.
+        // Volvemos al sistema antiguo generado por código.
+        backgroundAudioAvailable=false;
+        if(musicPlaying&&!globalMuted)startGeneratedMusic();
       });
       return;
     }
@@ -454,18 +439,24 @@ function startMusic(forceRestart=false){
 function stopMusic(){
   musicPlaying=false;
   stopGeneratedMusic();
-  const a=getBackgroundAudio();
-  if(a&&!a.paused)a.pause();
+  try{
+    const a=backgroundAudio;
+    if(a&&!a.paused)a.pause();
+  }catch(e){}
 }
 function nextMusicTrack(){
   if(backgroundAudioAvailable){
-    const old=backgroundAudio;
-    if(old&&!old.paused)old.pause();
     backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
     backgroundSourceTry=0;
-    backgroundAudio=null;
-    const a=getBackgroundAudio();
-    if(a&&musicPlaying&&!globalMuted){setBackgroundVolume();a.play().catch(()=>{});}
+    const wasPlaying=musicPlaying&&!globalMuted;
+    resetBackgroundAudio();
+    if(wasPlaying){
+      const a=getBackgroundAudio();
+      if(a){
+        setBackgroundVolume();
+        a.play().catch(()=>{});
+      }
+    }
     return;
   }
   currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;
