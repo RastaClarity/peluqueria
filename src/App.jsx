@@ -83,6 +83,9 @@ function normalizeRole(value){
   if(["staff","empleado","trabajador","worker"].includes(role)) return ROLES.STAFF;
   return ROLES.CLIENT;
 }
+function isAdminUser(user){return normalizeRole(user?.rol||user?.role)===ROLES.ADMIN;}
+function isStaffUser(user){return normalizeRole(user?.rol||user?.role)===ROLES.STAFF;}
+function isInternalUser(user){const r=normalizeRole(user?.rol||user?.role);return r===ROLES.ADMIN||r===ROLES.STAFF;}
 function normalizeText(text=""){
   return String(text||"")
     .normalize("NFD")
@@ -2662,6 +2665,7 @@ function Inventario({showToast}){
 
 // CAJA
 function Caja({user,showToast}){
+  if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Zona interna" sub="Sólo admin y staff pueden usar facturación."/>;
   const [cobros,setCobros]=useState([]);
   const [citasRealizadas,setCitasRealizadas]=useState([]);
   const [showNew,setShowNew]=useState(false);
@@ -5838,7 +5842,8 @@ function Comunidad(props){
 
 
 
-function GestionTienda({showToast}){
+function GestionTienda({user,showToast}){
+  if(!isAdminUser(user)) return <EmptyState icon="🔒" title="Sólo admin" sub="La tienda editable sólo puede gestionarla el administrador."/>;
   const empty={id:null,item_key:"",nombre:"",descripcion:"",categoria:"premios",tipo:"canje",icono:"🎁",puntos_precio:"100",stock:"",activo:"true",rareza:"comun",slot:"",valor:""};
   const [items,setItems]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -6039,7 +6044,8 @@ function DisabledSection({icon="🔒",title="Sección desactivada",sub="Esta sec
   </div>;
 }
 
-function GestionAjustes({showToast}){
+function GestionAjustes({user,showToast}){
+  if(!isAdminUser(user)) return <EmptyState icon="🔒" title="Sólo admin" sub="Los ajustes globales sólo debería tocarlos el administrador."/>;
   const DEFAULTS={
     branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️"},
     puntos:{puntos_por_cita_cobrada:10,puntos_por_comentario:3,puntos_por_like:1,limite_diario_juegos:75,gacha_tiradas_dia:50},
@@ -6449,7 +6455,8 @@ function GestionMensajes({user,showToast,refreshUnread,unread}){
 }
 
 
-function GestionMusica({showToast}){
+function GestionMusica({user,showToast}){
+  if(!isAdminUser(user)) return <EmptyState icon="🔒" title="Sólo admin" sub="La música editable sólo puede gestionarla el administrador."/>;
   const empty={id:null,titulo:"",artista:"",genero:"reggae",descripcion:"",tipo:"externo",icono:"🎧",youtube_url:"",spotify_url:"",web_url:"",audio_url:"",storage_path:"",destacado:"false",activo:"true",orden:"0"};
   const [items,setItems]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -6846,6 +6853,7 @@ function GestionAgenda({showToast}){
 
 
 function GestionPedidos({user,showToast}){
+  if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Zona interna" sub="Sólo admin y staff pueden gestionar pedidos."/>;
   const [pedidos,setPedidos]=useState([]);
   const [loading,setLoading]=useState(true);
   const [filter,setFilter]=useState("pendiente");
@@ -7209,7 +7217,7 @@ function GestionSeguridad({user,showToast}){
   const [rows,setRows]=useState([]);
   const [loading,setLoading]=useState(true);
   const [filter,setFilter]=useState("todos");
-  const isAdmin=normalizeRole(user?.rol||user?.role)===ROLES.ADMIN;
+  const isAdmin=isAdminUser(user);
 
   useEffect(()=>{if(isAdmin)load(); else setLoading(false);},[isAdmin]);
 
@@ -7398,6 +7406,9 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px"}}>
         <div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div>
         <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{active.sub}</div>
+        <div style={{marginTop:8,fontSize:".72rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>
+          {isAdmin?"Permisos admin: acceso completo a gestión, ajustes, tienda, música, usuarios y seguridad.":"Permisos staff: citas, agenda, facturación, pedidos, clientes, mensajes, moderación y estadísticas. Sin ajustes, tienda editable, música editable ni roles."}
+        </div>
       </Card>
 
       {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast}/>} 
@@ -7409,12 +7420,12 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       {tab==="moderacion"&&<GestionModeracion user={user} showToast={showToast}/>}
       {tab==="clientes"&&<Clientes user={user} showToast={showToast}/>}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
-      {tab==="tienda"&&(isAdmin?<GestionTienda showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la tienda."/> )}
+      {tab==="tienda"&&(isAdmin?<GestionTienda user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la tienda."/> )}
       {tab==="pedidos"&&<GestionPedidos user={user} showToast={showToast}/>}
-      {tab==="musica_admin"&&(isAdmin?<GestionMusica showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la música."/> )}
+      {tab==="musica_admin"&&(isAdmin?<GestionMusica user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la música."/> )}
       {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no cambiar roles ni permisos."/> )}
       {tab==="seguridad"&&(isAdmin?<GestionSeguridad user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La auditoría de seguridad sólo debería verla el administrador."/> )}
-      {tab==="ajustes"&&(isAdmin?<GestionAjustes showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo deberían tocarlos administradores."/> )}
+      {tab==="ajustes"&&(isAdmin?<GestionAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo deberían tocarlos administradores."/> )}
     </div>
   );
 }
