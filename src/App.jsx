@@ -8647,5 +8647,3 @@ export default function App(){
     </div>
   );
 }
-
-// force deploy fase79
