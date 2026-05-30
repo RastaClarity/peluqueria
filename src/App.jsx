@@ -7651,6 +7651,216 @@ function GestionFacturacionPanel({user,showToast}){
   </div>;
 }
 
+
+function GestionTiendaPanel({user,showToast}){
+  const isAdmin=isAdminUser(user);
+  const [loading,setLoading]=useState(true);
+  const [data,setData]=useState({items:[],pedidos:[],stock:[],canjes:[],settings:{}});
+
+  async function safeList(table,query){
+    try{
+      const rows=await dbGet(table,query);
+      return Array.isArray(rows)?rows:[];
+    }catch(e){return [];}
+  }
+
+  async function load(){
+    setLoading(true);
+    const [items,pedidos,stock,canjes,settingsRows]=await Promise.all([
+      safeList("tienda_items","?order=created_at.desc&limit=500&select=*"),
+      safeList("tienda_pedidos","?order=created_at.desc&limit=500&select=*"),
+      safeList("inventario","?order=nombre.asc&limit=500&select=*"),
+      safeList("canjes","?order=created_at.desc&limit=500&select=*"),
+      safeList("app_settings","?setting_key=in.(tienda,secciones,puntos)&select=*")
+    ]);
+
+    const settings={};
+    settingsRows.forEach(r=>{settings[r.setting_key]=r.setting_value||{};});
+    setData({items,pedidos,stock,canjes,settings});
+    setLoading(false);
+  }
+
+  useEffect(()=>{load();},[]);
+
+  const itemsActivos=data.items.filter(i=>i.activo!==false).length;
+  const premiosActivos=data.items.filter(i=>i.activo!==false&&String(i.tipo||"canje")==="canje").length;
+  const pedidosPendientes=data.pedidos.filter(p=>["pendiente","preparando","listo"].includes(String(p.estado||"pendiente").toLowerCase()));
+  const pedidosListos=data.pedidos.filter(p=>String(p.estado||"").toLowerCase()==="listo");
+  const entregados=data.pedidos.filter(p=>String(p.estado||"").toLowerCase()==="entregado");
+  const stockBajo=data.stock.filter(i=>Number(i.stock||0)<=Number(i.stock_min||0));
+  const puntosCanjeados=data.pedidos.reduce((sum,p)=>sum+(Number(p.puntos_coste)||0),0)+data.canjes.reduce((sum,c)=>sum+(Number(c.puntos)||Number(c.puntos_coste)||0),0);
+  const tiendaActiva=data.settings?.secciones?.tienda_activa!==false;
+  const canjesActivos=data.settings?.tienda?.canjes_activos!==false;
+
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#3A2414 52%,#B99A45)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>🛍️</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Resumen de tienda</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Control rápido de premios, pedidos, canjes, stock bajo y actividad de la tienda de puntos.
+          </div>
+        </div>
+        <Btn small col="ghost" onClick={load}>Actualizar</Btn>
+      </div>
+    </Card>
+
+    {loading?<Spinner/>:<>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10}}>
+        <StatCard icon="🛍️" label="Tienda" value={tiendaActiva?"Activa":"Pausada"} col={tiendaActiva?"green":"red"}/>
+        <StatCard icon="🎁" label="Premios activos" value={premiosActivos} col="gold"/>
+        <StatCard icon="📋" label="Pedidos activos" value={pedidosPendientes.length} col="pink"/>
+        <StatCard icon="✅" label="Entregados" value={entregados.length} col="green"/>
+        <StatCard icon="📦" label="Stock bajo" value={stockBajo.length} col={stockBajo.length?"red":"green"}/>
+        <StatCard icon="⭐" label="Puntos canjeados" value={puntosCanjeados} col="gold"/>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🎁 Premios y canjes</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            Hay <b style={{color:T.g800}}>{itemsActivos}</b> objeto{itemsActivos===1?"":"s"} activo{itemsActivos===1?"":"s"} y <b style={{color:T.g800}}>{premiosActivos}</b> premio{premiosActivos===1?"":"s"} de canje. Canjes: <b style={{color:T.g800}}>{canjesActivos?"permitidos":"pausados"}</b>.
+          </div>
+        </Card>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📋 Pedidos</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            Pendientes/preparando/listos: <b style={{color:T.g800}}>{pedidosPendientes.length}</b>. Listos para entregar: <b style={{color:T.g800}}>{pedidosListos.length}</b>.
+          </div>
+        </Card>
+        <Card style={{background:stockBajo.length?"linear-gradient(180deg,#FFE7DE,#F0C3B3)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📦 Stock</div>
+          <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+            {stockBajo.length?`Hay ${stockBajo.length} producto${stockBajo.length===1?"":"s"} por debajo del mínimo.`:"No hay productos por debajo del mínimo."}
+          </div>
+          {stockBajo.slice(0,5).map(i=><div key={i.id} style={{marginTop:7,fontSize:".78rem",fontWeight:850,color:T.red}}>⚠️ {i.nombre}: {i.stock}/{i.stock_min}</div>)}
+        </Card>
+      </div>
+
+      <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🧭 Cómo usar esta zona</div>
+        <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
+          Usa <b>Premios</b> para crear o editar objetos canjeables. Usa <b>Stock</b> para inventario interno. Usa <b>Pedidos</b> para preparar entregas. Usa <b>Ajustes</b> para activar o pausar la tienda.
+        </div>
+      </Card>
+    </>}
+  </div>;
+}
+
+function GestionTiendaAjustes({user,showToast}){
+  const isAdmin=isAdminUser(user);
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [settings,setSettings]=useState({
+    secciones:{tienda_activa:true},
+    tienda:{canjes_activos:true,puntos_minimos_canje:0,mensaje_tienda:"Canjea tus puntos por recompensas de Rasta Cuts."}
+  });
+
+  async function safeList(table,query){
+    try{
+      const rows=await dbGet(table,query);
+      return Array.isArray(rows)?rows:[];
+    }catch(e){return [];}
+  }
+
+  async function load(){
+    setLoading(true);
+    const rows=await safeList("app_settings","?setting_key=in.(secciones,tienda)&select=*");
+    const next={
+      secciones:{tienda_activa:true},
+      tienda:{canjes_activos:true,puntos_minimos_canje:0,mensaje_tienda:"Canjea tus puntos por recompensas de Rasta Cuts."}
+    };
+    rows.forEach(r=>{
+      if(r.setting_key==="secciones") next.secciones={...next.secciones,...(r.setting_value||{})};
+      if(r.setting_key==="tienda") next.tienda={...next.tienda,...(r.setting_value||{})};
+    });
+    setSettings(next);
+    setLoading(false);
+  }
+
+  useEffect(()=>{load();},[]);
+
+  function setSection(field,value){
+    setSettings(prev=>({...prev,secciones:{...prev.secciones,[field]:value}}));
+  }
+  function setTienda(field,value){
+    setSettings(prev=>({...prev,tienda:{...prev.tienda,[field]:value}}));
+  }
+
+  async function saveSetting(key,value,categoria){
+    const payload={
+      setting_key:key,
+      setting_value:value,
+      descripcion:key==="tienda"?"Configuración de tienda y canjes":"Activación de secciones",
+      categoria,
+      editable:true,
+      updated_at:new Date().toISOString()
+    };
+    let ok=await dbPatch("app_settings",`?setting_key=eq.${key}`,payload);
+    if(!ok) ok=await dbPost("app_settings",payload);
+    return ok;
+  }
+
+  async function save(){
+    if(!isAdmin){showToast?.("Sólo admin puede guardar ajustes de tienda");SFX.error();return;}
+    setSaving(true);
+    const ok1=await saveSetting("secciones",settings.secciones,"secciones");
+    const ok2=await saveSetting("tienda",settings.tienda,"tienda");
+    setSaving(false);
+    if(ok1&&ok2){showToast?.("Ajustes de tienda guardados");SFX.success();await load();}
+    else{showToast?.("No se pudieron guardar los ajustes");SFX.error();}
+  }
+
+  function Toggle({label,sub,value,onChange}){
+    return <button onClick={()=>isAdmin&&onChange(!value)} style={{textAlign:"left",border:`2px solid ${value?T.gold:T.g300}`,background:value?"linear-gradient(180deg,#FFF4D6,#F4D58D)":"rgba(255,244,214,.78)",borderRadius:16,padding:"12px",cursor:isAdmin?"pointer":"not-allowed",opacity:isAdmin?1:.65}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center"}}>
+        <div>
+          <div style={{fontWeight:950,color:T.g800}}>{label}</div>
+          <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{sub}</div>
+        </div>
+        <Badge col={value?"green":"red"}>{value?"ON":"OFF"}</Badge>
+      </div>
+    </button>;
+  }
+
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#3A2414 52%,#B99A45)",border:"2px solid rgba(255,244,214,.48)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:"2.35rem"}}>⚙️</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Ajustes de tienda</div>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Activa, pausa o configura las reglas básicas de canjes.
+          </div>
+        </div>
+        <Badge col={isAdmin?"gold":"blue"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
+      </div>
+    </Card>
+
+    {loading?<Spinner/>:<>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🛍️ Activación</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:10}}>
+          <Toggle label="Tienda activa" sub="Muestra u oculta la tienda para clientes." value={settings.secciones.tienda_activa!==false} onChange={v=>setSection("tienda_activa",v)}/>
+          <Toggle label="Canjes activos" sub="Permite o bloquea nuevos canjes de puntos." value={settings.tienda.canjes_activos!==false} onChange={v=>setTienda("canjes_activos",v)}/>
+        </div>
+      </Card>
+
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>⭐ Reglas de canje</div>
+        <Input label="Puntos mínimos para canjear" type="number" value={String(settings.tienda.puntos_minimos_canje??0)} onChange={v=>setTienda("puntos_minimos_canje",Math.max(0,parseInt(v,10)||0))}/>
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>Mensaje visible de tienda</div>
+          <textarea value={settings.tienda.mensaje_tienda||""} onChange={e=>setTienda("mensaje_tienda",e.target.value)} style={{width:"100%",minHeight:90,padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}/>
+        </div>
+        <Btn col="gold" onClick={save} disabled={!isAdmin||saving}>{saving?"Guardando...":"Guardar ajustes de tienda"}</Btn>
+        {!isAdmin&&<div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:8}}>El staff puede revisar esta pantalla, pero sólo admin puede guardar ajustes.</div>}
+      </Card>
+    </>}
+  </div>;
+}
+
 function GestionJuegosAdmin({user,showToast}){
   const isAdmin=isAdminUser(user);
   const [active,setActive]=useState("resumen");
@@ -7929,9 +8139,11 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"caja",icon:"🧾",label:"Caja",sub:"Cobros, ventas y registros concretos del día",staff:true,group:"facturacion"},
     {id:"estadisticas",icon:"📊",label:"Estadísticas",sub:"Resumen gráfico de citas, ingresos, pedidos, puntos y comunidad",staff:true,group:"facturacion"},
 
-    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones, objetos y canjes editables",staff:false,group:"tienda"},
+    {id:"tienda_resumen",icon:"🛍️",label:"Resumen",sub:"Vista rápida de tienda, canjes, pedidos y stock bajo",staff:true,group:"tienda"},
+    {id:"tienda_items",icon:"🎁",label:"Premios",sub:"Premios, cupones, objetos y canjes editables",staff:false,group:"tienda"},
     {id:"stock",icon:"📦",label:"Stock",sub:"Inventario interno y productos de trabajo",staff:true,group:"tienda"},
-    {id:"pedidos",icon:"🎁",label:"Pedidos",sub:"Canjes y entregas de tienda",staff:true,group:"tienda"},
+    {id:"pedidos",icon:"📋",label:"Pedidos",sub:"Canjes y entregas de tienda",staff:true,group:"tienda"},
+    {id:"tienda_ajustes",icon:"⚙️",label:"Ajustes",sub:"Activación de tienda, canjes y reglas básicas",staff:false,group:"tienda"},
 
     {id:"juegos_admin",icon:"🎮",label:"Juegos",sub:"Zona de control para Arcade, rankings, retos y recompensas",staff:true,group:"juegos"},
 
@@ -7949,7 +8161,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const gestionGroups=[
     {id:"principal",icon:"🏠",label:"Principal",sub:"Resumen, agenda, citas y clientes. Lo básico para trabajar cada día."},
     {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y estadísticas. Todo lo económico en una zona clara."},
-    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Stock, premios, cupones, canjes y pedidos de tienda."},
+    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Resumen, premios, stock, pedidos y ajustes de tienda."},
     {id:"juegos",icon:"🎮",label:"Juegos",sub:"Arcade, rankings, retos y recompensas internas de juego."},
     {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Moderación, mensajes privados y música. Separado de la caja y la tienda."},
     {id:"admin",icon:"🔐",label:"Admin",sub:"Usuarios, seguridad, auditoría y ajustes internos."}
@@ -8037,9 +8249,11 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       {tab==="caja"&&<Caja user={user} showToast={showToast}/>}
       {tab==="estadisticas"&&<GestionEstadisticas showToast={showToast}/>}
 
-      {tab==="tienda"&&(isAdmin?<GestionTienda user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede gestionar stock y pedidos, pero no editar premios ni cupones de tienda."/> )}
+      {tab==="tienda_resumen"&&<GestionTiendaPanel user={user} showToast={showToast}/>}
+      {tab==="tienda_items"&&(isAdmin?<GestionTienda user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede gestionar stock y pedidos, pero no editar premios ni cupones de tienda."/> )}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
       {tab==="pedidos"&&<GestionPedidos user={user} showToast={showToast}/>}
+      {tab==="tienda_ajustes"&&(isAdmin?<GestionTiendaAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="Los ajustes de tienda y canjes sólo debería tocarlos el administrador."/> )}
 
       {tab==="juegos_admin"&&<GestionJuegosAdmin user={user} showToast={showToast}/>}
 
