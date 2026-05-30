@@ -5039,36 +5039,108 @@ function dailyMusicSelection(filter="todo",seed=0){
   return filter==="todo"?ordered.slice(0,8):ordered;
 }
 
+function normalizeMusicItem(item){
+  if(!item)return null;
+  if(item.artist||item.genre||item.desc){
+    return {
+      id:item.id,
+      titulo:item.artist||item.title||"Música",
+      artista:item.artist||item.artista||"",
+      genero:item.genre||item.genero||"reggae",
+      descripcion:item.desc||item.descripcion||"",
+      icono:item.emoji||item.icono||"🎧",
+      youtube_url:item.links?.find(l=>String(l.label).toLowerCase().includes("youtube"))?.url||item.youtube_url||"",
+      spotify_url:item.spotify_url||"",
+      web_url:item.links?.find(l=>!String(l.label).toLowerCase().includes("youtube"))?.url||item.web_url||"",
+      audio_url:item.audio_url||"",
+      tipo:item.tipo||"externo",
+      destacado:Boolean(item.destacado),
+      activo:item.activo!==false,
+      mood:item.mood||"selección recomendada"
+    };
+  }
+  return {
+    id:item.id,
+    titulo:item.titulo||item.nombre||"Música",
+    artista:item.artista||"",
+    genero:item.genero||"reggae",
+    descripcion:item.descripcion||"",
+    icono:item.icono||"🎧",
+    youtube_url:item.youtube_url||"",
+    spotify_url:item.spotify_url||"",
+    web_url:item.web_url||"",
+    audio_url:item.audio_url||"",
+    tipo:item.tipo||"externo",
+    destacado:Boolean(item.destacado),
+    activo:item.activo!==false,
+    mood:item.destacado?"destacado":"selección recomendada"
+  };
+}
+
 function MusicaComunidad({showToast}){
   const [filter,setFilter]=useState("todo");
   const [musicSeed,setMusicSeed]=useState(0);
+  const [items,setItems]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [playing,setPlaying]=useState(null);
+
   const filters=[
     {id:"todo",label:"Todo",icon:"✨"},
     {id:"reggae",label:"Reggae",icon:"🟢"},
     {id:"rap",label:"Rap",icon:"🎤"},
     {id:"ska",label:"Ska",icon:"🎺"},
-    {id:"rock",label:"Rock",icon:"🎸"}
+    {id:"rock",label:"Rock",icon:"🎸"},
+    {id:"propia",label:"Propia",icon:"💿"}
   ];
+
+  useEffect(()=>{loadMusic();},[]);
+
+  async function loadMusic(){
+    setLoading(true);
+    let data=await dbGet("musica_items","?activo=eq.true&order=destacado.desc,orden.asc,created_at.desc&select=*");
+    if(!Array.isArray(data)||!data.length){
+      data=MUSIC_LIBRARY.map(normalizeMusicItem).filter(Boolean);
+    }else{
+      data=data.map(normalizeMusicItem).filter(Boolean);
+    }
+    setItems(data);
+    setLoading(false);
+  }
+
   function matches(item){
-    const g=normalizeText(`${item?.genre||""} ${item?.artist||""} ${item?.desc||""}`);
+    const g=normalizeText(`${item?.genero||""} ${item?.artista||""} ${item?.titulo||""} ${item?.descripcion||""} ${item?.tipo||""}`);
     if(filter==="todo")return true;
+    if(filter==="propia")return g.includes("propio")||g.includes("archivo")||String(item.tipo)==="archivo"||Boolean(item.audio_url);
     if(filter==="reggae")return g.includes("reggae")||g.includes("dancehall");
     if(filter==="rap")return g.includes("rap");
     if(filter==="ska")return g.includes("ska");
     if(filter==="rock")return g.includes("rock")||g.includes("grunge");
     return true;
   }
-  const list=dailyMusicSelection(filter,musicSeed).filter(matches);
+
+  const list=dailyOrderedList(items,`music_db_${filter}`,musicSeed)
+    .filter(matches)
+    .slice(0,filter==="todo"?10:40);
+
   function reloadMusic(){
     SFX.action();
     setMusicSeed(v=>v+1);
     showToast?.("Cambiando selección musical...");
   }
-  function openLink(link){
+
+  function openUrl(label,url){
+    if(!url){showToast?.("Este enlace todavía no está configurado");return;}
     SFX.action();
-    showToast?.(`Abriendo ${link.label}`);
-    window.open(link.url,"_blank","noopener,noreferrer");
+    showToast?.(`Abriendo ${label}`);
+    window.open(url,"_blank","noopener,noreferrer");
   }
+
+  function toggleAudio(item){
+    if(!item.audio_url){showToast?.("Este item no tiene audio subido");return;}
+    SFX.action();
+    setPlaying(p=>p===item.id?null:item.id);
+  }
+
   return <div style={{animation:"fadeSlide .32s ease"}}>
     <Card style={{marginBottom:14,padding:0,overflow:"hidden",background:"linear-gradient(160deg,#120806,#24110A 48%,#4E3A76)",border:"2px solid rgba(255,244,214,.5)",color:T.white}}>
       <div style={{padding:"18px 16px",position:"relative"}}>
@@ -5076,11 +5148,11 @@ function MusicaComunidad({showToast}){
         <div style={{position:"relative",zIndex:1}}>
           <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,244,214,.72)"}}>Biblioteca Rasta Cuts</div>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1,color:"#FFD66B",textShadow:"0 4px 12px rgba(0,0,0,.35)"}}>Música buena</div>
-          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35,marginTop:4}}>Selección diaria de reggae, rap clásico, ska y rock. Cada día cambia el orden y puedes refrescar propuestas.</div>
+          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35,marginTop:4}}>Selección editable desde admin: enlaces oficiales y archivos propios/libres subidos con permiso.</div>
           <button onClick={reloadMusic} style={{marginTop:11,border:"1px solid rgba(255,244,214,.35)",background:"rgba(255,244,214,.12)",color:T.white,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>🔄 Cambiar selección</button>
         </div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,padding:"0 12px 14px"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,padding:"0 12px 14px"}}>
         {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);setMusicSeed(0);}} style={{border:`1.5px solid ${filter===f.id?T.gold:"rgba(255,244,214,.25)"}`,borderRadius:14,padding:"8px 4px",background:filter===f.id?"rgba(255,214,107,.22)":"rgba(255,244,214,.08)",color:T.white,fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
           <div style={{fontSize:"1.1rem",lineHeight:1}}>{f.icon}</div>
           <div style={{marginTop:3}}>{f.label}</div>
@@ -5088,35 +5160,48 @@ function MusicaComunidad({showToast}){
       </div>
     </Card>
 
-    <div style={{display:"grid",gap:12}}>
-      {list.map(item=><Card key={item.id} style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}} hover>
-        <div style={{display:"grid",gridTemplateColumns:"88px 1fr",gap:0}}>
-          <div style={{minHeight:142,background:"radial-gradient(circle at 40% 25%,rgba(255,255,255,.28),transparent 32%),linear-gradient(160deg,#24110A,#4E3A76 60%,#D4AF37)",display:"grid",placeItems:"center",position:"relative"}}>
-            <div className="icon3d" style={{fontSize:"2.9rem"}}>{item.emoji}</div>
-            <div style={{position:"absolute",bottom:8,left:8,right:8,textAlign:"center",fontSize:".62rem",fontWeight:950,color:"rgba(255,244,214,.8)"}}>{item.genre}</div>
-          </div>
-          <div style={{padding:"13px 13px 12px",minWidth:0}}>
-            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8}}>
-              <div>
-                <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.32rem",lineHeight:1,color:T.g800}}>{item.artist}</div>
-                <div style={{fontSize:".72rem",fontWeight:950,color:"#4E3A76",textTransform:"uppercase",letterSpacing:".05em",marginTop:2}}>{item.mood}</div>
+    {loading?<Spinner/>:list.length===0?<EmptyState icon="🎧" title="Sin música en esta categoría" sub="Añade artistas o archivos desde Gestión > Música."/>:
+      <div style={{display:"grid",gap:12}}>
+        {list.map(item=><Card key={item.id} style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${item.destacado?T.gold:T.g300}`}} hover>
+          <div style={{display:"grid",gridTemplateColumns:"88px 1fr",gap:0}}>
+            <div style={{minHeight:150,background:"radial-gradient(circle at 40% 25%,rgba(255,255,255,.28),transparent 32%),linear-gradient(160deg,#24110A,#4E3A76 60%,#D4AF37)",display:"grid",placeItems:"center",position:"relative"}}>
+              <div className="icon3d" style={{fontSize:"2.9rem"}}>{item.icono||"🎧"}</div>
+              <div style={{position:"absolute",bottom:8,left:8,right:8,textAlign:"center",fontSize:".62rem",fontWeight:950,color:"rgba(255,244,214,.8)"}}>{item.genero}</div>
+            </div>
+            <div style={{padding:"13px 13px 12px",minWidth:0}}>
+              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8}}>
+                <div>
+                  <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.32rem",lineHeight:1,color:T.g800}}>{item.titulo}</div>
+                  <div style={{fontSize:".72rem",fontWeight:950,color:"#4E3A76",textTransform:"uppercase",letterSpacing:".05em",marginTop:2}}>{item.artista||item.mood||"selección"}</div>
+                </div>
+                <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"flex-end"}}>
+                  {item.destacado&&<Badge col="gold">Destacado</Badge>}
+                  <Badge col={item.tipo==="archivo"?"green":"blue"}>{item.tipo==="archivo"?"Audio":"Enlace"}</Badge>
+                </div>
               </div>
-              <Badge col="gold">{String(item.genre||"Música").split("/")[0].trim()}</Badge>
-            </div>
-            <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:8}}>{item.desc}</div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:11}}>
-              {(item.links||[]).map(link=><button key={link.label} onClick={()=>openLink(link)} style={{border:"none",borderRadius:999,padding:"8px 11px",background:link.label==="YouTube"?"linear-gradient(180deg,#A72822,#6E1B14)":"linear-gradient(180deg,#24110A,#6E3518)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 14px rgba(20,8,4,.18)"}}>
-                {link.label==="YouTube"?"▶️ ":"🔎 "}{link.label}
-              </button>)}
+              <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:8}}>{item.descripcion||"Música recomendada por Rasta Cuts."}</div>
+
+              {playing===item.id&&item.audio_url&&<div style={{marginTop:10}}>
+                <audio controls autoPlay src={item.audio_url} style={{width:"100%"}} onEnded={()=>setPlaying(null)}/>
+              </div>}
+
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:11}}>
+                {item.audio_url&&<button onClick={()=>toggleAudio(item)} style={{border:"none",borderRadius:999,padding:"8px 11px",background:"linear-gradient(180deg,#2F6B42,#1F4A30)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 14px rgba(20,8,4,.18)"}}>
+                  {playing===item.id?"⏸️ Ocultar":"▶️ Reproducir"}
+                </button>}
+                {item.youtube_url&&<button onClick={()=>openUrl("YouTube",item.youtube_url)} style={{border:"none",borderRadius:999,padding:"8px 11px",background:"linear-gradient(180deg,#A72822,#6E1B14)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 14px rgba(20,8,4,.18)"}}>▶️ YouTube</button>}
+                {item.spotify_url&&<button onClick={()=>openUrl("Spotify",item.spotify_url)} style={{border:"none",borderRadius:999,padding:"8px 11px",background:"linear-gradient(180deg,#2F6B42,#1D422A)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 14px rgba(20,8,4,.18)"}}>🎵 Spotify</button>}
+                {item.web_url&&<button onClick={()=>openUrl("Web",item.web_url)} style={{border:"none",borderRadius:999,padding:"8px 11px",background:"linear-gradient(180deg,#24110A,#6E3518)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:"0 8px 14px rgba(20,8,4,.18)"}}>🔎 Web</button>}
+              </div>
             </div>
           </div>
-        </div>
-      </Card>)}
-    </div>
+        </Card>)}
+      </div>
+    }
 
     <Card style={{marginTop:14,background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`}}>
-      <div style={{fontWeight:950,color:T.g800}}>📌 Idea para más adelante</div>
-      <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Podemos convertir esta sección en editable desde admin para añadir artistas, canciones concretas, playlists y novedades sin tocar código.</div>
+      <div style={{fontWeight:950,color:T.g800}}>📌 Nota legal sencilla</div>
+      <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Usa enlaces para música comercial. Sube archivos sólo si son tuyos, libres o tienes permiso para publicarlos.</div>
     </Card>
   </div>;
 }
@@ -5771,6 +5856,216 @@ function GestionMensajes({user,showToast,refreshUnread,unread}){
   </div>;
 }
 
+
+function GestionMusica({showToast}){
+  const empty={id:null,titulo:"",artista:"",genero:"reggae",descripcion:"",tipo:"externo",icono:"🎧",youtube_url:"",spotify_url:"",web_url:"",audio_url:"",storage_path:"",destacado:"false",activo:"true",orden:"0"};
+  const [items,setItems]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [showEdit,setShowEdit]=useState(false);
+  const [form,setForm]=useState(empty);
+  const [filter,setFilter]=useState("todo");
+  const [uploading,setUploading]=useState(false);
+
+  useEffect(()=>{load();},[]);
+
+  async function load(){
+    setLoading(true);
+    const data=await dbGet("musica_items","?order=destacado.desc,orden.asc,created_at.desc&select=*");
+    setItems(Array.isArray(data)?data:[]);
+    setLoading(false);
+  }
+
+  function openNew(){
+    setForm({...empty});
+    setShowEdit(true);
+  }
+
+  function openEdit(item){
+    setForm({
+      id:item.id,
+      titulo:item.titulo||"",
+      artista:item.artista||"",
+      genero:item.genero||"reggae",
+      descripcion:item.descripcion||"",
+      tipo:item.tipo||"externo",
+      icono:item.icono||"🎧",
+      youtube_url:item.youtube_url||"",
+      spotify_url:item.spotify_url||"",
+      web_url:item.web_url||"",
+      audio_url:item.audio_url||"",
+      storage_path:item.storage_path||"",
+      destacado:String(Boolean(item.destacado)),
+      activo:String(item.activo!==false),
+      orden:String(item.orden??0)
+    });
+    setShowEdit(true);
+  }
+
+  async function uploadAudio(file){
+    if(!file)return;
+    if(!supabase){showToast?.("Supabase no está conectado");return;}
+    if(!file.type.startsWith("audio/")){showToast?.("Sube un archivo de audio");return;}
+    setUploading(true);
+    try{
+      const safeName=file.name.replace(/[^a-zA-Z0-9._-]+/g,"_");
+      const path=`audios/${Date.now()}_${safeName}`;
+      const {error}=await supabase.storage.from("musica").upload(path,file,{cacheControl:"3600",upsert:false});
+      if(error) throw error;
+      const {data}=supabase.storage.from("musica").getPublicUrl(path);
+      setForm(f=>({...f,tipo:"archivo",audio_url:data?.publicUrl||"",storage_path:path}));
+      showToast?.("Audio subido");
+      SFX.success();
+    }catch(e){
+      console.warn("upload audio",e);
+      showToast?.("No se pudo subir el audio. Revisa el bucket público 'musica'.");
+      SFX.error();
+    }
+    setUploading(false);
+  }
+
+  async function saveItem(){
+    if(!form.titulo.trim()){showToast?.("Pon un título");return;}
+    const payload={
+      titulo:form.titulo.trim(),
+      artista:form.artista.trim()||null,
+      genero:form.genero||"reggae",
+      descripcion:form.descripcion.trim()||null,
+      tipo:form.audio_url?form.tipo:"externo",
+      icono:form.icono||"🎧",
+      youtube_url:form.youtube_url.trim()||null,
+      spotify_url:form.spotify_url.trim()||null,
+      web_url:form.web_url.trim()||null,
+      audio_url:form.audio_url.trim()||null,
+      storage_path:form.storage_path.trim()||null,
+      destacado:form.destacado==="true",
+      activo:form.activo==="true",
+      orden:parseInt(form.orden||"0",10)||0,
+      updated_at:new Date().toISOString()
+    };
+    const ok=form.id
+      ? await dbPatch("musica_items",`?id=eq.${form.id}`,payload)
+      : await dbPost("musica_items",payload);
+    if(ok){
+      showToast?.(form.id?"Música actualizada":"Música añadida");
+      SFX.success();
+      setShowEdit(false);
+      await load();
+    }else{
+      showToast?.("No se pudo guardar la música");
+      SFX.error();
+    }
+  }
+
+  async function toggleActive(item){
+    const ok=await dbPatch("musica_items",`?id=eq.${item.id}`,{activo:!item.activo,updated_at:new Date().toISOString()});
+    if(ok){showToast?.(!item.activo?"Música activada":"Música desactivada");await load();}
+    else{showToast?.("No se pudo cambiar el estado");SFX.error();}
+  }
+
+  async function toggleFeatured(item){
+    const ok=await dbPatch("musica_items",`?id=eq.${item.id}`,{destacado:!item.destacado,updated_at:new Date().toISOString()});
+    if(ok){showToast?.(!item.destacado?"Marcado como destacado":"Quitado de destacados");await load();}
+    else{showToast?.("No se pudo cambiar destacado");SFX.error();}
+  }
+
+  const cats=[
+    {id:"todo",label:"Todo"},
+    {id:"reggae",label:"Reggae"},
+    {id:"rap",label:"Rap"},
+    {id:"ska",label:"Ska"},
+    {id:"rock",label:"Rock"},
+    {id:"archivo",label:"Archivos"}
+  ];
+  const visibles=filter==="todo"?items:items.filter(i=>{
+    if(filter==="archivo")return String(i.tipo)==="archivo"||Boolean(i.audio_url);
+    return normalizeText(i.genero||"").includes(filter);
+  });
+
+  return(
+    <div style={{animation:"fadeSlide .34s ease"}}>
+      <SectionHeader icon="🎧" title="Música editable" sub={`${items.length} items configurados`} action={<Btn small col="gold" onClick={openNew}>+ Música</Btn>}/>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#4E3A76 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2rem"}}>🎧</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Administra música sin tocar código</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Añade enlaces oficiales o sube audios propios/libres al bucket público musica.</div>
+          </div>
+        </div>
+      </Card>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`}}>
+        <div style={{fontWeight:950,color:T.g800}}>⚠️ Regla importante</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>No subas MP3 comerciales descargados. Para artistas conocidos usa enlaces externos; para archivos, sólo música tuya, libre o con permiso.</div>
+      </Card>
+
+      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
+        {cats.map(c=><button key={c.id} onClick={()=>{SFX.tab();setFilter(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===c.id?T.gold:T.g300}`,background:filter===c.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>{c.label}</button>)}
+      </div>
+
+      {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🎧" title="Sin música" sub="Añade el primer artista, canción, playlist o audio propio."/>:
+        visibles.map(item=><Card key={item.id} style={{marginBottom:10,background:item.activo?"linear-gradient(180deg,#FFF4D6,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",opacity:item.activo?1:.72,border:item.destacado?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+          <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+            <div className="icon3d" style={{fontSize:"2rem"}}>{item.icono||"🎧"}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                <b style={{color:T.g800}}>{item.titulo}</b>
+                <Badge col={item.activo?"green":"red"}>{item.activo?"activo":"oculto"}</Badge>
+                {item.destacado&&<Badge col="gold">destacado</Badge>}
+              </div>
+              <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:3}}>{item.artista||"Sin artista"} · {item.genero} · {item.tipo}</div>
+              <div style={{fontSize:".76rem",fontWeight:750,color:T.textSub,lineHeight:1.35,marginTop:4,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.descripcion||item.youtube_url||item.audio_url||"Sin descripción"}</div>
+            </div>
+          </div>
+          {item.audio_url&&<audio controls src={item.audio_url} style={{width:"100%",marginTop:10}}/>}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:12}}>
+            <Btn small col="dark" onClick={()=>openEdit(item)}>Editar</Btn>
+            <Btn small col={item.destacado?"ghost":"gold"} onClick={()=>toggleFeatured(item)}>{item.destacado?"Normal":"Destacar"}</Btn>
+            <Btn small col={item.activo?"red":"green"} onClick={()=>toggleActive(item)}>{item.activo?"Ocultar":"Activar"}</Btn>
+          </div>
+        </Card>)
+      }
+
+      <Modal show={showEdit} onClose={()=>setShowEdit(false)} title={form.id?"Editar música":"Nueva música"}>
+        <Input label="Título" value={form.titulo} onChange={v=>setForm(f=>({...f,titulo:v}))} placeholder="Ej: Morodo - búsqueda oficial"/>
+        <Input label="Artista" value={form.artista} onChange={v=>setForm(f=>({...f,artista:v}))} placeholder="Morodo, Kase.O, base propia..."/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Input label="Icono" value={form.icono} onChange={v=>setForm(f=>({...f,icono:v}))}/>
+          <Input label="Orden" value={form.orden} onChange={v=>setForm(f=>({...f,orden:v}))} type="number"/>
+        </div>
+        <Select label="Género" value={form.genero} onChange={v=>setForm(f=>({...f,genero:v}))} options={[
+          {value:"reggae",label:"Reggae"},
+          {value:"rap",label:"Rap"},
+          {value:"ska",label:"Ska"},
+          {value:"rock",label:"Rock"},
+          {value:"lofi",label:"Lofi"},
+          {value:"otro",label:"Otro"}
+        ]}/>
+        <Select label="Tipo" value={form.tipo} onChange={v=>setForm(f=>({...f,tipo:v}))} options={[
+          {value:"externo",label:"Enlace externo"},
+          {value:"archivo",label:"Archivo propio/libre"}
+        ]}/>
+        <Input label="Descripción" value={form.descripcion} onChange={v=>setForm(f=>({...f,descripcion:v}))}/>
+        <Input label="YouTube URL" value={form.youtube_url} onChange={v=>setForm(f=>({...f,youtube_url:v}))} placeholder="https://www.youtube.com/..."/>
+        <Input label="Spotify URL" value={form.spotify_url} onChange={v=>setForm(f=>({...f,spotify_url:v}))} placeholder="https://open.spotify.com/..."/>
+        <Input label="Web / playlist / búsqueda" value={form.web_url} onChange={v=>setForm(f=>({...f,web_url:v}))}/>
+        <Input label="Audio URL" value={form.audio_url} onChange={v=>setForm(f=>({...f,audio_url:v,tipo:v?"archivo":f.tipo}))} placeholder="Se rellena al subir audio o puedes pegar URL"/>
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:".78rem",fontWeight:950,color:T.g700,marginBottom:6}}>Subir audio propio/libre</div>
+          <input type="file" accept="audio/*" onChange={e=>uploadAudio(e.target.files?.[0])} style={{width:"100%",fontWeight:800,color:T.text}}/>
+          {uploading&&<div style={{fontSize:".78rem",fontWeight:900,color:T.g700,marginTop:6}}>Subiendo audio...</div>}
+          {form.storage_path&&<div style={{fontSize:".72rem",fontWeight:800,color:T.textSub,marginTop:6}}>Storage: {form.storage_path}</div>}
+        </div>
+        <Select label="Destacado" value={form.destacado} onChange={v=>setForm(f=>({...f,destacado:v}))} options={[{value:"true",label:"Destacado"},{value:"false",label:"Normal"}]}/>
+        <Select label="Estado" value={form.activo} onChange={v=>setForm(f=>({...f,activo:v}))} options={[{value:"true",label:"Activo"},{value:"false",label:"Oculto"}]}/>
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
+          <Btn full col="gold" onClick={saveItem} disabled={uploading}>{uploading?"Subiendo...":"Guardar música"}</Btn>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -5785,6 +6080,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"clientes",icon:"👥",label:"Clientes",sub:"Fichas e historial de clientes",staff:true},
     {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true},
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones y objetos editables",staff:false},
+    {id:"musica_admin",icon:"🎧",label:"Música",sub:"Artistas, enlaces y audios propios",staff:false},
     {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Roles y permisos",staff:false},
     {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna",staff:false},
   ].filter(t=>isAdmin||t.staff);
@@ -5845,6 +6141,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       {tab==="clientes"&&<Clientes showToast={showToast}/>}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
       {tab==="tienda"&&(isAdmin?<GestionTienda showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la tienda."/> )}
+      {tab==="musica_admin"&&(isAdmin?<GestionMusica showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la música."/> )}
       {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no cambiar roles ni permisos."/> )}
       {tab==="ajustes"&&(isAdmin?<GestionAjustes showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo deberían tocarlos administradores."/> )}
     </div>
