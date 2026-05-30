@@ -4014,7 +4014,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
     {id:"total",icon:"💎",title:"General",sub:"Puntos totales actuales",unit:"pts"},
     {id:"games",icon:"🎮",title:"Juegos",sub:"Puntos/récords acumulados en Arcade",unit:"pts"},
     {id:"shop",icon:"🛍️",title:"Tienda",sub:"Puntos canjeados por cupones, avatar, juegos y premios",unit:"pts"},
-    {id:"community",icon:"🌐",title:"Comunidad",sub:"Comentarios, likes y participación",unit:"pts"},
+    {id:"community",icon:"🌐",title:"Comunidad",sub:"Temas, respuestas, votos y participación real",unit:"pts"},
   ];
   const generalMeta=GENERAL_KINDS.find(x=>x.id===generalKind)||GENERAL_KINDS[0];
 
@@ -4050,21 +4050,56 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
         (canjes||[]).forEach(r=>{const id=String(r.usuario_id||""); if(id) values[id]=(values[id]||0)+Number(r.puntos_gastados||0);});
       }
       if(kind==="community"){
-        let found=false;
-        const events=await safeList("news_point_events","?select=usuario_id,puntos&limit=3000");
-        if(events.length){found=true;(events||[]).forEach(r=>{const id=String(r.usuario_id||""); if(id) values[id]=(values[id]||0)+Number(r.puntos||0);});}
-        if(!found){
-          const [comments,likes,topics,replies]=await Promise.all([
-            safeList("news_comments","?select=usuario_id&limit=3000"),
-            safeList("news_likes","?select=usuario_id&limit=3000"),
-            safeList("publicaciones","?select=autor_id,likes_count,tipo&limit=3000"),
-            safeList("foro_respuestas","?select=autor_id&limit=3000"),
-          ]);
-          (comments||[]).forEach(r=>{const id=String(r.usuario_id||""); if(id) values[id]=(values[id]||0)+3;});
-          (likes||[]).forEach(r=>{const id=String(r.usuario_id||""); if(id) values[id]=(values[id]||0)+1;});
-          (topics||[]).forEach(r=>{const id=String(r.autor_id||""); if(id) values[id]=(values[id]||0)+5+Number(r.likes_count||0);});
-          (replies||[]).forEach(r=>{const id=String(r.autor_id||""); if(id) values[id]=(values[id]||0)+2;});
-        }
+        const [newsEvents,newsComments,newsLikes,foroTemas,foroRespuestas,foroVotos,oldTopics,oldReplies]=await Promise.all([
+          safeList("news_point_events","?select=usuario_id,puntos&limit=5000"),
+          safeList("news_comments","?select=usuario_id&limit=5000"),
+          safeList("news_likes","?select=usuario_id&limit=5000"),
+          safeList("foro_temas","?select=usuario_id,likes,respuestas_count,fijado&limit=5000"),
+          safeList("foro_respuestas","?select=usuario_id,likes&limit=5000"),
+          safeList("foro_votos","?select=usuario_id,target_tipo&limit=5000"),
+          safeList("publicaciones","?select=autor_id,likes_count,tipo&limit=3000"),
+          safeList("foro_respuestas","?select=autor_id&limit=3000"),
+        ]);
+
+        // Actualidad: ya viene controlado por eventos únicos cuando existe.
+        (newsEvents||[]).forEach(r=>{
+          const id=String(r.usuario_id||"");
+          if(id) values[id]=(values[id]||0)+Number(r.puntos||0);
+        });
+        // Respaldo/extra para actividad de noticias si existen tablas de comentarios/likes.
+        (newsComments||[]).forEach(r=>{
+          const id=String(r.usuario_id||"");
+          if(id) values[id]=(values[id]||0)+3;
+        });
+        (newsLikes||[]).forEach(r=>{
+          const id=String(r.usuario_id||"");
+          if(id) values[id]=(values[id]||0)+1;
+        });
+
+        // Foro real: crear temas pesa más que responder; likes recibidos también suman.
+        (foroTemas||[]).forEach(r=>{
+          const id=String(r.usuario_id||"");
+          if(id) values[id]=(values[id]||0)+8+Number(r.likes||0)+Math.min(10,Number(r.respuestas_count||0));
+        });
+        (foroRespuestas||[]).forEach(r=>{
+          const id=String(r.usuario_id||"");
+          if(id) values[id]=(values[id]||0)+3+Number(r.likes||0);
+        });
+        // Votar también cuenta, pero poco, para premiar participación sin inflar demasiado.
+        (foroVotos||[]).forEach(r=>{
+          const id=String(r.usuario_id||"");
+          if(id) values[id]=(values[id]||0)+1;
+        });
+
+        // Compatibilidad con datos antiguos del foro si aún quedaban en publicaciones.
+        (oldTopics||[]).filter(r=>String(r.tipo||"")==="foro").forEach(r=>{
+          const id=String(r.autor_id||"");
+          if(id) values[id]=(values[id]||0)+5+Number(r.likes_count||0);
+        });
+        (oldReplies||[]).forEach(r=>{
+          const id=String(r.autor_id||"");
+          if(id) values[id]=(values[id]||0)+2;
+        });
       }
 
       const list=users.map(u=>{
