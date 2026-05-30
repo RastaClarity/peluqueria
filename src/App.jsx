@@ -56,7 +56,7 @@ async function createNotification(payload={}){
   }catch(e){console.warn("No se pudo crear notificación",e);return null;}
 }
 function notificationIcon(tipo="general"){
-  const map={cita:"📅",cita_nueva:"📅",cita_cancelada:"❌",cita_propuesta:"🔁",cita_propuesta_aceptada:"✅",cita_propuesta_rechazada:"⚠️",mensaje:"📩",canje:"🎁",cobro:"💰",general:"🔔"};
+  const map={cita:"📅",cita_nueva:"📅",cita_cancelada:"❌",cita_propuesta:"🔁",cita_propuesta_aceptada:"✅",cita_propuesta_rechazada:"⚠️",mensaje:"📩",canje:"🎁",pedido:"🛍️",cobro:"💰",general:"🔔"};
   return map[tipo]||"🔔";
 }
 
@@ -3241,6 +3241,7 @@ function Foro({user,showToast}){
 // TIENDA
 function Tienda({user,setUser,showToast,showPoints,settings}){
   const [productos,setProductos]=useState([]);
+  const [pedidos,setPedidos]=useState([]);
   const [loading,setLoading]=useState(true);
   const [cat,setCat]=useState("todo");
   const tiendaActiva=settings?.secciones?.tienda_activa!==false;
@@ -3253,7 +3254,9 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
     if(!Array.isArray(data)||!data.length){
       data=await dbGet("premios","?activo=eq.true&order=puntos_precio.asc&select=*");
     }
+    const pedidosRows=await dbGet("tienda_pedidos",`?usuario_id=eq.${user.id}&order=created_at.desc&limit=8&select=*`);
     setProductos(Array.isArray(data)?data:[]);
+    setPedidos(Array.isArray(pedidosRows)?pedidosRows:[]);
     setLoading(false);
   }
 
@@ -3264,7 +3267,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
     if(stockLimitado && Number(p.stock)<=0){showToast("Este premio está agotado");SFX.error();return;}
     const nuevos=Math.max(0,(user.puntos||0)-precio);
     const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    await dbPost("canjes",{
+    const canjeRows=await dbPost("canjes",{
       usuario_id:user.id,
       premio_id:p.id,
       premio_nombre:p.nombre,
@@ -3273,17 +3276,33 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
       categoria:p.categoria||"premios",
       tipo:p.tipo||"canje"
     });
+    const pedidoRows=await dbPost("tienda_pedidos",{
+      usuario_id:String(user.id),
+      cliente_nombre:user.nombre||user.email||"Cliente",
+      cliente_email:user.email||null,
+      item_id:String(p.id),
+      item_nombre:p.nombre,
+      item_categoria:p.categoria||"premios",
+      item_tipo:p.tipo||"canje",
+      puntos_coste:precio,
+      precio_euros:0,
+      estado:"pendiente",
+      notas_cliente:null,
+      updated_at:new Date().toISOString()
+    });
+    const pedidoId=Array.isArray(pedidoRows)?pedidoRows?.[0]?.id:null;
     if(stockLimitado){
       await dbPatch("tienda_items",`?id=eq.${p.id}`,{stock:Math.max(0,Number(p.stock)-1)});
     }
     if(okUser){
       setUser(u=>({...u,puntos:nuevos}));
       SFX.coins();
-      await createNotification({rol_destino:"admin",tipo:"canje",titulo:"Nuevo canje de tienda",mensaje:`${user.nombre||user.email||"Cliente"} canjeó ${p.nombre} por ${precio} puntos.`,entidad_tipo:"canje",entidad_id:p.id,importante:true});
-      showToast(`${p.nombre} canjeado`);
+      await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Nuevo pedido de tienda",mensaje:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:true});
+      await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"pedido",titulo:"Pedido creado",mensaje:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:false});
+      showToast(`${p.nombre} pedido correctamente`);
       await load();
     }else{
-      showToast("Canje guardado, pero revisa los puntos del usuario");
+      showToast("Pedido guardado, pero revisa los puntos del usuario");
     }
   }
 
@@ -3305,6 +3324,17 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
           <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
+
+      {pedidos.length>0&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🧾 Tus últimos pedidos</div>
+        {pedidos.slice(0,3).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",padding:"7px 0",borderTop:`1px solid ${T.g150}`}}>
+          <div style={{minWidth:0}}>
+            <div style={{fontWeight:900,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.item_nombre}</div>
+            <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{new Date(p.created_at).toLocaleDateString("es-ES")} · {p.puntos_coste||0} pts</div>
+          </div>
+          <Badge col={p.estado==="entregado"?"green":p.estado==="cancelado"?"red":p.estado==="listo"?"blue":"gold"}>{p.estado}</Badge>
+        </div>)}
+      </Card>}
 
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
         {cats.map(c=><button key={c.id} onClick={()=>{SFX.tab();setCat(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${cat===c.id?T.gold:T.g300}`,background:cat===c.id?T.gradGold:"rgba(255,244,214,.84)",color:cat===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>
@@ -6495,6 +6525,105 @@ function GestionAgenda({showToast}){
 }
 
 
+
+function GestionPedidos({user,showToast}){
+  const [pedidos,setPedidos]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [filter,setFilter]=useState("pendiente");
+  const [edit,setEdit]=useState(null);
+
+  useEffect(()=>{load();},[]);
+
+  async function load(){
+    setLoading(true);
+    const data=await dbGet("tienda_pedidos","?order=created_at.desc&limit=300&select=*");
+    setPedidos(Array.isArray(data)?data:[]);
+    setLoading(false);
+  }
+
+  async function setEstado(pedido,estado,extra={}){
+    const now=new Date().toISOString();
+    const patch={estado,updated_at:now,...extra};
+    if(estado==="preparando") patch.preparado_por=user?.email||user?.nombre||"staff";
+    if(estado==="listo") patch.fecha_preparado=now;
+    if(estado==="entregado"){patch.fecha_entregado=now;patch.entregado_por=user?.email||user?.nombre||"staff";}
+    if(estado==="cancelado") patch.fecha_cancelado=now;
+    const ok=await dbPatch("tienda_pedidos",`?id=eq.${pedido.id}`,patch);
+    if(ok){
+      SFX.success();
+      showToast?.(`Pedido ${estado}`);
+      await createNotification({usuario_id:pedido.usuario_id,rol_destino:"client",tipo:"pedido",titulo:`Pedido ${estado}`,mensaje:`Tu pedido de ${pedido.item_nombre} está ${estado}.`,entidad_tipo:"tienda_pedido",entidad_id:pedido.id,importante:estado==="listo"});
+      await load();
+    }else{showToast?.("No se pudo actualizar el pedido");SFX.error();}
+  }
+
+  async function guardarNotas(){
+    if(!edit)return;
+    const ok=await dbPatch("tienda_pedidos",`?id=eq.${edit.id}`,{notas_admin:edit.notas_admin||null,motivo_cancelacion:edit.motivo_cancelacion||null,updated_at:new Date().toISOString()});
+    if(ok){showToast?.("Pedido actualizado");setEdit(null);await load();}
+    else{showToast?.("No se pudo guardar");SFX.error();}
+  }
+
+  async function cancelarConDevolucion(pedido){
+    const pts=Number(pedido.puntos_coste)||0;
+    if(pts>0&&pedido.usuario_id){
+      const rows=await dbGet("usuarios",`?id=eq.${pedido.usuario_id}&select=id,puntos&limit=1`);
+      const actual=Number(rows?.[0]?.puntos||0);
+      await dbPatch("usuarios",`?id=eq.${pedido.usuario_id}`,{puntos:actual+pts});
+    }
+    await setEstado(pedido,"cancelado",{motivo_cancelacion:"Cancelado desde gestión con devolución de puntos"});
+  }
+
+  const tabs=[
+    {id:"pendiente",label:"Pendientes"},{id:"preparando",label:"Preparando"},{id:"listo",label:"Listos"},{id:"entregado",label:"Entregados"},{id:"cancelado",label:"Cancelados"},{id:"todos",label:"Todos"}
+  ];
+  const visibles=filter==="todos"?pedidos:pedidos.filter(p=>String(p.estado||"pendiente")===filter);
+  const countEstado=id=>id==="todos"?pedidos.length:pedidos.filter(p=>String(p.estado||"pendiente")===id).length;
+
+  return <div style={{animation:"fadeSlide .34s ease"}}>
+    <SectionHeader icon="🛍️" title="Pedidos de tienda" sub="Canjes pendientes, preparación y entrega" action={<Btn small col="ghost" onClick={load}>Actualizar</Btn>}/>
+    <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div className="icon3d" style={{fontSize:"2rem"}}>🎁</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:950,fontSize:"1rem"}}>Gestión de canjes</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Cuando un cliente canjea puntos, aparece aquí como pedido. Puedes prepararlo, marcarlo listo, entregarlo o cancelarlo.</div>
+        </div>
+      </div>
+    </Card>
+    <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
+      {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setFilter(t.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===t.id?T.gold:T.g300}`,background:filter===t.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===t.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>{t.label} ({countEstado(t.id)})</button>)}
+    </div>
+    {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin pedidos" sub="No hay pedidos en esta vista."/>:visibles.map(p=><Card key={p.id} style={{marginBottom:10,background:p.estado==="cancelado"?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:p.estado==="pendiente"?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}><Badge col={p.estado==="entregado"?"green":p.estado==="cancelado"?"red":p.estado==="listo"?"blue":"gold"}>{p.estado}</Badge><Badge col="gold">{p.puntos_coste||0} pts</Badge></div>
+          <div style={{fontWeight:950,color:T.g800}}>{p.item_nombre}</div>
+          <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:3}}>👤 {p.cliente_nombre||"Cliente"} · {p.cliente_email||"sin email"}</div>
+          <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,marginTop:3}}>{new Date(p.created_at).toLocaleString("es-ES")}</div>
+          {p.notas_admin&&<div style={{fontSize:".74rem",fontWeight:850,color:T.g800,marginTop:6,background:"rgba(255,244,214,.52)",borderRadius:10,padding:7}}>🔒 {p.notas_admin}</div>}
+          {p.motivo_cancelacion&&<div style={{fontSize:".74rem",fontWeight:850,color:T.red,marginTop:6}}>Motivo: {p.motivo_cancelacion}</div>}
+        </div>
+      </div>
+      <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:10}}>
+        {p.estado==="pendiente"&&<Btn small col="gold" onClick={()=>setEstado(p,"preparando")}>Preparar</Btn>}
+        {["pendiente","preparando"].includes(p.estado)&&<Btn small col="blue" onClick={()=>setEstado(p,"listo")}>Listo</Btn>}
+        {["pendiente","preparando","listo"].includes(p.estado)&&<Btn small col="green" onClick={()=>setEstado(p,"entregado")}>Entregado</Btn>}
+        {p.estado!=="cancelado"&&p.estado!=="entregado"&&<Btn small col="red" onClick={()=>cancelarConDevolucion(p)}>Cancelar + devolver</Btn>}
+        <Btn small col="ghost" onClick={()=>setEdit({...p})}>Notas</Btn>
+      </div>
+    </Card>)}
+    <Modal show={!!edit} onClose={()=>setEdit(null)} title="Editar pedido">
+      {edit&&<>
+        <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",padding:12}}><div style={{fontWeight:950,color:T.g800}}>{edit.item_nombre}</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:4}}>{edit.cliente_nombre} · {edit.estado}</div></Card>
+        <Input label="Notas internas" value={edit.notas_admin||""} onChange={v=>setEdit(e=>({...e,notas_admin:v}))}/>
+        <Input label="Motivo de cancelación" value={edit.motivo_cancelacion||""} onChange={v=>setEdit(e=>({...e,motivo_cancelacion:v}))}/>
+        <Btn full col="gold" onClick={guardarNotas}>Guardar</Btn>
+      </>}
+    </Modal>
+  </div>;
+}
+
 function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
@@ -6510,6 +6639,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
     {id:"clientes",icon:"👥",label:"Clientes",sub:"Fichas e historial de clientes",staff:true},
     {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true},
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones y objetos editables",staff:false},
+    {id:"pedidos",icon:"🎁",label:"Pedidos",sub:"Canjes y entregas de tienda",staff:true},
     {id:"musica_admin",icon:"🎧",label:"Música",sub:"Artistas, enlaces y audios propios",staff:false},
     {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Roles y permisos",staff:false},
     {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna",staff:false},
@@ -6572,6 +6702,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
       {tab==="clientes"&&<Clientes showToast={showToast}/>}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
       {tab==="tienda"&&(isAdmin?<GestionTienda showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la tienda."/> )}
+      {tab==="pedidos"&&<GestionPedidos user={user} showToast={showToast}/>}
       {tab==="musica_admin"&&(isAdmin?<GestionMusica showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no editar la música."/> )}
       {tab==="usuarios"&&(isAdmin?<AdminUsuarios user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede trabajar con caja, citas, clientes y stock, pero no cambiar roles ni permisos."/> )}
       {tab==="ajustes"&&(isAdmin?<GestionAjustes showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo deberían tocarlos administradores."/> )}
@@ -6606,7 +6737,8 @@ const HELP_TEXTS={
   usuarios:"Aquí un admin puede cambiar roles y permisos.",
   gestion:"Panel interno para facturación, caja, citas, clientes, stock y herramientas de administración.",
   buzon:"Buzón privado para hablar con Rasta Cuts. El cliente ve su hilo y admin/staff responden desde Gestión > Mensajes.",
-  mensajes:"Buzón interno para responder mensajes privados de clientes."
+  mensajes:"Buzón interno para responder mensajes privados de clientes.",
+  pedidos:"Gestión de canjes de tienda: pendiente, preparando, listo, entregado o cancelado."
 };
 
 function LoginHelperAvatar({size=46,speaking=false}={}){
