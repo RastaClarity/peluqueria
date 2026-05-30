@@ -4723,10 +4723,58 @@ function ArcadeInfoPanel({onOpenGacha}){
 
 
 
+const TYCOON_ROOM_BLUEPRINTS={
+  main:{name:"Local principal",icon:"💈",desc:"Sillas, espejos, caja y clientes. Es el corazón del negocio.",scene:"barber",unlockCost:0,req:"Inicial",pos:{left:"8%",top:"38%"},accent:"#B99A45"},
+  storage:{name:"Almacén",icon:"📦",desc:"Estanterías, baldas, cajas y productos. Controla la capacidad y la reposición.",scene:"storage",unlockCost:0,req:"Inicial",pos:{left:"56%",top:"44%"},accent:"#8A5A2E"},
+  bathroom:{name:"Baño",icon:"🚻",desc:"Mejora la limpieza y la satisfacción cuando hay mucho movimiento.",scene:"bathroom",unlockCost:180,req:"Local principal nivel 2",pos:{left:"34%",top:"18%"},accent:"#5A7C8F"},
+  chill:{name:"Zona chill",icon:"🛋️",desc:"Sala de espera con ambiente. Sube reputación y clientes con más paciencia.",scene:"chill",unlockCost:260,req:"Almacén nivel 2",pos:{left:"70%",top:"18%"},accent:"#5E7A35"},
+  terrace:{name:"Terraza",icon:"🌴",desc:"Eventos, ambiente exterior y picos de clientes cuando el local ya tiene nombre.",scene:"terrace",unlockCost:420,req:"Zona chill nivel 2",pos:{left:"18%",top:"68%"},accent:"#2E6F55"}
+};
+const TYCOON_STOCK_LABELS={wax:["🧴","Cera"],shampoo:["🫧","Champú"],towels:["🧻","Toallas"]};
+function tycoonRoomDef(id){return TYCOON_ROOM_BLUEPRINTS[id]||TYCOON_ROOM_BLUEPRINTS.main;}
+function tycoonRoomBase(id){const d=tycoonRoomDef(id);return {level:id==="main"||id==="storage"?1:0,unlocked:id==="main"||id==="storage",name:d.name,icon:d.icon,desc:d.desc};}
+function tycoonUpgradeCost(id,level=1){
+  const base={main:90,storage:75,bathroom:120,chill:150,terrace:190}[id]||100;
+  return Math.round(base*Math.pow(1.42,Math.max(0,(Number(level)||1)-1)));
+}
+function tycoonBuildSeconds(id,targetLevel=1,type="upgrade"){
+  const base={main:38,storage:32,bathroom:42,chill:52,terrace:64}[id]||40;
+  const extra=type==="unlock"?26:0;
+  return Math.round(base+extra+(Math.max(1,Number(targetLevel)||1)-1)*18);
+}
+function tycoonFormatTime(ms){
+  const s=Math.max(0,Math.ceil((Number(ms)||0)/1000));
+  const m=Math.floor(s/60),r=s%60;
+  if(m<=0)return `${r}s`;
+  return `${m}m ${String(r).padStart(2,"0")}s`;
+}
+function tycoonCanUnlock(id,state){
+  if(id==="bathroom")return (state.rooms?.main?.level||1)>=2;
+  if(id==="chill")return (state.rooms?.storage?.level||1)>=2;
+  if(id==="terrace")return (state.rooms?.chill?.level||0)>=2;
+  return true;
+}
+function tycoonUnlockHint(id){return tycoonRoomDef(id).req||"Sin requisito";}
+function tycoonTaskFor(state,roomId){return (state.buildQueue||[]).find(t=>String(t.roomId)===String(roomId));}
+function completeTycoonTasks(raw){
+  const now=Date.now();
+  const queue=Array.isArray(raw.buildQueue)?raw.buildQueue:[];
+  const due=queue.filter(t=>Number(t.endAt||0)<=now);
+  if(!due.length)return raw;
+  const next={...raw,rooms:{...(raw.rooms||{})},buildQueue:queue.filter(t=>Number(t.endAt||0)>now),log:[...(raw.log||[])]};
+  due.forEach(task=>{
+    const def=tycoonRoomDef(task.roomId);
+    const current=next.rooms[task.roomId]||tycoonRoomBase(task.roomId);
+    const target=Math.max(Number(task.targetLevel)||1,task.type==="unlock"?1:(current.level||0)+1);
+    next.rooms[task.roomId]={...current,name:def.name,icon:def.icon,desc:def.desc,unlocked:true,level:Math.max(current.level||0,target)};
+    next.log=[{t:now,msg:task.type==="unlock"?`${def.name} queda desbloqueada y lista para entrar.`:`${def.name} termina su mejora a nivel ${target}.`},...(next.log||[])].slice(0,24);
+  });
+  return next;
+}
 function createTycoonInitialState(){
   const now=Date.now();
   return {
-    version:1,
+    version:2,
     rc:120,
     reputation:1,
     satisfaction:70,
@@ -4736,21 +4784,17 @@ function createTycoonInitialState(){
     lastTick:now,
     selectedRoom:"main",
     rooms:{
-      main:{level:1,unlocked:true,name:"Local principal",icon:"💈",desc:"Sillas, clientes y ritmo de trabajo."},
-      storage:{level:1,unlocked:true,name:"Almacén",icon:"📦",desc:"Productos, capacidad y coste de reposición."},
-      bathroom:{level:0,unlocked:false,name:"Baño",icon:"🚻",desc:"Limpieza y satisfacción de clientes."},
-      chill:{level:0,unlocked:false,name:"Zona chill",icon:"🛋️",desc:"Clientes VIP, espera y reputación."},
-      terrace:{level:0,unlocked:false,name:"Terraza",icon:"🌴",desc:"Eventos, ambiente y picos de clientes."}
+      main:tycoonRoomBase("main"),
+      storage:tycoonRoomBase("storage"),
+      bathroom:tycoonRoomBase("bathroom"),
+      chill:tycoonRoomBase("chill"),
+      terrace:tycoonRoomBase("terrace")
     },
+    buildQueue:[],
     stock:{wax:10,shampoo:8,towels:12},
     staff:{barbers:1,assistants:0},
-    missions:{
-      clients10:false,
-      main3:false,
-      storage3:false,
-      unlockChill:false
-    },
-    log:[{t:now,msg:"Abriste Rasta Cuts Tycoon. El local empieza pequeño, pero con flow."}]
+    missions:{clients10:false,main3:false,storage3:false,unlockChill:false},
+    log:[{t:now,msg:"Abriste Rasta Cuts Tycoon. Empiezas con local, almacén y 120 RC para mover el negocio."}]
   };
 }
 function tycoonKey(user){return `rasta_cuts_tycoon_v1_${user?.id||"anon"}`;}
@@ -4760,34 +4804,41 @@ function loadTycoonState(user){
     if(!raw)return createTycoonInitialState();
     const parsed=JSON.parse(raw);
     const base=createTycoonInitialState();
-    return {
+    const merged={
       ...base,
       ...parsed,
+      version:2,
       rooms:{...base.rooms,...(parsed.rooms||{})},
       stock:{...base.stock,...(parsed.stock||{})},
       staff:{...base.staff,...(parsed.staff||{})},
       missions:{...base.missions,...(parsed.missions||{})},
-      log:Array.isArray(parsed.log)?parsed.log.slice(0,18):base.log
+      buildQueue:Array.isArray(parsed.buildQueue)?parsed.buildQueue:[],
+      log:Array.isArray(parsed.log)?parsed.log.slice(0,24):base.log
     };
-  }catch(e){
-    return createTycoonInitialState();
-  }
+    Object.keys(TYCOON_ROOM_BLUEPRINTS).forEach(id=>{
+      const def=tycoonRoomDef(id);
+      merged.rooms[id]={...tycoonRoomBase(id),...(merged.rooms[id]||{}),name:def.name,icon:def.icon,desc:def.desc};
+    });
+    return completeTycoonTasks(merged);
+  }catch(e){return createTycoonInitialState();}
 }
-function saveTycoonState(user,state){
-  try{localStorage.setItem(tycoonKey(user),JSON.stringify({...state,lastTick:Date.now()}));}catch(e){}
-}
+function saveTycoonState(user,state){try{localStorage.setItem(tycoonKey(user),JSON.stringify({...state,lastTick:Date.now()}));}catch(e){}}
 function clampNum(n,min,max){return Math.max(min,Math.min(max,Number(n)||0));}
 function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
   const [state,setState]=useState(()=>loadTycoonState(user));
   const [tab,setTab]=useState("mapa");
+  const [inspect,setInspect]=useState(null);
+  const [nowTick,setNowTick]=useState(()=>Date.now());
 
-  const roomList=Object.entries(state.rooms).map(([id,r])=>({id,...r}));
+  const roomList=Object.keys(TYCOON_ROOM_BLUEPRINTS).map(id=>({id,...(state.rooms?.[id]||tycoonRoomBase(id)),...tycoonRoomDef(id)}));
+  const selectedId=state.selectedRoom||"main";
+  const selected=state.rooms[selectedId]||state.rooms.main||tycoonRoomBase("main");
+  const selectedDef=tycoonRoomDef(selectedId);
   const mainLevel=state.rooms.main?.level||1;
   const storageLevel=state.rooms.storage?.level||1;
   const bathroomLevel=state.rooms.bathroom?.level||0;
   const chillLevel=state.rooms.chill?.level||0;
   const terraceLevel=state.rooms.terrace?.level||0;
-
   const capacity=12+(storageLevel*8);
   const stockTotal=Object.values(state.stock||{}).reduce((a,b)=>a+(Number(b)||0),0);
   const stockEfficiency=clampNum(stockTotal/Math.max(1,capacity),0,1);
@@ -4796,31 +4847,31 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
   const incomePerClient=Math.round(7+(mainLevel*4)+(chillLevel*3)+(state.reputation*1.2));
   const upkeep=Math.round((state.staff.barbers*3)+(state.staff.assistants*2)+(mainLevel+storageLevel+bathroomLevel+chillLevel+terraceLevel)*0.4);
   const projectedMinute=Math.max(0,Math.round((Math.min(servicePower,clientRate*5)*incomePerClient)-upkeep));
+  const unlockedCount=roomList.filter(r=>r.unlocked).length;
+  const selectedTask=tycoonTaskFor(state,selectedId);
 
-  function pushLog(prev,msg){
-    const next=[{t:Date.now(),msg},...(prev.log||[])].slice(0,18);
-    return next;
-  }
+  function pushLog(prev,msg){return [{t:Date.now(),msg},...(prev.log||[])].slice(0,24);}
   function mutate(fn){
     setState(prev=>{
-      const next=fn({...prev,rooms:{...prev.rooms},stock:{...prev.stock},staff:{...prev.staff},missions:{...prev.missions},log:[...(prev.log||[])]});
+      const cleaned=completeTycoonTasks(prev);
+      const next=fn({...cleaned,rooms:{...cleaned.rooms},stock:{...cleaned.stock},staff:{...cleaned.staff},missions:{...cleaned.missions},buildQueue:[...(cleaned.buildQueue||[])],log:[...(cleaned.log||[])]});
       saveTycoonState(user,next);
       return next;
     });
   }
   useEffect(()=>{saveTycoonState(user,state);},[state,user?.id]);
-
+  useEffect(()=>{
+    const clock=setInterval(()=>setNowTick(Date.now()),1000);
+    return()=>clearInterval(clock);
+  },[]);
   useEffect(()=>{
     const timer=setInterval(()=>{
       setState(prev=>{
+        prev=completeTycoonTasks(prev);
         const rooms={...prev.rooms};
         const stock={...prev.stock};
         const staff={...prev.staff};
-        const main=rooms.main?.level||1;
-        const storage=rooms.storage?.level||1;
-        const bath=rooms.bathroom?.level||0;
-        const chill=rooms.chill?.level||0;
-        const terr=rooms.terrace?.level||0;
+        const main=rooms.main?.level||1,storage=rooms.storage?.level||1,bath=rooms.bathroom?.level||0,chill=rooms.chill?.level||0,terr=rooms.terrace?.level||0;
         const cap=12+(storage*8);
         const totalStock=Object.values(stock).reduce((a,b)=>a+(Number(b)||0),0);
         const efficiency=clampNum(totalStock/Math.max(1,cap),0,1);
@@ -4830,34 +4881,18 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
         let served=Math.min(clients,Math.max(1,Math.floor(power)));
         let rcGain=0;
         let log=prev.log||[];
-
-        if(served>0 && totalStock>0){
+        if(served>0&&totalStock>0){
           const consume=Math.min(served,totalStock);
           let left=consume;
-          ["wax","shampoo","towels"].forEach(k=>{
-            const take=Math.min(left,stock[k]||0);
-            stock[k]=(stock[k]||0)-take;
-            left-=take;
-          });
+          ["wax","shampoo","towels"].forEach(k=>{const take=Math.min(left,stock[k]||0);stock[k]=(stock[k]||0)-take;left-=take;});
           served=consume;
           rcGain=served*Math.round(7+(main*4)+(chill*3)+(prev.reputation*1.2));
-          if(Math.random()<.12) log=pushLog({...prev,log},`Entraron ${served} cliente${served===1?"":"s"} y dejaron ${rcGain} RC.`)
+          if(Math.random()<.14)log=pushLog({...prev,log},`Entraron ${served} cliente${served===1?"":"s"} y dejaron ${rcGain} RC.`);
         }
-
         const cost=Math.round((staff.barbers*3)+(staff.assistants*2)+(main+storage+bath+chill+terr)*0.4);
         const cleanLoss=served>0?served*(1.2-(bath*.08)):.25;
         const satisfactionDelta=served>0?0.6+(chill*.08)+(bath*.05):-0.15;
-        const next={
-          ...prev,
-          rooms,stock,staff,
-          rc:Math.max(0,Math.round((prev.rc||0)+rcGain-cost)),
-          totalClients:(prev.totalClients||0)+served,
-          cleanliness:clampNum((prev.cleanliness||70)-cleanLoss,0,100),
-          satisfaction:clampNum((prev.satisfaction||70)+satisfactionDelta-((prev.cleanliness||70)<30?.55:0),0,100),
-          energy:clampNum((prev.energy||80)-(served*.45)+(staff.assistants*.06),0,100),
-          lastTick:Date.now(),
-          log
-        };
+        const next={...prev,rooms,stock,staff,rc:Math.max(0,Math.round((prev.rc||0)+rcGain-cost)),totalClients:(prev.totalClients||0)+served,cleanliness:clampNum((prev.cleanliness||70)-cleanLoss,0,100),satisfaction:clampNum((prev.satisfaction||70)+satisfactionDelta-((prev.cleanliness||70)<30?.55:0),0,100),energy:clampNum((prev.energy||80)-(served*.45)+(staff.assistants*.06),0,100),lastTick:Date.now(),log};
         next.reputation=clampNum((next.reputation||1)+(next.satisfaction>82?.01:0)-(next.satisfaction<35?.015:0),1,50);
         saveTycoonState(user,next);
         return next;
@@ -4866,34 +4901,35 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     return()=>clearInterval(timer);
   },[user?.id]);
 
-  function upgradeRoom(id){
-    const room=state.rooms[id];
-    const nextLevel=(room?.level||0)+1;
-    const cost=id==="main"?80*(room.level||1):id==="storage"?65*(room.level||1):95*Math.max(1,room.level||1);
-    if(state.rc<cost){showToast?.("No tienes RC suficientes");SFX.error();return;}
-    mutate(prev=>{
-      prev.rc-=cost;
-      prev.rooms[id]={...prev.rooms[id],level:nextLevel,unlocked:true};
-      prev.log=pushLog(prev,`${prev.rooms[id].name} sube a nivel ${nextLevel}.`);
-      if(id==="main"&&nextLevel>=3&&!prev.rooms.bathroom.unlocked) prev.rooms.bathroom={...prev.rooms.bathroom,unlocked:true,level:1};
-      if(id==="storage"&&nextLevel>=2&&!prev.rooms.chill.unlocked) prev.rooms.chill={...prev.rooms.chill,unlocked:true,level:1};
-      if(id==="chill"&&nextLevel>=3&&!prev.rooms.terrace.unlocked) prev.rooms.terrace={...prev.rooms.terrace,unlocked:true,level:1};
-      return prev;
-    });
+  function startRoomTask(id,type="upgrade"){
+    const room=state.rooms[id]||tycoonRoomBase(id);
+    const def=tycoonRoomDef(id);
+    if(tycoonTaskFor(state,id)){showToast?.("Ya hay una obra en marcha en esa zona");SFX.error();return;}
+    if(type==="unlock"){
+      if(room.unlocked)return;
+      if(!tycoonCanUnlock(id,state)){showToast?.(`Antes necesitas: ${tycoonUnlockHint(id)}`);SFX.error();return;}
+      const cost=def.unlockCost||200;
+      if(state.rc<cost){showToast?.(`Necesitas ${cost} RC para desbloquear ${def.name}`);SFX.error();return;}
+      const endAt=Date.now()+tycoonBuildSeconds(id,1,"unlock")*1000;
+      mutate(prev=>{prev.rc-=cost;prev.buildQueue.push({id:`${id}_${Date.now()}`,roomId:id,type:"unlock",targetLevel:1,cost,label:`Desbloquear ${def.name}`,startedAt:Date.now(),endAt});prev.log=pushLog(prev,`Obra iniciada: ${def.name}. Termina en ${tycoonFormatTime(endAt-Date.now())}.`);return prev;});
+      setInspect({icon:def.icon,title:def.name,text:"Zona en obras. Cuando termine, podrás entrar y mejorarla."});
+      SFX.coins();return;
+    }
+    if(!room.unlocked){startRoomTask(id,"unlock");return;}
+    const nextLevel=(room.level||0)+1;
+    const cost=tycoonUpgradeCost(id,room.level||1);
+    if(state.rc<cost){showToast?.(`No tienes ${cost} RC para mejorar ${def.name}`);SFX.error();return;}
+    const endAt=Date.now()+tycoonBuildSeconds(id,nextLevel,"upgrade")*1000;
+    mutate(prev=>{prev.rc-=cost;prev.buildQueue.push({id:`${id}_${Date.now()}`,roomId:id,type:"upgrade",targetLevel:nextLevel,cost,label:`${def.name} nivel ${nextLevel}`,startedAt:Date.now(),endAt});prev.log=pushLog(prev,`Mejora iniciada: ${def.name} a nivel ${nextLevel}.`);return prev;});
     SFX.success();
   }
-  function unlockRoom(id){
-    const costs={bathroom:180,chill:260,terrace:420};
-    const cost=costs[id]||200;
-    if(state.rooms[id]?.unlocked)return;
-    if(state.rc<cost){showToast?.(`Necesitas ${cost} RC para desbloquear`);SFX.error();return;}
-    mutate(prev=>{
-      prev.rc-=cost;
-      prev.rooms[id]={...prev.rooms[id],unlocked:true,level:1};
-      prev.log=pushLog(prev,`Nueva sala desbloqueada: ${prev.rooms[id].name}.`);
-      return prev;
-    });
-    SFX.coins();
+  function enterRoom(id){
+    const room=state.rooms[id]||tycoonRoomBase(id);
+    if(!room.unlocked){setInspect({icon:tycoonRoomDef(id).icon,title:tycoonRoomDef(id).name,text:`Zona bloqueada. Requisito: ${tycoonUnlockHint(id)}.`});SFX.error();return;}
+    mutate(prev=>({...prev,selectedRoom:id}));
+    setTab("sala");
+    setInspect(null);
+    SFX.nav();
   }
   function attendBurst(){
     const canServe=Math.max(1,Math.floor(servicePower));
@@ -4902,17 +4938,9 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     mutate(prev=>{
       let served=Math.min(canServe,Object.values(prev.stock).reduce((a,b)=>a+(Number(b)||0),0));
       let left=served;
-      ["wax","shampoo","towels"].forEach(k=>{
-        const take=Math.min(left,prev.stock[k]||0);
-        prev.stock[k]=(prev.stock[k]||0)-take;
-        left-=take;
-      });
+      ["wax","shampoo","towels"].forEach(k=>{const take=Math.min(left,prev.stock[k]||0);prev.stock[k]=(prev.stock[k]||0)-take;left-=take;});
       const gain=served*incomePerClient;
-      prev.rc+=gain;
-      prev.totalClients+=served;
-      prev.satisfaction=clampNum(prev.satisfaction+1.3,0,100);
-      prev.cleanliness=clampNum(prev.cleanliness-(served*1.8),0,100);
-      prev.energy=clampNum(prev.energy-(served*1.2),0,100);
+      prev.rc+=gain;prev.totalClients+=served;prev.satisfaction=clampNum(prev.satisfaction+1.3,0,100);prev.cleanliness=clampNum(prev.cleanliness-(served*1.8),0,100);prev.energy=clampNum(prev.energy-(served*1.2),0,100);
       prev.log=pushLog(prev,`Atendiste una tanda de ${served} cliente${served===1?"":"s"} y ganaste ${gain} RC.`);
       return prev;
     });
@@ -4921,200 +4949,119 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
   function restock(){
     const cost=Math.max(35,Math.round(90-(storageLevel*7)));
     if(state.rc<cost){showToast?.("No tienes RC suficientes para reponer");SFX.error();return;}
-    mutate(prev=>{
-      prev.rc-=cost;
-      const add=8+storageLevel*4;
-      prev.stock.wax=(prev.stock.wax||0)+Math.ceil(add*.35);
-      prev.stock.shampoo=(prev.stock.shampoo||0)+Math.ceil(add*.30);
-      prev.stock.towels=(prev.stock.towels||0)+Math.ceil(add*.35);
-      prev.log=pushLog(prev,`Reposición comprada: +${add} productos.`);
-      return prev;
-    });
+    mutate(prev=>{prev.rc-=cost;const add=8+storageLevel*4;prev.stock.wax=(prev.stock.wax||0)+Math.ceil(add*.35);prev.stock.shampoo=(prev.stock.shampoo||0)+Math.ceil(add*.30);prev.stock.towels=(prev.stock.towels||0)+Math.ceil(add*.35);prev.log=pushLog(prev,`Reposición comprada: +${add} productos al almacén.`);return prev;});
     SFX.success();
   }
   function cleanShop(){
     const cost=25;
     if(state.rc<cost){showToast?.("No tienes RC suficientes para limpiar");SFX.error();return;}
-    mutate(prev=>{
-      prev.rc-=cost;
-      prev.cleanliness=clampNum(prev.cleanliness+28+(bathroomLevel*4),0,100);
-      prev.satisfaction=clampNum(prev.satisfaction+3,0,100);
-      prev.log=pushLog(prev,"Limpieza general hecha. El local vuelve a respirar.");
-      return prev;
-    });
+    mutate(prev=>{prev.rc-=cost;prev.cleanliness=clampNum(prev.cleanliness+28+(bathroomLevel*4),0,100);prev.satisfaction=clampNum(prev.satisfaction+3,0,100);prev.log=pushLog(prev,"Limpieza general hecha. El local vuelve a respirar.");return prev;});
     SFX.success();
   }
   function hire(type){
     const cost=type==="barbers"?350:180;
     if(state.rc<cost){showToast?.("No tienes RC suficientes para contratar");SFX.error();return;}
-    mutate(prev=>{
-      prev.rc-=cost;
-      prev.staff[type]=(prev.staff[type]||0)+1;
-      prev.log=pushLog(prev,type==="barbers"?"Nuevo barbero contratado.":"Nuevo ayudante contratado.");
-      return prev;
-    });
+    mutate(prev=>{prev.rc-=cost;prev.staff[type]=(prev.staff[type]||0)+1;prev.log=pushLog(prev,type==="barbers"?"Nuevo barbero contratado.":"Nuevo ayudante contratado.");return prev;});
     SFX.success();
   }
   function resetGame(){
     if(!confirm("¿Reiniciar Rasta Cuts Tycoon? Se perderá el progreso local de este juego."))return;
-    const fresh=createTycoonInitialState();
-    setState(fresh);
-    saveTycoonState(user,fresh);
-    SFX.error();
+    const fresh=createTycoonInitialState();setState(fresh);saveTycoonState(user,fresh);SFX.error();
   }
-
-  const selected=state.rooms[state.selectedRoom]||state.rooms.main;
-  const unlockedCount=roomList.filter(r=>r.unlocked).length;
-
-  function MiniStat({icon,label,value,col="gold"}){
-    return <div style={{background:"rgba(255,244,214,.78)",border:`1.5px solid ${T.g300}`,borderRadius:16,padding:"10px",boxShadow:"0 6px 14px rgba(20,8,4,.10)"}}>
-      <div style={{fontSize:"1.25rem"}}>{icon}</div>
-      <div style={{fontWeight:950,color:T.g800,lineHeight:1.1}}>{value}</div>
-      <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{label}</div>
-    </div>;
+  function handleHotspot(h){
+    setInspect(h);
+    if(h.action==="attend")attendBurst();
+    if(h.action==="restock")restock();
+    if(h.action==="clean")cleanShop();
+    if(h.action==="upgrade")startRoomTask(selectedId,"upgrade");
+    if(!h.action)SFX.tab();
   }
-  function Bar({label,value}){
-    const v=clampNum(value,0,100);
-    return <div style={{marginBottom:9}}>
-      <div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:950,color:T.g800,marginBottom:4}}><span>{label}</span><span>{Math.round(v)}%</span></div>
-      <div style={{height:9,borderRadius:999,background:"rgba(75,48,27,.14)",overflow:"hidden"}}>
-        <div style={{height:"100%",width:`${v}%`,borderRadius:999,background:v<35?"linear-gradient(90deg,#A72822,#E57373)":v<70?"linear-gradient(90deg,#B99A45,#F3D37B)":"linear-gradient(90deg,#2F6B42,#78C99B)",transition:"width .25s ease"}}/>
+  function MiniStat({icon,label,value}){return <div style={{background:"rgba(255,244,214,.78)",border:`1.5px solid ${T.g300}`,borderRadius:16,padding:"10px",boxShadow:"0 6px 14px rgba(20,8,4,.10)"}}><div style={{fontSize:"1.25rem"}}>{icon}</div><div style={{fontWeight:950,color:T.g800,lineHeight:1.1}}>{value}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{label}</div></div>;}
+  function Bar({label,value}){const v=clampNum(value,0,100);return <div style={{marginBottom:9}}><div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:950,color:T.g800,marginBottom:4}}><span>{label}</span><span>{Math.round(v)}%</span></div><div style={{height:9,borderRadius:999,background:"rgba(75,48,27,.14)",overflow:"hidden"}}><div style={{height:"100%",width:`${v}%`,borderRadius:999,background:v<35?"linear-gradient(90deg,#A72822,#E57373)":v<70?"linear-gradient(90deg,#B99A45,#F3D37B)":"linear-gradient(90deg,#2F6B42,#78C99B)",transition:"width .25s ease"}}/></div></div>;}
+  function Tab({id,icon,label}){return <button onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g300}`,background:tab===id?T.gradGold:"rgba(255,244,214,.78)",borderRadius:15,padding:"9px 6px",fontWeight:950,color:tab===id?T.g900:T.g700,cursor:"pointer"}}><div style={{fontSize:"1.15rem",lineHeight:1}}>{icon}</div><div style={{fontSize:".68rem",marginTop:4}}>{label}</div></button>;}
+  function BuildingBadge({task}){if(!task)return null;return <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(18,8,6,.72)",color:T.white,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:950,border:"1px solid rgba(255,244,214,.24)"}}>⏳ {tycoonFormatTime(task.endAt-nowTick)}</span>;}
+
+  function TycoonMap(){
+    return <Card style={{background:"linear-gradient(150deg,#182215,#31401E 52%,#8A6A2B)",border:"2px solid rgba(255,244,214,.38)",color:T.white,overflow:"hidden",position:"relative",minHeight:380}}>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 20% 20%,rgba(255,244,214,.17),transparent 26%),linear-gradient(30deg,transparent 48%,rgba(255,244,214,.08) 49%,rgba(255,244,214,.08) 52%,transparent 53%)",opacity:.95}}/>
+      <div style={{position:"relative",zIndex:2,display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",marginBottom:10}}>
+        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem"}}>Mapa del negocio</div><div style={{fontSize:".78rem",fontWeight:850,opacity:.84}}>Como una aldea de gestión: pulsa una zona para entrar, mejorarla o desbloquearla.</div></div>
+        <Badge col="gold">{unlockedCount}/5 zonas</Badge>
       </div>
-    </div>;
+      <div style={{position:"relative",height:300,zIndex:2,borderRadius:22,overflow:"hidden",background:"linear-gradient(180deg,rgba(255,244,214,.08),rgba(0,0,0,.12))",border:"1px solid rgba(255,244,214,.22)"}}>
+        <div style={{position:"absolute",left:"6%",right:"6%",bottom:"16%",height:70,background:"rgba(72,42,20,.55)",transform:"skewX(-18deg)",borderRadius:30,boxShadow:"0 22px 40px rgba(0,0,0,.28)"}}/>
+        {roomList.map(r=>{
+          const task=tycoonTaskFor(state,r.id);
+          const blocked=!r.unlocked;
+          const can=tycoonCanUnlock(r.id,state);
+          return <button key={r.id} onClick={()=>r.unlocked?enterRoom(r.id):setInspect({icon:r.icon,title:r.name,roomId:r.id,unlock:can,text:can?`Puedes desbloquear esta zona por ${r.unlockCost} RC.`:`Bloqueada. Requisito: ${tycoonUnlockHint(r.id)}.`})} style={{position:"absolute",...r.pos,width:122,minHeight:94,border:`2px solid ${state.selectedRoom===r.id?T.gold:"rgba(255,244,214,.35)"}`,borderRadius:22,background:blocked?"linear-gradient(180deg,#7B725F,#3C3326)":`linear-gradient(180deg,${r.accent},#2B1A0D)`,color:T.white,cursor:"pointer",boxShadow:"0 18px 28px rgba(0,0,0,.34)",transform:"rotate(-2deg)",padding:9,opacity:blocked?.78:1,textAlign:"left"}}>
+            <div style={{fontSize:"1.65rem",lineHeight:1}}>{blocked?"🔒":r.icon}</div>
+            <div style={{fontWeight:950,fontSize:".82rem",lineHeight:1.1}}>{r.name}</div>
+            <div style={{fontSize:".65rem",fontWeight:850,opacity:.84}}>Nv. {r.level||0}</div>
+            {task&&<div style={{marginTop:5}}><BuildingBadge task={task}/></div>}
+          </button>;
+        })}
+      </div>
+      {inspect&&<div style={{position:"relative",zIndex:3,marginTop:12,background:"rgba(255,244,214,.12)",border:"1px solid rgba(255,244,214,.25)",borderRadius:18,padding:12}}><div style={{fontWeight:950}}>{inspect.icon} {inspect.title}</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.86,lineHeight:1.35,marginTop:4}}>{inspect.text}</div>{inspect.unlock&&<div style={{marginTop:10}}><Btn small col="gold" onClick={()=>startRoomTask(inspect.roomId,"unlock")}>Desbloquear zona</Btn></div>}</div>}
+    </Card>;
   }
-  function Tab({id,icon,label}){
-    return <button onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g300}`,background:tab===id?T.gradGold:"rgba(255,244,214,.78)",borderRadius:15,padding:"9px 6px",fontWeight:950,color:tab===id?T.g900:T.g700,cursor:"pointer"}}>
-      <div style={{fontSize:"1.15rem",lineHeight:1}}>{icon}</div><div style={{fontSize:".68rem",marginTop:4}}>{label}</div>
-    </button>;
+  function SceneObject({h}){return <button onClick={()=>handleHotspot(h)} title={h.title} style={{position:"absolute",left:h.left,top:h.top,width:h.w||78,height:h.h||62,border:"2px solid rgba(255,244,214,.55)",borderRadius:18,background:"rgba(255,244,214,.18)",color:T.white,cursor:"pointer",boxShadow:"0 8px 18px rgba(0,0,0,.26)",backdropFilter:"blur(2px)",fontWeight:950}}><div style={{fontSize:"1.45rem",lineHeight:1}}>{h.icon}</div><div style={{fontSize:".62rem",lineHeight:1.05}}>{h.title}</div></button>;}
+  function TycoonScene({roomId}){
+    const room=state.rooms[roomId]||tycoonRoomBase(roomId),def=tycoonRoomDef(roomId),lvl=room.level||0;
+    const common=[{icon:"⬆️",title:"Mejorar",text:`Sube ${def.name} de nivel para aumentar su efecto.`,left:"74%",top:"10%",action:"upgrade"}];
+    const hotspots={
+      main:[{icon:"💺",title:"Silla",text:"Atiende una tanda manual de clientes y cobra RC al momento.",left:"16%",top:"50%",action:"attend"},{icon:"🪞",title:"Espejo",text:"El escaparate del local: subir el nivel mejora ingresos por cliente.",left:"42%",top:"24%"},{icon:"💵",title:"Caja",text:`Cada cliente paga unos ${incomePerClient} RC según reputación y sala.`,left:"62%",top:"54%"}],
+      storage:[{icon:"🧴",title:"Baldas",text:"Aquí vive el stock. Si se vacía, se frena la entrada de clientes.",left:"12%",top:"30%",action:"restock"},{icon:"📦",title:"Cajas",text:`Capacidad actual ${stockTotal}/${capacity}. Mejorar el almacén aumenta capacidad y abarata reposición.`,left:"44%",top:"54%",action:"restock"},{icon:"🧾",title:"Lista",text:"Controla cera, champú y toallas antes de que el local se quede seco.",left:"70%",top:"34%"}],
+      bathroom:[{icon:"🚿",title:"Lavabo",text:"El baño ayuda a que la limpieza no caiga tan rápido.",left:"20%",top:"42%",action:"clean"},{icon:"🧹",title:"Limpieza",text:"Paga 25 RC para recuperar limpieza y satisfacción.",left:"58%",top:"56%",action:"clean"}],
+      chill:[{icon:"🛋️",title:"Sofá",text:"La zona chill mejora espera, satisfacción y reputación a medio plazo.",left:"18%",top:"55%"},{icon:"🎶",title:"Ambiente",text:"Más ambiente, más clientes pacientes y mejor reputación.",left:"58%",top:"34%"}],
+      terrace:[{icon:"🌴",title:"Terraza",text:"Eventos y ambiente exterior: sube picos de clientes cuando el negocio crece.",left:"18%",top:"48%"},{icon:"☀️",title:"Evento",text:"Futura mejora: eventos temporales con recompensas RC.",left:"60%",top:"30%"}]
+    };
+    const bg={main:"linear-gradient(180deg,#7A4A24,#2A160B)",storage:"linear-gradient(180deg,#5A3A22,#24130A)",bathroom:"linear-gradient(180deg,#557383,#20313A)",chill:"linear-gradient(180deg,#526B2F,#202815)",terrace:"linear-gradient(180deg,#40735D,#1B2B20)"}[roomId]||"linear-gradient(180deg,#7A4A24,#2A160B)";
+    return <div style={{position:"relative",height:standalone?390:340,borderRadius:26,overflow:"hidden",background:bg,border:"2px solid rgba(255,244,214,.32)",boxShadow:"inset 0 -35px 80px rgba(0,0,0,.25),0 18px 40px rgba(0,0,0,.28)"}}>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 20% 10%,rgba(255,244,214,.22),transparent 30%),repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 2px,transparent 2px 38px)",opacity:.75}}/>
+      <div style={{position:"absolute",left:"8%",right:"8%",bottom:"8%",height:"34%",background:"rgba(18,8,6,.28)",transform:"skewX(-10deg)",borderRadius:28}}/>
+      {roomId==="storage"&&<><div style={{position:"absolute",left:"10%",top:"18%",width:"30%",height:"56%",borderRadius:12,background:"linear-gradient(90deg,#6B4524,#B98B4C)",boxShadow:"inset 0 0 0 8px rgba(60,30,12,.24)"}}/><div style={{position:"absolute",left:"12%",top:"32%",width:"26%",height:8,background:"rgba(30,16,8,.5)"}}/><div style={{position:"absolute",left:"12%",top:"48%",width:"26%",height:8,background:"rgba(30,16,8,.5)"}}/><div style={{position:"absolute",left:"48%",top:"61%",width:"30%",height:"18%",borderRadius:10,background:"#A87945",boxShadow:"0 10px 20px rgba(0,0,0,.25)"}}/></>}
+      {roomId==="main"&&<><div style={{position:"absolute",left:"35%",top:"13%",width:"28%",height:"30%",borderRadius:"18px 18px 6px 6px",background:"linear-gradient(180deg,#E8D3A2,#6B4524)",border:"5px solid rgba(70,34,14,.65)"}}/><div style={{position:"absolute",left:"18%",top:"62%",width:"20%",height:"18%",borderRadius:"18px 18px 8px 8px",background:"#222",border:"5px solid #B99A45"}}/><div style={{position:"absolute",left:"61%",top:"66%",width:"22%",height:"12%",borderRadius:12,background:"#B99A45"}}/></>}
+      {roomId==="bathroom"&&<><div style={{position:"absolute",left:"18%",top:"34%",width:"24%",height:"26%",borderRadius:"50% 50% 12px 12px",background:"#DDECF0",boxShadow:"0 8px 22px rgba(0,0,0,.25)"}}/><div style={{position:"absolute",left:"58%",top:"25%",width:"22%",height:"36%",borderRadius:12,background:"rgba(220,240,245,.75)"}}/></>}
+      {roomId==="chill"&&<><div style={{position:"absolute",left:"14%",top:"62%",width:"40%",height:"16%",borderRadius:18,background:"#7A3424",boxShadow:"0 10px 24px rgba(0,0,0,.28)"}}/><div style={{position:"absolute",left:"62%",top:"36%",width:"20%",height:"32%",borderRadius:"50% 50% 16px 16px",background:"#D8BE87"}}/></>}
+      {roomId==="terrace"&&<><div style={{position:"absolute",left:"8%",bottom:"18%",width:"82%",height:"18%",borderRadius:22,background:"rgba(232,211,162,.34)"}}/><div style={{position:"absolute",left:"58%",top:"12%",fontSize:"5rem",filter:"drop-shadow(0 10px 10px rgba(0,0,0,.25))"}}>🌴</div></>}
+      <div style={{position:"absolute",left:16,top:14,background:"rgba(18,8,6,.62)",border:"1px solid rgba(255,244,214,.24)",borderRadius:18,padding:"8px 12px",color:T.white}}><div style={{fontWeight:950}}>{def.icon} {def.name}</div><div style={{fontSize:".68rem",fontWeight:850,opacity:.82}}>Nivel {lvl}</div></div>
+      {[...(hotspots[roomId]||[]),...common].map((h,i)=><SceneObject key={i} h={h}/>) }
+    </div>;
   }
 
   return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease",minHeight:standalone?"100vh":"auto",padding:standalone?"16px":"0",background:standalone?"radial-gradient(circle at top,#3A2414 0,#160B07 48%,#080403 100%)":"transparent"}}>
     <Card style={{background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#B99A45)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative",boxShadow:standalone?"0 18px 60px rgba(0,0,0,.55)":"0 8px 18px rgba(18,8,4,0.24)"}}>
       <div style={{position:"absolute",right:-22,top:-32,fontSize:"7rem",opacity:.10}}>🏪</div>
-      <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
+      <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
         <div className="icon3d" style={{fontSize:"2.6rem"}}>🏪</div>
-        <div style={{flex:1}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:standalone?"2.05rem":"1.75rem",lineHeight:1}}>Rasta Cuts Tycoon</div>
-          <div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-            Juego independiente de gestión en tiempo real. Moneda propia RC, separada de los puntos reales de la web.
-          </div>
-        </div>
-        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",justifyContent:"flex-end"}}>
-          <Badge col="gold">{Math.floor(state.rc)} RC</Badge>
-          {standalone&&<Btn small col="ghost" onClick={onExit}>Salir</Btn>}
-        </div>
+        <div style={{flex:1,minWidth:230}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:standalone?"2.05rem":"1.75rem",lineHeight:1}}>Rasta Cuts Tycoon</div><div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>Gestión en tiempo real con mapa clicable, salas propias, obras con espera y economía RC separada de los puntos reales.</div></div>
+        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",justifyContent:"flex-end"}}><Badge col="gold">{Math.floor(state.rc)} RC</Badge><Badge col="green">Rep. {state.reputation.toFixed(1)}</Badge>{standalone&&<Btn small col="ghost" onClick={onExit}>Salir</Btn>}</div>
       </div>
     </Card>
-
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(105px,1fr))",gap:8}}>
-      <Tab id="mapa" icon="🗺️" label="Mapa"/>
-      <Tab id="gestion" icon="💈" label="Local"/>
-      <Tab id="stock" icon="📦" label="Stock"/>
-      <Tab id="equipo" icon="👥" label="Equipo"/>
-      <Tab id="misiones" icon="🎯" label="Misiones"/>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(92px,1fr))",gap:8}}>
+      <Tab id="mapa" icon="🗺️" label="Mapa"/><Tab id="sala" icon="🏠" label="Sala"/><Tab id="stock" icon="📦" label="Stock"/><Tab id="equipo" icon="👥" label="Equipo"/><Tab id="cola" icon="⏳" label="Obras"/><Tab id="guia" icon="🧭" label="Guía"/>
     </div>
-
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:9}}>
-      <MiniStat icon="💰" label="Saldo" value={`${Math.floor(state.rc)} RC`}/>
-      <MiniStat icon="📈" label="Reputación" value={`Nv. ${state.reputation.toFixed(1)}`}/>
-      <MiniStat icon="🙂" label="Satisfacción" value={`${Math.round(state.satisfaction)}%`}/>
-      <MiniStat icon="🧾" label="Clientes" value={state.totalClients||0}/>
-      <MiniStat icon="⏱️" label="Estimado/min" value={`+${projectedMinute} RC`}/>
+      <MiniStat icon="💰" label="Saldo" value={`${Math.floor(state.rc)} RC`}/><MiniStat icon="📈" label="Reputación" value={`Nv. ${state.reputation.toFixed(1)}`}/><MiniStat icon="🙂" label="Satisfacción" value={`${Math.round(state.satisfaction)}%`}/><MiniStat icon="📦" label="Stock" value={`${stockTotal}/${capacity}`}/><MiniStat icon="⏱️" label="Estimado/min" value={`+${projectedMinute} RC`}/>
     </div>
-
-    {tab==="mapa"&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:12}}>
-      {roomList.map(r=>{
-        const unlockCosts={bathroom:180,chill:260,terrace:420};
-        return <Card key={r.id} hover={r.unlocked} onClick={r.unlocked?()=>mutate(prev=>({...prev,selectedRoom:r.id})):undefined} style={{background:r.unlocked?"linear-gradient(180deg,#FFF4D6,#F6E5BE)":"linear-gradient(180deg,#D8C8A4,#B9A57B)",opacity:r.unlocked?1:.86,border:`2px solid ${state.selectedRoom===r.id?T.gold:T.g300}`}}>
-          <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-            <div style={{fontSize:"2.1rem"}}>{r.icon}</div>
-            <div style={{flex:1}}>
-              <div style={{fontWeight:950,color:T.g800}}>{r.name}</div>
-              <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,lineHeight:1.35}}>{r.desc}</div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                <Badge col={r.unlocked?"green":"red"}>{r.unlocked?"Abierta":"Bloqueada"}</Badge>
-                <Badge col="gold">Nivel {r.level||0}</Badge>
-              </div>
-              {!r.unlocked&&<div style={{marginTop:10}}><Btn small col="gold" onClick={()=>unlockRoom(r.id)}>Desbloquear {unlockCosts[r.id]||200} RC</Btn></div>}
-            </div>
-          </div>
-        </Card>;
-      })}
-    </div>}
-
-    {tab==="gestion"&&<div style={{display:"grid",gridTemplateColumns:"minmax(0,1.2fr) minmax(260px,.8fr)",gap:12}}>
-      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-          <div style={{fontSize:"2.2rem"}}>{selected.icon}</div>
-          <div>
-            <div style={{fontWeight:950,color:T.g800,fontSize:"1.1rem"}}>{selected.name}</div>
-            <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>Nivel {selected.level||0} · Salas abiertas: {unlockedCount}/5</div>
-          </div>
-        </div>
-        <Bar label="Satisfacción" value={state.satisfaction}/>
-        <Bar label="Limpieza" value={state.cleanliness}/>
-        <Bar label="Energía del equipo" value={state.energy}/>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:14}}>
-          <Btn col="gold" onClick={attendBurst}>Atender tanda</Btn>
-          <Btn col="green" onClick={()=>upgradeRoom(state.selectedRoom||"main")}>Mejorar sala</Btn>
-          <Btn col="ghost" onClick={cleanShop}>Limpiar 25 RC</Btn>
-        </div>
-      </Card>
+    {tab==="mapa"&&<TycoonMap/>}
+    {tab==="sala"&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:12}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontWeight:950,color:T.g800,fontSize:"1.1rem"}}>{selectedDef.icon} {selectedDef.name}</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>Nivel {selected.level||0} · Salas abiertas: {unlockedCount}/5</div></div><Btn small col="ghost" onClick={()=>setTab("mapa")}>← Mapa</Btn></div><TycoonScene roomId={selectedId}/></Card>
       <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)"}}>
-        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📜 Registro del local</div>
-        <div style={{display:"grid",gap:7,maxHeight:260,overflow:"auto"}}>
-          {(state.log||[]).map((l,i)=><div key={i} style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,borderBottom:`1px solid ${T.g200}`,paddingBottom:6}}>
-            {new Date(l.t).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})} · {l.msg}
-          </div>)}
-        </div>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Panel de la sala</div><div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginBottom:12}}>{selectedDef.desc}</div>
+        {selectedTask&&<div style={{marginBottom:12,background:"rgba(18,8,6,.08)",borderRadius:14,padding:10,fontWeight:900,color:T.g800}}>⏳ {selectedTask.label} · queda {tycoonFormatTime(selectedTask.endAt-nowTick)}</div>}
+        <Bar label="Satisfacción" value={state.satisfaction}/><Bar label="Limpieza" value={state.cleanliness}/><Bar label="Energía del equipo" value={state.energy}/>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8,marginTop:12}}><Btn col="gold" onClick={attendBurst}>Atender tanda</Btn><Btn col="green" disabled={!!selectedTask} onClick={()=>startRoomTask(selectedId,"upgrade")}>Mejorar {tycoonUpgradeCost(selectedId,selected.level||1)} RC</Btn><Btn col="ghost" onClick={cleanShop}>Limpiar 25 RC</Btn></div>
+        {inspect&&<div style={{marginTop:12,background:"rgba(255,244,214,.55)",border:`1.5px solid ${T.g300}`,borderRadius:16,padding:12}}><div style={{fontWeight:950,color:T.g800}}>{inspect.icon} {inspect.title}</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>{inspect.text}</div></div>}
       </Card>
     </div>}
-
-    {tab==="stock"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
-      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📦 Almacén</div>
-      <div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,marginBottom:12}}>Capacidad estimada: {stockTotal}/{capacity}. Si te quedas sin stock, baja la entrada de clientes.</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:9,marginBottom:12}}>
-        <MiniStat icon="🧴" label="Cera" value={state.stock.wax}/>
-        <MiniStat icon="🫧" label="Champú" value={state.stock.shampoo}/>
-        <MiniStat icon="🧻" label="Toallas" value={state.stock.towels}/>
-      </div>
-      <Btn col="gold" onClick={restock}>Reponer stock</Btn>
-    </Card>}
-
-    {tab==="equipo"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
-      <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>👥 Equipo</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:10}}>
-        <Card style={{background:"rgba(255,244,214,.72)"}}>
-          <div style={{fontSize:"1.8rem"}}>💈</div><div style={{fontWeight:950,color:T.g800}}>Barberos: {state.staff.barbers}</div>
-          <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,margin:"6px 0 10px"}}>Suben la capacidad de atender clientes.</div>
-          <Btn small col="gold" onClick={()=>hire("barbers")}>Contratar 350 RC</Btn>
-        </Card>
-        <Card style={{background:"rgba(255,244,214,.72)"}}>
-          <div style={{fontSize:"1.8rem"}}>🧹</div><div style={{fontWeight:950,color:T.g800}}>Ayudantes: {state.staff.assistants}</div>
-          <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,margin:"6px 0 10px"}}>Ayudan con energía y ritmo del local.</div>
-          <Btn small col="green" onClick={()=>hire("assistants")}>Contratar 180 RC</Btn>
-        </Card>
-      </div>
-    </Card>}
-
-    {tab==="misiones"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
-      <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",marginBottom:10}}>
-        <div><div style={{fontWeight:950,color:T.g800}}>🎯 Objetivos actuales</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>Esta versión guarda progreso local. Más adelante lo llevamos a Supabase.</div></div>
-        <Btn small col="red" onClick={resetGame}>Reiniciar</Btn>
-      </div>
-      {[
-        ["Atiende 10 clientes",state.totalClients>=10],
-        ["Mejora el local principal a nivel 3",mainLevel>=3],
-        ["Mejora almacén a nivel 3",storageLevel>=3],
-        ["Desbloquea zona chill",state.rooms.chill.unlocked],
-        ["Llega a 1000 RC",state.rc>=1000]
-      ].map(([txt,ok])=><div key={txt} style={{display:"flex",gap:9,alignItems:"center",padding:"9px 0",borderBottom:`1px solid ${T.g200}`,fontWeight:850,color:ok?T.g800:T.textSub}}>
-        <span>{ok?"✅":"⬜"}</span><span>{txt}</span>
-      </div>)}
-    </Card>}
+    {tab==="stock"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📦 Almacén visual</div><div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,marginBottom:12}}>Capacidad {stockTotal}/{capacity}. Mejorar almacén aumenta capacidad y reduce el coste de reposición. Si se vacía, baja la entrada de clientes.</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:9,marginBottom:12}}>{Object.entries(TYCOON_STOCK_LABELS).map(([k,[ic,la]])=><MiniStat key={k} icon={ic} label={la} value={state.stock[k]}/>)}</div><Btn col="gold" onClick={restock}>Reponer stock</Btn></Card>}
+    {tab==="equipo"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:10}}>👥 Equipo</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:10}}><Card style={{background:"rgba(255,244,214,.72)"}}><div style={{fontSize:"1.8rem"}}>💈</div><div style={{fontWeight:950,color:T.g800}}>Barberos: {state.staff.barbers}</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,margin:"6px 0 10px"}}>Suben la capacidad de atender clientes.</div><Btn small col="gold" onClick={()=>hire("barbers")}>Contratar 350 RC</Btn></Card><Card style={{background:"rgba(255,244,214,.72)"}}><div style={{fontSize:"1.8rem"}}>🧹</div><div style={{fontWeight:950,color:T.g800}}>Ayudantes: {state.staff.assistants}</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,margin:"6px 0 10px"}}>Ayudan con energía y ritmo del local.</div><Btn small col="green" onClick={()=>hire("assistants")}>Contratar 180 RC</Btn></Card></div></Card>}
+    {tab==="cola"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}><div><div style={{fontWeight:950,color:T.g800}}>⏳ Obras y desbloqueos</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>Las mejoras ya no son instantáneas: pagas RC, esperas y se completa sola.</div></div><Btn small col="red" onClick={resetGame}>Reiniciar</Btn></div>{(state.buildQueue||[]).length===0?<EmptyState icon="🛠️" title="Sin obras en marcha" sub="Entra en una sala y pulsa mejorar, o desbloquea zonas desde el mapa."/>:(state.buildQueue||[]).map(t=><div key={t.id} style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${T.g200}`,fontWeight:850,color:T.g800}}><span>{tycoonRoomDef(t.roomId).icon} {t.label}</span><Badge col="gold">{tycoonFormatTime(t.endAt-nowTick)}</Badge></div>)}</Card>}
+    {tab==="guia"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:12}}><div style={{fontSize:"2.2rem"}}>🧔🏽‍♂️</div><div><div style={{fontWeight:950,color:T.g800,fontSize:"1.1rem"}}>Guía de Rasta</div><div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,lineHeight:1.4}}>“Los puntos de la web son para tienda y comunidad; los RC son sólo del Tycoon. Aquí no se farmea la web: aquí montas el negocio, mejoras zonas y gestionas stock.”</div></div></div><div style={{display:"grid",gap:9}}>{["Pulsa Mapa para ver el negocio como una aldea: cada edificio abre una sala propia.","En Sala puedes tocar objetos: silla para atender, baldas para reponer, escoba/lavabo para limpiar.","Las mejoras tienen tiempo de espera. Si hay una obra activa en una zona, espera a que termine antes de subir otro nivel.","El almacén es vital: sin cera, champú o toallas, entran menos clientes y ganas menos RC.","La Zona chill y la Terraza no son adorno: suben satisfacción, reputación y entrada de clientes."].map((txt,i)=><div key={i} style={{display:"flex",gap:9,alignItems:"flex-start",fontWeight:850,color:T.textSub,lineHeight:1.35}}><span>✅</span><span>{txt}</span></div>)}</div><div style={{marginTop:14,fontWeight:950,color:T.g800}}>Objetivos</div>{[["Atiende 10 clientes",state.totalClients>=10],["Mejora el local principal a nivel 3",mainLevel>=3],["Mejora almacén a nivel 3",storageLevel>=3],["Desbloquea zona chill",state.rooms.chill.unlocked],["Llega a 1000 RC",state.rc>=1000]].map(([txt,ok])=><div key={txt} style={{display:"flex",gap:9,alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${T.g200}`,fontWeight:850,color:ok?T.g800:T.textSub}}><span>{ok?"✅":"⬜"}</span><span>{txt}</span></div>)}</Card>}
   </div>;
 }
-
 
 function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOpenTycoon,settings}){
   const [activeGame,setActiveGame]=useState(null);
