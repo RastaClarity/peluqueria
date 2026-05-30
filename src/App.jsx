@@ -4777,7 +4777,7 @@ function saveTycoonState(user,state){
   try{localStorage.setItem(tycoonKey(user),JSON.stringify({...state,lastTick:Date.now()}));}catch(e){}
 }
 function clampNum(n,min,max){return Math.max(min,Math.min(max,Number(n)||0));}
-function RastaCutsTycoonGame({user,showToast}){
+function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
   const [state,setState]=useState(()=>loadTycoonState(user));
   const [tab,setTab]=useState("mapa");
 
@@ -4988,18 +4988,21 @@ function RastaCutsTycoonGame({user,showToast}){
     </button>;
   }
 
-  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease"}}>
-    <Card style={{background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#B99A45)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative"}}>
+  return <div style={{display:"grid",gap:14,animation:"fadeSlide .34s ease",minHeight:standalone?"100vh":"auto",padding:standalone?"16px":"0",background:standalone?"radial-gradient(circle at top,#3A2414 0,#160B07 48%,#080403 100%)":"transparent"}}>
+    <Card style={{background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#B99A45)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative",boxShadow:standalone?"0 18px 60px rgba(0,0,0,.55)":"0 8px 18px rgba(18,8,4,0.24)"}}>
       <div style={{position:"absolute",right:-22,top:-32,fontSize:"7rem",opacity:.10}}>🏪</div>
       <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
         <div className="icon3d" style={{fontSize:"2.6rem"}}>🏪</div>
         <div style={{flex:1}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1}}>Rasta Cuts Tycoon</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:standalone?"2.05rem":"1.75rem",lineHeight:1}}>Rasta Cuts Tycoon</div>
           <div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-            Gestión en tiempo real. Moneda propia RC, separada de los puntos reales de la web.
+            Juego independiente de gestión en tiempo real. Moneda propia RC, separada de los puntos reales de la web.
           </div>
         </div>
-        <Badge col="gold">{Math.floor(state.rc)} RC</Badge>
+        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",justifyContent:"flex-end"}}>
+          <Badge col="gold">{Math.floor(state.rc)} RC</Badge>
+          {standalone&&<Btn small col="ghost" onClick={onExit}>Salir</Btn>}
+        </div>
       </div>
     </Card>
 
@@ -5113,7 +5116,7 @@ function RastaCutsTycoonGame({user,showToast}){
 }
 
 
-function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,settings}){
+function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOpenTycoon,settings}){
   const [activeGame,setActiveGame]=useState(null);
   const [boardGame,setBoardGame]=useState("runner");
   const [topMode,setTopMode]=useState("weekly");
@@ -5245,7 +5248,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,sett
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
                   {played&&<Badge col="green">✅ cobrado hoy</Badge>}
-                  <Btn small col="gold" onClick={()=>setActiveGame(g.id)}>{g.id==="tycoon"?"🏪 Gestionar":(played?"🔁 Rejugar":"▶ Jugar")}</Btn>
+                  <Btn small col="gold" onClick={()=>g.id==="tycoon"?onOpenTycoon?.():setActiveGame(g.id)}>{g.id==="tycoon"?"🏪 Abrir juego":(played?"🔁 Rejugar":"▶ Jugar")}</Btn>
                 </div>
               </div>
             </Card>
@@ -10340,6 +10343,26 @@ export default function App(){
   const [notifOpen,setNotifOpen]=useState(false);
   const [notifications,setNotifications]=useState([]);
   const [notifCount,setNotifCount]=useState(0);
+  const [tycoonRoute,setTycoonRoute]=useState(()=>typeof window!=="undefined"&&window.location.hash==="#/tycoon");
+
+  useEffect(()=>{
+    const onHash=()=>setTycoonRoute(typeof window!=="undefined"&&window.location.hash==="#/tycoon");
+    window.addEventListener("hashchange",onHash);
+    onHash();
+    return()=>window.removeEventListener("hashchange",onHash);
+  },[]);
+
+  function openTycoonPage(){
+    if(typeof window!=="undefined") window.location.hash="#/tycoon";
+    setTycoonRoute(true);
+  }
+  function closeTycoonPage(){
+    if(typeof window!=="undefined"){
+      history.pushState("",document.title,window.location.pathname+window.location.search);
+    }
+    setTycoonRoute(false);
+    stopGameMusic();
+  }
 
   useEffect(()=>{
     async function loadSettings(){
@@ -10465,12 +10488,23 @@ export default function App(){
   const sp={showToast,showPoints,user:currentUser,setUser,settings:appSettings,refreshUnread,unread,loadNotifications};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
+  if(tycoonRoute){
+    return (
+      <div style={{fontFamily:"'Crimson Text',serif",minHeight:"100vh",background:"radial-gradient(circle at top,#3A2414 0,#160B07 48%,#080403 100%)",color:T.white}}>
+        <style>{CSS}</style>
+        <Particles/>
+        <RastaCutsTycoonGame user={currentUser} showToast={showToast} standalone onExit={closeTycoonPage}/>
+        <Toast msg={toast.msg} show={toast.show}/>
+      </div>
+    );
+  }
+
   const pages={
     dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo} settings={appSettings}/>:<GestionAdmin {...sp}/>,
     citas:<Citas {...sp} onNavigate={navTo}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
-    tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión > Ajustes."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión > Ajustes."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
+    tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión > Ajustes."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión > Ajustes."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTycoon={openTycoonPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
