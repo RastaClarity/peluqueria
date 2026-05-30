@@ -681,243 +681,12 @@ input,select,button,textarea{font-family:'Crimson Text',serif}
   .gestion-grid-pro{grid-template-columns:repeat(7,1fr)!important}
 }
 
-/* ===== Paso 15.3: modo PC real a pantalla completa ===== */
+/* ===== FASE79: Gestión ordenada por bloques ===== */
+@media (max-width:520px){
+  .gestion-grid-pro{grid-template-columns:repeat(2,1fr)!important}
+}
 @media (min-width:900px){
-  :root{
-    --app-max-width:100vw!important;
-    --app-shell-pad-left:236px!important;
-    --app-bottom-pad:0px!important;
-    --desktop-sidebar-width:220px;
-  }
-
-  body{
-    min-width:100vw;
-    overflow-x:hidden;
-  }
-
-  .app-shell{
-    width:100vw!important;
-    max-width:none!important;
-    min-height:100dvh!important;
-    margin:0!important;
-    padding-left:var(--desktop-sidebar-width)!important;
-    padding-bottom:0!important;
-    box-shadow:none!important;
-    border-radius:0!important;
-  }
-
-  .app-header-pro{
-    position:sticky!important;
-    top:0!important;
-    margin:0!important;
-    border-radius:0 0 24px 24px!important;
-    min-height:68px!important;
-    padding:14px 26px!important;
-    z-index:80!important;
-  }
-
-  .app-header-pro>div:first-child>div:first-child{
-    font-size:1.75rem!important;
-  }
-
-  .page-content-pro{
-    width:100%!important;
-    max-width:none!important;
-    padding:28px 34px 42px!important;
-    min-height:calc(100dvh - 74px)!important;
-  }
-
-  .page-content-pro>div:not(.motion-strip){
-    max-width:none!important;
-    width:100%!important;
-  }
-
-  .motion-strip{
-    max-width:none!important;
-    margin:0 0 22px!important;
-  }
-
-  .bottom-nav-pro{
-    position:fixed!important;
-    top:0!important;
-    left:0!important;
-    bottom:0!important;
-    transform:none!important;
-    width:var(--desktop-sidebar-width)!important;
-    max-width:var(--desktop-sidebar-width)!important;
-    height:100dvh!important;
-    min-height:100dvh!important;
-    border-radius:0!important;
-    border:none!important;
-    border-right:2px solid rgba(245,230,200,.20)!important;
-    border-top:none!important;
-    display:flex!important;
-    flex-direction:column!important;
-    justify-content:flex-start!important;
-    align-items:stretch!important;
-    gap:8px!important;
-    padding:88px 14px 18px!important;
-    box-shadow:18px 0 44px rgba(0,0,0,.25)!important;
-    overflow-y:auto!important;
-    backdrop-filter:blur(14px);
-  }
-
-  .bottom-nav-pro::before{
-    content:"Rasta Cuts";
-    position:absolute;
-    top:22px;
-    left:16px;
-    right:16px;
-    color:#FFF4D6;
-    font-family:'Pirata One',cursive;
-    font-size:1.55rem;
-    line-height:1;
-    padding-bottom:14px;
-    border-bottom:1px solid rgba(255,244,214,.18);
-    text-shadow:0 4px 14px rgba(0,0,0,.35);
-  }
-
-  .bottom-nav-pro .nav-tab-pro{
-    width:100%!important;
-    min-width:0!important;
-    flex-direction:row!important;
-    justify-content:flex-start!important;
-    align-items:center!important;
-    gap:12px!important;
-    padding:11px 12px!important;
-    border-radius:16px!important;
-    background:rgba(255,244,214,.06)!important;
-    border:1px solid rgba(255,244,214,.08)!important;
-  }
-
-  .bottom-nav-pro .nav-tab-pro:hover,
-  .bottom-nav-pro .nav-tab-pro:focus-visible{
-    background:rgba(255,244,214,.14)!important;
-    transform:translateX(4px)!important;
-  }
-
-  .bottom-nav-pro .nav-icon-pro{
-    width:42px!important;
-    min-width:42px!important;
-    height:42px!important;
-    display:grid!important;
-    place-items:center!important;
-    font-size:1.35rem!important;
-    padding:0!important;
-    border-radius:14px!important;
-  }
-
-  .bottom-nav-pro span{
-    display:block!important;
-    font-size:.86rem!important;
-    font-weight:950!important;
-    color:#F5E6C8!important;
-    text-align:left!important;
-    line-height:1.05!important;
-    white-space:nowrap!important;
-  }
-
-  .bottom-nav-pro .nav-tab-pro:after{
-    left:auto!important;
-    right:-6px!important;
-    top:50%!important;
-    bottom:auto!important;
-    width:4px!important;
-    height:0!important;
-    border-radius:999px!important;
-    transform:translateY(-50%)!important;
-    transition:height .2s ease, opacity .2s ease!important;
-  }
-
-  .bottom-nav-pro .nav-tab-pro:hover:after{
-    height:26px!important;
-    width:4px!important;
-    opacity:.9!important;
-  }
-
-  .gestion-grid-pro{
-    grid-template-columns:repeat(auto-fit,minmax(135px,1fr))!important;
-    gap:12px!important;
-  }
-
-  .gestion-grid-pro button{
-    min-height:92px!important;
-    padding:14px 10px!important;
-  }
-
-  .gestion-grid-pro button div:first-child{
-    font-size:1.7rem!important;
-  }
-
-  .studio-panel{
-    border-radius:22px!important;
-  }
-
-  .modal-overlay-pro{
-    align-items:center!important;
-    justify-content:center!important;
-    padding:44px!important;
-  }
-
-  .modal-panel-pro{
-    width:min(860px,calc(100vw - 320px))!important;
-    max-width:860px!important;
-    max-height:calc(100dvh - 88px)!important;
-    border-radius:30px!important;
-  }
-}
-
-@media (min-width:1400px){
-  :root{--desktop-sidebar-width:248px!important}
-  .page-content-pro{
-    padding-left:46px!important;
-    padding-right:46px!important;
-  }
-  .bottom-nav-pro::before{
-    font-size:1.75rem!important;
-  }
-  .bottom-nav-pro span{
-    font-size:.92rem!important;
-  }
-}
-
-/* ===== FASE78: forzado real de escritorio ===== */
-@media (min-width:820px){
-  .app-shell{
-    width:100vw!important;
-    max-width:none!important;
-    margin:0!important;
-    padding-left:224px!important;
-    padding-bottom:0!important;
-    transform:none!important;
-  }
-  .app-header-pro{
-    left:0!important;
-    right:0!important;
-    width:100%!important;
-  }
-  .page-content-pro{
-    width:calc(100vw - 224px)!important;
-    max-width:none!important;
-    margin:0!important;
-    padding:28px 36px 42px!important;
-  }
-  .bottom-nav-pro{
-    top:0!important;
-    left:0!important;
-    bottom:0!important;
-    transform:none!important;
-    width:224px!important;
-    max-width:224px!important;
-    height:100dvh!important;
-    min-height:100dvh!important;
-    flex-direction:column!important;
-    justify-content:flex-start!important;
-    align-items:stretch!important;
-    padding:88px 14px 18px!important;
-    border-top:none!important;
-    border-right:2px solid rgba(245,230,200,.20)!important;
-  }
+  .gestion-grid-pro{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important}
 }
 `;
 
@@ -930,7 +699,7 @@ function Card({children,style:sx={},onClick,hover=false}){
   return <div onClick={onClick?(e)=>{SFX.click();onClick(e);}:undefined} className={`${hover?"ch":""} studio-panel`} style={{background:T.panel,borderRadius:20,padding:"16px",boxShadow:"0 8px 18px rgba(18,8,4,0.24)",border:`2px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",animation:"cardLift .35s ease",...sx}}>{children}</div>;
 }
 function Input({label,value,onChange,type="text",placeholder="",style:sx={}}){
-  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"calc(100vw - 224px)",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
+  return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
 }
 function Select({label,value,onChange,options=[]}){
   return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<select value={value} onChange={e=>onChange(e.target.value)} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}>{options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>;
@@ -7765,27 +7534,42 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
   const isStaff=role===ROLES.STAFF;
   const canAccess=isAdmin||isStaff;
   const [tab,setTab]=useState("resumen");
+  const [gestionGroup,setGestionGroup]=useState("trabajo");
   const tabs=[
-    {id:"resumen",icon:"🏠",label:"Resumen",sub:"Inicio interno con próximas citas y acciones rápidas",staff:true},
-    {id:"agenda",icon:"🗓️",label:"Agenda",sub:"Vista diaria ordenada por horas",staff:true},
-    {id:"estadisticas",icon:"📊",label:"Estadísticas",sub:"Citas, ingresos, pedidos, puntos y comunidad",staff:true},
-    {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true},
-    {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true},
-    {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true},
-    {id:"moderacion",icon:"🛡️",label:"Moderación",sub:"Reportes y control de comunidad",staff:true},
-    {id:"clientes",icon:"👥",label:"Clientes",sub:"Clientes de tienda con citas registradas",staff:true},
-    {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true},
-    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones y objetos editables",staff:false},
-    {id:"pedidos",icon:"🎁",label:"Pedidos",sub:"Canjes y entregas de tienda",staff:true},
-    {id:"musica_admin",icon:"🎧",label:"Música",sub:"Artistas, enlaces y audios propios",staff:false},
-    {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Cuentas online, roles y permisos",staff:false},
-    {id:"seguridad",icon:"🛡️",label:"Seguridad",sub:"Auditoría de roles y cambios importantes",staff:false},
-    {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna",staff:false},
+    {id:"resumen",icon:"🏠",label:"Resumen",sub:"Inicio interno con próximas citas y acciones rápidas",staff:true,group:"trabajo"},
+    {id:"agenda",icon:"🗓️",label:"Agenda",sub:"Vista diaria ordenada por horas",staff:true,group:"trabajo"},
+    {id:"estadisticas",icon:"📊",label:"Estadísticas",sub:"Citas, ingresos, pedidos, puntos y comunidad",staff:true,group:"control"},
+    {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y ventas del día",staff:true,group:"trabajo"},
+    {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes y confirmadas",staff:true,group:"trabajo"},
+    {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true,group:"comunidad"},
+    {id:"moderacion",icon:"🛡️",label:"Moderación",sub:"Reportes y control de comunidad",staff:true,group:"comunidad"},
+    {id:"clientes",icon:"👥",label:"Clientes",sub:"Clientes de tienda con citas registradas",staff:true,group:"trabajo"},
+    {id:"stock",icon:"📦",label:"Stock",sub:"Inventario y productos",staff:true,group:"trabajo"},
+    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Premios, cupones y objetos editables",staff:false,group:"control"},
+    {id:"pedidos",icon:"🎁",label:"Pedidos",sub:"Canjes y entregas de tienda",staff:true,group:"trabajo"},
+    {id:"musica_admin",icon:"🎧",label:"Música",sub:"Artistas, enlaces y audios propios",staff:false,group:"comunidad"},
+    {id:"usuarios",icon:"👑",label:"Usuarios",sub:"Cuentas online, roles y permisos",staff:false,group:"admin"},
+    {id:"seguridad",icon:"🛡️",label:"Seguridad",sub:"Auditoría de roles y cambios importantes",staff:false,group:"admin"},
+    {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna",staff:false,group:"admin"},
   ].filter(t=>isAdmin||t.staff);
   const active=tabs.find(t=>t.id===tab)||tabs[0];
+  const gestionGroups=[
+    {id:"trabajo",icon:"💈",label:"Trabajo",sub:"Agenda, citas, caja, clientes, pedidos y stock"},
+    {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Mensajes, moderación y música"},
+    {id:"control",icon:"📊",label:"Control",sub:"Estadísticas, tienda y configuración comercial"},
+    {id:"admin",icon:"🔐",label:"Admin",sub:"Usuarios, seguridad y ajustes"}
+  ].filter(g=>tabs.some(t=>t.group===g.id));
+  const visibleTabs=tabs.filter(t=>t.group===gestionGroup);
+  function openGestionGroup(id){
+    SFX.tab();
+    setGestionGroup(id);
+    const first=tabs.find(t=>t.group===id);
+    if(first) setTab(first.id);
+  }
 
   useEffect(()=>{
     if(!tabs.find(t=>t.id===tab)) setTab(tabs[0]?.id||"facturacion");
+    if(!tabs.some(t=>t.group===gestionGroup)) setGestionGroup(tabs[0]?.group||"trabajo");
   },[role]);
 
   if(!canAccess){
@@ -7820,8 +7604,20 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
         </div>
       </Card>
 
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`,padding:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
+          {gestionGroups.map(g=><button key={g.id} onClick={()=>openGestionGroup(g.id)} style={{border:`2px solid ${gestionGroup===g.id?T.gold:T.g300}`,background:gestionGroup===g.id?T.gradGold:"rgba(255,244,214,.72)",color:gestionGroup===g.id?T.g900:T.g700,borderRadius:14,padding:"9px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
+            <div style={{fontSize:"1.1rem"}}>{g.icon}</div>
+            <div>{g.label}</div>
+          </button>)}
+        </div>
+        <div style={{fontSize:".75rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:8}}>
+          {gestionGroups.find(g=>g.id===gestionGroup)?.sub}
+        </div>
+      </Card>
+
       <div className="gestion-grid-pro" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-        {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.84)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
+        {visibleTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.84)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
           <div style={{fontSize:"1.28rem",lineHeight:1}}>{t.icon}</div>
           <div style={{fontSize:".68rem",marginTop:3}}>{t.label}</div>
         </button>)}
@@ -8675,7 +8471,6 @@ export default function App(){
   const [notifOpen,setNotifOpen]=useState(false);
   const [notifications,setNotifications]=useState([]);
   const [notifCount,setNotifCount]=useState(0);
-  const [isDesktop,setIsDesktop]=useState(()=>typeof window!=="undefined" ? window.innerWidth>=820 : false);
 
   useEffect(()=>{
     async function loadSettings(){
@@ -8683,17 +8478,6 @@ export default function App(){
       setAppSettings(cfg);
     }
     loadSettings();
-  },[]);
-
-  useEffect(()=>{
-    const update=()=>setIsDesktop(typeof window!=="undefined" && window.innerWidth>=820);
-    update();
-    window.addEventListener("resize",update);
-    window.addEventListener("orientationchange",update);
-    return ()=>{
-      window.removeEventListener("resize",update);
-      window.removeEventListener("orientationchange",update);
-    };
   },[]);
 
   useEffect(()=>{
@@ -8823,122 +8607,12 @@ export default function App(){
     cupones:<Cupones user={currentUser} showToast={showToast}/>,
   };
 
-  const desktopSidebar=224;
-  const shellStyle=isDesktop?{
-    fontFamily:"'Crimson Text',serif",
-    background:theme.shell,
-    minHeight:"100vh",
-    width:"100vw",
-    maxWidth:"none",
-    minWidth:"100vw",
-    margin:0,
-    paddingLeft:desktopSidebar,
-    paddingBottom:0,
-    overflowX:"hidden",
-    position:"relative",
-    boxShadow:"none",
-    "--shineA":theme.shineA,
-    "--shineB":theme.shineB,
-    "--shineSpeed":"7.2s",
-    "--pageGlowA":theme.glowA,
-    "--pageGlowB":theme.glowB,
-    "--pageMark":theme.mark,
-    "--pageMarkColor":`${theme.accent}12`,
-    "--pageAccent":theme.accent
-  }:{
-    fontFamily:"'Crimson Text',serif",
-    background:theme.shell,
-    minHeight:"100vh",
-    maxWidth:"var(--app-max-width,480px)",
-    width:"100%",
-    margin:"0 auto",
-    paddingBottom:"var(--app-bottom-pad,82px)",
-    position:"relative",
-    boxShadow:`0 0 0 1px rgba(232,211,162,.10),0 0 42px rgba(0,0,0,.42),0 0 36px ${theme.accent}22`,
-    "--shineA":theme.shineA,
-    "--shineB":theme.shineB,
-    "--shineSpeed":"7.2s",
-    "--pageGlowA":theme.glowA,
-    "--pageGlowB":theme.glowB,
-    "--pageMark":theme.mark,
-    "--pageMarkColor":`${theme.accent}12`,
-    "--pageAccent":theme.accent
-  };
-  const headerStyle=isDesktop?{
-    background:role===ROLES.CLIENT?theme.header:grad,
-    padding:"14px 28px",
-    display:"flex",
-    justifyContent:"space-between",
-    alignItems:"center",
-    position:"sticky",
-    top:0,
-    zIndex:50,
-    minHeight:68,
-    boxShadow:`0 4px 22px rgba(0,0,0,0.22), inset 0 -1px 0 ${theme.accent}33`,
-    borderRadius:"0 0 24px 24px"
-  }:{
-    background:role===ROLES.CLIENT?theme.header:grad,
-    padding:"12px 16px",
-    display:"flex",
-    justifyContent:"space-between",
-    alignItems:"center",
-    position:"sticky",
-    top:0,
-    zIndex:50,
-    boxShadow:`0 4px 20px rgba(0,0,0,0.26), inset 0 -1px 0 ${theme.accent}33`
-  };
-  const contentStyle=isDesktop?{
-    padding:"28px 36px 42px",
-    position:"relative",
-    minHeight:"calc(100dvh - 68px)",
-    width:"calc(100vw - 224px)",
-    maxWidth:"none"
-  }:{
-    padding:"18px 14px",
-    position:"relative"
-  };
-  const navStyle=isDesktop?{
-    position:"fixed",
-    top:0,
-    bottom:0,
-    left:0,
-    transform:"none",
-    width:"224px",
-    maxWidth:"224px",
-    height:"100dvh",
-    background:theme.nav,
-    borderRight:`2px solid ${theme.accent}`,
-    display:"flex",
-    flexDirection:"column",
-    justifyContent:"flex-start",
-    alignItems:"stretch",
-    gap:8,
-    padding:"88px 14px 18px",
-    zIndex:100,
-    boxShadow:"18px 0 44px rgba(0,0,0,0.25)",
-    overflowY:"auto"
-  }:{
-    position:"fixed",
-    bottom:0,
-    left:"50%",
-    transform:"translateX(-50%)",
-    width:"100%",
-    maxWidth:480,
-    background:theme.nav,
-    borderTop:`2px solid ${theme.accent}`,
-    display:"flex",
-    justifyContent:"space-around",
-    padding:"6px 2px 10px",
-    zIndex:100,
-    boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"
-  };
-
   return(
-    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-page={ap} data-community={communityTab} style={shellStyle}>
+    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-page={ap} data-community={communityTab} style={{fontFamily:"'Crimson Text',serif",background:theme.shell,minHeight:"100vh",maxWidth:"var(--app-max-width,480px)",width:"100%",margin:"0 auto",paddingBottom:"var(--app-bottom-pad,82px)",position:"relative",boxShadow:`0 0 0 1px rgba(232,211,162,.10),0 0 42px rgba(0,0,0,.42),0 0 36px ${theme.accent}22`,"--shineA":theme.shineA,"--shineB":theme.shineB,"--shineSpeed":"7.2s","--pageGlowA":theme.glowA,"--pageGlowB":theme.glowB,"--pageMark":theme.mark,"--pageMarkColor":`${theme.accent}12`,"--pageAccent":theme.accent}}>
       <style>{CSS}</style>
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
-      <div className="app-header-pro" style={headerStyle}>
+      <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.26), inset 0 -1px 0 ${theme.accent}33`}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{appSettings?.branding?.emoji_principal||"✂️"} {appSettings?.branding?.nombre_tienda||BRAND.name}</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
@@ -8952,20 +8626,19 @@ export default function App(){
           </div>
         </div>
       </div>
-      <div key={`${ap}-${communityTab}`} className="page-content-pro" style={contentStyle}>
+      <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
         <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${theme.accent}99,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${theme.accent}33`,opacity:.78}}/>
         {pages[ap]||pages["dashboard"]}
         <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
       </div>
-      <div className="bottom-nav-pro" style={navStyle}>
-        {isDesktop&&<div style={{position:"absolute",top:22,left:16,right:16,color:"#FFF4D6",fontFamily:"'Pirata One',cursive",fontSize:"1.6rem",lineHeight:1,paddingBottom:14,borderBottom:"1px solid rgba(255,244,214,.18)",textShadow:"0 4px 14px rgba(0,0,0,.35)"}}>✂️ Rasta Cuts<br/><span style={{fontFamily:"Cinzel,serif",fontSize:".56rem",fontWeight:900,letterSpacing:1.2,opacity:.72}}>VISTA PC ACTIVA · F78</span></div>}
+      <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:theme.nav,borderTop:`2px solid ${theme.accent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>{
           const badge=(role===ROLES.CLIENT && n.id==="buzon")?unread.client:((role!==ROLES.CLIENT && n.id==="gestion")?unread.admin:0);
           return(
-          <button className="nav-tab-pro" key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:isDesktop?"row":"column",alignItems:"center",justifyContent:isDesktop?"flex-start":"center",gap:isDesktop?12:2,background:isDesktop?"rgba(255,244,214,.06)":"none",border:isDesktop?"1px solid rgba(255,244,214,.08)":"none",borderRadius:isDesktop?16:0,cursor:"pointer",padding:isDesktop?"11px 12px":"2px 4px",minWidth:isDesktop?0:38,width:isDesktop?"100%":"auto",position:"relative"}}>
+          <button className="nav-tab-pro" key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38,position:"relative"}}>
             {badge>0&&<span style={{position:"absolute",top:-2,right:2,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{badge>9?"9+":badge}</span>}
-            <div className="nav-icon-pro" style={{fontSize:isDesktop?"1.35rem":"1.1rem",background:ap===n.id?theme.header:"transparent",borderRadius:isDesktop?14:10,padding:isDesktop?0:"4px 7px",width:isDesktop?42:"auto",height:isDesktop?42:"auto",minWidth:isDesktop?42:"auto",display:isDesktop?"grid":"block",placeItems:isDesktop?"center":undefined,transform:ap===n.id&&!isDesktop?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${theme.accent}44`:"none"}}>{n.icon}</div>
-            <span style={{fontSize:isDesktop?".86rem":"0.52rem",fontWeight:isDesktop?950:800,color:ap===n.id?"#F5E6C8":"#DEB887",transition:"color 0.2s",textAlign:isDesktop?"left":"center",whiteSpace:isDesktop?"nowrap":"normal"}}>{n.label}</span>
+            <div className="nav-icon-pro" style={{fontSize:"1.1rem",background:ap===n.id?theme.header:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${theme.accent}44`:"none"}}>{n.icon}</div>
+            <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?"#F5E6C8":"#DEB887",transition:"color 0.2s"}}>{n.label}</span>
           </button>
         );})}
       </div>
