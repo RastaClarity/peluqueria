@@ -2082,22 +2082,39 @@ function serviceGroups(){
   return [...new Set(SERVICIOS.map(s=>s.grupo))];
 }
 
-function Citas({user,showToast}){
+function Citas({user,showToast,onNavigate}){
   const [citas,setCitas]=useState([]);
+  const [cobros,setCobros]=useState([]);
   const [showNew,setShowNew]=useState(false);
   const [loading,setLoading]=useState(true);
   const [form,setForm]=useState({servicios:["corte"],fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});
   const [ocupados,setOcupados]=useState([]);
   const [view,setView]=useState(user?.rol!==ROLES.CLIENT?"pendiente":"todas");
   const [proposal,setProposal]=useState(null);
+  const [adminEdit,setAdminEdit]=useState(null);
+  const [cancelEdit,setCancelEdit]=useState(null);
   const isAdmin=user?.rol!==ROLES.CLIENT;
+
   useEffect(()=>{loadCitas();},[]);
+
   async function loadCitas(){
     setLoading(true);
     const q=isAdmin?"?order=fecha.asc,hora.asc&select=*":`?usuario_id=eq.${user.id}&order=fecha.asc,hora.asc&select=*`;
-    setCitas(await dbGet("citas",q)||[]);setLoading(false);
+    const [citasRows,cobrosRows]=await Promise.all([
+      dbGet("citas",q),
+      dbGet("cobros","?select=id,cita_id,importe,estado")
+    ]);
+    setCitas(Array.isArray(citasRows)?citasRows:[]);
+    setCobros((Array.isArray(cobrosRows)?cobrosRows:[]).filter(c=>String(c.estado||"pagado").toLowerCase()!=="anulado"));
+    setLoading(false);
   }
+
   async function checkHorarios(fecha){if(!fecha)return;const data=await dbGet("citas",`?fecha=eq.${fecha}&select=hora`);setOcupados((data||[]).map(c=>c.hora));}
+
+  function pagoDe(cita){
+    return cobros.find(x=>String(x.cita_id||"")===String(cita.id)||String(x.id||"")===String(cita.cobro_id||""));
+  }
+
   function toggleService(id){
     setForm(f=>{
       const current=Array.isArray(f.servicios)?f.servicios:[];
@@ -2106,6 +2123,7 @@ function Citas({user,showToast}){
       return {...f,servicios:next.length?next:current};
     });
   }
+
   async function saveCita(){
     if(!form.servicios?.length){showToast("Elige al menos un tratamiento");return;}
     if(!form.fecha||!form.hora){showToast("Selecciona fecha y hora");return;}
@@ -2124,26 +2142,89 @@ function Citas({user,showToast}){
       notas:notasLimpias?`${resumenDuracion}\n${notasLimpias}`:resumenDuracion,
       cliente_nombre:form.cliente_nombre||user?.nombre||user?.email||"Cliente",
       usuario_id:user.id,
-      estado:"pendiente"
+      estado:"pendiente",
+      respuesta_cliente:"pendiente",
+      updated_at:new Date().toISOString()
     });
     showToast("Cita enviada y pendiente de confirmar");SFX.success();setShowNew(false);setForm({servicios:["corte"],fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});loadCitas();
   }
+
   async function updateCita(cita,patch,msg){
-    const ok=await dbPatch("citas",`?id=eq.${cita.id}`,patch);
+    const ok=await dbPatch("citas",`?id=eq.${cita.id}`,{...patch,updated_at:new Date().toISOString(),gestionado_por:isAdmin?(user?.email||user?.id||"staff"):cita.gestionado_por});
     if(ok){showToast(msg);SFX.success();await loadCitas();}
     else{showToast("No se pudo actualizar la cita");SFX.error();}
   }
-  function openProposal(cita){
-    setProposal({cita,fecha:cita.fecha||"",hora:cita.hora||"",nota:""});
-    checkHorarios(cita.fecha||"");
+
+  async function sendCitaMessage(cita,msg){
+    try{
+      if(!cita?.usuario_id||!msg)return;
+      await dbPost("mensajes_privados",{
+        usuario_id:String(cita.usuario_id),
+        cliente_nombre:cita.cliente_nombre||"Cliente",
+        autor_id:String(user.id),
+        autor_nombre:user.nombre||"Rasta Cuts",
+        autor_rol:normalizeRole(user.rol||user.role),
+        mensaje:msg,
+        leido_cliente:false,
+        leido_admin:true,
+        estado:"abierto",
+        vinculado_cita_id:cita.id
+      });
+    }catch(e){}
   }
+
+  function openProposal(cita){
+    setProposal({cita,fecha:cita.propuesta_fecha||cita.fecha||"",hora:cita.propuesta_hora||cita.hora||"",nota:""});
+    checkHorarios(cita.propuesta_fecha||cita.fecha||"");
+  }
+
   async function sendProposal(){
     if(!proposal?.fecha||!proposal?.hora){showToast("Elige fecha y hora para la propuesta");return;}
-    const old=String(proposal.cita.notas||"").trim();
-    const extra=`Propuesta de nueva hora: ${proposal.fecha} a las ${proposal.hora}${proposal.nota?` · ${proposal.nota}`:""}`;
-    await updateCita(proposal.cita,{fecha:proposal.fecha,hora:proposal.hora,estado:"propuesta",notas:old?`${old}\n\n${extra}`:extra},"Propuesta enviada");
+    const extra=`Te proponemos cambiar tu cita al ${proposal.fecha} a las ${proposal.hora}${proposal.nota?`.\n${proposal.nota}`:"."}`;
+    await updateCita(proposal.cita,{
+      propuesta_fecha:proposal.fecha,
+      propuesta_hora:proposal.hora,
+      estado:"propuesta",
+      respuesta_cliente:"pendiente",
+      notas_admin:proposal.nota||proposal.cita.notas_admin||""
+    },"Propuesta enviada al cliente");
+    await sendCitaMessage(proposal.cita,`📅 Propuesta de nueva cita:\n${extra}`);
     setProposal(null);
   }
+
+  async function aceptarPropuesta(cita){
+    if(!cita.propuesta_fecha||!cita.propuesta_hora){showToast("Esta propuesta no tiene fecha/hora guardada");return;}
+    await updateCita(cita,{
+      fecha:cita.propuesta_fecha,
+      hora:cita.propuesta_hora,
+      estado:"confirmada",
+      respuesta_cliente:"aceptada"
+    },"Propuesta aceptada");
+  }
+
+  async function rechazarPropuesta(cita){
+    await updateCita(cita,{estado:"pendiente",respuesta_cliente:"rechazada"},"Propuesta rechazada");
+  }
+
+  async function guardarNotasAdmin(){
+    if(!adminEdit)return;
+    await updateCita(adminEdit.cita,{notas_admin:adminEdit.notas_admin||""},"Notas internas guardadas");
+    setAdminEdit(null);
+  }
+
+  async function cancelarCita(){
+    if(!cancelEdit)return;
+    const motivo=String(cancelEdit.motivo||"").trim();
+    await updateCita(cancelEdit.cita,{estado:"cancelada",motivo_cancelacion:motivo||null},"Cita cancelada");
+    if(motivo||isAdmin) await sendCitaMessage(cancelEdit.cita,`❌ Cita cancelada${motivo?`:\n${motivo}`:"."}`);
+    setCancelEdit(null);
+  }
+
+  function irBuzon(cita){
+    if(isAdmin){onNavigate?.("gestion");showToast?.("Abre Gestión > Mensajes para responder al cliente");}
+    else onNavigate?.("buzon");
+  }
+
   const currentServices=selectedServices(form.servicios);
   const currentTotal=citaTotal(currentServices);
   const currentDuration=citaDuration(currentServices);
@@ -2161,26 +2242,28 @@ function Citas({user,showToast}){
     {id:"pendiente",label:"Pendientes",icon:"🟡"},
     {id:"propuesta",label:"Propuestas",icon:"🔁"},
     {id:"confirmada",label:"Confirmadas",icon:"✅"},
+    {id:"cancelada",label:"Canceladas",icon:"❌"},
   ];
   const citasVisibles=view==="todas"?citas:citas.filter(c=>statusOf(c)===view);
   const eColor={pendiente:"gold",propuesta:"blue",confirmada:"green",cancelada:"red",completada:"blue"};
   const eLabel={pendiente:"pendiente",propuesta:"propuesta",confirmada:"confirmada",cancelada:"cancelada",completada:"realizada"};
+
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="📅" title="Citas" sub={isAdmin?"Panel de reservas pendientes":"Tus reservas"} action={<Btn small onClick={()=>setShowNew(true)}>+ Nueva</Btn>}/>
+      <SectionHeader icon="📅" title="Citas" sub={isAdmin?"Panel real de reservas y propuestas":"Tus reservas"} action={<Btn small onClick={()=>setShowNew(true)}>+ Nueva</Btn>}/>
 
       <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
           <div>
             <div style={{fontWeight:950,color:T.g800}}>{isAdmin?"☕ Panel de citas":"🧾 Estado de tus citas"}</div>
-            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>{isAdmin?"Acepta, cancela, propone otra hora o marca citas realizadas.":"Aquí verás si tu reserva está pendiente, confirmada o con propuesta de cambio."}</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>{isAdmin?"Confirma, propone otra hora, añade notas internas, cancela o marca realizadas.":"Aquí verás si tu reserva está pendiente, confirmada, cancelada o con propuesta de cambio."}</div>
           </div>
           <Badge col={(counts.pendiente||0)?"gold":"green"}>{counts.pendiente||0} pendientes</Badge>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
           <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.pendiente||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Pendientes</div></div>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.propuesta||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Propuestas</div></div>
           <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.confirmada||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Confirmadas</div></div>
-          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.completada||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Realizadas</div></div>
         </div>
         <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:2}}>
           {statusTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setView(t.id);}} style={{flex:"0 0 auto",border:"none",borderRadius:999,padding:"8px 12px",background:view===t.id?T.gradGold:"rgba(255,244,214,.62)",color:view===t.id?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:view===t.id?"0 8px 18px rgba(18,8,4,.16)":"none"}}>{t.icon} {t.label} <span style={{opacity:.75}}>({counts[t.id]||0})</span></button>)}
@@ -2193,18 +2276,28 @@ function Citas({user,showToast}){
           const dur=citaDuration(list);
           const precio=Number(c.servicio_precio)||citaTotal(list);
           const st=statusOf(c);
+          const pago=pagoDe(c);
+          const propuesta=c.propuesta_fecha&&c.propuesta_hora;
           return <Card key={c.id} style={{marginBottom:12,background:st==="pendiente"?"linear-gradient(180deg,#F0E0B8,#E6CF9B)":st==="confirmada"?"linear-gradient(180deg,#E4E8C6,#D8BE87)":T.panel}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7,flexWrap:"wrap"}}>
                   <Badge col={eColor[st]||"green"}>{eLabel[st]||st}</Badge>
+                  {pago&&<Badge col="green">cobrada {Number(pago.importe||0).toFixed(2)}€</Badge>}
+                  {c.respuesta_cliente&&c.respuesta_cliente!=="pendiente"&&<Badge col={c.respuesta_cliente==="aceptada"?"green":"red"}>{c.respuesta_cliente}</Badge>}
                   <span style={{fontSize:".78rem",fontWeight:950,color:T.g700}}>👤 {c.cliente_nombre||"Cliente"}</span>
                 </div>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
                   {list.length?list.map(s=><span key={s.id} style={{background:"rgba(75,48,27,.1)",border:`1px solid ${T.g300}`,borderRadius:999,padding:"4px 9px",fontWeight:900,fontSize:".72rem",color:T.g800}}>{s.icon||"✂️"} {s.label}</span>):<b>{c.servicio_label||c.servicio}</b>}
                 </div>
                 <div style={{fontSize:"0.86rem",fontWeight:950,color:T.g800}}>📆 {c.fecha} · {c.hora}{dur?` - ${endTime(c.hora,dur)}`:""}</div>
+                {propuesta&&<Card style={{marginTop:9,padding:10,background:"linear-gradient(180deg,#DCE4C8,#C9D39C)",border:"1.5px solid rgba(47,107,66,.35)"}}>
+                  <div style={{fontWeight:950,color:T.g800}}>🔁 Propuesta de la tienda</div>
+                  <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,marginTop:3}}>Nueva fecha: {c.propuesta_fecha} · {c.propuesta_hora}</div>
+                </Card>}
+                {c.motivo_cancelacion&&<div style={{marginTop:8,fontSize:".76rem",lineHeight:1.38,color:T.red,whiteSpace:"pre-wrap",fontWeight:850}}>Motivo: {c.motivo_cancelacion}</div>}
                 {c.notas&&<div style={{marginTop:8,fontSize:".76rem",lineHeight:1.38,color:T.textSub,whiteSpace:"pre-wrap",fontWeight:750,maxHeight:86,overflow:"hidden"}}>{String(c.notas)}</div>}
+                {isAdmin&&c.notas_admin&&<div style={{marginTop:8,fontSize:".76rem",lineHeight:1.38,color:T.g800,whiteSpace:"pre-wrap",fontWeight:850,background:"rgba(255,244,214,.48)",border:`1px dashed ${T.g300}`,borderRadius:12,padding:8}}>🔒 Nota interna: {c.notas_admin}</div>}
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
                 {!!precio&&<span style={{fontWeight:950,color:T.g600,fontSize:"1rem"}}>{precio}€</span>}
@@ -2212,12 +2305,16 @@ function Citas({user,showToast}){
               </div>
             </div>
             <div style={{marginTop:12,display:"flex",gap:8,flexWrap:"wrap"}}>
-              {isAdmin&&st==="pendiente"&&<Btn small col="green" onClick={()=>updateCita(c,{estado:"confirmada"},"Cita confirmada")}>✅ Aceptar</Btn>}
+              {isAdmin&&st==="pendiente"&&<Btn small col="green" onClick={()=>updateCita(c,{estado:"confirmada",respuesta_cliente:"aceptada"},"Cita confirmada")}>✅ Aceptar</Btn>}
               {isAdmin&&["pendiente","confirmada","propuesta"].includes(st)&&<Btn small col="gold" onClick={()=>openProposal(c)}>🔁 Proponer otra hora</Btn>}
               {isAdmin&&["confirmada","propuesta"].includes(st)&&<Btn small col="dark" onClick={()=>updateCita(c,{estado:"completada"},"Cita marcada como realizada")}>🏁 Realizada</Btn>}
+              {isAdmin&&<Btn small col="ghost" onClick={()=>setAdminEdit({cita:c,notas_admin:c.notas_admin||""})}>🔒 Nota interna</Btn>}
+              {isAdmin&&<Btn small col="ghost" onClick={()=>irBuzon(c)}>📩 Buzón</Btn>}
               {isAdmin&&st==="cancelada"&&<Btn small col="green" onClick={()=>updateCita(c,{estado:"pendiente"},"Cita reabierta")}>↩️ Reabrir</Btn>}
-              {!isAdmin&&st==="propuesta"&&<Btn small col="green" onClick={()=>updateCita(c,{estado:"confirmada"},"Propuesta aceptada")}>✅ Aceptar propuesta</Btn>}
-              {["pendiente","propuesta","confirmada"].includes(st)&&<Btn small col="red" onClick={()=>updateCita(c,{estado:"cancelada"},"Cita cancelada")}>❌ Cancelar</Btn>}
+              {!isAdmin&&st==="propuesta"&&<Btn small col="green" onClick={()=>aceptarPropuesta(c)}>✅ Aceptar propuesta</Btn>}
+              {!isAdmin&&st==="propuesta"&&<Btn small col="red" onClick={()=>rechazarPropuesta(c)}>❌ Rechazar</Btn>}
+              {!isAdmin&&<Btn small col="ghost" onClick={()=>irBuzon(c)}>📩 Buzón</Btn>}
+              {["pendiente","propuesta","confirmada"].includes(st)&&<Btn small col="red" onClick={()=>setCancelEdit({cita:c,motivo:c.motivo_cancelacion||""})}>❌ Cancelar</Btn>}
             </div>
           </Card>;
         })
@@ -2284,9 +2381,32 @@ function Citas({user,showToast}){
           <Btn full col="gold" onClick={sendProposal}>Enviar propuesta</Btn>
         </>}
       </Modal>
+
+      <Modal show={!!adminEdit} onClose={()=>setAdminEdit(null)} title="Nota interna">
+        {adminEdit&&<>
+          <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",padding:12}}>
+            <div style={{fontWeight:950,color:T.g800}}>{adminEdit.cita.cliente_nombre||"Cliente"}</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:4}}>{adminEdit.cita.fecha} · {adminEdit.cita.hora}</div>
+          </Card>
+          <textarea value={adminEdit.notas_admin} onChange={e=>setAdminEdit(v=>({...v,notas_admin:e.target.value}))} rows={5} placeholder="Notas internas para admin/staff. El cliente no las verá." style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:T.g150,resize:"vertical",outline:"none",fontWeight:800,color:T.text}}/>
+          <div style={{marginTop:10}}><Btn full col="gold" onClick={guardarNotasAdmin}>Guardar nota interna</Btn></div>
+        </>}
+      </Modal>
+
+      <Modal show={!!cancelEdit} onClose={()=>setCancelEdit(null)} title="Cancelar cita">
+        {cancelEdit&&<>
+          <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",padding:12}}>
+            <div style={{fontWeight:950,color:T.g800}}>{cancelEdit.cita.cliente_nombre||"Cliente"}</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:4}}>{cancelEdit.cita.fecha} · {cancelEdit.cita.hora}</div>
+          </Card>
+          <Input label="Motivo de cancelación" value={cancelEdit.motivo} onChange={v=>setCancelEdit(c=>({...c,motivo:v}))} placeholder="Ej: no hay hueco, cliente avisa, error de horario..."/>
+          <div style={{marginTop:10}}><Btn full col="red" onClick={cancelarCita}>Cancelar cita</Btn></div>
+        </>}
+      </Modal>
     </div>
   );
 }
+
 // CLIENTES
 function Clientes({showToast}){
   const [clientes,setClientes]=useState([]);
@@ -2523,6 +2643,8 @@ function Caja({user,showToast}){
       creado_por:user?.id||user?.email||"app"
     });
     if(ok){
+      const cobroId=Array.isArray(ok)?ok?.[0]?.id:null;
+      if(cobroId) await dbPatch("citas",`?id=eq.${citaCobro.id}`,{cobro_id:cobroId,updated_at:new Date().toISOString()});
       const puntosOk=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
       SFX.coins();
       showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosGenerados} pts de fidelidad`:""}${!puntosOk?" · revisa puntos":""}`);
@@ -7048,7 +7170,7 @@ export default function App(){
 
   const pages={
     dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo} settings={appSettings}/>:<GestionAdmin {...sp}/>,
-    citas:<Citas {...sp}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
+    citas:<Citas {...sp} onNavigate={navTo}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
     tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión > Ajustes."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión > Ajustes."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
