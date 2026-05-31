@@ -2765,6 +2765,44 @@ body[data-rc-theme="day"]{
   .app-header-pro .theme-word{display:none!important}
 }
 
+
+/* ===== FASE109: tienda personalización avatar/perfil + carrito funcional base ===== */
+.cart-button-pro{position:relative}
+.app-shell[data-rc-theme] .page-content-pro .shop-avatar-tag{
+  background:linear-gradient(180deg,#FFF8E8,#E9D8B4)!important;
+  color:#3A2A18!important;
+}
+
+
+/* ===== FASE110: confirmar carrito + desbloqueo de cosméticos ===== */
+.cart-button-pro:after{
+  content:"";
+}
+
+
+/* ===== FASE111: economía diaria dura ===== */
+.daily-cap-warning{
+  font-weight:950;
+}
+
+
+/* ===== FASE112: auditoría de puntos web ===== */
+.points-audit-note{
+  font-weight:950;
+}
+
+
+/* ===== FASE113: likes únicos en tablón ===== */
+button:disabled{
+  pointer-events:auto;
+}
+
+
+/* ===== FASE114: likes toggle en tablón ===== */
+.feed-like-toggle{
+  user-select:none;
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -3019,6 +3057,170 @@ const COSMETIC_CATALOG_FALLBACK=[
   {item_key:"bg_street",nombre:"Fondo calle",descripcion:"Fondo urbano para perfiles de comunidad.",categoria:"fondos",slot:"bg",valor:"street",puntos_precio:280,rareza:"raro",activo:true},
   {item_key:"bg_royal",nombre:"Fondo VIP",descripcion:"Fondo legendario para perfiles premium.",categoria:"fondos",slot:"bg",valor:"royal",puntos_precio:900,rareza:"legendario",activo:true},
 ];
+
+const WEB_POINTS_DAILY_NORMAL_CAP=50;
+
+function webPointsDayKey(uid){return `web_points_day_${uid||"anon"}_${new Date().toISOString().split("T")[0]}`;}
+function getWebPointsToday(uid){try{return Number(localStorage.getItem(webPointsDayKey(uid))||0);}catch{return 0;}}
+function addWebPointsToday(uid,pts){try{const next=getWebPointsToday(uid)+(Number(pts)||0);localStorage.setItem(webPointsDayKey(uid),String(next));return next;}catch{return 0;}}
+function webPointsRemainingToday(uid){return Math.max(0,WEB_POINTS_DAILY_NORMAL_CAP-getWebPointsToday(uid));}
+async function awardWebPoints({user,setUser,showToast,showPoints,points,reason="",excludeDailyCap=false}){
+  const requested=Math.max(0,Number(points)||0);
+  if(!user?.id||requested<=0)return 0;
+  const allowed=excludeDailyCap?requested:Math.min(requested,webPointsRemainingToday(user.id));
+  if(allowed<=0){
+    showToast?.(`Límite diario normal de ${WEB_POINTS_DAILY_NORMAL_CAP} puntos alcanzado`);
+    return 0;
+  }
+  if(!excludeDailyCap)addWebPointsToday(user.id,allowed);
+  const nuevos=(Number(user.puntos)||0)+allowed;
+  await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+  setUser?.(u=>({...u,puntos:nuevos}));
+  showPoints?.(allowed);
+  SFX.coins();
+  showToast?.(`${reason||"Puntos añadidos"} +${allowed} pts${allowed<requested?` · límite diario aplicado`:``}`);
+  return allowed;
+}
+async function awardWebPointsByUserId({usuarioId,points,reason="",excludeDailyCap=false}){
+  const requested=Math.max(0,Number(points)||0);
+  if(!usuarioId||requested<=0)return 0;
+  const allowed=excludeDailyCap?requested:Math.min(requested,webPointsRemainingToday(usuarioId));
+  if(allowed<=0)return 0;
+  try{
+    const rows=await dbGet("usuarios",`?id=eq.${usuarioId}&select=id,puntos&limit=1`);
+    const actual=Number(rows?.[0]?.puntos||0);
+    const nuevos=Math.max(0,actual+allowed);
+    const ok=await dbPatch("usuarios",`?id=eq.${usuarioId}`,{puntos:nuevos});
+    if(ok&&!excludeDailyCap)addWebPointsToday(usuarioId,allowed);
+    return ok?allowed:0;
+  }catch(e){
+    console.warn(`No se pudieron sumar puntos web (${reason})`,e);
+    return 0;
+  }
+}
+function feedLikeStorageKey(user){return `feed_likes_${user?.id||"anon"}`;}
+function readLocalFeedLikes(user){
+  try{return JSON.parse(localStorage.getItem(feedLikeStorageKey(user))||"[]");}catch{return [];}
+}
+function saveLocalFeedLikes(user,ids){
+  try{localStorage.setItem(feedLikeStorageKey(user),JSON.stringify([...new Set((ids||[]).map(String))]));}catch{}
+}
+function hasLocalFeedLike(user,postId){
+  return readLocalFeedLikes(user).includes(String(postId));
+}
+function addLocalFeedLike(user,postId){
+  const ids=[...new Set([...readLocalFeedLikes(user),String(postId)])];
+  saveLocalFeedLikes(user,ids);
+  return ids;
+}
+function removeLocalFeedLike(user,postId){
+  const ids=readLocalFeedLikes(user).filter(id=>String(id)!==String(postId));
+  saveLocalFeedLikes(user,ids);
+  return ids;
+}
+
+const PERSONALIZATION_SHOP_EXTRA=[
+  {id:"title_fresh_cut",item_key:"title_fresh_cut",icono:"🏷️",nombre:"Título: Corte Fresco",descripcion:"Título visible para tu perfil. Personalización web, no Tycoon.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Corte Fresco",puntos_precio:180,rareza:"comun",activo:true,stock:null},
+  {id:"title_barrio_vip",item_key:"title_barrio_vip",icono:"👑",nombre:"Título: Barrio VIP",descripcion:"Título premium para perfiles con flow.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Barrio VIP",puntos_precio:650,rareza:"epico",activo:true,stock:null},
+  {id:"name_gold",item_key:"name_gold",icono:"✨",nombre:"Nombre dorado",descripcion:"Color especial para destacar tu nombre en perfil y comunidad.",categoria:"avatar",tipo:"perfil_color",slot:"nameColor",valor:"gold",puntos_precio:420,rareza:"raro",activo:true,stock:null},
+  {id:"name_green",item_key:"name_green",icono:"🟢",nombre:"Nombre verde rasta",descripcion:"Color verde para tu nombre público.",categoria:"avatar",tipo:"perfil_color",slot:"nameColor",valor:"green",puntos_precio:320,rareza:"comun",activo:true,stock:null},
+  {id:"profile_card_wood",item_key:"profile_card_wood",icono:"🪵",nombre:"Tarjeta pergamino",descripcion:"Estilo visual para tu tarjeta de perfil.",categoria:"avatar",tipo:"perfil_card",slot:"profileCard",valor:"wood",puntos_precio:500,rareza:"raro",activo:true,stock:null},
+  {id:"profile_card_night",item_key:"profile_card_night",icono:"🌙",nombre:"Tarjeta noche verde",descripcion:"Marco oscuro/verde para tu tarjeta de perfil.",categoria:"avatar",tipo:"perfil_card",slot:"profileCard",valor:"nightGreen",puntos_precio:580,rareza:"epico",activo:true,stock:null},
+  {id:"sticker_scissors",item_key:"sticker_scissors",icono:"✂️",nombre:"Pegatina tijeras",descripcion:"Pegatina coleccionable para futuras tarjetas de perfil.",categoria:"avatar",tipo:"perfil_sticker",slot:"sticker",valor:"scissors",puntos_precio:120,rareza:"comun",activo:true,stock:null},
+  {id:"sticker_dread",item_key:"sticker_dread",icono:"🦁",nombre:"Pegatina dread",descripcion:"Pegatina rasta para futuras tarjetas de perfil.",categoria:"avatar",tipo:"perfil_sticker",slot:"sticker",valor:"dread",puntos_precio:180,rareza:"raro",activo:true,stock:null}
+].map(x=>({...x,origen:"fallback_personalizacion"}));
+function personalizationProductFromCosmetic(c){
+  return {
+    id:c.item_key||`${c.slot}_${c.valor}`,
+    item_key:c.item_key,
+    icono:c.slot==="frame"?"🖼️":c.slot==="bg"?"🌄":c.slot==="aura"?"✨":"🎭",
+    nombre:c.nombre,
+    descripcion:`${c.descripcion||"Personalización del avatar/perfil."} No afecta al Tycoon.`,
+    categoria:"avatar",
+    tipo:"cosmetico_avatar",
+    slot:c.slot,
+    valor:c.valor,
+    puntos_precio:Number(c.puntos_precio)||0,
+    rareza:c.rareza||"comun",
+    activo:c.activo!==false,
+    stock:null,
+    origen:"fallback_avatar"
+  };
+}
+function avatarShopFallbackItems(){
+  return [
+    ...COSMETIC_CATALOG_FALLBACK.map(personalizationProductFromCosmetic),
+    ...PERSONALIZATION_SHOP_EXTRA
+  ].filter(x=>x.activo!==false);
+}
+function cartStorageKey(user){return `rasta_cart_v1_${user?.id||"anon"}`;}
+function readCart(user){
+  try{return JSON.parse(localStorage.getItem(cartStorageKey(user))||"[]");}catch{return [];}
+}
+function writeCart(user,items){
+  try{
+    localStorage.setItem(cartStorageKey(user),JSON.stringify(Array.isArray(items)?items:[]));
+    window.dispatchEvent(new CustomEvent("rasta-cart-updated"));
+  }catch{}
+}
+function addToLocalCart(user,item,qty=1){
+  const current=readCart(user);
+  const id=String(item.id||item.item_key||item.nombre||Date.now());
+  const existing=current.find(x=>String(x.id)===id);
+  let next;
+  if(existing){
+    next=current.map(x=>String(x.id)===id?{...x,qty:(Number(x.qty)||1)+qty}:x);
+  }else{
+    next=[...current,{
+      id,
+      item_key:item.item_key||null,
+      nombre:item.nombre||item.titulo||"Artículo",
+      tipo:item.tipo||"tienda",
+      categoria:item.categoria||"premios",
+      icono:item.icono||"🎁",
+      precio_puntos:Number(item.puntos_precio||item.precio_puntos||item.puntos||0),
+      puntos:Number(item.puntos_precio||item.precio_puntos||item.puntos||0),
+      slot:item.slot||null,
+      valor:item.valor||null,
+      rareza:item.rareza||"comun",
+      descripcion:item.descripcion||"",
+      qty
+    }];
+  }
+  writeCart(user,next);
+  return next;
+}
+
+
+function catalogItemByKey(key){
+  if(!key)return null;
+  const all=[...avatarShopFallbackItems()];
+  return all.find(x=>x.item_key===key || x.id===key)||null;
+}
+function hydrateCartItem(it){
+  const found=catalogItemByKey(it.item_key||it.id);
+  return {...(found||{}),...it};
+}
+function isAvatarPersonalizationItem(it){
+  const h=hydrateCartItem(it);
+  const c=String(h.categoria||"").toLowerCase();
+  const t=String(h.tipo||"").toLowerCase();
+  return c==="avatar"||t.includes("avatar")||t.includes("perfil")||!!h.slot;
+}
+async function unlockCosmeticForUser(user,item){
+  const h=hydrateCartItem(item);
+  if(!h.item_key)return false;
+  const keys=[...new Set([...localOwnedCosmetics(user),h.item_key])];
+  saveLocalOwnedCosmetics(user,keys);
+  try{
+    await supabase.from("user_cosmetics").upsert(
+      {usuario_id:String(user.id),item_key:h.item_key,created_at:new Date().toISOString()},
+      {onConflict:"usuario_id,item_key"}
+    );
+  }catch{}
+  return true;
+}
+
 function rarityLabel(r){return {comun:"Común",raro:"Raro",epico:"Épico",legendario:"Legendario"}[r]||"Especial";}
 function rarityColor(r){return {comun:"green",raro:"blue",epico:"pink",legendario:"gold"}[r]||"green";}
 function cosmeticPatch(item){return item?.slot?{[item.slot]:item.valor}:{};}
@@ -4083,11 +4285,8 @@ async function grantNewsPoints({user,setUser,showToast,showPoints,eventKey,point
       console.warn("news_point_events error",evError);
       return false;
     }
-    const nuevos=(user.puntos||0)+points;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser?.(u=>({...u,puntos:nuevos}));
-    showPoints?.(points);SFX.coins();showToast?.(`${description} +${points} pts`);
-    return true;
+    const awarded=await awardWebPoints({user,setUser,showToast,showPoints,points,reason:description});
+    return awarded>0;
   }catch(e){console.warn("No se pudieron dar puntos de actualidad",e);return false;}
 }
 function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
@@ -4232,8 +4431,8 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
         await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_comment:${item.id}`,points:3,description:"Primer comentario en esta noticia"});
         const {data:mine}=await supabase.from("news_comments").select("news_id").eq("usuario_id",String(user.id));
         const distinct=new Set((mine||[]).map(x=>String(x.news_id))).size;
-        if(distinct>=3) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_3",points:8,description:"Has comentado 3 noticias distintas"});
-        if(distinct>=10) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_10",points:20,description:"Has comentado 10 noticias distintas"});
+        if(distinct>=3) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_3",points:5,description:"Has comentado 3 noticias distintas"});
+        if(distinct>=10) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_10",points:8,description:"Has comentado 10 noticias distintas"});
       }
     }finally{setLoading(false);}
   }
@@ -4982,7 +5181,7 @@ function Caja({user,showToast}){
   const [clienteNombre,setClienteNombre]=useState("");
   const [citaCobro,setCitaCobro]=useState(null);
   const [cobroForm,setCobroForm]=useState({metodo_pago:"efectivo",importe:"",puntos_generados:"10",descripcion:""});
-  const [puntosCitaDefault,setPuntosCitaDefault]=useState(10);
+  const [puntosCitaDefault,setPuntosCitaDefault]=useState(5);
 
   const today=()=>new Date().toISOString().split("T")[0];
   const monthStart=()=>{
@@ -4993,19 +5192,9 @@ function Caja({user,showToast}){
   const metodoLabel=m=>({efectivo:"Efectivo",tarjeta:"Tarjeta",bizum:"Bizum",mixto:"Mixto"})[m]||m||"Sin método";
 
   async function sumarPuntosFidelidad(usuarioId,puntos=0){
-    if(!usuarioId)return false;
     const add=Math.max(0,parseInt(puntos||0,10)||0);
-    if(!add)return true;
-    try{
-      const rows=await dbGet("usuarios",`?id=eq.${usuarioId}&select=id,puntos&limit=1`);
-      const actual=Number(rows?.[0]?.puntos||0);
-      const nuevos=Math.max(0,actual + add);
-      const ok=await dbPatch("usuarios",`?id=eq.${usuarioId}`,{puntos:nuevos});
-      return Boolean(ok);
-    }catch(e){
-      console.warn("No se pudieron sumar puntos de fidelidad",e);
-      return false;
-    }
+    if(!usuarioId||!add)return 0;
+    return await awardWebPointsByUserId({usuarioId,points:add,reason:"Cita cobrada"});
   }
 
   useEffect(()=>{loadCaja();},[]);
@@ -5018,7 +5207,7 @@ function Caja({user,showToast}){
       dbGet("app_settings","?setting_key=eq.puntos&select=setting_value&limit=1")
     ]);
     const puntosCfg=settingsRows?.[0]?.setting_value||{};
-    const puntosDefault=Math.max(0,parseInt(puntosCfg.puntos_por_cita_cobrada??10,10)||10);
+    const puntosDefault=Math.max(0,parseInt(puntosCfg.puntos_por_cita_cobrada??5,10)||5);
     setPuntosCitaDefault(puntosDefault);
     const cleanCobros=Array.isArray(cobs)?cobs:[];
     setCobros(cleanCobros);
@@ -5111,9 +5300,9 @@ function Caja({user,showToast}){
     if(ok){
       const cobroId=Array.isArray(ok)?ok?.[0]?.id:null;
       if(cobroId) await dbPatch("citas",`?id=eq.${citaCobro.id}`,{cobro_id:cobroId,updated_at:new Date().toISOString()});
-      const puntosOk=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
+      const puntosDados=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
       SFX.coins();
-      showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosGenerados} pts de fidelidad`:""}${!puntosOk?" · revisa puntos":""}`);
+      showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosDados}/${puntosGenerados} pts de fidelidad`:""}${puntosGenerados&&puntosDados<puntosGenerados?" · límite diario aplicado":""}`);
       setCitaCobro(null);
       await loadCaja();
     }else{
@@ -5447,7 +5636,7 @@ function AdminUsuarios({user,showToast}){
 }
 // FEED / TABLON
 function SocialFeed({user,setUser,showToast,showPoints}){
-  const [posts,setPosts]=useState([]);const [newPost,setNewPost]=useState("");const [loading,setLoading]=useState(true);const [profiles,setProfiles]=useState([]);const [selectedProfile,setSelectedProfile]=useState(null);
+  const [posts,setPosts]=useState([]);const [newPost,setNewPost]=useState("");const [loading,setLoading]=useState(true);const [profiles,setProfiles]=useState([]);const [selectedProfile,setSelectedProfile]=useState(null);const [likedPosts,setLikedPosts]=useState(()=>new Set(readLocalFeedLikes(user)));
   const canPost=normalizeRole(user.rol||user.role)!==ROLES.CLIENT;
   useEffect(()=>{load();},[]);
   async function load(){
@@ -5456,7 +5645,19 @@ function SocialFeed({user,setUser,showToast,showPoints}){
       dbGet("publicaciones","?tipo=neq.foro&order=created_at.desc&limit=30&select=*"),
       dbGet("usuarios","?select=*")
     ]);
-    setPosts(Array.isArray(raw)?raw:[]);setProfiles(await enrichProfilesWithAvatarConfigs(Array.isArray(users)?users:[]));setLoading(false);
+    const cleanPosts=Array.isArray(raw)?raw:[];
+    setPosts(cleanPosts);
+    setProfiles(await enrichProfilesWithAvatarConfigs(Array.isArray(users)?users:[]));
+    let likedIds=readLocalFeedLikes(user);
+    try{
+      const rows=await dbGet("publicacion_likes",`?usuario_id=eq.${user.id}&select=publicacion_id`);
+      if(Array.isArray(rows)&&rows.length){
+        likedIds=[...new Set([...likedIds,...rows.map(r=>String(r.publicacion_id))])];
+        saveLocalFeedLikes(user,likedIds);
+      }
+    }catch{}
+    setLikedPosts(new Set(likedIds));
+    setLoading(false);
   }
   function authorOf(post){return profiles.find(u=>String(u.id)===String(post.autor_id))||user;}
   async function publish(){
@@ -5465,7 +5666,39 @@ function SocialFeed({user,setUser,showToast,showPoints}){
     await dbPost("publicaciones",{contenido:newPost.trim(),autor_id:user.id,tipo:"anuncio",likes_count:0});
     setNewPost("");SFX.success();showToast("Anuncio publicado");load();
   }
-  async function likePost(post){ await dbPatch("publicaciones",`?id=eq.${post.id}`,{likes_count:(post.likes_count||0)+1});load(); }
+  async function likePost(post){
+    if(!post?.id||!user?.id)return;
+    const postId=String(post.id);
+    const alreadyLiked=likedPosts.has(postId)||hasLocalFeedLike(user,postId);
+    const delta=alreadyLiked?-1:1;
+    const nextLikes=new Set(likedPosts);
+    if(alreadyLiked){
+      nextLikes.delete(postId);
+      removeLocalFeedLike(user,postId);
+    }else{
+      nextLikes.add(postId);
+      addLocalFeedLike(user,postId);
+    }
+    setLikedPosts(nextLikes);
+    const nextCount=Math.max(0,(Number(post.likes_count)||0)+delta);
+    setPosts(prev=>prev.map(p=>String(p.id)===postId?{...p,likes_count:Math.max(0,(Number(p.likes_count)||0)+delta)}:p));
+    try{
+      if(alreadyLiked){
+        await dbDelete("publicacion_likes",`?publicacion_id=eq.${encodeURIComponent(postId)}&usuario_id=eq.${encodeURIComponent(String(user.id))}`);
+      }else{
+        await dbPost("publicacion_likes",{
+          publicacion_id:postId,
+          usuario_id:String(user.id),
+          usuario_nombre:user.nombre||user.email||"Usuario",
+          created_at:new Date().toISOString()
+        });
+      }
+    }catch(e){
+      console.warn("publicacion_likes no disponible; usando toggle local",e);
+    }
+    await dbPatch("publicaciones",`?id=eq.${post.id}`,{likes_count:nextCount});
+    SFX.success();
+  }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="📌" title="Tablón de anuncios" sub="Noticias, promociones y avisos oficiales de la tienda"/>
@@ -5487,7 +5720,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
           <div style={{fontSize:"0.93rem",fontWeight:700,color:T.text,lineHeight:1.55,whiteSpace:'pre-wrap'}}>{p.contenido}</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
             <span style={{fontSize:"0.76rem",color:T.textSub,fontWeight:800}}>{p.created_at?new Date(p.created_at).toLocaleDateString("es-ES"):""}</span>
-            <button onClick={()=>likePost(p)} style={{background:T.g150,border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999}}>❤️ {p.likes_count||0}</button>
+            <button onClick={()=>likePost(p)} title={likedPosts.has(String(p.id))?"Quitar like":"Dar like"} style={{background:likedPosts.has(String(p.id))?T.gradGold:T.g150,border:`1.5px solid ${likedPosts.has(String(p.id))?T.gold:T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:likedPosts.has(String(p.id))?T.g900:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999,opacity:1}}>{likedPosts.has(String(p.id))?"💛":"🤍"} {p.likes_count||0}</button>
           </div>
         </Card>;
       })}
@@ -5885,7 +6118,10 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
       data=await dbGet("premios","?activo=eq.true&order=puntos_precio.asc&select=*");
     }
     const pedidosRows=await dbGet("tienda_pedidos",`?usuario_id=eq.${user.id}&order=created_at.desc&limit=8&select=*`);
-    setProductos(Array.isArray(data)?data:[]);
+    const baseItems=Array.isArray(data)?data:[];
+    const hasAvatar=baseItems.some(p=>String(p.categoria||"").toLowerCase()==="avatar"||String(p.tipo||"").includes("avatar")||String(p.tipo||"").includes("perfil"));
+    const merged=hasAvatar?baseItems:[...baseItems,...avatarShopFallbackItems()];
+    setProductos(merged);
     setPedidos(Array.isArray(pedidosRows)?pedidosRows:[]);
     setLoading(false);
   }
@@ -5925,16 +6161,25 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
       await dbPatch("tienda_items",`?id=eq.${p.id}`,{stock:Math.max(0,Number(p.stock)-1)});
     }
     if(okUser){
+      const isAvatar=isAvatarPersonalizationItem(p);
+      if(isAvatar) await unlockCosmeticForUser(user,p);
       setUser(u=>({...u,puntos:nuevos}));
       SFX.coins();
       await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Nuevo pedido de tienda",mensaje:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:true});
-      await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"pedido",titulo:"Pedido creado",mensaje:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:false});
-      showToast(`${p.nombre} pedido correctamente`);
+      await createNotification({usuario_id:user.id,rol_destino:"client",tipo:isAvatar?"avatar":"pedido",titulo:isAvatar?"Personalización desbloqueada":"Pedido creado",mensaje:isAvatar?`Has desbloqueado ${p.nombre}. Ve a Perfil > Editor para equiparlo.`:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:isAvatar?"avatar":"tienda_pedido",entidad_id:pedidoId||p.id,importante:false});
+      showToast(isAvatar?`${p.nombre} desbloqueado`:`${p.nombre} pedido correctamente`);
       await load();
     }else{
       showToast("Pedido guardado, pero revisa los puntos del usuario");
     }
   }
+
+  function addCart(p){
+    addToLocalCart(user,p,1);
+    SFX.coins();
+    showToast(`${p.nombre} añadido al carrito`);
+  }
+
 
   const cats=[
     {id:"todo",label:"Todo",icon:"✨"},
@@ -5997,7 +6242,10 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
               </div>
               <div style={{marginTop:12}}>
                 {agotado?<div style={{textAlign:"center",fontSize:"0.78rem",color:T.red,fontWeight:950}}>Agotado</div>:
-                ok?<Btn full small col="gold" onClick={()=>canjear(p)}>Canjear</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850}}>Faltan {precio-(user.puntos||0)} pts</div>}
+                <div style={{display:"grid",gridTemplateColumns:ok?"1fr 1fr":"1fr",gap:8}}>
+                  <Btn full small col="ghost" onClick={()=>addCart(p)}>🛒 Añadir</Btn>
+                  {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>Canjear</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} pts</div>}
+                </div>}
               </div>
             </Card>
           );
@@ -6045,7 +6293,7 @@ function Cupones({user,showToast}){
 const TODAY_KEY=()=>new Date().toISOString().split("T")[0];
 function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${uid}_${TODAY_KEY()}`)==="1";}
 function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
-const GAME_DAILY_REWARDS={stitch:15,runner:12,jump:12,memoria:15,sopa:15,trivia:8,gacha:50};
+const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gacha:50};
 const ARCADE_GAMES=[
   {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda en tiempo real con moneda RC propia",pts:0},
   {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de premios: 50 tiradas al día",pts:GAME_DAILY_REWARDS.gacha},
@@ -6056,7 +6304,7 @@ const ARCADE_GAMES=[
   {id:"sopa",icon:"🔤",title:"Sopa diaria",desc:"Sopa 14x14 que cambia cada día",pts:GAME_DAILY_REWARDS.sopa},
   {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:GAME_DAILY_REWARDS.trivia}
 ];
-const GAME_DAILY_CAP=75;
+const GAME_DAILY_CAP=20;
 const GACHA_DAILY_PULL_LIMIT=50;
 function gachaPullsKey(uid){return `gacha_pulls_${uid||"anon"}_${TODAY_KEY()}`;}
 function getGachaPullsToday(uid){try{return Number(localStorage.getItem(gachaPullsKey(uid))||0);}catch{return 0;}}
@@ -7273,11 +7521,8 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
       setActiveGame(null);
       return;
     }
-    addDailyGamePointsTotal(user.id,reward);
-    const nuevos=(user.puntos||0)+reward;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser(u=>({...u,puntos:nuevos}));
-    showPoints(reward);SFX.coins();showToast(`+${reward} puntos reales!`);
+    const awarded=await awardWebPoints({user,setUser,showToast,showPoints,points:reward,reason:"Arcade"});
+    if(awarded>0)addDailyGamePointsTotal(user.id,awarded);
     setActiveGame(null);
   }
 
@@ -7640,9 +7885,8 @@ function Retos({user,setUser,showToast,showPoints}){
   async function reclamar(reto){
     const prog=progresos[reto.id];if(!prog||prog.completado)return;
     await dbPatch("retos_progreso",`?id=eq.${prog.id}`,{completado:true});
-    const nuevos=(user.puntos||0)+reto.puntos_premio;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser(u=>({...u,puntos:nuevos}));showPoints(reto.puntos_premio);SFX.coins();showToast(`+${reto.puntos_premio} puntos!`);load();
+    await awardWebPoints({user,setUser,showToast,showPoints,points:Number(reto.puntos_premio)||0,reason:"Reto"});
+    load();
   }
   function daysLeft(f){const d=Math.ceil((new Date(f)-new Date())/86400000);return d<=0?"Vence hoy":`${d} dias`;}
   return(
@@ -7767,9 +8011,8 @@ function Reviews({user,setUser,showToast,showPoints}){
   async function submit(){
     if(!comment.trim()){showToast("Escribe un comentario");return;}
     await dbPost("reviews",{usuario_id:user.id,autor_nombre:user.nombre,autor_avatar:user.avatar,rating,comentario:comment});
-    const nuevos=(user.puntos||0)+10;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser(u=>({...u,puntos:nuevos}));showPoints(10);showToast("Gracias por tu resena! +10 pts");
+    await awardWebPoints({user,setUser,showToast,showPoints,points:5,reason:"Reseña"});
+    showToast("Gracias por tu reseña");
     setShowNew(false);setComment("");setRating(5);SFX.success();load();
   }
   const avg=reviews.length>0?(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1):"--";
@@ -7873,12 +8116,12 @@ function PerfilNewsActivity({user}){
 
 // MISIONES Y TROFEOS
 const MISSION_DEFS=[
-  {key:"daily_game",period:"day",icon:"🎮",title:"Una partida al día",desc:"Guarda una partida de Arcade hoy",goal:1,points:3,type:"gamesToday"},
+  {key:"daily_game",period:"day",icon:"🎮",title:"Una partida al día",desc:"Guarda una partida de Arcade hoy",goal:1,points:2,type:"gamesToday"},
   {key:"daily_news_comment",period:"day",icon:"💬",title:"Opina en Actualidad",desc:"Comenta una noticia hoy",goal:1,points:3,type:"commentsToday"},
   {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy",goal:1,points:1,type:"likesToday"},
-  {key:"weekly_arcade_3",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 3 partidas esta semana",goal:3,points:8,type:"gamesWeek"},
-  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana",goal:5,points:10,type:"commentsWeek"},
-  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana",goal:3,points:8,type:"mixedWeek"},
+  {key:"weekly_arcade_3",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 3 partidas esta semana",goal:3,points:6,type:"gamesWeek"},
+  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana",goal:5,points:8,type:"commentsWeek"},
+  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana",goal:3,points:6,type:"mixedWeek"},
 ];
 const TROPHY_DEFS=[
   {key:"first_game",icon:"🎮",title:"Primer arcade",desc:"Guarda tu primera partida",condition:s=>s.gamesAll>=1},
@@ -7974,11 +8217,8 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
     try{
       const {error}=await supabase.from("user_mission_claims").insert({usuario_id:String(user.id),mission_key:m.key,period_key:period,puntos:m.points});
       if(error){showToast?.("Objetivo ya reclamado o no disponible");return;}
-      const nuevos=(user.puntos||0)+m.points;
-      await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-      setUser?.(u=>({...u,puntos:nuevos}));
+      await awardWebPoints({user,setUser,showToast,showPoints,points:m.points,reason:"Objetivo"});
       setClaimed(v=>({...v,[key]:true}));
-      showPoints?.(m.points);SFX.coins();showToast?.(`Objetivo reclamado: +${m.points} pts`);
     }catch{showToast?.("No se pudo reclamar el objetivo");}
   }
   const unlockedCount=Object.values(trophies).filter(Boolean).length;
@@ -11841,7 +12081,7 @@ const HELP_TIPS = {
   ],
   cartera:[
     "La cartera separa las economías: puntos web para perfil, tienda y comunidad; RC sólo para el Tycoon; dinero real futuro aparte.",
-    "La regla buena es clara: máximo normal de 50 puntos al día si completas todo perfecto. Sin contar gacha.",
+    "La regla buena queda aplicada: máximo normal de 50 puntos al día si completas todo perfecto. Gacha, RC del Tycoon, compras y devoluciones quedan aparte.",
     "Aquí verás puntos disponibles, progreso diario y, más adelante, historial de movimientos.",
     "Si algún día activas pagos, el saldo real debe vivir aquí, separado de los puntos para no mezclar churras con rastas."
   ],
@@ -11850,6 +12090,12 @@ const HELP_TIPS = {
     "Aquí no entra el Tycoon. El Tycoon tendrá sus RC y su propia economía cuando lo mejoremos más adelante.",
     "Lo ideal es que puedas añadir, quitar, vaciar y revisar total antes de gastar puntos.",
     "Buen carrito: claro, sin letra pequeña y con el total siempre visible. Que nadie compre un peine pensando que era una corona."
+  ],
+  personalizacion:[
+    "La personalización es para avatar, perfil y presencia dentro de la web: marcos, fondos, títulos, colores e insignias.",
+    "Los cosméticos son perfectos para endurecer la economía sin tener que regalar premios reales todo el tiempo.",
+    "Primero se desbloquea el objeto; después se aplica desde el editor de personaje o perfil.",
+    "El Tycoon queda fuera de esta tienda por ahora. Sus muebles y mejoras visuales irán con RC cuando toque."
   ],
   notificaciones:[
     "La campana es el buzón rápido: citas, mensajes, canjes y avisos importantes.",
@@ -12099,7 +12345,7 @@ function rastaElementHelp(target,page){
   if(t.includes("abrir cita"))return "Te lleva a Citas para revisar o gestionar la reserva relacionada.";
   if(t.includes("marcar leída")||t.includes("marcar leidas")||t.includes("marcar leídas"))return "Marca la notificación como leída para que deje de aparecer como nueva.";
   if(t.includes("vaciar"))return "Vacía el carrito. Úsalo sólo si quieres quitar todos los artículos guardados.";
-  if(t.includes("confirmación")||t.includes("confirmar carrito"))return "Confirmará el canje del carrito cuando terminemos la tienda y la personalización.";
+  if(t.includes("confirmación")||t.includes("confirmar carrito")||t==="confirmar")return "Confirma el carrito: descuenta puntos, registra pedidos y desbloquea personalización de avatar/perfil si corresponde.";
   if(t.includes("top 10"))return "Top 10 abre los rankings de minijuegos: semanal e histórico por cada juego.";
   if(t.includes("top general"))return "Top general muestra estadísticas globales de clientes: puntos, juegos, tienda y comunidad.";
   if(t.includes("ver top")||t.includes("abrir top"))return "Este botón abre la página de rankings para ver los mejores jugadores y estadísticas.";
@@ -12114,7 +12360,7 @@ function rastaElementHelp(target,page){
   if(t.includes("publicar"))return "Publica el texto en el tablón, foro o comunidad según la sección donde estés.";
   if(t.includes("responder"))return "Añade una respuesta al tema o conversación actual.";
   if(t.includes("comentar")||t.includes("comentario"))return "Abre o añade comentarios. Participar en comunidad puede servir para puntos y actividad.";
-  if(t.includes("me gusta")||t.includes("like")||t.includes("👍"))return "Marca que te gusta esta publicación o noticia. Sirve para participación y estadísticas.";
+  if(t.includes("me gusta")||t.includes("like")||t.includes("👍"))return "Pulsa una vez para dar like y vuelve a pulsar para quitarlo. Sólo cuenta un like activo por usuario y publicación.";
   if(t.includes("youtube"))return "Abre una búsqueda o enlace de YouTube relacionado, normalmente para música o vídeos oficiales.";
   if(t.includes("fuente")||t.includes("leer fuente"))return "Abre la fuente original de la noticia fuera de la app.";
   if(t.includes("abrir debate"))return "Abre la conversación de esa noticia para poder leer o comentar.";
@@ -12466,7 +12712,7 @@ function WalletPanel({show,onClose,user}){
   if(!show)return null;
   const pts=Number(user?.puntos||0);
   const dailyMax=50;
-  const todayEarned=Number(user?.puntos_hoy||user?.daily_points||0);
+  const todayEarned=getWebPointsToday(user?.id);
   const pct=Math.max(0,Math.min(100,Math.round(todayEarned/dailyMax*100)));
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
     <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
@@ -12481,7 +12727,7 @@ function WalletPanel({show,onClose,user}){
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>Límite diario normal</span><span>{todayEarned}/{dailyMax} pts</span></div>
         <div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F)",borderRadius:999}}/></div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 puntos/día completando todo perfecto. El gacha queda aparte y se ajustará en economía.</div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 puntos/día completando todo perfecto. Gacha, RC del Tycoon, compras y devoluciones quedan aparte.</div>
       </Card>
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{fontWeight:950,color:T.g800}}>Economías separadas</div>
@@ -12492,27 +12738,85 @@ function WalletPanel({show,onClose,user}){
   </div>;
 }
 
-function CartPanel({show,onClose,user,showToast}){
-  const key=`rasta_cart_v1_${user?.id||"anon"}`;
-  const [items,setItems]=useState(()=>{
-    try{return JSON.parse(localStorage.getItem(key)||"[]");}catch{return [];}
-  });
-  useEffect(()=>{try{localStorage.setItem(key,JSON.stringify(items));}catch{}},[items,key]);
+function CartPanel({show,onClose,user,setUser,showToast}){
+  const [items,setItems]=useState(()=>readCart(user));
+  useEffect(()=>{
+    const reload=()=>setItems(readCart(user));
+    window.addEventListener("rasta-cart-updated",reload);
+    return()=>window.removeEventListener("rasta-cart-updated",reload);
+  },[user?.id]);
+  useEffect(()=>{writeCart(user,items);},[items,user?.id]);
   if(!show)return null;
-  const totalPts=items.reduce((sum,it)=>sum+(Number(it.precio_puntos||it.puntos||0)*Number(it.qty||1)),0);
+  const hydratedItems=items.map(hydrateCartItem);
+  const totalPts=hydratedItems.reduce((sum,it)=>sum+(Number(it.precio_puntos||it.puntos||0)*Number(it.qty||1)),0);
   function clearCart(){setItems([]);showToast?.("Carrito vaciado");}
+  function removeItem(i){setItems(items.filter((_,idx)=>idx!==i));SFX.tab();}
+  async function confirmCart(){
+    if(!hydratedItems.length)return;
+    if((user.puntos||0)<totalPts){showToast?.(`Te faltan ${totalPts-(user.puntos||0)} puntos`);SFX.error();return;}
+    const nuevos=Math.max(0,(user.puntos||0)-totalPts);
+    const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    const avatarItems=[];
+    for(const raw of hydratedItems){
+      const qty=Math.max(1,Number(raw.qty||1));
+      for(let n=0;n<qty;n++){
+        const isAvatar=isAvatarPersonalizationItem(raw);
+        if(isAvatar){avatarItems.push(raw);await unlockCosmeticForUser(user,raw);}
+        try{
+          await dbPost("canjes",{
+            usuario_id:user.id,
+            premio_id:raw.id||raw.item_key||null,
+            premio_nombre:raw.nombre||"Artículo",
+            puntos_gastados:Number(raw.precio_puntos||raw.puntos||0),
+            item_key:raw.item_key||null,
+            categoria:raw.categoria||"premios",
+            tipo:raw.tipo||"carrito"
+          });
+        }catch{}
+        try{
+          await dbPost("tienda_pedidos",{
+            usuario_id:String(user.id),
+            cliente_nombre:user.nombre||user.email||"Cliente",
+            cliente_email:user.email||null,
+            item_id:String(raw.id||raw.item_key||"cart"),
+            item_nombre:raw.nombre||"Artículo",
+            item_categoria:raw.categoria||"premios",
+            item_tipo:raw.tipo||"carrito",
+            puntos_coste:Number(raw.precio_puntos||raw.puntos||0),
+            precio_euros:0,
+            estado:isAvatar?"entregado":"pendiente",
+            notas_cliente:isAvatar?"Personalización desbloqueada automáticamente.":"Pedido creado desde carrito.",
+            updated_at:new Date().toISOString()
+          });
+        }catch{}
+      }
+    }
+    if(okUser){
+      setUser?.(u=>({...u,puntos:nuevos}));
+    }
+    try{
+      if(avatarItems.length){
+        await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"avatar",titulo:"Personalización desbloqueada",mensaje:`Has desbloqueado ${avatarItems.length} artículo${avatarItems.length===1?"":"s"} para tu avatar/perfil. Ve a Perfil > Editor para equiparlo.`,entidad_tipo:"avatar",entidad_id:String(user.id),importante:false});
+      }
+      await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Carrito confirmado",mensaje:`${user.nombre||user.email||"Cliente"} confirmó un carrito de ${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"} por ${totalPts} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:String(user.id),importante:false});
+    }catch{}
+    setItems([]);
+    SFX.coins();
+    showToast?.(avatarItems.length?`Carrito confirmado. Personalización desbloqueada.`:"Carrito confirmado");
+    onClose?.();
+  }
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
     <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
         <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🛒 Carrito</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Premios, tienda y personalización del avatar/perfil.</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
       </div>
-      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={i} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8}}><div><b>{it.nombre||it.titulo||"Artículo"}</b><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.tipo||"tienda"} · x{it.qty||1}</div></div><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div></div></Card>)}</div>}
+      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:7,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(255,244,214,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800}}><span>Total</span><span>{totalPts} pts</span></div>
         <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:6}}>Base preparada para añadir/quitar productos desde Tienda y Personalización en fases siguientes.</div>
       </Card>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}><Btn small col="ghost" onClick={clearCart} disabled={!items.length}>Vaciar</Btn><Btn small col="gold" onClick={()=>showToast?.("Confirmación de carrito pendiente para FASE109")} disabled={!items.length}>Confirmar</Btn></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}><Btn small col="ghost" onClick={clearCart} disabled={!items.length}>Vaciar</Btn><Btn small col="gold" onClick={confirmCart} disabled={!hydratedItems.length}>Confirmar</Btn></div>
       <div style={{marginTop:10}}><HelperInline page="carrito"/></div>
     </div>
   </div>;
@@ -12850,7 +13154,7 @@ export default function App(){
       </div>
       <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead} onMarkOne={markNotificationRead} onOpenCitas={()=>navTo("citas")}/>
       <WalletPanel show={walletOpen} onClose={()=>setWalletOpen(false)} user={currentUser}/>
-      <CartPanel show={cartOpen} onClose={()=>setCartOpen(false)} user={currentUser} showToast={showToast}/>
+      <CartPanel show={cartOpen} onClose={()=>setCartOpen(false)} user={currentUser} setUser={setUser} showToast={showToast}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
