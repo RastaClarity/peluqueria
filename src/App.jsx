@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE131B_TIENDA_CANJES_SOBRE_F130B";
-const APP_VERSION_SHORT="F131B";
+const APP_VERSION="FASE131D_HELPER_MISMO_RASTA_SIN_FOCO";
+const APP_VERSION_SHORT="F131D";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -3304,6 +3304,80 @@ html,body,#root{
 .rasta-helper-fixed-safe img{
   background:transparent!important;
 }
+
+/* ===== FASE131C: helper más pequeño y aureola sólo en la cabeza ===== */
+.rasta-helper-fixed-safe .rasta-face-avatar{
+  width:48px!important;
+  height:48px!important;
+  filter:none!important;
+  overflow:visible!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar > div:first-child{
+  position:absolute!important;
+  inset:auto!important;
+  left:50%!important;
+  top:42%!important;
+  width:28px!important;
+  height:28px!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,rgba(255,214,107,.22) 0%, rgba(255,214,107,.11) 42%, rgba(255,214,107,0) 72%)!important;
+  filter:blur(2px)!important;
+  opacity:.9!important;
+  box-shadow:none!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar svg{
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.16))!important;
+}
+@media(max-width:520px){
+  .rasta-helper-fixed-safe .rasta-face-avatar{width:44px!important;height:44px!important;}
+  .rasta-helper-fixed-safe .rasta-face-avatar > div:first-child{width:24px!important;height:24px!important;top:41%!important;}
+}
+
+
+/* ===== FASE131D: helper usa el mismo Rasta del inicio, sin recuadro ni foco largo ===== */
+.rasta-helper-fixed-safe .rasta-face-avatar{
+  width:50px!important;
+  height:50px!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar::before{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  top:43%!important;
+  width:34px!important;
+  height:34px!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,rgba(255,214,107,.20) 0%,rgba(255,214,107,.09) 45%,transparent 72%)!important;
+  filter:blur(2px)!important;
+  pointer-events:none!important;
+  z-index:0!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar > div:first-child{
+  display:none!important;
+}
+.rasta-helper-fixed-safe .helper-hero-face-crop,
+.rasta-helper-fixed-safe .helper-hero-face-crop *{
+  background-color:transparent!important;
+  box-shadow:none!important;
+}
+.rasta-helper-fixed-safe .helper-hero-face-crop > div > div:first-child{
+  display:none!important;
+}
+.rasta-helper-fixed-safe .helper-hero-face-crop svg{
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))!important;
+}
+@media(max-width:520px){
+  .rasta-helper-fixed-safe .rasta-face-avatar{width:46px!important;height:46px!important;}
+  .rasta-helper-fixed-safe .rasta-face-avatar::before{width:30px!important;height:30px!important;}
+}
+
 @media (min-width:900px){
   .bottom-nav-pro{
     left:50%!important;
@@ -4304,6 +4378,44 @@ function HeroMascot(){
 }
 
 
+function HelperHeroMascotFaceCrop({size=50}={}){
+  // Usa el mismo HeroMascot del inicio/login, pero recortado a la cabeza.
+  const innerW=size*3.35;
+  const innerH=size*2.52;
+  return (
+    <div
+      className="helper-hero-face-crop"
+      style={{
+        position:"absolute",
+        left:"50%",
+        top:"50%",
+        width:size,
+        height:size,
+        transform:"translate(-50%,-50%)",
+        overflow:"hidden",
+        borderRadius:"50%",
+        background:"transparent",
+        pointerEvents:"none",
+        zIndex:1
+      }}
+    >
+      <div
+        style={{
+          position:"absolute",
+          width:innerW,
+          height:innerH,
+          left:size/2-innerW*0.502,
+          top:size/2-innerH*0.485,
+          background:"transparent"
+        }}
+      >
+        <HeroMascot/>
+      </div>
+    </div>
+  );
+}
+
+
 function privacyStorageKey(user){return `privacy_${String(user?.email||user?.id||"anon").toLowerCase()}`;}
 function localPrivacy(user){
   try{
@@ -4450,7 +4562,7 @@ function LandingFeature({icon,title,sub,accent="#D4AF37"}){
 
 function MiniRastaHelperFace({size=60,speaking=false}={}){
   return (
-    <svg viewBox="0 0 120 120" width={size} height={size} style={{display:"block",overflow:"visible",filter:speaking?"drop-shadow(0 8px 10px rgba(0,0,0,.24)) drop-shadow(0 0 7px rgba(212,175,55,.26))":"drop-shadow(0 7px 9px rgba(0,0,0,.22))"}} aria-hidden="true">
+    <svg viewBox="0 0 120 120" width={size} height={size} style={{display:"block",overflow:"visible",filter:speaking?"drop-shadow(0 4px 6px rgba(0,0,0,.18))":"drop-shadow(0 3px 5px rgba(0,0,0,.14))"}} aria-hidden="true">
       <g strokeLinecap="round" fill="none">
         <path d="M27 35 C14 47,13 66,23 82" stroke="#22130B" strokeWidth="8"/>
         <path d="M35 28 C23 43,24 62,31 86" stroke="#3B2113" strokeWidth="8"/>
@@ -4523,17 +4635,21 @@ function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=fal
         boxShadow:"none",
         animation:"helperBob 2.4s ease-in-out infinite",
         filter:speaking
-          ? "drop-shadow(0 9px 12px rgba(0,0,0,.28)) drop-shadow(0 0 7px rgba(213,178,79,.18))"
-          : "drop-shadow(0 7px 10px rgba(0,0,0,.22))"
+          ? "drop-shadow(0 4px 7px rgba(0,0,0,.18))"
+          : "drop-shadow(0 3px 5px rgba(0,0,0,.14))"
       }}
     >
       <div
         style={{
           position:"absolute",
-          inset:"18%",
+          left:"50%",
+          top:"43%",
+          width:size*0.62,
+          height:size*0.62,
+          transform:"translate(-50%,-50%)",
           borderRadius:"50%",
-          background:"radial-gradient(circle at 50% 52%,rgba(255,214,107,.24),transparent 64%)",
-          filter:"blur(4px)",
+          background:"radial-gradient(circle,rgba(255,214,107,.18) 0%,rgba(255,214,107,.08) 44%,transparent 72%)",
+          filter:"blur(2px)",
           zIndex:0,
           pointerEvents:"none"
         }}
@@ -4549,12 +4665,12 @@ function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=fal
           style={{
             position:"absolute",
             left:"50%",
-            bottom:size*0.02,
+            top:"50%",
             width:size*1.18,
             height:size*1.18,
-            transform:"translateX(-50%)",
+            transform:"translate(-50%,-50%)",
             objectFit:"contain",
-            objectPosition:"center bottom",
+            objectPosition:"center center",
             background:"transparent",
             border:"0",
             boxShadow:"none",
@@ -4564,25 +4680,7 @@ function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=fal
           }}
         />
       ) : (
-        <div
-          style={{
-            position:"absolute",
-            left:"50%",
-            top:"52%",
-            width:size*1.08,
-            height:size*1.08,
-            transform:"translate(-50%,-50%)",
-            pointerEvents:"none",
-            background:"transparent",
-            border:"0",
-            boxShadow:"none",
-            zIndex:1,
-            display:"grid",
-            placeItems:"center"
-          }}
-        >
-          <MiniRastaHelperFace size={size*1.06} speaking={speaking}/>
-        </div>
+        <HelperHeroMascotFaceCrop size={size}/>
       )}
     </div>
   );
@@ -13837,7 +13935,7 @@ function HelperMascot({page,settings=null}){
           }}
         >
           <div style={{position:"relative"}}>
-            <RastaFaceAvatar size={54} speaking={open} settings={settings} forceInternal/>
+            <RastaFaceAvatar size={50} speaking={open} settings={settings} forceInternal/>
             <div style={{
               position:"absolute",
               right:-2,
