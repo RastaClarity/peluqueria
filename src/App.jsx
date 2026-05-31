@@ -7370,6 +7370,13 @@ function normalizeTycoonState(raw){
     log:Array.isArray(raw.log)?raw.log.slice(0,26):base.log
   });
 }
+const TYCOON_SUPABASE_TABLE="tycoon_saves";
+const TYCOON_REMOTE_SAVE_DELAY=1800;
+const TYCOON_REMOTE_MIN_GAP=8000;
+const tycoonRemoteTimers={};
+const tycoonRemoteLastSave={};
+function tycoonUserId(user){return user?.id?String(user.id):null;}
+function tycoonCanUseSupabase(user){return Boolean(supabase&&tycoonUserId(user));}
 function loadTycoonState(user){
   try{
     let raw=localStorage.getItem(tycoonKey(user));
@@ -7379,8 +7386,66 @@ function loadTycoonState(user){
     return raw?normalizeTycoonState(JSON.parse(raw)):createTycoonInitialState();
   }catch(e){return createTycoonInitialState();}
 }
+async function loadTycoonStateFromSupabase(user){
+  if(!tycoonCanUseSupabase(user))return null;
+  try{
+    const {data,error}=await supabase
+      .from(TYCOON_SUPABASE_TABLE)
+      .select("state,updated_at")
+      .eq("usuario_id",tycoonUserId(user))
+      .maybeSingle();
+    if(error){
+      console.warn("Tycoon Supabase desactivado o tabla no disponible",error.message||error);
+      return null;
+    }
+    if(!data?.state)return null;
+    return normalizeTycoonState(data.state);
+  }catch(e){
+    console.warn("No se pudo cargar Tycoon desde Supabase",e);
+    return null;
+  }
+}
+async function saveTycoonStateToSupabase(user,state){
+  if(!tycoonCanUseSupabase(user)||!state)return false;
+  try{
+    const nowIso=new Date().toISOString();
+    const safeState={...state,lastTick:Date.now(),updatedAt:nowIso};
+    const payload={
+      usuario_id:tycoonUserId(user),
+      email:user?.email||null,
+      nombre:user?.nombre||user?.name||null,
+      state:safeState,
+      updated_at:nowIso
+    };
+    const {error}=await supabase
+      .from(TYCOON_SUPABASE_TABLE)
+      .upsert(payload,{onConflict:"usuario_id"});
+    if(error){
+      console.warn("No se pudo guardar Tycoon en Supabase",error.message||error);
+      return false;
+    }
+    return true;
+  }catch(e){
+    console.warn("No se pudo guardar Tycoon en Supabase",e);
+    return false;
+  }
+}
+function scheduleTycoonSupabaseSave(user,state,{force=false}={}){
+  const uid=tycoonUserId(user);
+  if(!uid||!state)return;
+  const now=Date.now();
+  const last=tycoonRemoteLastSave[uid]||0;
+  const wait=force?0:Math.max(TYCOON_REMOTE_SAVE_DELAY,TYCOON_REMOTE_MIN_GAP-(now-last));
+  if(tycoonRemoteTimers[uid])clearTimeout(tycoonRemoteTimers[uid]);
+  tycoonRemoteTimers[uid]=setTimeout(async()=>{
+    tycoonRemoteLastSave[uid]=Date.now();
+    await saveTycoonStateToSupabase(user,state);
+  },wait);
+}
 function saveTycoonState(user,state){
-  try{localStorage.setItem(tycoonKey(user),JSON.stringify({...state,lastTick:Date.now()}));}catch(e){}
+  const safe={...state,lastTick:Date.now()};
+  try{localStorage.setItem(tycoonKey(user),JSON.stringify(safe));}catch(e){}
+  scheduleTycoonSupabaseSave(user,safe);
 }
 function completeTycoonTasks(raw){
   const now=Date.now();
@@ -7421,6 +7486,27 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
   const [tab,setTab]=useState("mapa");
   const [inspect,setInspect]=useState(null);
   const [nowTick,setNowTick]=useState(()=>Date.now());
+  useEffect(()=>{
+    let alive=true;
+    async function syncTycoonFromRemote(){
+      const remote=await loadTycoonStateFromSupabase(user);
+      if(!alive||!remote)return;
+      setState(prev=>{
+        const local=completeTycoonTasks(prev);
+        const remoteClean=completeTycoonTasks(remote);
+        const localTick=Number(local?.lastTick)||0;
+        const remoteTick=Number(remoteClean?.lastTick)||0;
+        if(remoteTick>localTick+1200){
+          try{localStorage.setItem(tycoonKey(user),JSON.stringify(remoteClean));}catch(e){}
+          return remoteClean;
+        }
+        scheduleTycoonSupabaseSave(user,local,{force:true});
+        return local;
+      });
+    }
+    syncTycoonFromRemote();
+    return()=>{alive=false;};
+  },[user?.id]);
   const economy=useMemo(()=>tycoonEconomy(state),[state]);
   const selectedId=TYCOON_ROOM_DEFS[state.selectedRoom]?state.selectedRoom:"salon";
   const selectedRoom=state.rooms?.[selectedId]||tycoonBaseRoom(selectedId);
@@ -7536,7 +7622,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     SFX.success();
   }
   function resetGame(){
-    if(!confirm("¿Reiniciar Rasta Cuts Tycoon? Se perderá el progreso local de este juego."))return;
+    if(!confirm("¿Reiniciar Rasta Cuts Tycoon? Se perderá el progreso guardado de este juego en este navegador y se actualizará la partida en Supabase si está activa."))return;
     const fresh=createTycoonInitialState();setState(fresh);saveTycoonState(user,fresh);SFX.error();
   }
   function handleHotspot(h){
@@ -7659,7 +7745,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     "Esto no es el Arcade normal: aquí construyes el estudio con moneda propia RC. No toca los puntos reales de la web.",
     "El mapa es la vista tipo Travian: pulsa un edificio, entra en su sala y usa los objetos clicables.",
     "La peluquería aumenta lo que cobras por cliente. El hall atrae gente. El almacén evita que se pare la economía.",
-    "Cada mejora entra en Obras y tarda tiempo real. Más adelante se puede hacer que Supabase guarde esto online.",
+    "Cada mejora entra en Obras y tarda tiempo real. Se guarda en este navegador y, si la tabla tycoon_saves existe, también en Supabase.",
     "Ruta recomendada: Hall nivel 2, Peluquería nivel 2, Almacén nivel 2, abrir Baño y luego Zona chill."
   ];
   const roomCost=selectedRoom.unlocked?tycoonUpgradeCost(state,selectedId):tycoonUnlockCost(selectedId);
