@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
+// FASE119_RESCATE_ESTABLE: base FASE115 compilable, sin imports externos del tycoon para no romper Vercel.
 
 // Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
 // La anon key es pública en apps frontend; lo que nunca debe ponerse aquí es la service_role/secret key.
