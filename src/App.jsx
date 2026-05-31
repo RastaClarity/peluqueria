@@ -1763,6 +1763,966 @@ body[data-rc-theme="day"]{
   .app-shell[data-rc-theme] .header-action-pro{padding:6px 8px!important}
 }
 
+
+/* ===== FASE104: modo noche estilo LOGIN cálido + cristal moderno ===== */
+/* Cambia la paleta azul clínica por la del login: negro café, oro crema, verde rasta apagado y rojo vino. */
+body[data-rc-theme="night"]{
+  color-scheme:dark;
+  background:
+    radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),
+    radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),
+    radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),
+    linear-gradient(180deg,#050403 0%,#130B06 48%,#080604 100%)!important;
+}
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  --rc-bg-a:#050403;
+  --rc-bg-b:#130B06;
+  --rc-bg-c:#080604;
+  --rc-card:rgba(19,11,6,.82);
+  --rc-card-strong:rgba(28,16,9,.94);
+  --rc-card-soft:rgba(42,25,14,.86);
+  --rc-panel-fun:linear-gradient(145deg,rgba(18,10,6,.92),rgba(36,20,11,.86));
+  --rc-frost:linear-gradient(145deg,rgba(255,244,214,.105),rgba(255,255,255,.028));
+  --rc-text:#F5E6C8;
+  --rc-text-strong:#FFF4D6;
+  --rc-muted:#D7C49A;
+  --rc-subtle:#A79068;
+  --rc-cream:#FFF4D6;
+  --rc-panel-lite:rgba(44,26,14,.92);
+  --rc-border:rgba(216,190,135,.22);
+  --rc-border-strong:rgba(185,154,69,.48);
+  --rc-primary:#D4AF37;
+  --rc-primary-2:#B99A45;
+  --rc-accent2:#4F602D;
+  --rc-accent3:#A72822;
+  --rc-accent-warm:#F0D69C;
+  --rc-danger:#E85B76;
+  --rc-shadow:0 28px 84px rgba(0,0,0,.56);
+  --rc-inner:inset 0 1px 0 rgba(255,244,214,.12);
+  background:
+    radial-gradient(circle at 50% 12%,rgba(212,175,55,.20),transparent 30%),
+    radial-gradient(circle at 12% 80%,rgba(47,107,66,.18),transparent 28%),
+    radial-gradient(circle at 88% 76%,rgba(167,40,34,.16),transparent 26%),
+    linear-gradient(180deg,#050403 0%,#130B06 48%,#080604 100%)!important;
+  color:var(--rc-text)!important;
+}
+
+/* Fondo interior de la app con el mismo aire del login, pero más glass y más legible. */
+.app-shell[data-rc-theme="night"]:before,.rc-standalone-shell[data-rc-theme="night"]:before{
+  background:
+    radial-gradient(circle at 18% 14%,rgba(212,175,55,.18),transparent 30%),
+    radial-gradient(circle at 82% 8%,rgba(79,96,45,.16),transparent 28%),
+    radial-gradient(circle at 76% 78%,rgba(167,40,34,.12),transparent 30%),
+    repeating-linear-gradient(135deg,rgba(255,244,214,.035) 0 1px,transparent 1px 18px)!important;
+  opacity:.95!important;
+}
+
+/* Header y nav: negro cristal + borde oro, como extensión del login. */
+.app-shell[data-rc-theme="night"] .app-header-pro,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro{
+  background:
+    linear-gradient(135deg,rgba(255,244,214,.10),rgba(255,255,255,.025)),
+    rgba(19,11,6,.82)!important;
+  border-color:rgba(216,190,135,.22)!important;
+  box-shadow:0 20px 58px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,244,214,.10)!important;
+  backdrop-filter:blur(24px) saturate(1.20)!important;
+}
+.app-shell[data-rc-theme="night"] .app-header-pro{
+  border-top:0!important;
+  box-shadow:0 18px 42px rgba(0,0,0,.42),inset 0 -1px 0 rgba(216,190,135,.20)!important;
+}
+
+/* Tarjetas oscuras legibles, no azuladas. */
+.app-shell[data-rc-theme="night"] .studio-panel,
+.app-shell[data-rc-theme="night"] .landing-feature-pro,
+.app-shell[data-rc-theme="night"] .landing-nav-card,
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .news-short,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="night"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro{
+  background:
+    linear-gradient(145deg,rgba(255,244,214,.075),rgba(255,244,214,.025)),
+    rgba(19,11,6,.86)!important;
+  border:1px solid rgba(216,190,135,.22)!important;
+  color:#F5E6C8!important;
+  box-shadow:0 22px 62px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,244,214,.09)!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b){
+  color:#FFF4D6!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small){
+  color:#F5E6C8!important;
+}
+
+/* Botones en modo noche: oro/crema con profundidad, no cian. */
+.app-shell[data-rc-theme="night"] .bp,
+.rc-standalone-shell[data-rc-theme="night"] .bp,
+.app-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:
+    linear-gradient(135deg,rgba(212,175,55,.22),rgba(79,96,45,.12)),
+    rgba(28,16,9,.88)!important;
+  border:1px solid rgba(216,190,135,.34)!important;
+  color:#FFF4D6!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,244,214,.12)!important;
+}
+.app-shell[data-rc-theme="night"] .bp:hover,
+.rc-standalone-shell[data-rc-theme="night"] .bp:hover,
+.app-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro):hover,
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro):hover{
+  background:
+    linear-gradient(135deg,rgba(212,175,55,.32),rgba(167,40,34,.16)),
+    rgba(36,20,11,.92)!important;
+}
+
+/* Botón día/noche y sonido: mismo estilo que login, pero moderno. */
+.app-shell[data-rc-theme="night"] .header-action-pro,
+.app-shell[data-rc-theme="night"] .theme-toggle-pro{
+  background:linear-gradient(135deg,rgba(255,244,214,.14),rgba(212,175,55,.12))!important;
+  border:1px solid rgba(216,190,135,.26)!important;
+  color:#FFF4D6!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro{
+  color:#F5E6C8!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro span{
+  color:#D7C49A!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"]{
+  background:linear-gradient(135deg,rgba(212,175,55,.16),rgba(255,244,214,.06))!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] span{
+  color:#FFF4D6!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] .nav-icon-pro{
+  background:linear-gradient(135deg,#6B4D1F,#B99A45 62%,#D8BE87)!important;
+  color:#120806!important;
+}
+
+/* Inputs oscuros tipo login. */
+.app-shell[data-rc-theme="night"] input,
+.app-shell[data-rc-theme="night"] select,
+.app-shell[data-rc-theme="night"] textarea,
+.rc-standalone-shell[data-rc-theme="night"] input,
+.rc-standalone-shell[data-rc-theme="night"] select,
+.rc-standalone-shell[data-rc-theme="night"] textarea{
+  background:rgba(8,6,4,.70)!important;
+  color:#FFF4D6!important;
+  border:1px solid rgba(216,190,135,.26)!important;
+}
+.app-shell[data-rc-theme="night"] input::placeholder,
+.app-shell[data-rc-theme="night"] textarea::placeholder{
+  color:rgba(245,230,200,.58)!important;
+}
+
+/* Tycoon en noche también cálido, para que no choque con la web. */
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board,
+.app-shell[data-rc-theme="night"] .tycoon-map-card,
+.app-shell[data-rc-theme="night"] .tycoon-map-board{
+  background:
+    radial-gradient(circle at 20% 8%,rgba(212,175,55,.16),transparent 30%),
+    linear-gradient(145deg,rgba(19,11,6,.92),rgba(36,20,11,.86))!important;
+  border:1px solid rgba(216,190,135,.26)!important;
+  color:#FFF4D6!important;
+  box-shadow:0 26px 78px rgba(0,0,0,.52)!important;
+}
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card *,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board *,
+.app-shell[data-rc-theme="night"] .tycoon-map-card *,
+.app-shell[data-rc-theme="night"] .tycoon-map-board *{
+  color:#FFF4D6!important;
+}
+
+/* Modo día queda limpio, pero lo acercamos menos a azul chillón y más crema clara del login. */
+body[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 50% 12%,rgba(212,175,55,.14),transparent 30%),
+    radial-gradient(circle at 12% 80%,rgba(47,107,66,.10),transparent 28%),
+    radial-gradient(circle at 88% 76%,rgba(167,40,34,.08),transparent 26%),
+    linear-gradient(180deg,#FFF9EF 0%,#FAF2E3 52%,#F1E6D7 100%)!important;
+}
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#FFF9EF;
+  --rc-bg-b:#FAF2E3;
+  --rc-bg-c:#F1E6D7;
+  --rc-primary:#8A5A2E;
+  --rc-primary-2:#B99A45;
+  --rc-accent2:#4F602D;
+  --rc-accent3:#A72822;
+  --rc-border:rgba(138,90,46,.18);
+  --rc-border-strong:rgba(185,154,69,.42);
+}
+
+
+/* ===== FASE105: noche verde legible + día pastel alegre ===== */
+/* NOCHE: verde/negro tipo login, pero tarjetas y bocadillos crema para leer bien. */
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  --rc-bg-a:#040704;
+  --rc-bg-b:#07120B;
+  --rc-bg-c:#102617;
+
+  --rc-card:rgba(246,229,194,.94);
+  --rc-card-strong:rgba(255,242,210,.98);
+  --rc-card-soft:rgba(233,210,165,.92);
+  --rc-panel-fun:linear-gradient(145deg,rgba(255,244,214,.97),rgba(232,211,162,.92));
+  --rc-frost:linear-gradient(145deg,rgba(255,244,214,.94),rgba(232,211,162,.80));
+
+  --rc-text:#1B1208;
+  --rc-text-strong:#100903;
+  --rc-muted:#4B3620;
+  --rc-subtle:#665138;
+
+  --rc-border:rgba(235,202,123,.42);
+  --rc-border-strong:rgba(244,210,126,.66);
+  --rc-primary:#78C878;
+  --rc-primary-2:#2F8F5B;
+  --rc-accent2:#D6B15A;
+  --rc-accent3:#A94433;
+  --rc-accent-warm:#F0C66E;
+  --rc-danger:#8F2E24;
+
+  --rc-cream:#FFF4D6;
+  --rc-panel-lite:#E8D3A2;
+  --rc-shadow:0 26px 78px rgba(0,0,0,.48);
+  --rc-inner:inset 0 1px 0 rgba(255,255,255,.52);
+}
+body[data-rc-theme="night"]{
+  background:
+    radial-gradient(circle at 14% 0%,rgba(120,200,120,.22),transparent 30%),
+    radial-gradient(circle at 86% 2%,rgba(214,177,90,.16),transparent 30%),
+    radial-gradient(circle at 52% 110%,rgba(169,68,51,.11),transparent 38%),
+    linear-gradient(135deg,#030503 0%,#07120B 46%,#102617 100%)!important;
+}
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  background:
+    radial-gradient(circle at 12% 2%,rgba(120,200,120,.20),transparent 31%),
+    radial-gradient(circle at 88% 0%,rgba(214,177,90,.14),transparent 28%),
+    radial-gradient(circle at 50% 112%,rgba(169,68,51,.10),transparent 44%),
+    linear-gradient(135deg,#030503,#07120B 50%,#102617)!important;
+}
+
+/* En modo noche, los contenedores principales vuelven a crema/cálido con letras oscuras. */
+.app-shell[data-rc-theme="night"] .studio-panel,
+.app-shell[data-rc-theme="night"] .landing-feature-pro,
+.app-shell[data-rc-theme="night"] .landing-nav-card,
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .news-short,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="night"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro{
+  background:linear-gradient(145deg,rgba(255,244,214,.97),rgba(232,211,162,.91))!important;
+  color:#1B1208!important;
+  border:1.5px solid rgba(244,210,126,.62)!important;
+  box-shadow:0 18px 48px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.72)!important;
+  backdrop-filter:blur(22px) saturate(1.12)!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small){
+  color:#1B1208!important;
+  text-shadow:none!important;
+}
+
+/* Header/nav noche: oscuros y verdes, para no blanquear toda la pantalla. */
+.app-shell[data-rc-theme="night"] .app-header-pro,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro{
+  background:linear-gradient(135deg,rgba(255,244,214,.10),rgba(255,244,214,.035)),rgba(5,16,9,.86)!important;
+  border-color:rgba(244,210,126,.34)!important;
+  box-shadow:0 22px 60px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,244,214,.12)!important;
+}
+.app-shell[data-rc-theme="night"] .app-header-pro *,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro *,
+.app-shell[data-rc-theme="night"] .header-action-pro,
+.app-shell[data-rc-theme="night"] .theme-toggle-pro{
+  color:#FFF4D6!important;
+}
+.app-shell[data-rc-theme="night"] .header-action-pro,
+.app-shell[data-rc-theme="night"] .theme-toggle-pro{
+  background:linear-gradient(135deg,rgba(120,200,120,.20),rgba(214,177,90,.12))!important;
+  border:1px solid rgba(244,210,126,.35)!important;
+}
+
+/* Botones dentro de tarjetas crema: verdes/dorados con contraste. */
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:linear-gradient(135deg,#1D6B43,#78C878 58%,#D6B15A)!important;
+  color:#FFF8E8!important;
+  border:1px solid rgba(255,244,214,.46)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.35)!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro) *{
+  color:#FFF8E8!important;
+}
+
+/* Tycoon noche: paneles de interfaz crema, pero escenario oscuro mantiene ambiente de juego. */
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board,
+.app-shell[data-rc-theme="night"] .tycoon-map-card,
+.app-shell[data-rc-theme="night"] .tycoon-map-board{
+  background:linear-gradient(145deg,rgba(255,244,214,.97),rgba(232,211,162,.91))!important;
+  color:#1B1208!important;
+  border:1.5px solid rgba(244,210,126,.62)!important;
+}
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card *,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board *,
+.app-shell[data-rc-theme="night"] .tycoon-map-card *,
+.app-shell[data-rc-theme="night"] .tycoon-map-board *{
+  color:#1B1208!important;
+}
+
+/* DÍA: menos blanco, más pastel alegre con profundidad. */
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#FFF2D9;
+  --rc-bg-b:#FFE9EF;
+  --rc-bg-c:#E9F7FF;
+
+  --rc-card:rgba(255,248,232,.88);
+  --rc-card-strong:rgba(255,252,242,.97);
+  --rc-card-soft:rgba(255,235,232,.82);
+  --rc-panel-fun:linear-gradient(145deg,rgba(255,252,242,.96),rgba(255,232,226,.86) 54%,rgba(232,247,255,.78));
+  --rc-frost:linear-gradient(145deg,rgba(255,255,255,.84),rgba(255,233,239,.58));
+
+  --rc-text:#241609;
+  --rc-text-strong:#120A03;
+  --rc-muted:#65492E;
+  --rc-subtle:#7A6A5A;
+
+  --rc-border:rgba(219,151,75,.28);
+  --rc-border-strong:rgba(244,180,95,.50);
+  --rc-primary:#F29D38;
+  --rc-primary-2:#FF6F91;
+  --rc-accent2:#8E75FF;
+  --rc-accent3:#37B982;
+  --rc-accent-warm:#FFD166;
+  --rc-danger:#C44536;
+
+  --rc-shadow:0 24px 68px rgba(158,96,76,.16);
+}
+body[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 12% -3%,rgba(255,209,102,.34),transparent 30%),
+    radial-gradient(circle at 82% 0%,rgba(255,111,145,.22),transparent 28%),
+    radial-gradient(circle at 50% 105%,rgba(55,185,130,.14),transparent 36%),
+    linear-gradient(135deg,#FFF2D9 0%,#FFE9EF 48%,#E9F7FF 100%)!important;
+}
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 12% 2%,rgba(255,209,102,.28),transparent 30%),
+    radial-gradient(circle at 88% 0%,rgba(255,111,145,.20),transparent 28%),
+    radial-gradient(circle at 50% 112%,rgba(55,185,130,.12),transparent 44%),
+    linear-gradient(135deg,#FFF2D9,#FFE9EF 50%,#E9F7FF)!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel,
+.app-shell[data-rc-theme="day"] .landing-feature-pro,
+.app-shell[data-rc-theme="day"] .landing-nav-card,
+.app-shell[data-rc-theme="day"] .modal-panel-pro,
+.app-shell[data-rc-theme="day"] .news-short,
+.rc-standalone-shell[data-rc-theme="day"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="day"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="day"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="day"] .modal-panel-pro{
+  background:linear-gradient(145deg,rgba(255,252,242,.96),rgba(255,232,226,.84) 58%,rgba(232,247,255,.75))!important;
+  color:#241609!important;
+  border:1px solid rgba(244,180,95,.36)!important;
+  box-shadow:0 18px 44px rgba(158,96,76,.14),inset 0 1px 0 rgba(255,255,255,.86)!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="day"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="day"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="day"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small){
+  color:#241609!important;
+}
+.app-shell[data-rc-theme="day"] .app-header-pro,
+.app-shell[data-rc-theme="day"] .bottom-nav-pro{
+  background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,233,239,.38)),rgba(255,248,232,.72)!important;
+  border-color:rgba(244,180,95,.34)!important;
+}
+.app-shell[data-rc-theme="day"] .header-action-pro,
+.app-shell[data-rc-theme="day"] .theme-toggle-pro{
+  background:linear-gradient(135deg,rgba(255,209,102,.32),rgba(255,111,145,.18))!important;
+  border:1px solid rgba(244,180,95,.38)!important;
+  color:#241609!important;
+}
+.app-shell[data-rc-theme="day"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:linear-gradient(135deg,#FFD166,#FF9F6E 52%,#FF6F91)!important;
+  color:#241609!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  text-shadow:none!important;
+}
+
+/* Pequeño movimiento alegre del modo día sin molestar. */
+@media (prefers-reduced-motion:no-preference){
+  body[data-rc-theme="day"]:before{
+    animation:bgDriftPro 12s ease-in-out infinite!important;
+  }
+  .app-shell[data-rc-theme="day"] .landing-nav-card:hover,
+  .app-shell[data-rc-theme="day"] .studio-panel:hover{
+    transform:translateY(-4px) scale(1.012)!important;
+    filter:saturate(1.08) brightness(1.02)!important;
+  }
+}
+
+/* Ajuste de chips/burbujas: crema y texto oscuro en ambos modos cuando estén dentro del contenido. */
+.app-shell[data-rc-theme] .page-content-pro [style*="borderRadius:999"],
+.rc-standalone-shell[data-rc-theme] [style*="borderRadius:999"],
+.app-shell[data-rc-theme] .page-content-pro [style*="border-radius:999"],
+.rc-standalone-shell[data-rc-theme] [style*="border-radius:999"]{
+  background:rgba(255,244,214,.92)!important;
+  color:#1B1208!important;
+  border:1px solid rgba(214,177,90,.44)!important;
+}
+.app-shell[data-rc-theme] .page-content-pro [style*="borderRadius:999"] *,
+.rc-standalone-shell[data-rc-theme] [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme] .page-content-pro [style*="border-radius:999"] *,
+.rc-standalone-shell[data-rc-theme] [style*="border-radius:999"] *{
+  color:#1B1208!important;
+}
+
+/* Pero no tocar las burbujas de cabecera/nav. */
+.app-shell[data-rc-theme] .app-header-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme] .bottom-nav-pro [style*="borderRadius:999"]{
+  background:rgba(255,255,255,.16)!important;
+  color:#FFF4D6!important;
+}
+.app-shell[data-rc-theme="day"] .app-header-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme="day"] .bottom-nav-pro [style*="borderRadius:999"]{
+  color:#241609!important;
+}
+
+
+/* ===== FASE106: reggae cyber night + burbujas blancas legibles + login cyberpunk ===== */
+/* Modo noche: fondo verde reggae más vivo, tarjetas gris-verde con letra blanca, chips/burbujas blancos. */
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  --rc-bg-a:#030704;
+  --rc-bg-b:#07140A;
+  --rc-bg-c:#12341E;
+
+  --rc-card:rgba(28,52,42,.88);
+  --rc-card-strong:rgba(34,66,52,.96);
+  --rc-card-soft:rgba(48,78,61,.90);
+  --rc-panel-fun:linear-gradient(145deg,rgba(30,58,46,.96),rgba(42,72,56,.91));
+  --rc-frost:linear-gradient(145deg,rgba(255,255,255,.13),rgba(120,200,120,.06));
+
+  --rc-text:#F8FFF5;
+  --rc-text-strong:#FFFFFF;
+  --rc-muted:#D8EBDD;
+  --rc-subtle:#B8D0BD;
+
+  --rc-border:rgba(255,216,102,.32);
+  --rc-border-strong:rgba(255,216,102,.58);
+  --rc-primary:#64D86B;
+  --rc-primary-2:#2AAE65;
+  --rc-accent2:#FFD23F;
+  --rc-accent3:#E53935;
+  --rc-accent-warm:#FFB703;
+  --rc-danger:#FF4D4D;
+
+  --rc-chip-bg:#FFF7E6;
+  --rc-chip-text:#172112;
+  --rc-shadow:0 26px 78px rgba(0,0,0,.54);
+}
+body[data-rc-theme="night"]{
+  background:
+    radial-gradient(circle at 12% -4%,rgba(100,216,107,.30),transparent 31%),
+    radial-gradient(circle at 88% 2%,rgba(255,210,63,.18),transparent 30%),
+    radial-gradient(circle at 50% 110%,rgba(229,57,53,.13),transparent 40%),
+    linear-gradient(135deg,#020403 0%,#07140A 48%,#12341E 100%)!important;
+}
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  background:
+    radial-gradient(circle at 10% 2%,rgba(100,216,107,.24),transparent 31%),
+    radial-gradient(circle at 88% 0%,rgba(255,210,63,.15),transparent 28%),
+    radial-gradient(circle at 50% 112%,rgba(229,57,53,.10),transparent 44%),
+    linear-gradient(135deg,#020403,#07140A 50%,#12341E)!important;
+}
+
+/* Tarjetas principales: gris-verde con texto blanco, NO crema. */
+.app-shell[data-rc-theme="night"] .studio-panel,
+.app-shell[data-rc-theme="night"] .landing-feature-pro,
+.app-shell[data-rc-theme="night"] .landing-nav-card,
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .news-short,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="night"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro{
+  background:linear-gradient(145deg,rgba(30,58,46,.96),rgba(42,72,56,.91))!important;
+  color:var(--rc-text)!important;
+  border:1.5px solid rgba(255,216,102,.36)!important;
+  box-shadow:0 20px 54px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.10)!important;
+  backdrop-filter:blur(22px) saturate(1.14)!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small){
+  color:var(--rc-text)!important;
+  text-shadow:none!important;
+}
+
+/* Burbujas/chips/badges dentro del contenido: blancas/crema con letra oscura. */
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"],
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"]{
+  background:linear-gradient(180deg,#FFFFFF,#FFF2D6)!important;
+  color:#172112!important;
+  border:1px solid rgba(255,216,102,.50)!important;
+  text-shadow:none!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.9)!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"] *,
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"] *{
+  color:#172112!important;
+  text-shadow:none!important;
+}
+
+/* No tocar los botones/burbujas de cabecera ni nav: esos deben seguir oscuros. */
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="border-radius:999"],
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="border-radius:999"]{
+  background:rgba(255,255,255,.13)!important;
+  color:#FFF7E6!important;
+  border-color:rgba(255,216,102,.26)!important;
+}
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="borderRadius:999"] *{
+  color:#FFF7E6!important;
+}
+
+/* Botones modo noche: reggae amarillo/verde con texto fuerte. */
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:linear-gradient(135deg,#1F7A45,#64D86B 54%,#FFD23F)!important;
+  color:#071108!important;
+  border:1px solid rgba(255,247,230,.48)!important;
+  text-shadow:none!important;
+  font-weight:950!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro) *{
+  color:#071108!important;
+}
+
+/* Inputs noche: blancos para que se lean fácil. */
+.app-shell[data-rc-theme="night"] input,
+.app-shell[data-rc-theme="night"] select,
+.app-shell[data-rc-theme="night"] textarea,
+.rc-standalone-shell[data-rc-theme="night"] input,
+.rc-standalone-shell[data-rc-theme="night"] select,
+.rc-standalone-shell[data-rc-theme="night"] textarea{
+  background:#FFF7E6!important;
+  color:#172112!important;
+  border:1.5px solid rgba(255,216,102,.58)!important;
+}
+
+/* Día: más alegre, menos blanco plano, con pastel reggae suave. */
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#FFF3C9;
+  --rc-bg-b:#FFE1E7;
+  --rc-bg-c:#DDF8EC;
+  --rc-card:rgba(255,248,232,.90);
+  --rc-card-strong:rgba(255,253,244,.98);
+  --rc-card-soft:rgba(255,229,232,.84);
+  --rc-panel-fun:linear-gradient(145deg,rgba(255,253,244,.96),rgba(255,231,218,.86) 46%,rgba(221,248,236,.76));
+  --rc-text:#241609;
+  --rc-text-strong:#120A03;
+  --rc-muted:#5E462B;
+  --rc-primary:#F6B443;
+  --rc-primary-2:#FF7A7A;
+  --rc-accent2:#68C17A;
+  --rc-accent3:#A78BFA;
+}
+body[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 10% -4%,rgba(255,210,63,.34),transparent 31%),
+    radial-gradient(circle at 88% 0%,rgba(255,122,122,.24),transparent 29%),
+    radial-gradient(circle at 45% 110%,rgba(104,193,122,.20),transparent 38%),
+    linear-gradient(135deg,#FFF3C9 0%,#FFE1E7 48%,#DDF8EC 100%)!important;
+}
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 10% 2%,rgba(255,210,63,.30),transparent 30%),
+    radial-gradient(circle at 88% 0%,rgba(255,122,122,.22),transparent 28%),
+    radial-gradient(circle at 50% 112%,rgba(104,193,122,.17),transparent 44%),
+    linear-gradient(135deg,#FFF3C9,#FFE1E7 48%,#DDF8EC)!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel,
+.app-shell[data-rc-theme="day"] .landing-feature-pro,
+.app-shell[data-rc-theme="day"] .landing-nav-card,
+.app-shell[data-rc-theme="day"] .modal-panel-pro,
+.app-shell[data-rc-theme="day"] .news-short,
+.rc-standalone-shell[data-rc-theme="day"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="day"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="day"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="day"] .modal-panel-pro{
+  background:linear-gradient(145deg,rgba(255,253,244,.97),rgba(255,231,218,.88) 50%,rgba(221,248,236,.78))!important;
+  color:#241609!important;
+  border:1px solid rgba(255,183,77,.40)!important;
+  box-shadow:0 18px 44px rgba(147,92,52,.16),inset 0 1px 0 rgba(255,255,255,.88)!important;
+}
+
+/* Login cyberpunk: fondo neón reggae/rojo/amarillo, form legible. */
+.login-cyber-shell:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    linear-gradient(115deg,transparent 0 22%,rgba(100,216,107,.10) 22.3% 22.8%,transparent 23% 100%),
+    linear-gradient(0deg,rgba(255,210,63,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(100,216,107,.045) 1px,transparent 1px);
+  background-size:100% 100%,38px 38px,38px 38px;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.86),rgba(0,0,0,.24));
+}
+.login-cyber-shell:after{
+  content:"";
+  position:fixed;
+  inset:-25%;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(circle at 18% 18%,rgba(100,216,107,.18),transparent 18%),
+    radial-gradient(circle at 78% 12%,rgba(255,210,63,.14),transparent 18%),
+    radial-gradient(circle at 70% 80%,rgba(229,57,53,.12),transparent 18%);
+  filter:blur(18px);
+  animation:bgDriftPro 11s ease-in-out infinite;
+}
+.login-cyber-shell .studio-panel{
+  background:linear-gradient(145deg,rgba(255,244,214,.96),rgba(232,211,162,.90))!important;
+  border:1.5px solid rgba(255,210,63,.58)!important;
+  box-shadow:0 22px 58px rgba(0,0,0,.46),0 0 22px rgba(100,216,107,.16),inset 0 1px 0 rgba(255,255,255,.78)!important;
+}
+.login-cyber-shell .landing-feature-pro{
+  background:linear-gradient(145deg,rgba(15,31,20,.78),rgba(31,72,45,.62))!important;
+  color:#FFF7E6!important;
+  border:1px solid rgba(255,210,63,.30)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.32),0 0 18px rgba(100,216,107,.10)!important;
+}
+.login-cyber-shell .landing-feature-pro *{color:#FFF7E6!important}
+.login-cyber-shell .bp{
+  background:linear-gradient(135deg,#64D86B,#FFD23F 58%,#E53935)!important;
+  color:#071108!important;
+  border:1px solid rgba(255,247,230,.72)!important;
+  box-shadow:0 12px 26px rgba(0,0,0,.28),0 0 18px rgba(100,216,107,.18)!important;
+}
+
+
+/* ===== FASE107: estilo navegador Travian / pergamino oscuro legible ===== */
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  --travian-bg:#10160F;
+  --travian-bg2:#1A2417;
+  --travian-forest:#263820;
+  --travian-panel:#E9D8B4;
+  --travian-panel2:#F6E8C8;
+  --travian-panel3:#CDB78C;
+  --travian-ink:#3A2A18;
+  --travian-ink2:#5B4429;
+  --travian-border:#8E7957;
+  --travian-border2:#5C4A33;
+  --travian-green:#5F8E22;
+  --travian-green2:#355F18;
+  --travian-gold:#D5B24F;
+  --travian-gold2:#A77A24;
+  --travian-red:#A33A25;
+
+  --rc-bg-a:#10160F;
+  --rc-bg-b:#182416;
+  --rc-bg-c:#263820;
+  --rc-card:rgba(233,216,180,.96);
+  --rc-card-strong:rgba(246,232,200,.98);
+  --rc-card-soft:rgba(205,183,140,.92);
+  --rc-panel-fun:linear-gradient(180deg,#F6E8C8 0%,#E9D8B4 58%,#D4BD8F 100%);
+  --rc-frost:linear-gradient(180deg,rgba(246,232,200,.98),rgba(205,183,140,.92));
+  --rc-text:#3A2A18;
+  --rc-text-strong:#241709;
+  --rc-muted:#5B4429;
+  --rc-subtle:#725C3F;
+  --rc-border:rgba(92,74,51,.42);
+  --rc-border-strong:rgba(92,74,51,.72);
+  --rc-primary:#5F8E22;
+  --rc-primary-2:#355F18;
+  --rc-accent2:#D5B24F;
+  --rc-accent3:#A33A25;
+  --rc-shadow:0 22px 58px rgba(0,0,0,.44);
+}
+body[data-rc-theme="night"]{
+  background:
+    radial-gradient(circle at 50% 20%,rgba(126,158,78,.20),transparent 33%),
+    radial-gradient(circle at 14% 78%,rgba(38,56,32,.40),transparent 30%),
+    radial-gradient(circle at 86% 72%,rgba(10,16,12,.55),transparent 35%),
+    linear-gradient(180deg,#0A0E0A 0%,#121A10 48%,#070A07 100%)!important;
+}
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  background:
+    radial-gradient(circle at 44% 18%,rgba(126,158,78,.20),transparent 31%),
+    radial-gradient(circle at 8% 70%,rgba(38,56,32,.45),transparent 32%),
+    radial-gradient(circle at 92% 78%,rgba(12,16,10,.58),transparent 34%),
+    linear-gradient(180deg,#0A0E0A 0%,#121A10 52%,#080B07 100%)!important;
+}
+.app-shell[data-rc-theme="night"]:before,.rc-standalone-shell[data-rc-theme="night"]:before{
+  background:
+    linear-gradient(0deg,rgba(255,244,214,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,244,214,.018) 1px,transparent 1px),
+    radial-gradient(circle at 50% 30%,rgba(213,178,79,.08),transparent 42%)!important;
+  background-size:32px 32px,32px 32px,100% 100%!important;
+  opacity:.80!important;
+}
+
+/* Paneles principales: pergamino con tinta oscura, como las ventanas de navegador medieval. */
+.app-shell[data-rc-theme="night"] .studio-panel,
+.app-shell[data-rc-theme="night"] .landing-feature-pro,
+.app-shell[data-rc-theme="night"] .landing-nav-card,
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .news-short,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="night"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro{
+  background:
+    radial-gradient(circle at 20% 0%,rgba(255,255,255,.36),transparent 34%),
+    linear-gradient(180deg,#F6E8C8 0%,#E9D8B4 58%,#D4BD8F 100%)!important;
+  color:#3A2A18!important;
+  border:2px solid #8E7957!important;
+  border-radius:14px!important;
+  box-shadow:
+    0 16px 38px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.72),
+    inset 0 -3px 0 rgba(92,74,51,.16)!important;
+  backdrop-filter:none!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small){
+  color:#3A2A18!important;
+  text-shadow:none!important;
+}
+
+/* Header/nav: madera oscura + marcos dorados. */
+.app-shell[data-rc-theme="night"] .app-header-pro,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro{
+  background:
+    linear-gradient(180deg,rgba(246,232,200,.10),rgba(0,0,0,.08)),
+    linear-gradient(180deg,#4A3522 0%,#241709 100%)!important;
+  border:2px solid #8E7957!important;
+  box-shadow:0 18px 42px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,244,214,.18)!important;
+}
+.app-shell[data-rc-theme="night"] .app-header-pro *,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro *{
+  color:#F6E8C8!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro{
+  background:rgba(246,232,200,.08)!important;
+  border:1px solid rgba(213,178,79,.24)!important;
+  border-radius:12px!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"]{
+  background:linear-gradient(180deg,#6F8E2C,#355F18)!important;
+  border-color:#D5B24F!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] .nav-icon-pro{
+  background:linear-gradient(180deg,#D5B24F,#A77A24)!important;
+  color:#241709!important;
+}
+
+/* Botones: verde de construcción estilo Travian. */
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:linear-gradient(180deg,#7CAE2C 0%,#5F8E22 48%,#355F18 100%)!important;
+  color:#FFF7E6!important;
+  border:2px solid #8E7957!important;
+  border-radius:8px!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.45)!important;
+  font-weight:950!important;
+  box-shadow:0 4px 0 #243D10,0 10px 20px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.35)!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro) *{
+  color:#FFF7E6!important;
+}
+
+/* Chips/burbujas: pergamino claro con tinta oscura. */
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"],
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"]{
+  background:linear-gradient(180deg,#FFF8E8,#E9D8B4)!important;
+  color:#3A2A18!important;
+  border:1.5px solid #8E7957!important;
+  border-radius:999px!important;
+  text-shadow:none!important;
+  box-shadow:0 6px 14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.8)!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"] *,
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"] *{
+  color:#3A2A18!important;
+  text-shadow:none!important;
+}
+
+/* Inputs como cajas de pergamino. */
+.app-shell[data-rc-theme="night"] input,
+.app-shell[data-rc-theme="night"] select,
+.app-shell[data-rc-theme="night"] textarea,
+.rc-standalone-shell[data-rc-theme="night"] input,
+.rc-standalone-shell[data-rc-theme="night"] select,
+.rc-standalone-shell[data-rc-theme="night"] textarea{
+  background:#FFF8E8!important;
+  color:#3A2A18!important;
+  border:2px solid #8E7957!important;
+  border-radius:8px!important;
+}
+
+/* Tycoon: se acerca a mapa/aldea de navegador. */
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board,
+.app-shell[data-rc-theme="night"] .tycoon-map-card,
+.app-shell[data-rc-theme="night"] .tycoon-map-board{
+  background:
+    radial-gradient(circle at 50% 25%,rgba(126,158,78,.24),transparent 42%),
+    linear-gradient(180deg,#182416 0%,#10160F 100%)!important;
+  color:#F6E8C8!important;
+  border:2px solid #8E7957!important;
+  border-radius:14px!important;
+  box-shadow:0 20px 52px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,244,214,.14)!important;
+}
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card *,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board *,
+.app-shell[data-rc-theme="night"] .tycoon-map-card *,
+.app-shell[data-rc-theme="night"] .tycoon-map-board *{
+  color:#F6E8C8!important;
+}
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board button,
+.app-shell[data-rc-theme="night"] .tycoon-map-board button{
+  background:linear-gradient(180deg,#F6E8C8,#D4BD8F)!important;
+  color:#3A2A18!important;
+  border:2px solid #8E7957!important;
+}
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board button *,
+.app-shell[data-rc-theme="night"] .tycoon-map-board button *{
+  color:#3A2A18!important;
+}
+
+/* Modo día: pergamino soleado, no blanco plano. */
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#E8D8AE;
+  --rc-bg-b:#F7EBCB;
+  --rc-bg-c:#CFE3B3;
+  --rc-card:rgba(248,235,203,.96);
+  --rc-card-strong:rgba(255,248,226,.98);
+  --rc-panel-fun:linear-gradient(180deg,#FFF8E2 0%,#F8EBCB 60%,#E3CE9D 100%);
+  --rc-text:#3A2A18;
+  --rc-text-strong:#241709;
+  --rc-muted:#5B4429;
+  --rc-primary:#6F8E2C;
+  --rc-primary-2:#5F8E22;
+  --rc-accent2:#D5B24F;
+  --rc-accent3:#A33A25;
+}
+body[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 46% 14%,rgba(213,178,79,.30),transparent 34%),
+    radial-gradient(circle at 16% 78%,rgba(126,158,78,.22),transparent 30%),
+    linear-gradient(180deg,#E8D8AE 0%,#F7EBCB 46%,#CFE3B3 100%)!important;
+}
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 46% 14%,rgba(213,178,79,.26),transparent 34%),
+    radial-gradient(circle at 16% 78%,rgba(126,158,78,.20),transparent 30%),
+    linear-gradient(180deg,#E8D8AE 0%,#F7EBCB 48%,#CFE3B3 100%)!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel,
+.app-shell[data-rc-theme="day"] .landing-feature-pro,
+.app-shell[data-rc-theme="day"] .landing-nav-card,
+.app-shell[data-rc-theme="day"] .modal-panel-pro,
+.app-shell[data-rc-theme="day"] .news-short,
+.rc-standalone-shell[data-rc-theme="day"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="day"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="day"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="day"] .modal-panel-pro{
+  background:linear-gradient(180deg,#FFF8E2 0%,#F8EBCB 60%,#E3CE9D 100%)!important;
+  color:#3A2A18!important;
+  border:2px solid #A28A61!important;
+  border-radius:14px!important;
+  box-shadow:0 16px 34px rgba(92,74,51,.18),inset 0 1px 0 rgba(255,255,255,.78)!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="day"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="day"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small){
+  color:#3A2A18!important;
+}
+
+/* Login: estilo aldea/juego navegador con toque Rasta. */
+.login-cyber-shell{
+  background:
+    radial-gradient(circle at 50% 14%,rgba(213,178,79,.22),transparent 32%),
+    radial-gradient(circle at 12% 80%,rgba(95,142,34,.26),transparent 28%),
+    radial-gradient(circle at 88% 76%,rgba(163,58,37,.14),transparent 28%),
+    linear-gradient(180deg,#080C07,#121A10 48%,#050704)!important;
+}
+.login-cyber-shell:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    linear-gradient(0deg,rgba(255,244,214,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,244,214,.025) 1px,transparent 1px),
+    radial-gradient(circle at 50% 30%,rgba(213,178,79,.10),transparent 42%);
+  background-size:36px 36px,36px 36px,100% 100%;
+  opacity:.80;
+}
+.login-cyber-shell .studio-panel{
+  background:linear-gradient(180deg,#FFF8E2 0%,#F8EBCB 58%,#E3CE9D 100%)!important;
+  color:#3A2A18!important;
+  border:2px solid #8E7957!important;
+  border-radius:14px!important;
+  box-shadow:0 22px 58px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.78)!important;
+}
+.login-cyber-shell .studio-panel *{color:#3A2A18!important}
+.login-cyber-shell .landing-feature-pro{
+  background:linear-gradient(180deg,#F6E8C8,#D4BD8F)!important;
+  color:#3A2A18!important;
+  border:2px solid #8E7957!important;
+}
+.login-cyber-shell .landing-feature-pro *{color:#3A2A18!important}
+.login-cyber-shell .bp{
+  background:linear-gradient(180deg,#7CAE2C 0%,#5F8E22 50%,#355F18 100%)!important;
+  color:#FFF7E6!important;
+  border:2px solid #8E7957!important;
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -2680,7 +3640,7 @@ function Auth({onLogin,showToast,settings}){
   }
 
   return(
-    <div style={{minHeight:"100vh",background:"radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),linear-gradient(180deg,#050403,#130B06 48%,#080604)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",padding:"18px 14px 28px",overflowX:"hidden"}}>
+    <div className="login-cyber-shell" style={{minHeight:"100vh",background:"radial-gradient(circle at 50% 10%,rgba(102,255,158,.20),transparent 30%),radial-gradient(circle at 10% 78%,rgba(255,214,102,.18),transparent 28%),radial-gradient(circle at 90% 72%,rgba(255,58,140,.16),transparent 28%),linear-gradient(180deg,#020503,#07120B 48%,#020403)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",padding:"18px 14px 28px",overflowX:"hidden",position:"relative"}}>
       <style>{CSS}</style>
       <Particles/>
       <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:480}}>
@@ -11576,7 +12536,7 @@ export default function App(){
 
   if(tycoonRoute){
     return (
-      <div className="rc-standalone-shell" data-rc-theme={uiTheme} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",minHeight:"100vh",background:uiTheme==="day"?"radial-gradient(circle at top,#FFF1D7 0,#FAF2E3 52%,#F1E6FF 100%)":"radial-gradient(circle at top,#0B1430 0,#111C3F 48%,#1C2155 100%)",color:"var(--rc-text,#EAF6FF)"}}>
+      <div className="rc-standalone-shell" data-rc-theme={uiTheme} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",minHeight:"100vh",background:uiTheme==="day"?"radial-gradient(circle at top,#FFF1D7 0,#FAF2E3 52%,#F1E6FF 100%)":"radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),linear-gradient(180deg,#050403,#130B06 48%,#080604)",color:"var(--rc-text,#EAF6FF)"}}>
         <style>{CSS}</style>
         <Particles/>
         <RastaCutsTycoonGame user={currentUser} showToast={showToast} standalone onExit={closeTycoonPage}/>
