@@ -3215,10 +3215,10 @@ html,body,#root{
 }
 .rasta-helper-fixed-safe{
   position:fixed!important;
-  right:14px!important;
-  bottom:calc(86px + env(safe-area-inset-bottom,0px))!important;
-  left:auto!important;
-  top:auto!important;
+  left:var(--helper-left, calc(100vw - 92px))!important;
+  top:var(--helper-top, calc(100vh - 180px))!important;
+  right:auto!important;
+  bottom:auto!important;
   z-index:2147483001!important;
   pointer-events:none!important;
   transform:none!important;
@@ -3249,8 +3249,10 @@ html,body,#root{
   }
   .bottom-nav-pro .nav-tab-pro{max-width:160px!important;}
   .rasta-helper-fixed-safe{
-    right:calc((100vw - min(1180px,100vw)) / 2 + 22px)!important;
-    bottom:102px!important;
+    left:var(--helper-left, calc(100vw - 110px))!important;
+    top:var(--helper-top, calc(100vh - 190px))!important;
+    right:auto!important;
+    bottom:auto!important;
   }
 }
 `;
@@ -4360,9 +4362,12 @@ function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=fal
     settings?.branding?.imagen_rasta_url,
     settings?.branding?.logo_mascota_url
   ]);
+
   const sources=forceInternal?[]:customSources;
   const [imgIndex,setImgIndex]=useState(0);
-  useEffect(()=>{setImgIndex(0);},[sources.join("|"),forceInternal]);
+
+  useEffect(()=>{ setImgIndex(0); },[sources.join("|"),forceInternal]);
+
   const src=sources[imgIndex];
   const hasImage=Boolean(src);
 
@@ -4375,68 +4380,73 @@ function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=fal
         position:"relative",
         overflow:"visible",
         display:"grid",
-        placeItems:"center",
+        placeItems:"end center",
         background:"transparent",
         border:"0",
         boxShadow:"none",
         animation:"helperBob 2.4s ease-in-out infinite",
         filter:speaking
-          ?"drop-shadow(0 14px 20px rgba(0,0,0,.34)) drop-shadow(0 0 12px rgba(213,178,79,.28))"
-          :"drop-shadow(0 10px 16px rgba(0,0,0,.28))"
+          ? "drop-shadow(0 14px 20px rgba(0,0,0,.34)) drop-shadow(0 0 12px rgba(213,178,79,.28))"
+          : "drop-shadow(0 10px 16px rgba(0,0,0,.28))"
       }}
     >
-      <div style={{position:"absolute",inset:4,borderRadius:"50%",background:"radial-gradient(circle at 50% 55%,rgba(255,214,107,.28),transparent 62%)",filter:"blur(8px)",zIndex:0,pointerEvents:"none"}}/>
-      <div style={{
-        position:"relative",
-        zIndex:1,
-        width:size,
-        height:size,
-        borderRadius:"50%",
-        overflow:"hidden",
-        background:"transparent",
-        boxShadow:"none"
-      }}>
-        {hasImage ? (
-          <img
-            key={src}
-            src={src}
-            alt="Rasta ayuda"
-            draggable={false}
-            onError={()=>setImgIndex(i=>i+1)}
-            style={{
-              position:"absolute",
-              left:"50%",
-              top:"54%",
-              width:size*1.85,
-              height:size*1.85,
-              transform:"translate(-50%,-50%)",
-              objectFit:"contain",
-              objectPosition:"center center",
-              background:"transparent",
-              border:"0",
-              boxShadow:"none",
-              display:"block"
-            }}
-          />
-        ) : (
-          <div style={{
+      <div
+        style={{
+          position:"absolute",
+          inset:0,
+          borderRadius:"50%",
+          background:"radial-gradient(circle at 50% 58%,rgba(255,214,107,.28),transparent 62%)",
+          filter:"blur(10px)",
+          zIndex:0,
+          pointerEvents:"none"
+        }}
+      />
+
+      {hasImage ? (
+        <img
+          key={src}
+          src={src}
+          alt="Rasta ayuda"
+          draggable={false}
+          onError={()=>setImgIndex(i=>i+1)}
+          style={{
             position:"absolute",
-            width:size*2.78,
-            left:-size*.90,
-            top:-size*.48,
+            left:"50%",
+            bottom:-size*0.02,
+            width:size*1.68,
+            height:size*1.68,
+            transform:"translateX(-50%)",
+            objectFit:"contain",
+            objectPosition:"center bottom",
+            background:"transparent",
+            border:"0",
+            boxShadow:"none",
+            display:"block",
+            zIndex:1,
+            pointerEvents:"none"
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            position:"absolute",
+            left:"50%",
+            bottom:-size*0.06,
+            width:size*1.9,
+            transform:"translateX(-50%)",
             pointerEvents:"none",
             background:"transparent",
             border:"0",
-            boxShadow:"none"
-          }}>
-            <HeroMascot/>
-          </div>
-        )}
-      </div>
+            boxShadow:"none",
+            zIndex:1
+          }}
+        >
+          <HeroMascot/>
+        </div>
+      )}
     </div>
   );
 }
-
 function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null}){
   const branding=settings?.branding||{};
   const name=branding.nombre_tienda||BRAND.name;
@@ -13279,6 +13289,8 @@ function HelperMascot({page,settings=null}){
       data-rasta-helper="1"
       className="rasta-helper-fixed-safe"
       style={{
+        "--helper-left": `${pos.x}px`,
+        "--helper-top": `${pos.y}px`,
         touchAction:"none"
       }}
     >
