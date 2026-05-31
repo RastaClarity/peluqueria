@@ -1763,6 +1763,205 @@ body[data-rc-theme="day"]{
   .app-shell[data-rc-theme] .header-action-pro{padding:6px 8px!important}
 }
 
+
+/* ===== FASE104: modo noche estilo LOGIN cálido + cristal moderno ===== */
+/* Cambia la paleta azul clínica por la del login: negro café, oro crema, verde rasta apagado y rojo vino. */
+body[data-rc-theme="night"]{
+  color-scheme:dark;
+  background:
+    radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),
+    radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),
+    radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),
+    linear-gradient(180deg,#050403 0%,#130B06 48%,#080604 100%)!important;
+}
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  --rc-bg-a:#050403;
+  --rc-bg-b:#130B06;
+  --rc-bg-c:#080604;
+  --rc-card:rgba(19,11,6,.82);
+  --rc-card-strong:rgba(28,16,9,.94);
+  --rc-card-soft:rgba(42,25,14,.86);
+  --rc-panel-fun:linear-gradient(145deg,rgba(18,10,6,.92),rgba(36,20,11,.86));
+  --rc-frost:linear-gradient(145deg,rgba(255,244,214,.105),rgba(255,255,255,.028));
+  --rc-text:#F5E6C8;
+  --rc-text-strong:#FFF4D6;
+  --rc-muted:#D7C49A;
+  --rc-subtle:#A79068;
+  --rc-cream:#FFF4D6;
+  --rc-panel-lite:rgba(44,26,14,.92);
+  --rc-border:rgba(216,190,135,.22);
+  --rc-border-strong:rgba(185,154,69,.48);
+  --rc-primary:#D4AF37;
+  --rc-primary-2:#B99A45;
+  --rc-accent2:#4F602D;
+  --rc-accent3:#A72822;
+  --rc-accent-warm:#F0D69C;
+  --rc-danger:#E85B76;
+  --rc-shadow:0 28px 84px rgba(0,0,0,.56);
+  --rc-inner:inset 0 1px 0 rgba(255,244,214,.12);
+  background:
+    radial-gradient(circle at 50% 12%,rgba(212,175,55,.20),transparent 30%),
+    radial-gradient(circle at 12% 80%,rgba(47,107,66,.18),transparent 28%),
+    radial-gradient(circle at 88% 76%,rgba(167,40,34,.16),transparent 26%),
+    linear-gradient(180deg,#050403 0%,#130B06 48%,#080604 100%)!important;
+  color:var(--rc-text)!important;
+}
+
+/* Fondo interior de la app con el mismo aire del login, pero más glass y más legible. */
+.app-shell[data-rc-theme="night"]:before,.rc-standalone-shell[data-rc-theme="night"]:before{
+  background:
+    radial-gradient(circle at 18% 14%,rgba(212,175,55,.18),transparent 30%),
+    radial-gradient(circle at 82% 8%,rgba(79,96,45,.16),transparent 28%),
+    radial-gradient(circle at 76% 78%,rgba(167,40,34,.12),transparent 30%),
+    repeating-linear-gradient(135deg,rgba(255,244,214,.035) 0 1px,transparent 1px 18px)!important;
+  opacity:.95!important;
+}
+
+/* Header y nav: negro cristal + borde oro, como extensión del login. */
+.app-shell[data-rc-theme="night"] .app-header-pro,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro{
+  background:
+    linear-gradient(135deg,rgba(255,244,214,.10),rgba(255,255,255,.025)),
+    rgba(19,11,6,.82)!important;
+  border-color:rgba(216,190,135,.22)!important;
+  box-shadow:0 20px 58px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,244,214,.10)!important;
+  backdrop-filter:blur(24px) saturate(1.20)!important;
+}
+.app-shell[data-rc-theme="night"] .app-header-pro{
+  border-top:0!important;
+  box-shadow:0 18px 42px rgba(0,0,0,.42),inset 0 -1px 0 rgba(216,190,135,.20)!important;
+}
+
+/* Tarjetas oscuras legibles, no azuladas. */
+.app-shell[data-rc-theme="night"] .studio-panel,
+.app-shell[data-rc-theme="night"] .landing-feature-pro,
+.app-shell[data-rc-theme="night"] .landing-nav-card,
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .news-short,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="night"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro{
+  background:
+    linear-gradient(145deg,rgba(255,244,214,.075),rgba(255,244,214,.025)),
+    rgba(19,11,6,.86)!important;
+  border:1px solid rgba(216,190,135,.22)!important;
+  color:#F5E6C8!important;
+  box-shadow:0 22px 62px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,244,214,.09)!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b){
+  color:#FFF4D6!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small){
+  color:#F5E6C8!important;
+}
+
+/* Botones en modo noche: oro/crema con profundidad, no cian. */
+.app-shell[data-rc-theme="night"] .bp,
+.rc-standalone-shell[data-rc-theme="night"] .bp,
+.app-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:
+    linear-gradient(135deg,rgba(212,175,55,.22),rgba(79,96,45,.12)),
+    rgba(28,16,9,.88)!important;
+  border:1px solid rgba(216,190,135,.34)!important;
+  color:#FFF4D6!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,244,214,.12)!important;
+}
+.app-shell[data-rc-theme="night"] .bp:hover,
+.rc-standalone-shell[data-rc-theme="night"] .bp:hover,
+.app-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro):hover,
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro):hover{
+  background:
+    linear-gradient(135deg,rgba(212,175,55,.32),rgba(167,40,34,.16)),
+    rgba(36,20,11,.92)!important;
+}
+
+/* Botón día/noche y sonido: mismo estilo que login, pero moderno. */
+.app-shell[data-rc-theme="night"] .header-action-pro,
+.app-shell[data-rc-theme="night"] .theme-toggle-pro{
+  background:linear-gradient(135deg,rgba(255,244,214,.14),rgba(212,175,55,.12))!important;
+  border:1px solid rgba(216,190,135,.26)!important;
+  color:#FFF4D6!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro{
+  color:#F5E6C8!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro span{
+  color:#D7C49A!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"]{
+  background:linear-gradient(135deg,rgba(212,175,55,.16),rgba(255,244,214,.06))!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] span{
+  color:#FFF4D6!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] .nav-icon-pro{
+  background:linear-gradient(135deg,#6B4D1F,#B99A45 62%,#D8BE87)!important;
+  color:#120806!important;
+}
+
+/* Inputs oscuros tipo login. */
+.app-shell[data-rc-theme="night"] input,
+.app-shell[data-rc-theme="night"] select,
+.app-shell[data-rc-theme="night"] textarea,
+.rc-standalone-shell[data-rc-theme="night"] input,
+.rc-standalone-shell[data-rc-theme="night"] select,
+.rc-standalone-shell[data-rc-theme="night"] textarea{
+  background:rgba(8,6,4,.70)!important;
+  color:#FFF4D6!important;
+  border:1px solid rgba(216,190,135,.26)!important;
+}
+.app-shell[data-rc-theme="night"] input::placeholder,
+.app-shell[data-rc-theme="night"] textarea::placeholder{
+  color:rgba(245,230,200,.58)!important;
+}
+
+/* Tycoon en noche también cálido, para que no choque con la web. */
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board,
+.app-shell[data-rc-theme="night"] .tycoon-map-card,
+.app-shell[data-rc-theme="night"] .tycoon-map-board{
+  background:
+    radial-gradient(circle at 20% 8%,rgba(212,175,55,.16),transparent 30%),
+    linear-gradient(145deg,rgba(19,11,6,.92),rgba(36,20,11,.86))!important;
+  border:1px solid rgba(216,190,135,.26)!important;
+  color:#FFF4D6!important;
+  box-shadow:0 26px 78px rgba(0,0,0,.52)!important;
+}
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card *,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board *,
+.app-shell[data-rc-theme="night"] .tycoon-map-card *,
+.app-shell[data-rc-theme="night"] .tycoon-map-board *{
+  color:#FFF4D6!important;
+}
+
+/* Modo día queda limpio, pero lo acercamos menos a azul chillón y más crema clara del login. */
+body[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 50% 12%,rgba(212,175,55,.14),transparent 30%),
+    radial-gradient(circle at 12% 80%,rgba(47,107,66,.10),transparent 28%),
+    radial-gradient(circle at 88% 76%,rgba(167,40,34,.08),transparent 26%),
+    linear-gradient(180deg,#FFF9EF 0%,#FAF2E3 52%,#F1E6D7 100%)!important;
+}
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#FFF9EF;
+  --rc-bg-b:#FAF2E3;
+  --rc-bg-c:#F1E6D7;
+  --rc-primary:#8A5A2E;
+  --rc-primary-2:#B99A45;
+  --rc-accent2:#4F602D;
+  --rc-accent3:#A72822;
+  --rc-border:rgba(138,90,46,.18);
+  --rc-border-strong:rgba(185,154,69,.42);
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -11576,7 +11775,7 @@ export default function App(){
 
   if(tycoonRoute){
     return (
-      <div className="rc-standalone-shell" data-rc-theme={uiTheme} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",minHeight:"100vh",background:uiTheme==="day"?"radial-gradient(circle at top,#FFF1D7 0,#FAF2E3 52%,#F1E6FF 100%)":"radial-gradient(circle at top,#0B1430 0,#111C3F 48%,#1C2155 100%)",color:"var(--rc-text,#EAF6FF)"}}>
+      <div className="rc-standalone-shell" data-rc-theme={uiTheme} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",minHeight:"100vh",background:uiTheme==="day"?"radial-gradient(circle at top,#FFF1D7 0,#FAF2E3 52%,#F1E6FF 100%)":"radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),linear-gradient(180deg,#050403,#130B06 48%,#080604)",color:"var(--rc-text,#EAF6FF)"}}>
         <style>{CSS}</style>
         <Particles/>
         <RastaCutsTycoonGame user={currentUser} showToast={showToast} standalone onExit={closeTycoonPage}/>
