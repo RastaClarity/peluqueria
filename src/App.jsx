@@ -2723,6 +2723,48 @@ body[data-rc-theme="day"]{
   border:2px solid #8E7957!important;
 }
 
+
+/* ===== FASE108: navegación fija, Rasta helper limpio, cartera/carrito/notificaciones ===== */
+.bottom-nav-pro{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:0!important;
+  transform:translateX(-50%)!important;
+  width:min(100vw,var(--app-max-width,480px))!important;
+  max-width:var(--app-max-width,480px)!important;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
+  z-index:1200!important;
+}
+.app-shell{
+  padding-bottom:calc(var(--app-bottom-pad,82px) + env(safe-area-inset-bottom,0px))!important;
+}
+.page-content-pro{
+  padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important;
+}
+.brand-home-button:hover .brand-scissors{
+  transform:rotate(-10deg) scale(1.12);
+  filter:drop-shadow(0 0 8px rgba(213,178,79,.55));
+}
+.brand-scissors{
+  transition:transform .18s ease,filter .18s ease;
+}
+.rasta-face-avatar{
+  isolation:isolate;
+}
+.rasta-face-avatar > div:first-child{
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.25));
+}
+.wallet-button-pro,.cart-button-pro{
+  display:inline-grid!important;
+  place-items:center!important;
+}
+@media (max-width:520px){
+  .wallet-button-pro,.cart-button-pro{padding:5px 7px!important;font-size:.82rem!important}
+  .app-header-pro{gap:6px!important;padding:10px 10px!important}
+  .app-header-pro .theme-word{display:none!important}
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -3484,6 +3526,43 @@ function LandingFeature({icon,title,sub,accent="#D4AF37"}){
         </div>
       </div>
       <div style={{position:"absolute",left:12,right:12,bottom:8,height:3,borderRadius:999,background:`linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)`,opacity:.85}}/>
+    </div>
+  );
+}
+
+
+function RastaFaceAvatar({size=66,speaking=false}={}){
+  return (
+    <div
+      className="rasta-face-avatar"
+      style={{
+        width:size,
+        height:size,
+        borderRadius:"50%",
+        overflow:"hidden",
+        position:"relative",
+        display:"grid",
+        placeItems:"center",
+        background:"radial-gradient(circle at 50% 35%,#F7D76D,#2A1A0D 70%)",
+        border:"3px solid #D5B24F",
+        boxShadow:speaking
+          ?"0 14px 28px rgba(0,0,0,.34),0 0 0 6px rgba(213,178,79,.18)"
+          :"0 10px 22px rgba(0,0,0,.28)",
+        animation:"helperBob 2.4s ease-in-out infinite"
+      }}
+    >
+      <div style={{
+        position:"absolute",
+        width:size*3.25,
+        left:-size*1.13,
+        top:-size*.86,
+        transform:"scale(1)",
+        transformOrigin:"center top",
+        pointerEvents:"none"
+      }}>
+        <HeroMascot/>
+      </div>
+      <div style={{position:"absolute",inset:0,borderRadius:"50%",boxShadow:"inset 0 0 0 2px rgba(255,248,226,.35),inset 0 -18px 22px rgba(0,0,0,.20)"}}/>
     </div>
   );
 }
@@ -11759,6 +11838,24 @@ const HELP_TIPS = {
     "El cliente lee y reacciona; staff y admin publican. Ordenado, limpio y sin convertirlo en chat loco.",
     "Un aviso bien puesto evita veinte preguntas repetidas. Eso es magia sin IA, mi pana.",
     "Los posts importantes deberían poder fijarse arriba como cartel de barbería."
+  ],
+  cartera:[
+    "La cartera separa las economías: puntos web para perfil, tienda y comunidad; RC sólo para el Tycoon; dinero real futuro aparte.",
+    "La regla buena es clara: máximo normal de 50 puntos al día si completas todo perfecto. Sin contar gacha.",
+    "Aquí verás puntos disponibles, progreso diario y, más adelante, historial de movimientos.",
+    "Si algún día activas pagos, el saldo real debe vivir aquí, separado de los puntos para no mezclar churras con rastas."
+  ],
+  carrito:[
+    "El carrito guardará compras de tienda y personalización del avatar/perfil antes de confirmar el canje.",
+    "Aquí no entra el Tycoon. El Tycoon tendrá sus RC y su propia economía cuando lo mejoremos más adelante.",
+    "Lo ideal es que puedas añadir, quitar, vaciar y revisar total antes de gastar puntos.",
+    "Buen carrito: claro, sin letra pequeña y con el total siempre visible. Que nadie compre un peine pensando que era una corona."
+  ],
+  notificaciones:[
+    "La campana es el buzón rápido: citas, mensajes, canjes y avisos importantes.",
+    "Una notificación de cita debe enseñar fecha, hora, servicio, estado y mensaje completo sin obligarte a buscar a ciegas.",
+    "Si algo es importante, debe verse como importante. Si ya lo leíste, que no siga gritando como loro en barbería.",
+    "Desde aquí deberías poder abrir la sección relacionada: Citas, comunidad, tienda o perfil."
   ]
 };
 
@@ -11922,7 +12019,8 @@ function helperMood(page){
   if(page==="dashboard")return "welcome";
   if(page==="arcade"||page==="tops"||String(page).startsWith("game_"))return "arcade";
   if(page==="noticias"||page==="comunidad"||page==="feed"||page==="foro")return "noticias";
-  if(page==="perfil")return "success";
+  if(page==="perfil"||page==="cartera"||page==="carrito")return "success";
+  if(page==="notificaciones")return "noticias";
   return "idle";
 }
 function helperTitle(page){
@@ -11936,6 +12034,9 @@ function helperTitle(page){
   if(page==="arcade"||page==="juegos")return "Rasta Arcade";
   if(page==="tienda")return "Rasta en tienda";
   if(page==="perfil")return "Tu estilo, mi pana";
+  if(page==="cartera")return "Rasta cartera";
+  if(page==="carrito")return "Rasta carrito";
+  if(page==="notificaciones")return "Rasta campana";
   if(page==="comunidad"||page==="foro"||page==="feed")return "Rasta comunidad";
   if(page==="noticias")return "Rasta magazine";
   return "Rasta al habla";
@@ -11959,7 +12060,10 @@ function rastaPageHelpIntro(page){
     perfil:"Estás en Perfil. Aquí editas avatar, privacidad, nombre y opciones de cuenta.",
     inventario:"Estás en Stock. Aquí se revisa inventario y productos.",
     caja:"Estás en Caja. Aquí se revisan ingresos, ventas y actividad económica.",
-    ranking:"Estás en Ranking. Aquí se comparan puntos y progreso entre clientes."
+    ranking:"Estás en Ranking. Aquí se comparan puntos y progreso entre clientes.",
+    cartera:"Estás en Cartera. Aquí se separan los puntos web, el límite diario, el saldo futuro y la economía del Tycoon.",
+    carrito:"Estás en Carrito. Aquí se guardarán compras de tienda y personalización del avatar antes de confirmar el canje.",
+    notificaciones:"Estás en Notificaciones. Aquí se leen avisos completos, citas, mensajes y accesos rápidos a la sección relacionada."
   };
   return base[key]||HELP_TEXTS[key]||"Pulsa una zona de la app y te explicaré para qué sirve.";
 }
@@ -11988,6 +12092,14 @@ function rastaElementHelp(target,page){
   if(tag==="select")return "Este desplegable sirve para elegir una opción de la lista.";
 
   if(t.includes("sonido")||t.includes("silenciar"))return "Activa o silencia la música y los efectos. Si haces doble toque en Sonido, cambia el tema musical.";
+  if(t.includes("cartera")||t.includes("👛"))return "Abre la cartera: puntos disponibles, límite diario de 50 puntos, saldo futuro y economías separadas.";
+  if(t.includes("carrito")||t.includes("🛒"))return "Abre el carrito: aquí se guardarán compras de tienda y personalización de avatar/perfil antes de confirmar.";
+  if(t.includes("notificaciones")||t.includes("🔔")||t.includes("campana"))return "Abre la campana. Aquí puedes leer citas, avisos y mensajes completos sin perderte.";
+  if(t.includes("ver detalle"))return "Despliega la notificación para leer el mensaje completo y los datos importantes.";
+  if(t.includes("abrir cita"))return "Te lleva a Citas para revisar o gestionar la reserva relacionada.";
+  if(t.includes("marcar leída")||t.includes("marcar leidas")||t.includes("marcar leídas"))return "Marca la notificación como leída para que deje de aparecer como nueva.";
+  if(t.includes("vaciar"))return "Vacía el carrito. Úsalo sólo si quieres quitar todos los artículos guardados.";
+  if(t.includes("confirmación")||t.includes("confirmar carrito"))return "Confirmará el canje del carrito cuando terminemos la tienda y la personalización.";
   if(t.includes("top 10"))return "Top 10 abre los rankings de minijuegos: semanal e histórico por cada juego.";
   if(t.includes("top general"))return "Top general muestra estadísticas globales de clientes: puntos, juegos, tienda y comunidad.";
   if(t.includes("ver top")||t.includes("abrir top"))return "Este botón abre la página de rankings para ver los mejores jugadores y estadísticas.";
@@ -12284,8 +12396,8 @@ function HelperMascot({page}){
             touchAction:"none"
           }}
         >
-          <div style={{position:"relative",animation:"helperBob 2.4s ease-in-out infinite"}}>
-            <LoginHelperAvatar size={66} speaking={open} mood={helpMode?"success":mood}/>
+          <div style={{position:"relative"}}>
+            <RastaFaceAvatar size={68} speaking={open}/>
             <div style={{
               position:"absolute",
               right:-2,
@@ -12331,21 +12443,155 @@ function pageTheme(page,communityTab,role){
   if(key==="musica") return PAGE_THEMES.noticias||PAGE_THEMES.comunidad;
   return PAGE_THEMES[key]||PAGE_THEMES[page]||PAGE_THEMES.dashboard;
 }
-function NotificacionesPanel({show,onClose,items=[],onMarkAll,onRefresh}){
+
+
+
+function HelperInline({page}){
+  const [open,setOpen]=useState(false);
+  const text=rastaPageHelpIntro(page);
+  return <div style={{background:"rgba(255,248,230,.72)",border:`1px solid ${T.g200}`,borderRadius:18,padding:10}}>
+    <button onClick={()=>setOpen(v=>!v)} style={{border:"none",background:"transparent",display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:0,width:"100%",textAlign:"left"}}>
+      <RastaFaceAvatar size={38} speaking={open}/>
+      <div style={{flex:1}}>
+        <div style={{fontWeight:950,color:T.g800,fontSize:".84rem"}}>{helperTitle(page)}</div>
+        <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{open?"Ocultar explicación":"Ver explicación rápida"}</div>
+      </div>
+      <div style={{fontWeight:950,color:T.g700}}>{open?"−":"+"}</div>
+    </button>
+    {open&&<div style={{fontSize:".8rem",fontWeight:820,color:T.text,lineHeight:1.42,marginTop:8,whiteSpace:"pre-wrap"}}>{text}</div>}
+  </div>;
+}
+
+function WalletPanel({show,onClose,user}){
+  if(!show)return null;
+  const pts=Number(user?.puntos||0);
+  const dailyMax=50;
+  const todayEarned=Number(user?.puntos_hoy||user?.daily_points||0);
+  const pct=Math.max(0,Math.min(100,Math.round(todayEarned/dailyMax*100)));
+  return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
+        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>👛 Cartera</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Puntos web separados del Tycoon y de pagos futuros.</div></div>
+        <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>⭐</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>{pts}</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Puntos disponibles</div></Card>
+        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>💳</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>0,00 €</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Saldo futuro</div></Card>
+      </div>
+      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>Límite diario normal</span><span>{todayEarned}/{dailyMax} pts</span></div>
+        <div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F)",borderRadius:999}}/></div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 puntos/día completando todo perfecto. El gacha queda aparte y se ajustará en economía.</div>
+      </Card>
+      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
+        <div style={{fontWeight:950,color:T.g800}}>Economías separadas</div>
+        <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:6}}>Puntos web: avatar, perfil, tienda y comunidad. RC: sólo Tycoon. Dinero real futuro: pagos, reservas o saldo, siempre separado.</div>
+      </Card>
+      <div style={{marginTop:10}}><HelperInline page="cartera"/></div>
+    </div>
+  </div>;
+}
+
+function CartPanel({show,onClose,user,showToast}){
+  const key=`rasta_cart_v1_${user?.id||"anon"}`;
+  const [items,setItems]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem(key)||"[]");}catch{return [];}
+  });
+  useEffect(()=>{try{localStorage.setItem(key,JSON.stringify(items));}catch{}},[items,key]);
+  if(!show)return null;
+  const totalPts=items.reduce((sum,it)=>sum+(Number(it.precio_puntos||it.puntos||0)*Number(it.qty||1)),0);
+  function clearCart(){setItems([]);showToast?.("Carrito vaciado");}
+  return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
+        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🛒 Carrito</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Premios, tienda y personalización del avatar/perfil.</div></div>
+        <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
+      </div>
+      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={i} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8}}><div><b>{it.nombre||it.titulo||"Artículo"}</b><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.tipo||"tienda"} · x{it.qty||1}</div></div><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div></div></Card>)}</div>}
+      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800}}><span>Total</span><span>{totalPts} pts</span></div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:6}}>Base preparada para añadir/quitar productos desde Tienda y Personalización en fases siguientes.</div>
+      </Card>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}><Btn small col="ghost" onClick={clearCart} disabled={!items.length}>Vaciar</Btn><Btn small col="gold" onClick={()=>showToast?.("Confirmación de carrito pendiente para FASE109")} disabled={!items.length}>Confirmar</Btn></div>
+      <div style={{marginTop:10}}><HelperInline page="carrito"/></div>
+    </div>
+  </div>;
+}
+
+function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefresh,onOpenCitas}){
+  const [openId,setOpenId]=useState(null);
   if(!show)return null;
   const unread=items.filter(n=>!n.leida).length;
   const when=v=>{try{return new Date(v).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});}catch{return "";}};
+  const isCita=n=>{
+    const t=`${n.tipo||""} ${n.titulo||""} ${n.mensaje||""}`.toLowerCase();
+    return t.includes("cita")||t.includes("reserva")||t.includes("agenda");
+  };
+  const safePayload=n=>{
+    const raw=n.payload||n.meta||n.datos||n.extra||null;
+    if(!raw)return {};
+    if(typeof raw==="object")return raw;
+    try{return JSON.parse(raw);}catch{return {};}
+  };
+  const detailRows=n=>{
+    const p=safePayload(n);
+    const rows=[
+      ["Fecha",n.fecha||p.fecha||p.dia||p.date],
+      ["Hora",n.hora||p.hora||p.time],
+      ["Servicio",n.servicio||p.servicio||p.tratamiento||p.service],
+      ["Estado",n.estado||p.estado||p.status],
+      ["Cliente",n.cliente||p.cliente||p.nombre_cliente],
+      ["Notas",n.notas||p.notas||p.comentario]
+    ].filter(([,v])=>v!==undefined&&v!==null&&String(v).trim()!=="");
+    return rows;
+  };
+  async function readOne(n){
+    if(!n?.leida) await onMarkOne?.(n);
+  }
+  async function openCitas(n){
+    await readOne(n);
+    onClose?.();
+    onOpenCitas?.();
+  }
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:700,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:480,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
         <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🔔 Notificaciones</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>{unread} sin leer · {items.length} recientes</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}><Btn small col="ghost" onClick={onRefresh}>Actualizar</Btn><Btn small col="gold" onClick={onMarkAll} disabled={!unread}>Marcar leídas</Btn></div>
-      {items.length===0?<EmptyState icon="🔔" title="Sin notificaciones" sub="Cuando haya citas, mensajes o canjes nuevos aparecerán aquí."/>:items.map(n=><Card key={n.id} style={{marginBottom:9,padding:12,background:n.leida?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",border:n.importante?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}><div style={{display:"flex",gap:10,alignItems:"flex-start"}}><div className="icon3d" style={{fontSize:"1.6rem"}}>{notificationIcon(n.tipo)}</div><div style={{flex:1,minWidth:0}}><div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>{!n.leida&&<Badge col="red">nuevo</Badge>}{n.importante&&<Badge col="gold">importante</Badge>}<span style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{when(n.created_at)}</span></div><div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{n.titulo}</div>{n.mensaje&&<div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4,whiteSpace:"pre-wrap"}}>{n.mensaje}</div>}</div></div></Card>)}
+      {items.length===0?<EmptyState icon="🔔" title="Sin notificaciones" sub="Cuando haya citas, mensajes o canjes nuevos aparecerán aquí."/>:items.map(n=>{
+        const opened=openId===n.id;
+        const cita=isCita(n);
+        const rows=detailRows(n);
+        return <Card key={n.id} style={{marginBottom:9,padding:12,background:n.leida?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",border:n.importante?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+          <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+            <div className="icon3d" style={{fontSize:"1.6rem"}}>{notificationIcon(n.tipo)}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
+                {!n.leida&&<Badge col="red">nuevo</Badge>}{n.importante&&<Badge col="gold">importante</Badge>}{cita&&<Badge col="blue">cita</Badge>}
+                <span style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{when(n.created_at)}</span>
+              </div>
+              <div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{n.titulo||"Notificación"}</div>
+              {n.mensaje&&<div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4,whiteSpace:"pre-wrap"}}>{opened?n.mensaje:String(n.mensaje).slice(0,120)+(String(n.mensaje).length>120?"...":"")}</div>}
+              {opened&&rows.length>0&&<div style={{marginTop:10,display:"grid",gap:6,background:"rgba(255,248,230,.64)",border:`1px solid ${T.g200}`,borderRadius:14,padding:10}}>
+                {rows.map(([k,v])=><div key={k} style={{display:"grid",gridTemplateColumns:"82px 1fr",gap:8,fontSize:".78rem",fontWeight:850,color:T.text}}>
+                  <span style={{color:T.g700,fontWeight:950}}>{k}</span><span>{String(v)}</span>
+                </div>)}
+              </div>}
+              <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:10}}>
+                <Btn small col="ghost" onClick={async()=>{setOpenId(opened?null:n.id); if(!opened) await readOne(n);}}>{opened?"Ocultar":"Ver detalle"}</Btn>
+                {cita&&<Btn small col="gold" onClick={()=>openCitas(n)}>Abrir cita</Btn>}
+                {!n.leida&&<Btn small col="green" onClick={()=>readOne(n)}>Marcar leída</Btn>}
+              </div>
+            </div>
+          </div>
+        </Card>;
+      })}
     </div>
   </div>;
 }
+
 
 export default function App(){
   const [user,setUser]=useState(null);
@@ -12368,6 +12614,8 @@ export default function App(){
   const [appSettings,setAppSettings]=useState(DEFAULT_APP_SETTINGS);
   const [unread,setUnread]=useState({client:0,admin:0});
   const [notifOpen,setNotifOpen]=useState(false);
+  const [walletOpen,setWalletOpen]=useState(false);
+  const [cartOpen,setCartOpen]=useState(false);
   const [notifications,setNotifications]=useState([]);
   const [notifCount,setNotifCount]=useState(0);
   const [tycoonRoute,setTycoonRoute]=useState(()=>typeof window!=="undefined"&&window.location.hash==="#/tycoon");
@@ -12457,6 +12705,11 @@ export default function App(){
     const ids=notifications.filter(n=>!n.leida).map(n=>n.id).filter(Boolean);
     if(!ids.length)return;
     await dbPatch("notificaciones",`?id=in.(${ids.join(",")})`,{leida:true});
+    await loadNotifications();
+  }
+  async function markNotificationRead(n){
+    if(!n?.id||n.leida)return;
+    await dbPatch("notificaciones",`?id=eq.${n.id}`,{leida:true});
     await loadNotifications();
   }
 
@@ -12564,11 +12817,13 @@ export default function App(){
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
       <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.22), inset 0 -1px 0 ${clinicAccent}55`}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{appSettings?.branding?.emoji_principal||"✂️"} {appSettings?.branding?.nombre_tienda||BRAND.name}</div>
+          <button className="brand-home-button" onClick={()=>navTo("dashboard")} title="Ir al inicio" style={{display:"inline-flex",alignItems:"center",gap:7,border:"none",background:"transparent",padding:0,cursor:"pointer",fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}><span className="brand-scissors" style={{fontSize:"1.3rem"}}>{appSettings?.branding?.emoji_principal||"✂️"}</span><span>{appSettings?.branding?.nombre_tienda||BRAND.name}</span></button>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
+          <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones · campana de avisos y citas" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
+          <button className="header-action-pro wallet-button-pro" onClick={()=>setWalletOpen(true)} title="Cartera · puntos, saldo y límite diario" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>👛</button>
+          <button className="header-action-pro cart-button-pro" onClick={()=>setCartOpen(true)} title="Carrito · compras y personalización" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🛒</button>
           <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: reiniciar tema (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           <button className="header-action-pro theme-toggle-pro" onClick={toggleUiTheme} title={uiTheme==="night"?"Cambiar a modo día":"Cambiar a modo noche"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.72rem",display:"inline-flex",alignItems:"center",gap:4}}>{uiTheme==="night"?"☀️":"🌙"} <span className="theme-word">{uiTheme==="night"?"Día":"Noche"}</span></button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
@@ -12593,7 +12848,9 @@ export default function App(){
           </button>
         );})}
       </div>
-      <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead}/>
+      <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead} onMarkOne={markNotificationRead} onOpenCitas={()=>navTo("citas")}/>
+      <WalletPanel show={walletOpen} onClose={()=>setWalletOpen(false)} user={currentUser}/>
+      <CartPanel show={cartOpen} onClose={()=>setCartOpen(false)} user={currentUser} showToast={showToast}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
