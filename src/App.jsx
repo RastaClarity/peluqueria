@@ -13720,7 +13720,7 @@ function AppCore(){
   }
   function closeTycoonPage(){
     if(typeof window!=="undefined"){
-      history.pushState("",document.title,window.location.pathname+window.location.search);
+      window.history.pushState("",document.title,window.location.pathname+window.location.search);
     }
     setTycoonRoute(false);
     stopGameMusic();
@@ -13946,6 +13946,42 @@ function AppCore(){
   );
 }
 
+
+function MobileRuntimeGuard({children}){
+  const [runtimeError,setRuntimeError]=useState(null);
+  useEffect(()=>{
+    const readError=(event)=>{
+      try{
+        const err=event?.error || event?.reason || event?.message || "Error desconocido";
+        const msg=String(err?.message || err || "Error desconocido");
+        const stack=String(err?.stack || "");
+        setRuntimeError({msg,stack});
+      }catch{
+        setRuntimeError({msg:"Error desconocido",stack:""});
+      }
+    };
+    window.addEventListener("error",readError);
+    window.addEventListener("unhandledrejection",readError);
+    return()=>{
+      window.removeEventListener("error",readError);
+      window.removeEventListener("unhandledrejection",readError);
+    };
+  },[]);
+  if(runtimeError){
+    return (
+      <div style={{minHeight:"100vh",padding:18,background:"#120806",color:"#F0E0B8",fontFamily:"system-ui,-apple-system,Segoe UI,sans-serif",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{maxWidth:680,width:"100%",background:"#21140C",border:"1px solid #B99A45",borderRadius:18,padding:18,boxShadow:"0 18px 50px rgba(0,0,0,.35)"}}>
+          <h1 style={{margin:"0 0 8px",fontSize:22}}>Rasta Cuts se ha parado al cargar</h1>
+          <p style={{margin:"0 0 12px",lineHeight:1.45}}>Este panel evita la pantalla en blanco y muestra el fallo para poder corregirlo.</p>
+          <pre style={{whiteSpace:"pre-wrap",background:"#0B0705",borderRadius:12,padding:12,overflow:"auto",fontSize:12,color:"#FFE6A3"}}>{String(runtimeError.msg)+"\n\n"+String(runtimeError.stack||"").slice(0,1200)}</pre>
+          <button onClick={()=>{try{localStorage.clear();sessionStorage.clear();}catch{};window.location.reload();}} style={{marginTop:12,border:0,borderRadius:12,padding:"12px 14px",fontWeight:900,background:"#B99A45",color:"#120806"}}>Limpiar datos y recargar</button>
+        </div>
+      </div>
+    );
+  }
+  return children;
+}
+
 class RastaCutsErrorBoundary extends React.Component{
   constructor(props){super(props);this.state={error:null,info:null};}
   static getDerivedStateFromError(error){return {error};}
@@ -13972,5 +14008,11 @@ class RastaCutsErrorBoundary extends React.Component{
 }
 
 export default function App(){
-  return <RastaCutsErrorBoundary><AppCore/></RastaCutsErrorBoundary>;
+  return (
+    <MobileRuntimeGuard>
+      <RastaCutsErrorBoundary>
+        <AppCore/>
+      </RastaCutsErrorBoundary>
+    </MobileRuntimeGuard>
+  );
 }
