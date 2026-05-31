@@ -1018,6 +1018,231 @@ input,select,textarea{
 @media (prefers-reduced-motion:no-preference){
   .tycoon-map-card button:hover{box-shadow:0 18px 34px rgba(0,0,0,.36),0 0 22px rgba(242,207,117,.16)!important}
 }
+
+/* ===== FASE100: clínica glass 2026 + modo día/noche ===== */
+:root{
+  --clinic-font:'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+body[data-rc-theme="night"]{
+  color-scheme:dark;
+  background:
+    radial-gradient(circle at 14% 0%,rgba(34,211,238,.24),transparent 30%),
+    radial-gradient(circle at 84% 4%,rgba(167,139,250,.20),transparent 28%),
+    radial-gradient(circle at 50% 110%,rgba(14,165,233,.13),transparent 40%),
+    linear-gradient(135deg,#060A12 0%,#0B1020 46%,#111827 100%)!important;
+}
+body[data-rc-theme="day"]{
+  color-scheme:light;
+  background:
+    radial-gradient(circle at 14% 0%,rgba(34,211,238,.28),transparent 30%),
+    radial-gradient(circle at 86% 4%,rgba(124,58,237,.16),transparent 26%),
+    radial-gradient(circle at 50% 110%,rgba(6,182,212,.14),transparent 42%),
+    linear-gradient(135deg,#EAF7FF 0%,#F8FBFF 48%,#EEF2FF 100%)!important;
+}
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  --rc-bg-a:#060A12;
+  --rc-bg-b:#0B1020;
+  --rc-bg-c:#111827;
+  --rc-card:rgba(17,25,40,.74);
+  --rc-card-strong:rgba(22,32,51,.86);
+  --rc-card-soft:rgba(30,41,59,.66);
+  --rc-text:#EAF6FF;
+  --rc-muted:#A9BCD0;
+  --rc-subtle:#7E93AA;
+  --rc-border:rgba(148,232,255,.20);
+  --rc-border-strong:rgba(125,249,255,.38);
+  --rc-primary:#22D3EE;
+  --rc-primary-2:#0EA5E9;
+  --rc-accent2:#A78BFA;
+  --rc-accent3:#38BDF8;
+  --rc-danger:#FB7185;
+  --rc-shadow:0 26px 70px rgba(0,0,0,.45);
+  --rc-inner:inset 0 1px 0 rgba(255,255,255,.12);
+  --rc-frost:linear-gradient(145deg,rgba(255,255,255,.115),rgba(255,255,255,.035));
+}
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#EAF7FF;
+  --rc-bg-b:#F8FBFF;
+  --rc-bg-c:#EEF2FF;
+  --rc-card:rgba(255,255,255,.76);
+  --rc-card-strong:rgba(255,255,255,.90);
+  --rc-card-soft:rgba(232,246,255,.74);
+  --rc-text:#0F172A;
+  --rc-muted:#3F5368;
+  --rc-subtle:#60758C;
+  --rc-border:rgba(8,145,178,.22);
+  --rc-border-strong:rgba(6,182,212,.42);
+  --rc-primary:#0891B2;
+  --rc-primary-2:#06B6D4;
+  --rc-accent2:#7C3AED;
+  --rc-accent3:#0284C7;
+  --rc-danger:#E11D48;
+  --rc-shadow:0 24px 64px rgba(15,23,42,.16);
+  --rc-inner:inset 0 1px 0 rgba(255,255,255,.82);
+  --rc-frost:linear-gradient(145deg,rgba(255,255,255,.78),rgba(255,255,255,.38));
+}
+.app-shell[data-rc-theme],.rc-standalone-shell[data-rc-theme]{
+  color:var(--rc-text)!important;
+  background:
+    radial-gradient(circle at 12% 2%,color-mix(in srgb,var(--rc-primary) 30%,transparent),transparent 30%),
+    radial-gradient(circle at 88% 0%,color-mix(in srgb,var(--rc-accent2) 24%,transparent),transparent 28%),
+    radial-gradient(circle at 50% 112%,color-mix(in srgb,var(--rc-primary-2) 15%,transparent),transparent 44%),
+    linear-gradient(135deg,var(--rc-bg-a),var(--rc-bg-b) 50%,var(--rc-bg-c))!important;
+  box-shadow:0 0 0 1px var(--rc-border),0 32px 90px rgba(0,0,0,.28)!important;
+}
+.app-shell[data-rc-theme]:before,.rc-standalone-shell[data-rc-theme]:before{
+  background:
+    radial-gradient(circle at 14% 20%,color-mix(in srgb,var(--rc-primary) 18%,transparent),transparent 28%),
+    radial-gradient(circle at 92% 12%,color-mix(in srgb,var(--rc-accent2) 17%,transparent),transparent 30%),
+    linear-gradient(120deg,transparent 0 24%,rgba(255,255,255,.055) 24.2% 24.7%,transparent 25% 100%),
+    linear-gradient(0deg,rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.027) 1px,transparent 1px)!important;
+  background-size:100% 100%,100% 100%,100% 100%,38px 38px,38px 38px!important;
+  opacity:1!important;
+}
+.app-shell[data-rc-theme]:after{color:color-mix(in srgb,var(--rc-primary) 16%,transparent)!important}
+.app-shell[data-rc-theme] .app-header-pro{
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.045)),rgba(12,18,31,.64)!important;
+  border:1px solid var(--rc-border)!important;
+  color:var(--rc-text)!important;
+  backdrop-filter:blur(28px) saturate(1.35)!important;
+  -webkit-backdrop-filter:blur(28px) saturate(1.35)!important;
+  box-shadow:0 18px 52px rgba(0,0,0,.24),var(--rc-inner),0 0 34px color-mix(in srgb,var(--rc-primary) 13%,transparent)!important;
+}
+.app-shell[data-rc-theme="day"] .app-header-pro{background:linear-gradient(135deg,rgba(255,255,255,.86),rgba(235,249,255,.58)),rgba(255,255,255,.72)!important}
+.app-shell[data-rc-theme] .app-header-pro *,
+.app-shell[data-rc-theme] .bottom-nav-pro *,
+.rc-standalone-shell[data-rc-theme] *{color:var(--rc-text)!important}
+.app-shell[data-rc-theme] .header-action-pro,
+.app-shell[data-rc-theme] .theme-toggle-pro{
+  background:linear-gradient(145deg,color-mix(in srgb,var(--rc-card-strong) 84%,transparent),color-mix(in srgb,var(--rc-primary) 10%,transparent))!important;
+  border:1px solid var(--rc-border)!important;
+  color:var(--rc-text)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.18),var(--rc-inner)!important;
+}
+.app-shell[data-rc-theme] .theme-toggle-pro{
+  min-width:76px;
+  justify-content:center;
+}
+.app-shell[data-rc-theme] .bottom-nav-pro{
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.045)),color-mix(in srgb,var(--rc-bg-b) 78%,transparent)!important;
+  border:1px solid var(--rc-border)!important;
+  border-bottom:0!important;
+  backdrop-filter:blur(30px) saturate(1.4)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(1.4)!important;
+  box-shadow:0 -20px 54px rgba(0,0,0,.28),var(--rc-inner)!important;
+}
+.app-shell[data-rc-theme="day"] .bottom-nav-pro{background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(235,249,255,.64)),rgba(255,255,255,.70)!important}
+.app-shell[data-rc-theme] .nav-tab-pro{color:var(--rc-muted)!important}
+.app-shell[data-rc-theme] .nav-tab-pro .nav-icon-pro{
+  color:var(--rc-text)!important;
+  background:transparent!important;
+  border:1px solid transparent!important;
+}
+.app-shell[data-rc-theme] .nav-tab-pro[data-active="true"]{
+  background:linear-gradient(145deg,color-mix(in srgb,var(--rc-primary) 18%,transparent),color-mix(in srgb,var(--rc-accent2) 12%,transparent))!important;
+  box-shadow:0 14px 30px rgba(0,0,0,.20),0 0 24px color-mix(in srgb,var(--rc-primary) 18%,transparent)!important;
+}
+.app-shell[data-rc-theme] .nav-tab-pro[data-active="true"] .nav-icon-pro{
+  background:linear-gradient(135deg,var(--rc-primary),var(--rc-accent2))!important;
+  color:white!important;
+  border-color:rgba(255,255,255,.30)!important;
+  box-shadow:0 8px 22px color-mix(in srgb,var(--rc-primary) 30%,transparent)!important;
+}
+.app-shell[data-rc-theme] .nav-tab-pro span{color:var(--rc-muted)!important;text-shadow:none!important}
+.app-shell[data-rc-theme] .nav-tab-pro[data-active="true"] span{color:var(--rc-text)!important;font-weight:950!important}
+.app-shell[data-rc-theme] .page-content-pro,
+.app-shell[data-rc-theme] .page-content-pro div,
+.app-shell[data-rc-theme] .page-content-pro p,
+.app-shell[data-rc-theme] .page-content-pro span,
+.app-shell[data-rc-theme] .page-content-pro b,
+.app-shell[data-rc-theme] .page-content-pro strong,
+.app-shell[data-rc-theme] .page-content-pro label,
+.app-shell[data-rc-theme] .page-content-pro h1,
+.app-shell[data-rc-theme] .page-content-pro h2,
+.app-shell[data-rc-theme] .page-content-pro h3{
+  color:var(--rc-text)!important;
+  text-shadow:none!important;
+}
+.app-shell[data-rc-theme] .page-content-pro [style*="color:T.textSub"],
+.app-shell[data-rc-theme] .page-content-pro small{color:var(--rc-muted)!important}
+.app-shell[data-rc-theme] .studio-panel,
+.app-shell[data-rc-theme] .landing-nav-card,
+.app-shell[data-rc-theme] .landing-feature-pro,
+.app-shell[data-rc-theme] .news-short,
+.app-shell[data-rc-theme] .rasta-speech-bubble,
+.app-shell[data-rc-theme] .tycoon-map-card,
+.rc-standalone-shell[data-rc-theme] .studio-panel,
+.rc-standalone-shell[data-rc-theme] .tycoon-map-card{
+  background:var(--rc-frost),var(--rc-card)!important;
+  border:1px solid var(--rc-border)!important;
+  color:var(--rc-text)!important;
+  box-shadow:var(--rc-shadow),var(--rc-inner)!important;
+  backdrop-filter:blur(22px) saturate(1.28)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.28)!important;
+}
+.app-shell[data-rc-theme] .studio-panel:after,
+.app-shell[data-rc-theme] .landing-nav-card:after,
+.app-shell[data-rc-theme] .landing-feature-pro:after{
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),color-mix(in srgb,var(--rc-primary) 25%,transparent),transparent)!important;
+}
+.app-shell[data-rc-theme] .bp,
+.app-shell[data-rc-theme] button.bp,
+.rc-standalone-shell[data-rc-theme] .bp,
+.rc-standalone-shell[data-rc-theme] button.bp{
+  background:linear-gradient(135deg,var(--rc-primary),var(--rc-primary-2) 52%,var(--rc-accent2))!important;
+  color:white!important;
+  border:1px solid rgba(255,255,255,.24)!important;
+  box-shadow:0 16px 34px color-mix(in srgb,var(--rc-primary) 22%,rgba(0,0,0,.20)),var(--rc-inner)!important;
+}
+.app-shell[data-rc-theme] .bp[col="ghost"],.app-shell[data-rc-theme] button[style*="rgba(255,244,214"]{
+  background:linear-gradient(145deg,var(--rc-card-strong),var(--rc-card-soft))!important;
+  color:var(--rc-text)!important;
+  border:1px solid var(--rc-border)!important;
+}
+.app-shell[data-rc-theme] input,
+.app-shell[data-rc-theme] select,
+.app-shell[data-rc-theme] textarea,
+.rc-standalone-shell[data-rc-theme] input,
+.rc-standalone-shell[data-rc-theme] select,
+.rc-standalone-shell[data-rc-theme] textarea{
+  background:var(--rc-card-strong)!important;
+  color:var(--rc-text)!important;
+  border:1px solid var(--rc-border)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 12px 28px rgba(0,0,0,.12)!important;
+}
+.app-shell[data-rc-theme="day"] input,
+.app-shell[data-rc-theme="day"] select,
+.app-shell[data-rc-theme="day"] textarea{background:rgba(255,255,255,.88)!important;color:#0F172A!important}
+.app-shell[data-rc-theme] input::placeholder,
+.app-shell[data-rc-theme] textarea::placeholder{color:var(--rc-subtle)!important}
+.app-shell[data-rc-theme] .modal-overlay-pro{background:rgba(2,8,23,.66)!important;backdrop-filter:blur(10px)!important}
+.app-shell[data-rc-theme] .modal-panel-pro{
+  background:var(--rc-frost),var(--rc-card-strong)!important;
+  border:1px solid var(--rc-border-strong)!important;
+  color:var(--rc-text)!important;
+  box-shadow:0 34px 96px rgba(0,0,0,.38),var(--rc-inner)!important;
+}
+.app-shell[data-rc-theme] .modal-panel-pro>div:first-child{background:linear-gradient(180deg,color-mix(in srgb,var(--rc-card-strong) 92%,transparent),color-mix(in srgb,var(--rc-card-soft) 84%,transparent))!important;border-bottom:1px solid var(--rc-border)!important}
+.app-shell[data-rc-theme] .motion-strip{
+  background:linear-gradient(90deg,transparent,var(--rc-primary),var(--rc-accent2),transparent)!important;
+  box-shadow:0 0 22px color-mix(in srgb,var(--rc-primary) 35%,transparent)!important;
+  border-color:var(--rc-border)!important;
+}
+.app-shell[data-rc-theme] .icon3d{filter:drop-shadow(0 8px 18px rgba(0,0,0,.26)) drop-shadow(0 0 12px color-mix(in srgb,var(--rc-primary) 30%,transparent))!important}
+.app-shell[data-rc-theme] [style*="#FFF"],
+.app-shell[data-rc-theme] [style*="#fff"],
+.app-shell[data-rc-theme] [style*="255,244"],
+.app-shell[data-rc-theme] [style*="255,248"],
+.app-shell[data-rc-theme] [style*="E6CF9B"],
+.app-shell[data-rc-theme] [style*="F6E5BE"],
+.app-shell[data-rc-theme] [style*="D8BE87"]{
+  border-color:var(--rc-border)!important;
+}
+.app-shell[data-rc-theme] .page-content-pro [style*="#A72822"],
+.app-shell[data-rc-theme] .page-content-pro [style*="#E53935"]{background:var(--rc-danger)!important;color:white!important}
+@media (max-width:520px){.app-shell[data-rc-theme] .theme-toggle-pro{min-width:44px;font-size:.68rem!important;padding:6px 7px!important}.app-shell[data-rc-theme] .theme-toggle-pro .theme-word{display:none}}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -10649,6 +10874,14 @@ export default function App(){
   const [toast,setToast]=useState({show:false,msg:""});
   const [ptsPopup,setPtsPopup]=useState({show:false,pts:0});
   const [musicOn,setMusicOn]=useState(false);
+  const [uiTheme,setUiTheme]=useState(()=>{
+    if(typeof window==="undefined")return "night";
+    try{
+      const saved=localStorage.getItem("rastaCutsUiTheme");
+      if(saved==="day"||saved==="night")return saved;
+    }catch{}
+    return "night";
+  });
   const [checkingSession,setCheckingSession]=useState(true);
   const [helperPage,setHelperPage]=useState(null);
   const [topsInitial,setTopsInitial]=useState("games");
@@ -10665,6 +10898,14 @@ export default function App(){
     onHash();
     return()=>window.removeEventListener("hashchange",onHash);
   },[]);
+
+  useEffect(()=>{
+    try{
+      document.documentElement.dataset.rcTheme=uiTheme;
+      document.body.dataset.rcTheme=uiTheme;
+      localStorage.setItem("rastaCutsUiTheme",uiTheme);
+    }catch{}
+  },[uiTheme]);
 
   function openTycoonPage(){
     if(typeof window!=="undefined") window.location.hash="#/tycoon";
@@ -10764,6 +11005,14 @@ export default function App(){
     else{startMusic();setMusicOn(true);}
   }
   function changeMusicTrack(){nextMusicTrack();SFX.tab();showToast(`Tema: ${backgroundAudioAvailable?getBackgroundName():(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);}
+  function toggleUiTheme(){
+    setUiTheme(prev=>{
+      const next=prev==="night"?"day":"night";
+      playUiSound(next==="night"?"admin":"page");
+      showToast(next==="night"?"Modo noche activado":"Modo día activado");
+      return next;
+    });
+  }
   const navTo=id=>{
     setHelperPage(null);
     const sec=appSettings?.secciones||{};
@@ -10799,13 +11048,15 @@ export default function App(){
   const grad=GRAD_ROLE[role]||GRAD_ROLE.client;
   const ap=(role!==ROLES.CLIENT && page==="dashboard")?"gestion":page;
   const theme=pageTheme(ap,communityTab,role);
+  const clinicAccent=uiTheme==="day"?"#0891B2":"#22D3EE";
+  const clinicAccent2=uiTheme==="day"?"#7C3AED":"#A78BFA";
   const currentUser={...user,rol:role};
   const sp={showToast,showPoints,user:currentUser,setUser,settings:appSettings,refreshUnread,unread,loadNotifications};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
   if(tycoonRoute){
     return (
-      <div style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",minHeight:"100vh",background:"radial-gradient(circle at top,#3A2414 0,#160B07 48%,#080403 100%)",color:T.white}}>
+      <div className="rc-standalone-shell" data-rc-theme={uiTheme} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",minHeight:"100vh",background:"radial-gradient(circle at top,#0B1020 0,#111827 48%,#060A12 100%)",color:"var(--rc-text,#EAF6FF)"}}>
         <style>{CSS}</style>
         <Particles/>
         <RastaCutsTycoonGame user={currentUser} showToast={showToast} standalone onExit={closeTycoonPage}/>
@@ -10827,11 +11078,11 @@ export default function App(){
   };
 
   return(
-    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-page={ap} data-community={communityTab} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:theme.shell,minHeight:"100vh",maxWidth:"var(--app-max-width,480px)",width:"100%",margin:"0 auto",paddingBottom:"var(--app-bottom-pad,82px)",position:"relative",boxShadow:`0 0 0 1px rgba(232,211,162,.10),0 0 42px rgba(0,0,0,.42),0 0 36px ${theme.accent}22`,"--shineA":theme.shineA,"--shineB":theme.shineB,"--shineSpeed":"7.2s","--pageGlowA":theme.glowA,"--pageGlowB":theme.glowB,"--pageMark":theme.mark,"--pageMarkColor":`${theme.accent}12`,"--pageAccent":theme.accent,"--pageShellModern":theme.shell}}>
+    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-rc-theme={uiTheme} data-page={ap} data-community={communityTab} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:theme.shell,minHeight:"100vh",maxWidth:"var(--app-max-width,480px)",width:"100%",margin:"0 auto",paddingBottom:"var(--app-bottom-pad,82px)",position:"relative",boxShadow:`0 0 0 1px rgba(148,232,255,.18),0 0 42px rgba(0,0,0,.28),0 0 36px ${clinicAccent}22`,"--shineA":`color-mix(in srgb, ${clinicAccent} 28%, transparent)`,"--shineB":`color-mix(in srgb, ${clinicAccent2} 22%, transparent)`,"--shineSpeed":"7.2s","--pageGlowA":`color-mix(in srgb, ${clinicAccent} 20%, transparent)`,"--pageGlowB":`color-mix(in srgb, ${clinicAccent2} 18%, transparent)`,"--pageMark":theme.mark,"--pageMarkColor":`${clinicAccent}18`,"--pageAccent":clinicAccent,"--pageAccent2":clinicAccent2,"--pageShellModern":theme.shell}}>
       <style>{CSS}</style>
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
-      <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.26), inset 0 -1px 0 ${theme.accent}33`}}>
+      <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.22), inset 0 -1px 0 ${clinicAccent}55`}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{appSettings?.branding?.emoji_principal||"✂️"} {appSettings?.branding?.nombre_tienda||BRAND.name}</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
@@ -10839,6 +11090,7 @@ export default function App(){
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
           <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: reiniciar tema (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
+          <button className="header-action-pro theme-toggle-pro" onClick={toggleUiTheme} title={uiTheme==="night"?"Cambiar a modo día":"Cambiar a modo noche"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.72rem",display:"inline-flex",alignItems:"center",gap:4}}>{uiTheme==="night"?"☀️":"🌙"} <span className="theme-word">{uiTheme==="night"?"Día":"Noche"}</span></button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
           <div className="header-action-pro" onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
             <Av av={currentUser.avatar} config={currentUser.avatarConfig} size={32}/>
@@ -10846,18 +11098,18 @@ export default function App(){
         </div>
       </div>
       <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
-        <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${theme.accent}99,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${theme.accent}33`,opacity:.78}}/>
+        <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${clinicAccent}99,${clinicAccent2}77,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${clinicAccent}44`,opacity:.92}}/>
         {pages[ap]||pages["dashboard"]}
         <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
       </div>
-      <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:theme.nav,borderTop:`2px solid ${theme.accent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
+      <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"var(--rc-card-strong)",borderTop:`2px solid ${clinicAccent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>{
           const badge=(role===ROLES.CLIENT && n.id==="buzon")?unread.client:((role!==ROLES.CLIENT && n.id==="gestion")?unread.admin:0);
           return(
           <button className="nav-tab-pro" data-active={ap===n.id?"true":"false"} key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38,position:"relative"}}>
             {badge>0&&<span style={{position:"absolute",top:-2,right:2,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{badge>9?"9+":badge}</span>}
-            <div className="nav-icon-pro" style={{fontSize:"1.1rem",background:ap===n.id?theme.header:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${theme.accent}44`:"none"}}>{n.icon}</div>
-            <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?"#F5E6C8":"#DEB887",transition:"color 0.2s"}}>{n.label}</span>
+            <div className="nav-icon-pro" style={{fontSize:"1.1rem",background:ap===n.id?`linear-gradient(135deg,${clinicAccent},${clinicAccent2})`:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${clinicAccent}55`:"none"}}>{n.icon}</div>
+            <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?"var(--rc-text)":"var(--rc-muted)",transition:"color 0.2s"}}>{n.label}</span>
           </button>
         );})}
       </div>
