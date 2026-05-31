@@ -3030,6 +3030,23 @@ button:disabled{
 }
 
 
+
+/* ===== FASE124: ayuda con la misma mascota del login, sin recuadro cuadrado ===== */
+.rasta-helper-face-cutout,
+.rasta-helper-face-cutout *{
+  background-color:transparent!important;
+}
+.rasta-helper-face-cutout img{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
 /* ===== FASE123: navegación inferior REAL fija + helper visible ===== */
 .app-shell{
   overflow:visible!important;
@@ -3131,6 +3148,111 @@ button:disabled{
   }
 }
 
+
+/* ===== FASE125: FIX DEFINITIVO móvil - nav fuera del scroll y helper sin caja ===== */
+html,body,#root{
+  min-height:100%!important;
+  overflow-x:hidden!important;
+}
+.app-shell,
+.app-shell[data-rc-theme]{
+  transform:none!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  contain:none!important;
+  overflow:visible!important;
+}
+.app-shell[data-rc-theme] .page-content-pro,
+.page-content-pro{
+  padding-bottom:calc(132px + env(safe-area-inset-bottom,0px))!important;
+}
+.bottom-nav-pro{
+  position:fixed!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  top:auto!important;
+  transform:none!important;
+  width:100vw!important;
+  max-width:100vw!important;
+  min-width:100vw!important;
+  min-height:74px!important;
+  height:auto!important;
+  display:flex!important;
+  flex-direction:row!important;
+  justify-content:space-around!important;
+  align-items:center!important;
+  gap:2px!important;
+  padding:7px 4px calc(11px + env(safe-area-inset-bottom,0px))!important;
+  margin:0!important;
+  border-radius:22px 22px 0 0!important;
+  background:linear-gradient(180deg,rgba(37,25,14,.98),rgba(15,8,4,.98))!important;
+  border-top:2px solid rgba(255,232,180,.34)!important;
+  box-shadow:0 -18px 40px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,232,180,.18)!important;
+  z-index:2147483000!important;
+}
+.bottom-nav-pro .nav-tab-pro{
+  flex:1 1 0!important;
+  min-width:0!important;
+  max-width:none!important;
+  width:auto!important;
+  min-height:54px!important;
+  padding:5px 2px!important;
+  border-radius:16px!important;
+}
+.bottom-nav-pro .nav-icon-pro{
+  font-size:1.12rem!important;
+}
+.bottom-nav-pro span{
+  display:block!important;
+  font-size:.54rem!important;
+  line-height:1.05!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  max-width:100%!important;
+}
+.rasta-helper-fixed-safe{
+  position:fixed!important;
+  right:14px!important;
+  bottom:calc(86px + env(safe-area-inset-bottom,0px))!important;
+  left:auto!important;
+  top:auto!important;
+  z-index:2147483001!important;
+  pointer-events:none!important;
+  transform:none!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar > div{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.rasta-helper-fixed-safe img{
+  background:transparent!important;
+}
+@media (min-width:900px){
+  .bottom-nav-pro{
+    left:50%!important;
+    right:auto!important;
+    transform:translateX(-50%)!important;
+    width:min(1180px,100vw)!important;
+    max-width:1180px!important;
+    min-width:0!important;
+    border-radius:28px 28px 0 0!important;
+    padding:9px 18px calc(13px + env(safe-area-inset-bottom,0px))!important;
+  }
+  .bottom-nav-pro .nav-tab-pro{max-width:160px!important;}
+  .rasta-helper-fixed-safe{
+    right:calc((100vw - min(1180px,100vw)) / 2 + 22px)!important;
+    bottom:102px!important;
+  }
+}
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -4221,38 +4343,96 @@ function LandingFeature({icon,title,sub,accent="#D4AF37"}){
 }
 
 
-function RastaFaceAvatar({size=66,speaking=false}={}){
+function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=false}={}){
+  const customSources=useMemo(()=>{
+    const b=settings?.branding||{};
+    return [
+      b.mascota_rasta_url,
+      b.rasta_mascota_url,
+      b.imagen_mascota_url,
+      b.imagen_rasta_url,
+      b.logo_mascota_url
+    ].filter(Boolean).map(String).filter(Boolean);
+  },[
+    settings?.branding?.mascota_rasta_url,
+    settings?.branding?.rasta_mascota_url,
+    settings?.branding?.imagen_mascota_url,
+    settings?.branding?.imagen_rasta_url,
+    settings?.branding?.logo_mascota_url
+  ]);
+  const sources=forceInternal?[]:customSources;
+  const [imgIndex,setImgIndex]=useState(0);
+  useEffect(()=>{setImgIndex(0);},[sources.join("|"),forceInternal]);
+  const src=sources[imgIndex];
+  const hasImage=Boolean(src);
+
   return (
     <div
-      className="rasta-face-avatar"
+      className="rasta-face-avatar rasta-helper-face-cutout"
       style={{
+        width:size,
+        height:size,
+        position:"relative",
+        overflow:"visible",
+        display:"grid",
+        placeItems:"center",
+        background:"transparent",
+        border:"0",
+        boxShadow:"none",
+        animation:"helperBob 2.4s ease-in-out infinite",
+        filter:speaking
+          ?"drop-shadow(0 14px 20px rgba(0,0,0,.34)) drop-shadow(0 0 12px rgba(213,178,79,.28))"
+          :"drop-shadow(0 10px 16px rgba(0,0,0,.28))"
+      }}
+    >
+      <div style={{position:"absolute",inset:4,borderRadius:"50%",background:"radial-gradient(circle at 50% 55%,rgba(255,214,107,.28),transparent 62%)",filter:"blur(8px)",zIndex:0,pointerEvents:"none"}}/>
+      <div style={{
+        position:"relative",
+        zIndex:1,
         width:size,
         height:size,
         borderRadius:"50%",
         overflow:"hidden",
-        position:"relative",
-        display:"grid",
-        placeItems:"center",
-        background:"radial-gradient(circle at 50% 35%,#F7D76D,#2A1A0D 70%)",
-        border:"3px solid #D5B24F",
-        boxShadow:speaking
-          ?"0 14px 28px rgba(0,0,0,.34),0 0 0 6px rgba(213,178,79,.18)"
-          :"0 10px 22px rgba(0,0,0,.28)",
-        animation:"helperBob 2.4s ease-in-out infinite"
-      }}
-    >
-      <div style={{
-        position:"absolute",
-        width:size*3.25,
-        left:-size*1.13,
-        top:-size*.86,
-        transform:"scale(1)",
-        transformOrigin:"center top",
-        pointerEvents:"none"
+        background:"transparent",
+        boxShadow:"none"
       }}>
-        <HeroMascot/>
+        {hasImage ? (
+          <img
+            key={src}
+            src={src}
+            alt="Rasta ayuda"
+            draggable={false}
+            onError={()=>setImgIndex(i=>i+1)}
+            style={{
+              position:"absolute",
+              left:"50%",
+              top:"54%",
+              width:size*1.85,
+              height:size*1.85,
+              transform:"translate(-50%,-50%)",
+              objectFit:"contain",
+              objectPosition:"center center",
+              background:"transparent",
+              border:"0",
+              boxShadow:"none",
+              display:"block"
+            }}
+          />
+        ) : (
+          <div style={{
+            position:"absolute",
+            width:size*2.78,
+            left:-size*.90,
+            top:-size*.48,
+            pointerEvents:"none",
+            background:"transparent",
+            border:"0",
+            boxShadow:"none"
+          }}>
+            <HeroMascot/>
+          </div>
+        )}
       </div>
-      <div style={{position:"absolute",inset:0,borderRadius:"50%",boxShadow:"inset 0 0 0 2px rgba(255,248,226,.35),inset 0 -18px 22px rgba(0,0,0,.20)"}}/>
     </div>
   );
 }
@@ -12951,7 +13131,7 @@ function rastaElementHelp(target,page){
   return rastaPageHelpIntro(page);
 }
 
-function HelperMascot({page}){
+function HelperMascot({page,settings=null}){
   const key=helperPageKey(page);
   const baseTips=HELP_TIPS[key]||HELP_TIPS.dashboard;
   const dailyTip=getDailyRastaTip(key);
@@ -13205,7 +13385,7 @@ function HelperMascot({page}){
           }}
         >
           <div style={{position:"relative"}}>
-            <RastaFaceAvatar size={68} speaking={open}/>
+            <RastaFaceAvatar size={68} speaking={open} settings={settings} forceInternal/>
             <div style={{
               position:"absolute",
               right:-2,
@@ -13221,7 +13401,7 @@ function HelperMascot({page}){
               fontWeight:1000,
               fontSize:".86rem",
               boxShadow:"0 6px 12px rgba(20,8,4,.18)"
-            }}>{helpMode?"i":open?"×":"?"}</div>
+            }}>{helpMode?"i":open?"×":"💡"}</div>
           </div>
         </button>
       </div>
@@ -13254,12 +13434,12 @@ function pageTheme(page,communityTab,role){
 
 
 
-function HelperInline({page}){
+function HelperInline({page,settings=null}){
   const [open,setOpen]=useState(false);
   const text=rastaPageHelpIntro(page);
   return <div style={{background:"rgba(255,248,230,.72)",border:`1px solid ${T.g200}`,borderRadius:18,padding:10}}>
     <button onClick={()=>setOpen(v=>!v)} style={{border:"none",background:"transparent",display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:0,width:"100%",textAlign:"left"}}>
-      <RastaFaceAvatar size={38} speaking={open}/>
+      <RastaFaceAvatar size={38} speaking={open} settings={settings}/>
       <div style={{flex:1}}>
         <div style={{fontWeight:950,color:T.g800,fontSize:".84rem"}}>{helperTitle(page)}</div>
         <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{open?"Ocultar explicación":"Ver explicación rápida"}</div>
@@ -13734,7 +13914,7 @@ export default function App(){
       <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
         <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${clinicAccent}99,${clinicAccent2}77,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${clinicAccent}44`,opacity:.92}}/>
         {pages[ap]||pages["dashboard"]}
-        <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)}/>
+        <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)} settings={settings}/>
       </div>
       <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"var(--rc-card-strong)",borderTop:`2px solid ${clinicAccent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>{
