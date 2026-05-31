@@ -1511,6 +1511,258 @@ body[data-rc-theme="day"]{
   .app-shell[data-rc-theme] .page-content-pro button:not(.bp):not(.nav-tab-pro):not(.header-action-pro){min-height:44px!important}
 }
 
+
+/* ===== FASE103: contraste quirúrgico sobre FASE102 ===== */
+/* Objetivo: conservar la base Mario/crema, pero hacerla legible y moderna con modo clínica claro/oscuro. */
+.app-shell[data-rc-theme],.rc-standalone-shell[data-rc-theme]{
+  --rc-radius-card:24px;
+  --rc-glass-blur:blur(22px) saturate(1.22);
+  color:var(--rc-text)!important;
+}
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  --rc-bg-a:#050B16;
+  --rc-bg-b:#081524;
+  --rc-bg-c:#111B33;
+  --rc-card:rgba(10,22,36,.86);
+  --rc-card-strong:rgba(14,29,48,.96);
+  --rc-card-soft:rgba(20,39,62,.88);
+  --rc-panel-fun:linear-gradient(145deg,rgba(12,26,43,.94),rgba(20,39,62,.90));
+  --rc-frost:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035));
+  --rc-text:#F7FBFF;
+  --rc-text-strong:#FFFFFF;
+  --rc-muted:#C4D4E5;
+  --rc-subtle:#91A8BE;
+  --rc-cream:#F7FBFF;
+  --rc-panel-lite:rgba(22,42,66,.92);
+  --rc-border:rgba(103,217,255,.24);
+  --rc-border-strong:rgba(111,223,255,.48);
+  --rc-primary:#45D9FF;
+  --rc-primary-2:#4C8DFF;
+  --rc-accent2:#9B72FF;
+  --rc-accent3:#42E6B4;
+  --rc-shadow:0 26px 82px rgba(0,0,0,.50);
+}
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#F8FCFF;
+  --rc-bg-b:#EAF7FF;
+  --rc-bg-c:#EDF0FF;
+  --rc-card:rgba(255,255,255,.86);
+  --rc-card-strong:rgba(255,255,255,.96);
+  --rc-card-soft:rgba(235,248,255,.88);
+  --rc-panel-fun:linear-gradient(145deg,rgba(255,255,255,.96),rgba(232,248,255,.88));
+  --rc-frost:linear-gradient(145deg,rgba(255,255,255,.82),rgba(226,247,255,.55));
+  --rc-text:#0F2033;
+  --rc-text-strong:#071525;
+  --rc-muted:#425B70;
+  --rc-subtle:#60778B;
+  --rc-cream:#FFFFFF;
+  --rc-panel-lite:rgba(238,249,255,.94);
+  --rc-border:rgba(40,172,220,.22);
+  --rc-border-strong:rgba(34,181,232,.48);
+  --rc-primary:#008EBD;
+  --rc-primary-2:#2563EB;
+  --rc-accent2:#7C3AED;
+  --rc-accent3:#059669;
+  --rc-shadow:0 24px 70px rgba(40,88,126,.18);
+}
+body[data-rc-theme="night"]{
+  background:
+    radial-gradient(circle at 12% -4%,rgba(69,217,255,.22),transparent 32%),
+    radial-gradient(circle at 94% 0%,rgba(155,114,255,.18),transparent 30%),
+    radial-gradient(circle at 48% 110%,rgba(66,230,180,.10),transparent 38%),
+    linear-gradient(135deg,#03060A 0%,#050B16 44%,#111B33 100%)!important;
+}
+body[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 12% -4%,rgba(0,174,220,.16),transparent 32%),
+    radial-gradient(circle at 94% 0%,rgba(124,58,237,.10),transparent 30%),
+    linear-gradient(135deg,#F8FCFF 0%,#EAF7FF 52%,#EDF0FF 100%)!important;
+}
+
+/* Tarjetas: elimina el efecto crema apagado cuando no se lee. */
+.app-shell[data-rc-theme] .studio-panel,
+.app-shell[data-rc-theme] .landing-feature-pro,
+.app-shell[data-rc-theme] .landing-nav-card,
+.app-shell[data-rc-theme] .modal-panel-pro,
+.app-shell[data-rc-theme] .news-short,
+.rc-standalone-shell[data-rc-theme] .studio-panel,
+.rc-standalone-shell[data-rc-theme] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme] .modal-panel-pro{
+  background:var(--rc-panel-fun)!important;
+  border:1px solid var(--rc-border)!important;
+  color:var(--rc-text)!important;
+  box-shadow:var(--rc-shadow),inset 0 1px 0 rgba(255,255,255,.10)!important;
+  backdrop-filter:var(--rc-glass-blur)!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel,
+.app-shell[data-rc-theme="day"] .landing-feature-pro,
+.app-shell[data-rc-theme="day"] .landing-nav-card,
+.app-shell[data-rc-theme="day"] .modal-panel-pro{
+  box-shadow:var(--rc-shadow),inset 0 1px 0 rgba(255,255,255,.88)!important;
+}
+
+/* Texto fuerte y legible: corrige estilos inline marrones/crema demasiado débiles. */
+.app-shell[data-rc-theme] .page-content-pro :where(h1,h2,h3,h4,h5,p,div,span,label,small,strong,b),
+.rc-standalone-shell[data-rc-theme] :where(h1,h2,h3,h4,h5,p,div,span,label,small,strong,b){
+  text-shadow:none!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro :where(h1,h2,h3,h4,h5,strong,b),
+.rc-standalone-shell[data-rc-theme="night"] :where(h1,h2,h3,h4,h5,strong,b){
+  color:var(--rc-text-strong)!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small){
+  color:var(--rc-text)!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel :where(p,div,span,label,small),
+.app-shell[data-rc-theme="day"] .landing-feature-pro :where(p,div,span,label,small),
+.app-shell[data-rc-theme="day"] .landing-nav-card :where(p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="day"] .studio-panel :where(p,div,span,label,small){
+  color:var(--rc-text)!important;
+}
+
+/* Botones y pestañas: estilo cristal dental, azul/cian/morado. */
+.app-shell[data-rc-theme] .bp,
+.rc-standalone-shell[data-rc-theme] .bp,
+.app-shell[data-rc-theme] button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme] button:not(.nav-tab-pro):not(.header-action-pro){
+  border:1px solid var(--rc-border-strong)!important;
+  color:var(--rc-text-strong)!important;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--rc-primary) 22%,transparent),color-mix(in srgb,var(--rc-accent2) 18%,transparent)),var(--rc-card-strong)!important;
+  box-shadow:0 14px 32px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.12)!important;
+}
+.app-shell[data-rc-theme="day"] .bp,
+.rc-standalone-shell[data-rc-theme="day"] .bp,
+.app-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro){
+  color:#0F2033!important;
+  box-shadow:0 14px 30px rgba(40,88,126,.16),inset 0 1px 0 rgba(255,255,255,.82)!important;
+}
+.app-shell[data-rc-theme] button[disabled],
+.rc-standalone-shell[data-rc-theme] button[disabled]{
+  opacity:.55!important;
+  filter:grayscale(.15)!important;
+  cursor:not-allowed!important;
+}
+
+/* Header y navegación: más ChatGPT-like, menos verde/marrón. */
+.app-shell[data-rc-theme] .app-header-pro{
+  background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.035)),var(--rc-card-strong)!important;
+  border:1px solid var(--rc-border)!important;
+  border-top:0!important;
+  box-shadow:0 22px 60px rgba(0,0,0,.32),inset 0 -1px 0 var(--rc-border-strong)!important;
+}
+.app-shell[data-rc-theme] .bottom-nav-pro{
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.035)),var(--rc-card-strong)!important;
+  border:1px solid var(--rc-border)!important;
+  box-shadow:0 -22px 58px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.12)!important;
+}
+.app-shell[data-rc-theme] .header-action-pro,
+.app-shell[data-rc-theme] .theme-toggle-pro{
+  background:linear-gradient(135deg,rgba(69,217,255,.18),rgba(155,114,255,.14))!important;
+  border:1px solid var(--rc-border-strong)!important;
+  color:var(--rc-text-strong)!important;
+}
+.app-shell[data-rc-theme] .nav-icon-pro{
+  color:var(--rc-text-strong)!important;
+}
+.app-shell[data-rc-theme] .nav-tab-pro span{
+  color:var(--rc-muted)!important;
+  font-weight:950!important;
+}
+.app-shell[data-rc-theme] .nav-tab-pro[data-active="true"] span{
+  color:var(--rc-text-strong)!important;
+}
+.app-shell[data-rc-theme] .nav-tab-pro[data-active="true"] .nav-icon-pro{
+  background:linear-gradient(135deg,var(--rc-primary),var(--rc-accent2))!important;
+  color:#fff!important;
+}
+
+/* Inputs y selects: lectura limpia. */
+.app-shell[data-rc-theme] input,
+.app-shell[data-rc-theme] select,
+.app-shell[data-rc-theme] textarea,
+.rc-standalone-shell[data-rc-theme] input,
+.rc-standalone-shell[data-rc-theme] select,
+.rc-standalone-shell[data-rc-theme] textarea{
+  background:var(--rc-card-strong)!important;
+  color:var(--rc-text)!important;
+  border:1px solid var(--rc-border-strong)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+.app-shell[data-rc-theme="day"] input,
+.app-shell[data-rc-theme="day"] select,
+.app-shell[data-rc-theme="day"] textarea{
+  background:#FFFFFF!important;
+  color:#0F2033!important;
+}
+.app-shell[data-rc-theme="night"] input::placeholder,
+.app-shell[data-rc-theme="night"] textarea::placeholder{color:#8FA9C0!important}
+.app-shell[data-rc-theme="day"] input::placeholder,
+.app-shell[data-rc-theme="day"] textarea::placeholder{color:#6B8295!important}
+
+/* Tycoon: mapa y salas con cristal moderno. */
+.rc-standalone-shell[data-rc-theme] .tycoon-map-card,
+.rc-standalone-shell[data-rc-theme] .tycoon-map-board,
+.app-shell[data-rc-theme] .tycoon-map-card,
+.app-shell[data-rc-theme] .tycoon-map-board{
+  background:linear-gradient(145deg,var(--rc-card-strong),var(--rc-card-soft))!important;
+  border:1px solid var(--rc-border-strong)!important;
+  color:var(--rc-text)!important;
+  box-shadow:var(--rc-shadow)!important;
+}
+.rc-standalone-shell[data-rc-theme] .tycoon-map-card *,
+.rc-standalone-shell[data-rc-theme] .tycoon-map-board *,
+.app-shell[data-rc-theme] .tycoon-map-card *,
+.app-shell[data-rc-theme] .tycoon-map-board *{
+  color:var(--rc-text)!important;
+}
+.rc-standalone-shell[data-rc-theme] .tycoon-map-board button,
+.app-shell[data-rc-theme] .tycoon-map-board button{
+  background:linear-gradient(145deg,rgba(69,217,255,.14),rgba(155,114,255,.12)),var(--rc-card-strong)!important;
+  border:1px solid var(--rc-border)!important;
+}
+.rc-standalone-shell[data-rc-theme="day"] .tycoon-map-board *,
+.app-shell[data-rc-theme="day"] .tycoon-map-board *{
+  color:#0F2033!important;
+}
+
+/* Badges y chips: evita crema con texto invisible. */
+.app-shell[data-rc-theme] [style*="borderRadius:999"],
+.rc-standalone-shell[data-rc-theme] [style*="borderRadius:999"],
+.app-shell[data-rc-theme] [style*="border-radius:999"],
+.rc-standalone-shell[data-rc-theme] [style*="border-radius:999"]{
+  color:var(--rc-text-strong)!important;
+}
+.app-shell[data-rc-theme="day"] [style*="borderRadius:999"],
+.rc-standalone-shell[data-rc-theme="day"] [style*="borderRadius:999"],
+.app-shell[data-rc-theme="day"] [style*="border-radius:999"],
+.rc-standalone-shell[data-rc-theme="day"] [style*="border-radius:999"]{
+  color:#0F2033!important;
+}
+
+/* Quita brillos excesivos en tarjetas grandes para que no parezcan intermitentes. */
+.app-shell[data-rc-theme] .studio-panel:after,
+.rc-standalone-shell[data-rc-theme] .studio-panel:after{
+  opacity:.16!important;
+}
+.app-shell[data-rc-theme] .tycoon-map-card:after,
+.app-shell[data-rc-theme] .tycoon-map-board:after,
+.rc-standalone-shell[data-rc-theme] .tycoon-map-card:after,
+.rc-standalone-shell[data-rc-theme] .tycoon-map-board:after{
+  display:none!important;
+  animation:none!important;
+}
+
+/* Móvil: botones compactos para no saturar la cabecera. */
+@media (max-width:520px){
+  .app-shell[data-rc-theme] .theme-toggle-pro .theme-word{display:none!important}
+  .app-shell[data-rc-theme] .header-action-pro{padding:6px 8px!important}
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
