@@ -101,11 +101,6 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE128_SEGURIDAD_Y_VERSION_VISIBLE";
-const APP_VERSION_SHORT="F128";
-const APP_BUILD_DATE="2026-05-31";
-const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
-
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
 let masterVolume=0.7;
 let backgroundAudio=null,backgroundAudioAvailable=true;
@@ -13726,89 +13721,6 @@ function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefres
 }
 
 
-
-function clearRastaCutsClientData(){
-  try{
-    const keepTheme=localStorage.getItem("rastaCutsUiTheme");
-    localStorage.clear();
-    sessionStorage.clear();
-    if(keepTheme) localStorage.setItem("rastaCutsUiTheme",keepTheme);
-  }catch{}
-  try{location.reload();}catch{window.location.reload();}
-}
-
-function makeDebugInfo({user=null,settings=null,checkingSession=false,sessionWarning=false}={}){
-  let ua="";
-  let width="";
-  let online="";
-  try{ua=navigator.userAgent||"";width=`${window.innerWidth}x${window.innerHeight}`;online=String(navigator.onLine);}catch{}
-  return {
-    version:APP_VERSION,
-    build:APP_BUILD_DATE,
-    user:user?.email||user?.nombre||"sin sesión",
-    role:user?.rol||user?.role||"none",
-    page:typeof window!=="undefined"?window.location.href:"",
-    viewport:width,
-    online,
-    checkingSession:Boolean(checkingSession),
-    sessionWarning:Boolean(sessionWarning),
-    supabaseUrl:SUPA_URL,
-    theme:typeof document!=="undefined"?document.body?.dataset?.rcTheme||"":"",
-    settingsLoaded:Boolean(settings),
-    userAgent:ua.slice(0,220)
-  };
-}
-
-function SafetyVersionPanel({user=null,settings=null,checkingSession=false,sessionWarning=false}={}){
-  const [open,setOpen]=useState(false);
-  const [copied,setCopied]=useState(false);
-  const [safeMode,setSafeMode]=useState(()=>{
-    try{return localStorage.getItem(APP_SAFE_MODE_KEY)==="1";}catch{return false;}
-  });
-  const info=makeDebugInfo({user,settings,checkingSession,sessionWarning});
-  async function copyInfo(){
-    const txt=JSON.stringify(info,null,2);
-    try{await navigator.clipboard.writeText(txt);setCopied(true);setTimeout(()=>setCopied(false),1600);}catch{setCopied(false);}
-  }
-  function toggleSafeMode(){
-    const next=!safeMode;
-    setSafeMode(next);
-    try{localStorage.setItem(APP_SAFE_MODE_KEY,next?"1":"0");}catch{}
-  }
-  if(open){
-    return (
-      <div style={{position:"fixed",left:10,right:10,bottom:"calc(76px + env(safe-area-inset-bottom,0px))",zIndex:2500,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
-        <div style={{width:"min(460px,100%)",pointerEvents:"auto",background:"linear-gradient(180deg,#FFF8E6,#E9D3A4)",color:T.g900,border:`2px solid ${sessionWarning?T.red:T.gold}`,borderRadius:18,boxShadow:"0 18px 46px rgba(0,0,0,.36)",padding:12,fontFamily:"'Outfit',system-ui,sans-serif"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:8}}>
-            <div>
-              <div style={{fontWeight:1000,fontSize:".92rem",color:T.g900}}>🛡️ Diagnóstico Rasta Cuts</div>
-              <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{APP_VERSION_SHORT} · {APP_BUILD_DATE}</div>
-            </div>
-            <button onClick={()=>setOpen(false)} style={{border:0,borderRadius:999,width:30,height:30,background:T.g150,color:T.g800,fontWeight:1000,cursor:"pointer"}}>×</button>
-          </div>
-          {sessionWarning&&<div style={{background:"#FFF1C8",border:`1px solid ${T.orange}`,borderRadius:12,padding:9,marginBottom:8,fontSize:".78rem",fontWeight:900,color:T.g800}}>Supabase o la sesión están tardando más de lo normal. Si se queda cargando, limpia datos y recarga.</div>}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,fontSize:".72rem",fontWeight:850,color:T.textSub,marginBottom:10}}>
-            <div><b>Usuario:</b><br/>{info.user}</div>
-            <div><b>Rol:</b><br/>{info.role}</div>
-            <div><b>Pantalla:</b><br/>{info.viewport||"--"}</div>
-            <div><b>Online:</b><br/>{info.online||"--"}</div>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            <button onClick={copyInfo} style={{border:0,borderRadius:12,padding:"10px 8px",background:T.g700,color:T.white,fontWeight:1000,cursor:"pointer"}}>{copied?"Copiado":"Copiar debug"}</button>
-            <button onClick={clearRastaCutsClientData} style={{border:0,borderRadius:12,padding:"10px 8px",background:T.red,color:T.white,fontWeight:1000,cursor:"pointer"}}>Limpiar datos</button>
-            <button onClick={toggleSafeMode} style={{gridColumn:"1 / -1",border:`1px solid ${T.g300}`,borderRadius:12,padding:"9px 8px",background:safeMode?"#F8E0B4":"#FFF8E6",color:T.g800,fontWeight:1000,cursor:"pointer"}}>Modo seguro local: {safeMode?"ON":"OFF"}</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <button onClick={()=>setOpen(true)} title={`Versión ${APP_VERSION_SHORT}`} style={{position:"fixed",left:10,bottom:"calc(84px + env(safe-area-inset-bottom,0px))",zIndex:2400,border:0,borderRadius:999,padding:"6px 9px",background:sessionWarning?"linear-gradient(180deg,#A72822,#672018)":"linear-gradient(180deg,#21140C,#130B06)",color:"#FFF4D6",fontWeight:1000,fontSize:".68rem",boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer",opacity:.88}}>
-      {sessionWarning?"⚠️":"🛡️"} {APP_VERSION_SHORT}
-    </button>
-  );
-}
-
 function AppCore(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
@@ -13825,7 +13737,6 @@ function AppCore(){
     return "night";
   });
   const [checkingSession,setCheckingSession]=useState(true);
-  const [sessionWarning,setSessionWarning]=useState(false);
   const [helperPage,setHelperPage]=useState(null);
   const [topsInitial,setTopsInitial]=useState("games");
   const [appSettings,setAppSettings]=useState(DEFAULT_APP_SETTINGS);
@@ -13880,7 +13791,6 @@ function AppCore(){
 
   useEffect(()=>{
     let alive=true;
-    const warningTimer=setTimeout(()=>{if(alive) setSessionWarning(true);},3500);
     const fallbackTimer=setTimeout(()=>{
       if(alive) setCheckingSession(false);
     },6500);
@@ -13905,13 +13815,12 @@ function AppCore(){
       }catch(e){
         console.warn("No se pudo restaurar sesión",e);
       }finally{
-        clearTimeout(warningTimer);
         clearTimeout(fallbackTimer);
-        if(alive){setCheckingSession(false);setSessionWarning(false);}
+        if(alive) setCheckingSession(false);
       }
     }
     restoreSession();
-    return()=>{alive=false;clearTimeout(warningTimer);clearTimeout(fallbackTimer);};
+    return()=>{alive=false;clearTimeout(fallbackTimer);};
   },[]);
 
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
@@ -13996,11 +13905,10 @@ function AppCore(){
   };
   const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");};
 
-  if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/><SafetyVersionPanel user={null} settings={appSettings} checkingSession sessionWarning={sessionWarning}/></div>;
+  if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/></div>;
   if(!user)return (
     <>
       <Auth onLogin={u=>{setUser(u);setPage(normalizeRole(u.rol||u.role)===ROLES.CLIENT?"dashboard":"gestion");}} showToast={showToast} settings={appSettings}/>
-      <SafetyVersionPanel user={null} settings={appSettings} checkingSession={false} sessionWarning={sessionWarning}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </>
   );
@@ -14082,7 +13990,6 @@ function AppCore(){
       <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead} onMarkOne={markNotificationRead} onOpenCitas={()=>navTo("citas")}/>
       <WalletPanel show={walletOpen} onClose={()=>setWalletOpen(false)} user={currentUser}/>
       <CartPanel show={cartOpen} onClose={()=>setCartOpen(false)} user={currentUser} setUser={setUser} showToast={showToast}/>
-      <SafetyVersionPanel user={currentUser} settings={appSettings} checkingSession={false} sessionWarning={sessionWarning}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
@@ -14113,7 +14020,7 @@ function MobileRuntimeGuard({children}){
     return (
       <div style={{minHeight:"100vh",padding:18,background:"#120806",color:"#F0E0B8",fontFamily:"system-ui,-apple-system,Segoe UI,sans-serif",display:"flex",alignItems:"center",justifyContent:"center"}}>
         <div style={{maxWidth:680,width:"100%",background:"#21140C",border:"1px solid #B99A45",borderRadius:18,padding:18,boxShadow:"0 18px 50px rgba(0,0,0,.35)"}}>
-          <h1 style={{margin:"0 0 8px",fontSize:22}}>Rasta Cuts se ha parado al cargar</h1><div style={{fontSize:".78rem",fontWeight:850,opacity:.8,marginBottom:8}}>{APP_VERSION_SHORT} · {APP_BUILD_DATE}</div>
+          <h1 style={{margin:"0 0 8px",fontSize:22}}>Rasta Cuts se ha parado al cargar</h1>
           <p style={{margin:"0 0 12px",lineHeight:1.45}}>Este panel evita la pantalla en blanco y muestra el fallo para poder corregirlo.</p>
           <pre style={{whiteSpace:"pre-wrap",background:"#0B0705",borderRadius:12,padding:12,overflow:"auto",fontSize:12,color:"#FFE6A3"}}>{String(runtimeError.msg)+"\n\n"+String(runtimeError.stack||"").slice(0,1200)}</pre>
           <button onClick={()=>{try{localStorage.clear();sessionStorage.clear();}catch{};window.location.reload();}} style={{marginTop:12,border:0,borderRadius:12,padding:"12px 14px",fontWeight:900,background:"#B99A45",color:"#120806"}}>Limpiar datos y recargar</button>
