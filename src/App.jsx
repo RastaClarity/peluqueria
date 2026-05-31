@@ -2756,6 +2756,36 @@ body[data-rc-theme="day"]{
 .rasta-face-avatar > div:first-child{
   filter:drop-shadow(0 10px 18px rgba(0,0,0,.25));
 }
+
+/* ===== FASE122: mascota Rasta del login como imagen recortada, sin caja cuadrada ===== */
+.rasta-mascot-cutout-wrap{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  overflow:visible!important;
+  box-shadow:none!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  isolation:isolate!important;
+}
+.rasta-mascot-cutout-img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+.login-cyber-shell .rasta-mascot-cutout-wrap,
+.login-cyber-shell .rasta-mascot-cutout-img{
+  border-radius:0!important;
+  background:transparent!important;
+  overflow:visible!important;
+}
 .wallet-button-pro,.cart-button-pro{
   display:inline-grid!important;
   place-items:center!important;
@@ -3794,6 +3824,62 @@ function BrandLogo(){
 }
 
 
+
+function mascotSourcesFromSettings(settings=null){
+  const b=settings?.branding||{};
+  return [
+    b.mascota_rasta_url,
+    b.rasta_mascota_url,
+    b.imagen_mascota_url,
+    b.imagen_rasta_url,
+    b.logo_mascota_url,
+    "/rasta-mascota.png",
+    "/rasta_mascota.png",
+    "/mascota-rasta.png",
+    "/mascota_rasta.png",
+    "/rasta.png",
+    "/mascota.png",
+    "/images/rasta-mascota.png",
+    "/images/rasta.png",
+    "/img/rasta-mascota.png",
+    "/img/rasta.png"
+  ].map(x=>String(x||"").trim()).filter(Boolean);
+}
+
+function RastaMascotImage({settings=null,compact=false}={}){
+  const sources=useMemo(()=>mascotSourcesFromSettings(settings),[settings?.branding?.mascota_rasta_url,settings?.branding?.rasta_mascota_url,settings?.branding?.imagen_mascota_url,settings?.branding?.imagen_rasta_url,settings?.branding?.logo_mascota_url]);
+  const [imgIndex,setImgIndex]=useState(0);
+  useEffect(()=>{setImgIndex(0);},[sources.join("|")]);
+  const src=sources[imgIndex];
+
+  if(!src) return <HeroMascot/>;
+
+  return (
+    <div
+      className="rasta-mascot-cutout-wrap"
+      style={{
+        width:"100%",
+        maxWidth:compact?286:354,
+        height:compact?214:268,
+        margin:compact?"2px auto 4px":"2px auto 6px",
+        position:"relative",
+        animation:"mascotFloat 3.2s ease-in-out infinite"
+      }}
+    >
+      <div style={{position:"absolute",inset:"6% 8% 7%",background:"radial-gradient(circle at 50% 58%,rgba(255,214,107,.30),transparent 44%)",filter:"blur(18px)",zIndex:0,pointerEvents:"none"}}/>
+      <img
+        key={src}
+        className="rasta-mascot-cutout-img"
+        src={src}
+        alt="Mascota Rasta Cuts"
+        draggable={false}
+        onError={()=>setImgIndex(i=>i+1)}
+        style={{position:"relative",zIndex:1,filter:"drop-shadow(0 20px 26px rgba(0,0,0,.32))"}}
+      />
+    </div>
+  );
+}
+
 function HeroMascot(){
   return (
     <div style={{width:"100%",maxWidth:382,margin:"0 auto 10px",position:"relative",animation:"mascotFloat 3.2s ease-in-out infinite"}}>
@@ -4114,7 +4200,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
           textTransform:"uppercase"
         }}>{emoji} Cortes, rastas y estilo urbano {emoji}</div>
         <div style={{marginTop:compact?4:8,position:"relative"}}>
-          <HeroMascot/>
+          <RastaMascotImage settings={settings} compact={compact}/>
         </div>
         <div style={{
           margin:"-10px auto 12px",
@@ -9407,7 +9493,7 @@ function GestionTienda({user,showToast}){
 
 
 const DEFAULT_APP_SETTINGS={
-  branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️"},
+  branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️",mascota_rasta_url:""},
   puntos:{puntos_por_cita_cobrada:10,puntos_por_comentario:3,puntos_por_like:1,limite_diario_juegos:75,gacha_tiradas_dia:50},
   secciones:{tienda_activa:true,arcade_activo:true,musica_activa:true,noticias_activas:true,foro_activo:true,gacha_activo:true},
   musica:{musica_activa_por_defecto:false,volumen_general:0.7,modo:"jazz_lofi_reggae",descripcion:"Música suave tipo jazz lofi reggae."},
@@ -9438,7 +9524,7 @@ function DisabledSection({icon="🔒",title="Sección desactivada",sub="Esta sec
 function GestionAjustes({user,showToast}){
   if(!isAdminUser(user)) return <EmptyState icon="🔒" title="Sólo admin" sub="Los ajustes globales sólo debería tocarlos el administrador."/>;
   const DEFAULTS={
-    branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️"},
+    branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️",mascota_rasta_url:""},
     puntos:{puntos_por_cita_cobrada:10,puntos_por_comentario:3,puntos_por_like:1,limite_diario_juegos:75,gacha_tiradas_dia:50},
     secciones:{tienda_activa:true,arcade_activo:true,musica_activa:true,noticias_activas:true,foro_activo:true,gacha_activo:true},
     musica:{musica_activa_por_defecto:false,volumen_general:0.7,modo:"jazz_lofi_reggae",descripcion:"Música suave tipo jazz lofi reggae."},
@@ -9537,6 +9623,7 @@ function GestionAjustes({user,showToast}){
           <TextField k="branding" f="slogan" label="Slogan"/>
           <TextField k="branding" f="mensaje_login" label="Mensaje de login"/>
           <TextField k="branding" f="emoji_principal" label="Emoji principal"/>
+          <TextField k="branding" f="mascota_rasta_url" label="URL imagen mascota Rasta" placeholder="/rasta-mascota.png o https://..."/>
         </>}
 
         {active==="puntos"&&<>
