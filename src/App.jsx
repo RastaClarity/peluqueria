@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE135C_EDITOR_ULTRACOMPACTO_LUPA";
-const APP_VERSION_SHORT="F135C";
+const APP_VERSION="FASE135D_EDITOR_PIEZAS_PREVIEW_FIJO";
+const APP_VERSION_SHORT="F135D";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -4229,7 +4229,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="FASE135B_LAYER_ENGINE_COMPACT_UI";
+const AVATAR_LAYER_ENGINE_VERSION="FASE135D_LAYER_ENGINE_PREVIEW_FIJO";
 
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
@@ -4469,24 +4469,26 @@ function VisualOption({label,active,onClick,locked=false,children,sub=null}){ret
 function LargeSwatch({color,active,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:46,height:46,borderRadius:"50%",border:`4px solid ${active?T.gold:"rgba(110,53,24,.16)"}`,boxShadow:active?"0 0 0 4px rgba(212,175,55,.18),0 8px 14px rgba(20,8,4,.12)":"0 6px 12px rgba(20,8,4,.1)",background:color,cursor:"pointer"}}/>;}
 function MiniSectionTitle({emoji,title,sub}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,margin:"6px 0 8px"}}><div style={{fontWeight:950,color:T.g800}}>{emoji} {title}</div>{sub&&<div style={{fontSize:".60rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>{sub}</div>}</div>;}
 function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=null}){
-  const [panel,setPanel]=useState("base");
-  const [zoom,setZoom]=useState(1.12);
-  const [lastEdit,setLastEdit]=useState("general");
+  const [tab,setTab]=useState("base");
+  const [slot,setSlot]=useState("face");
+  const [zoom,setZoom]=useState(1.18);
+  const [lastEdit,setLastEdit]=useState("face");
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
   const premiumKeys=new Set(ownedKeys||[]);
-  const isLocked=(slot,value)=>COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slot&&c.valor===value&&!premiumKeys.has(c.item_key));
+  const isLocked=(slotName,value)=>COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slotName&&c.valor===value&&!premiumKeys.has(c.item_key));
   const applyConfig=(next)=>setForm(f=>({...f,avatarConfig:normalizeAvatarConfig(next,f.avatar)}));
   const patch=(key,value)=>{
     if(isLocked(key,value)){SFX.error();return;}
     setLastEdit(key);
-    if(["eyes","brows","nose","mouth","facial","scar","tattoo"].includes(key)) setZoom(1.6);
-    else if(["hair","accessory"].includes(key)) setZoom(1.35);
+    if(["eyes","brows","nose","mouth","face"].includes(key)) setZoom(1.75);
+    else if(["hair","facial","accessory","scar","tattoo"].includes(key)) setZoom(1.42);
+    else setZoom(1.18);
     setForm(f=>{
       const current=normalizeAvatarConfig(f.avatarConfig,f.avatar);
       let next={...current,[key]:value};
       if(key==="gender"){
         const base=value==="female"?DEFAULT_FEMALE_AVATAR:DEFAULT_MALE_AVATAR;
-        next={...base,skin:current.skin,hairColor:current.hairColor,eyeColor:current.eyeColor,bg:current.bg,frame:current.frame,aura:current.aura,accessory:current.accessory,scar:current.scar,tattoo:current.tattoo};
+        next={...base,skin:current.skin,hairColor:current.hairColor,eyeColor:current.eyeColor,bg:current.bg,frame:current.frame,aura:current.aura,scar:current.scar,tattoo:current.tattoo};
         if(value==="female") next={...next,facial:"none",hair:"braidsLong",face:"heart",eyes:"glam",brows:"arched",nose:"soft",mouth:"soft",accessory:current.accessory==="crown"?"hoopGold":current.accessory};
         if(value==="male") next={...next,hair:"dreadsTop",face:"square",eyes:"sharp",brows:"strong",nose:"sharp",mouth:"smirk",facial:current.facial==="none"?"shortBeard":current.facial,accessory:current.accessory==="flowers"?"bandana":current.accessory};
       }
@@ -4494,120 +4496,171 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     });
   };
   const randomize=()=>applyConfig(randomAvatarConfig(cfg.gender));
-  const visibleHair=cfg.gender==="female"?FEMALE_HAIR:MALE_HAIR;
-  const currentName=avatarStyleName(cfg);
   const profilePoints=Number(user?.puntos||0);
   const editorLevel=profilePoints>=1500?"Leyenda":profilePoints>=1000?"VIP":profilePoints>=500?"Oro":profilePoints>=200?"Plata":"Bronce";
   const editorNext=profilePoints<200?200:profilePoints<500?500:profilePoints<1000?1000:profilePoints<1500?1500:2000;
   const editorPct=Math.max(5,Math.min(100,Math.round(profilePoints/editorNext*100)));
-  const panels=[
-    {id:"base",label:"Base",icon:"◎"},
-    {id:"rasgos",label:"Rasgos",icon:"◉"},
-    {id:"pelo",label:"Pelo",icon:"〰"},
-    {id:"marcas",label:"Marcas",icon:"✦"},
-    {id:"colores",label:"Color",icon:"▣"}
+  const currentName=avatarStyleName(cfg);
+
+  const tabs=[
+    {id:"base",label:"Base",icon:"◎",slots:["gender","face","bg"]},
+    {id:"rasgos",label:"Rasgos",icon:"◉",slots:["eyes","brows","nose","mouth"]},
+    {id:"pelo",label:"Pelo",icon:"〰",slots:cfg.gender==="male"?["hair","facial"]:["hair"]},
+    {id:"marcas",label:"Marcas",icon:"✦",slots:["accessory","scar","tattoo"]},
+    {id:"colores",label:"Color",icon:"▣",slots:["skin","hairColor","eyeColor","frame","aura"]}
   ];
-  const zoomLevels=[1,1.25,1.6,1.9];
-  const previewBase=normalizeAvatarConfig({...cfg,frame:"none",aura:"none"},form.avatar);
-  const facePreview=normalizeAvatarConfig({...cfg,accessory:"none",facial:"none",frame:"none",aura:"none"},form.avatar);
-  const hairPreview=normalizeAvatarConfig({...cfg,accessory:"none",frame:"none",aura:"none"},form.avatar);
-
-  const MiniButton=({active=false,onClick,children,title=null,locked=false})=>(
-    <button type="button" title={title||""} onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{
-      minHeight:36,
-      border:`2px solid ${active?"#D5B24F":"#7C6848"}`,
-      background:active?"linear-gradient(180deg,#D5B24F,#7A5927)":"linear-gradient(180deg,#2A2116,#15100B)",
-      color:active?"#1B1008":"#F6E8C8",
-      borderRadius:9,
-      padding:"4px 6px",
-      fontWeight:950,
-      cursor:locked?"not-allowed":"pointer",
-      opacity:locked?.58:1,
-      boxShadow:active?"0 0 0 2px rgba(213,178,79,.18),0 8px 18px rgba(0,0,0,.28)":"0 4px 12px rgba(0,0,0,.18)",
-      position:"relative",
-      overflow:"hidden"
-    }}>{locked&&<span style={{position:"absolute",right:4,top:3,fontSize:11}}>🔒</span>}{children}</button>
-  );
-  const TinyTile=({slot,value,label,children,active=null,locked=null,onClick=null})=>{
-    const isActive=active??cfg[slot]===value;
-    const isLock=locked??isLocked(slot,value);
-    return <MiniButton active={isActive} locked={isLock} onClick={onClick||(()=>patch(slot,value))} title={label}>
-      <div style={{height:30,display:"grid",placeItems:"center",overflow:"hidden",borderRadius:7,background:isActive?"rgba(255,248,226,.18)":"rgba(255,248,226,.07)",marginBottom:3}}>{children}</div>
-      <div style={{fontSize:".56rem",lineHeight:1.02,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{label}</div>
-    </MiniButton>;
+  const slotMeta={
+    gender:{label:"Género",icon:"⚑"},face:{label:"Cara",icon:"◇"},bg:{label:"Fondo",icon:"▤"},
+    eyes:{label:"Ojos",icon:"◉"},brows:{label:"Cejas",icon:"▰"},nose:{label:"Nariz",icon:"⌇"},mouth:{label:"Boca",icon:"⌣"},
+    hair:{label:"Pelo",icon:"〰"},facial:{label:"Barba",icon:"〽"},
+    accessory:{label:"Accesorios",icon:"◆"},scar:{label:"Cicatriz",icon:"╱"},tattoo:{label:"Tatuaje",icon:"✥"},
+    skin:{label:"Piel",icon:"●"},hairColor:{label:"Color pelo",icon:"◍"},eyeColor:{label:"Color ojos",icon:"◉"},frame:{label:"Marco",icon:"▧"},aura:{label:"Aura",icon:"✦"}
   };
-  const TextTile=({slot,value,label,icon="•"})=><TinyTile slot={slot} value={value} label={label}><span style={{fontSize:"1.05rem"}}>{icon}</span></TinyTile>;
-  const PartGrid=({children,min=54})=><div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${min}px,1fr))`,gap:5}}>{children}</div>;
-  const Section=({title,sub=null,children})=><div style={{marginBottom:9}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,marginBottom:5}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:".94rem",color:"#F6E8C8",letterSpacing:.35}}>{title}</div>{sub&&<div style={{fontSize:".58rem",fontWeight:850,color:"rgba(246,232,200,.62)",textAlign:"right"}}>{sub}</div>}</div>{children}</div>;
-  const Swatch=({slot,index,color})=><button type="button" onClick={()=>patch(slot,index)} style={{width:24,height:24,borderRadius:7,border:`2px solid ${cfg[slot]===index?"#F6E8C8":"#7C6848"}`,background:color,boxShadow:cfg[slot]===index?"0 0 0 2px #D5B24F,0 5px 14px rgba(0,0,0,.28)":"0 4px 10px rgba(0,0,0,.20)",cursor:"pointer"}}/>;
-  const BgTile=({value})=><button type="button" onClick={()=>patch("bg",value)} style={{height:30,borderRadius:8,border:`2px solid ${cfg.bg===value?"#F6E8C8":"#7C6848"}`,background:bgGradient(value),cursor:"pointer",boxShadow:cfg.bg===value?"0 0 0 2px #D5B24F":"0 4px 10px rgba(0,0,0,.18)"}} title={AVATAR_LABELS[value]||value}/>;
+  const valueLists={
+    gender:["male","female"],
+    face:AVATAR_OPTIONS.face,
+    bg:AVATAR_OPTIONS.bg,
+    eyes:AVATAR_OPTIONS.eyes,
+    brows:AVATAR_OPTIONS.brows,
+    nose:AVATAR_OPTIONS.nose,
+    mouth:AVATAR_OPTIONS.mouth,
+    hair:cfg.gender==="female"?FEMALE_HAIR:MALE_HAIR,
+    facial:AVATAR_OPTIONS.facial,
+    accessory:[...BASIC_ACCESSORIES,"capBlack","capGold","glassesGold","bandanaGreen","crown"],
+    scar:AVATAR_OPTIONS.scar,
+    tattoo:AVATAR_OPTIONS.tattoo,
+    skin:AVATAR_OPTIONS.skin.map((_,i)=>i),
+    hairColor:AVATAR_OPTIONS.hairColor.map((_,i)=>i),
+    eyeColor:AVATAR_OPTIONS.eyeColor.map((_,i)=>i),
+    frame:AVATAR_OPTIONS.frame,
+    aura:AVATAR_OPTIONS.aura
+  };
+  const iconMap={
+    male:"♂",female:"♀",oval:"⬭",round:"●",sharp:"◆",square:"▣",heart:"♥",long:"⬯",
+    anime:"◉",sleepy:"◐",glam:"✦",smile:"⌣",soft:"〜",strong:"▰",angry:"▾",thin:"━",arched:"⌒",
+    none:"—",left:"╱",right:"╲",cheek:"◜",double:"✕",wave:"〰",mark:"✥",anchor:"⚓",tribal:"☷",sun:"☀",
+    shortBeard:"▾",goatee:"♟",mustache:"〜",fullBeard:"▰",pirateBeard:"☠",
+    bandana:"▰",bandanaGreen:"▰",cap:"◠",capBlack:"◠",capGold:"◠",hoopGold:"○",glassesGold:"∞",crown:"♛",flowers:"✿"
+  };
+  const activeTab=tabs.find(t=>t.id===tab)||tabs[0];
+  useEffect(()=>{if(!activeTab.slots.includes(slot))setSlot(activeTab.slots[0]);},[tab,cfg.gender]);
 
-  const PreviewBox=()=> <div style={{
-    flex:"0 1 230px",
-    minWidth:210,
-    alignSelf:"flex-start",
+  const zoomLevels=[1,1.25,1.55,1.9];
+  const zoomFocus={
+    face:"translateY(16px)",eyes:"translateY(34px)",brows:"translateY(34px)",nose:"translateY(18px)",mouth:"translateY(2px)",
+    hair:"translateY(24px)",facial:"translateY(0px)",accessory:"translateY(20px)",scar:"translateY(20px)",tattoo:"translateY(-10px)",
+    skin:"translateY(12px)",hairColor:"translateY(24px)",eyeColor:"translateY(34px)",frame:"translateY(0px)",aura:"translateY(0px)",gender:"translateY(0px)",bg:"translateY(0px)"
+  };
+  const previewBase=normalizeAvatarConfig({...cfg,frame:"none",aura:"none"},form.avatar);
+  const hairPreview=normalizeAvatarConfig({...cfg,accessory:"none",frame:"none",aura:"none"},form.avatar);
+  const miniConfig=(slotName,value)=>{
+    if(slotName==="hair") return normalizeAvatarConfig({...hairPreview,hair:value,facial:cfg.gender==="female"?"none":cfg.facial},form.avatar);
+    if(slotName==="facial") return normalizeAvatarConfig({...hairPreview,gender:"male",facial:value},form.avatar);
+    if(["accessory","scar","tattoo","face","eyes","brows","nose","mouth"].includes(slotName)) return normalizeAvatarConfig({...previewBase,[slotName]:value},form.avatar);
+    return normalizeAvatarConfig({...previewBase,[slotName]:value},form.avatar);
+  };
+  const valueLabel=(slotName,value)=>{
+    if(slotName==="gender") return value==="male"?"Masc.":"Fem.";
+    if(slotName==="skin") return `Piel ${Number(value)+1}`;
+    if(slotName==="hairColor") return `Pelo ${Number(value)+1}`;
+    if(slotName==="eyeColor") return `Ojos ${Number(value)+1}`;
+    return AVATAR_LABELS[value]||avatarLabel(value,slotName)||String(value);
+  };
+
+  const TopTabs=()=> <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:5,marginBottom:8}}>
+    {tabs.map(t=><button key={t.id} type="button" onClick={()=>{setTab(t.id);setSlot(t.slots[0]);SFX.tab();}} style={{
+      border:`2px solid ${tab===t.id?"#D5B24F":"#665237"}`,
+      background:tab===t.id?"linear-gradient(180deg,#D5B24F,#7A5927)":"linear-gradient(180deg,#2A2116,#15100B)",
+      color:tab===t.id?"#1B1008":"#F6E8C8",
+      borderRadius:10,
+      padding:"6px 2px",
+      fontWeight:1000,
+      fontSize:".60rem",
+      cursor:"pointer",
+      boxShadow:tab===t.id?"0 0 0 2px rgba(213,178,79,.16)":"0 4px 12px rgba(0,0,0,.18)"
+    }}><div style={{fontSize:"1rem",lineHeight:1}}>{t.icon}</div><div style={{marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.label}</div></button>)}
+  </div>;
+
+  const SlotRail=()=> <div style={{display:"flex",gap:6,overflowX:"auto",padding:"0 0 7px",marginBottom:7,WebkitOverflowScrolling:"touch"}}>
+    {activeTab.slots.map(s=><button key={s} type="button" onClick={()=>{setSlot(s);setLastEdit(s);SFX.click();}} style={{
+      flex:"0 0 auto",
+      border:`1.5px solid ${slot===s?"#F6E8C8":"#665237"}`,
+      background:slot===s?"linear-gradient(180deg,#3E2C18,#24180C)":"rgba(255,248,226,.06)",
+      color:"#F6E8C8",
+      borderRadius:999,
+      padding:"6px 9px",
+      fontSize:".66rem",
+      fontWeight:950,
+      cursor:"pointer"
+    }}>{slotMeta[s]?.icon} {slotMeta[s]?.label||s}</button>)}
+  </div>;
+
+  const Preview=()=> <div style={{
     position:"sticky",
-    top:6,
-    zIndex:2,
+    top:4,
+    zIndex:4,
     background:"linear-gradient(180deg,#171009,#0A0704)",
     border:"2px solid #8E7957",
-    borderRadius:13,
+    borderRadius:14,
     padding:8,
-    boxShadow:"0 14px 34px rgba(0,0,0,.34)"
+    boxShadow:"0 14px 34px rgba(0,0,0,.34)",
+    marginBottom:8
   }}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:8}}>
+    <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"center",marginBottom:6}}>
       <div style={{minWidth:0}}>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.02rem",color:"#F6E8C8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{form.nombre||"Rasta"}</div>
-        <div style={{fontSize:".60rem",fontWeight:850,color:"rgba(246,232,200,.66)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentName}</div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.05rem",color:"#F6E8C8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{form.nombre||"Rasta"}</div>
+        <div style={{fontSize:".58rem",fontWeight:850,color:"rgba(246,232,200,.66)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentName}</div>
       </div>
       <Badge col="gold">{editorLevel}</Badge>
     </div>
     <div style={{height:5,borderRadius:999,background:"rgba(246,232,200,.12)",overflow:"hidden",marginBottom:7}}><div style={{height:"100%",width:`${editorPct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F,#A72822)"}}/></div>
-    <div style={{fontSize:".56rem",fontWeight:900,color:"rgba(246,232,200,.64)",textTransform:"uppercase",letterSpacing:".05em",marginBottom:5}}>Lupa: {AVATAR_LABELS[cfg[lastEdit]]||avatarLabel(cfg[lastEdit],lastEdit)||lastEdit}</div>
-    <div style={{height:158,borderRadius:12,background:"radial-gradient(circle at 50% 25%,#FFF3CA 0%,#A58D58 48%,#24170D 49%,#0B0704 100%)",border:"2px solid #7C6848",display:"grid",placeItems:"center",overflow:"hidden",boxShadow:"inset 0 0 0 3px rgba(255,255,255,.08)"}}>
-      <div style={{transform:`scale(${zoom})`,transition:"transform .18s ease"}}><Av av={form.avatar} config={cfg} size={136}/></div>
-    </div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginTop:8}}>{zoomLevels.map(z=><button key={z} type="button" onClick={()=>setZoom(z)} style={{border:`1px solid ${zoom===z?"#D5B24F":"#7C6848"}`,background:zoom===z?"#D5B24F":"#21170D",color:zoom===z?"#1B1008":"#F6E8C8",borderRadius:7,padding:"5px 3px",fontSize:".60rem",fontWeight:950,cursor:"pointer"}}>{Math.round(z*100)}%</button>)}</div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginTop:7}}>
-      <Btn full col="ghost" onClick={()=>onReset?.()}>↶ Reset</Btn>
-      <Btn full col="green" onClick={()=>onSave?.()}>💾 Guardar</Btn>
+    <div style={{display:"grid",gridTemplateColumns:"128px 1fr",gap:8,alignItems:"stretch"}}>
+      <div style={{height:128,borderRadius:12,background:"radial-gradient(circle at 50% 24%,#FFF3CA 0%,#B69D62 43%,#2F2011 44%,#0B0704 100%)",border:"2px solid #7C6848",display:"grid",placeItems:"center",overflow:"hidden",boxShadow:"inset 0 0 0 3px rgba(255,255,255,.08)"}}>
+        <div style={{transform:`${zoomFocus[lastEdit]||"translateY(0px)"} scale(${zoom})`,transition:"transform .18s ease"}}><Av av={form.avatar} config={cfg} size={116}/></div>
+      </div>
+      <div style={{display:"grid",gap:6,alignContent:"start"}}>
+        <div style={{fontSize:".58rem",fontWeight:900,color:"rgba(246,232,200,.64)",textTransform:"uppercase",letterSpacing:".05em"}}>Editando</div>
+        <div style={{fontSize:".82rem",fontWeight:1000,color:"#F6E8C8",lineHeight:1.1}}>{slotMeta[slot]?.label||slot}</div>
+        <div style={{fontSize:".68rem",fontWeight:850,color:"rgba(246,232,200,.70)",lineHeight:1.2,minHeight:28}}>{valueLabel(slot,cfg[slot])}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:4}}>{zoomLevels.map(z=><button key={z} type="button" onClick={()=>setZoom(z)} style={{border:`1px solid ${zoom===z?"#D5B24F":"#7C6848"}`,background:zoom===z?"#D5B24F":"#21170D",color:zoom===z?"#1B1008":"#F6E8C8",borderRadius:7,padding:"5px 2px",fontSize:".56rem",fontWeight:950,cursor:"pointer"}}>{Math.round(z*100)}</button>)}</div>
+      </div>
     </div>
   </div>;
 
-  const renderPanel=()=>{
-    if(panel==="base") return <>
-      <Section title="Base" sub="sin modelos prefabricados grandes">
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7}}>
-          <MiniButton active={cfg.gender==="male"} onClick={()=>patch("gender","male")}><div style={{fontSize:"1.18rem"}}>♂</div><div style={{fontSize:".7rem"}}>Masculino</div></MiniButton>
-          <MiniButton active={cfg.gender==="female"} onClick={()=>patch("gender","female")}><div style={{fontSize:"1.18rem"}}>♀</div><div style={{fontSize:".7rem"}}>Femenino</div></MiniButton>
-        </div>
-      </Section>
-      <Section title="Cara" sub="forma del rostro"><PartGrid>{AVATAR_OPTIONS.face.map((v,i)=><TextTile key={v} slot="face" value={v} label={avatarLabel(v,"face")} icon={["⬟","◇","◯","▣","⬢"][i%5]}/>)}</PartGrid></Section>
-      <Section title="Fondo" sub="mini escenarios"><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(54px,1fr))",gap:7}}>{AVATAR_OPTIONS.bg.map(v=><BgTile key={v} value={v}/>)}</div></Section>
-      <Section title="Aleatorio" sub="sólo si quieres probar rápido"><Btn full col="gold" onClick={randomize}>🎲 Crear combinación aleatoria</Btn></Section>
-    </>;
-    if(panel==="rasgos") return <>
-      <Section title="Ojos"><PartGrid>{AVATAR_OPTIONS.eyes.map((v,i)=><TextTile key={v} slot="eyes" value={v} label={avatarLabel(v,"eyes")} icon={["◉","◐","◕","⬤","✦"][i%5]}/>)}</PartGrid></Section>
-      <Section title="Cejas"><PartGrid>{AVATAR_OPTIONS.brows.map(v=><TextTile key={v} slot="brows" value={v} label={AVATAR_LABELS[v]||v} icon="▰"/>)}</PartGrid></Section>
-      <Section title="Nariz"><PartGrid>{AVATAR_OPTIONS.nose.map(v=><TextTile key={v} slot="nose" value={v} label={AVATAR_LABELS[v]||v} icon="⌇"/>)}</PartGrid></Section>
-      <Section title="Boca"><PartGrid>{AVATAR_OPTIONS.mouth.map(v=><TextTile key={v} slot="mouth" value={v} label={AVATAR_LABELS[v]||v} icon="⌣"/>)}</PartGrid></Section>
-    </>;
-    if(panel==="pelo") return <>
-      <Section title="Peinado" sub="piezas limpias, no personajes"><PartGrid>{visibleHair.map(v=><TinyTile key={v} slot="hair" value={v} label={AVATAR_LABELS[v]||v} locked={isLocked("hair",v)}><Av av={form.avatar} config={{...hairPreview,hair:v,facial:cfg.gender==="female"?"none":cfg.facial}} size={38}/></TinyTile>)}</PartGrid></Section>
-      {cfg.gender==="male"&&<Section title="Barba / bigote"><PartGrid>{AVATAR_OPTIONS.facial.map(v=><TinyTile key={v} slot="facial" value={v} label={AVATAR_LABELS[v]||v}><Av av={form.avatar} config={{...hairPreview,gender:"male",facial:v}} size={38}/></TinyTile>)}</PartGrid></Section>}
-    </>;
-    if(panel==="marcas") return <>
-      <Section title="Complementos"><PartGrid>{BASIC_ACCESSORIES.map(v=><TinyTile key={v} slot="accessory" value={v} label={AVATAR_LABELS[v]||v}><Av av={form.avatar} config={{...previewBase,accessory:v}} size={38}/></TinyTile>)}</PartGrid></Section>
-      <Section title="Cicatrices"><PartGrid>{AVATAR_OPTIONS.scar.map(v=><TinyTile key={v} slot="scar" value={v} label={AVATAR_LABELS[v]||v}><Av av={form.avatar} config={{...previewBase,scar:v}} size={38}/></TinyTile>)}</PartGrid></Section>
-      <Section title="Tatuajes"><PartGrid>{AVATAR_OPTIONS.tattoo.map(v=><TinyTile key={v} slot="tattoo" value={v} label={AVATAR_LABELS[v]||v}><Av av={form.avatar} config={{...previewBase,tattoo:v}} size={38}/></TinyTile>)}</PartGrid></Section>
-      <Section title="Desbloqueables"><PartGrid>{["capBlack","capGold","glassesGold","bandanaGreen","crown"].map(v=><TinyTile key={v} slot="accessory" value={v} label={AVATAR_LABELS[v]||v} locked={isLocked("accessory",v)}><Av av={form.avatar} config={{...previewBase,accessory:v}} size={38}/></TinyTile>)}</PartGrid></Section>
-    </>;
-    return <>
-      <Section title="Piel"><div style={{display:"flex",flexWrap:"wrap",gap:7}}>{AVATAR_OPTIONS.skin.map((c,i)=><Swatch key={`${c}-${i}`} slot="skin" index={i} color={c}/>)}</div></Section>
-      <Section title="Pelo"><div style={{display:"flex",flexWrap:"wrap",gap:7}}>{AVATAR_OPTIONS.hairColor.map((c,i)=><Swatch key={`${c}-${i}`} slot="hairColor" index={i} color={c}/>)}</div></Section>
-      <Section title="Ojos"><div style={{display:"flex",flexWrap:"wrap",gap:7}}>{AVATAR_OPTIONS.eyeColor.map((c,i)=><Swatch key={`${c}-${i}`} slot="eyeColor" index={i} color={c}/>)}</div></Section>
-      <Section title="Marco y aura"><PartGrid>{AVATAR_OPTIONS.frame.map(v=><TextTile key={v} slot="frame" value={v} label={AVATAR_LABELS[v]||v} icon="▧"/>)}{AVATAR_OPTIONS.aura.map(v=><TextTile key={v} slot="aura" value={v} label={AVATAR_LABELS[v]||v} icon="✦"/>)}</PartGrid></Section>
-    </>;
+  const OptionButton=({slotName,value,color=null})=>{
+    const active=cfg[slotName]===value;
+    const locked=isLocked(slotName,value);
+    const label=valueLabel(slotName,value);
+    const showAvatar=["hair","facial","accessory","scar","tattoo","face","eyes","brows","nose","mouth"].includes(slotName);
+    return <button type="button" onClick={()=>patch(slotName,value)} title={label} style={{
+      minHeight:slotName.includes("Color")||slotName==="skin"?38:50,
+      border:`2px solid ${active?"#D5B24F":"#665237"}`,
+      background:active?"linear-gradient(180deg,#D5B24F,#7A5927)":"linear-gradient(180deg,#241B11,#120D07)",
+      color:active?"#1B1008":"#F6E8C8",
+      borderRadius:10,
+      padding:color?4:"4px 3px",
+      fontWeight:950,
+      fontSize:".56rem",
+      cursor:locked?"not-allowed":"pointer",
+      opacity:locked?.55:1,
+      position:"relative",
+      overflow:"hidden",
+      boxShadow:active?"0 0 0 2px rgba(213,178,79,.16),0 8px 16px rgba(0,0,0,.26)":"0 4px 10px rgba(0,0,0,.18)"
+    }}>
+      {locked&&<span style={{position:"absolute",right:3,top:2,fontSize:10,zIndex:2}}>🔒</span>}
+      {color? <div style={{height:26,borderRadius:8,background:color,border:"1px solid rgba(255,255,255,.25)"}}/> : showAvatar? <div style={{height:31,display:"grid",placeItems:"center",overflow:"hidden",borderRadius:8,background:active?"rgba(255,248,226,.18)":"rgba(255,248,226,.07)",marginBottom:3}}><Av av={form.avatar} config={miniConfig(slotName,value)} size={34}/></div> : <div style={{height:24,display:"grid",placeItems:"center",fontSize:"1rem"}}>{iconMap[value]||slotMeta[slotName]?.icon||"•"}</div>}
+      {!color&&<div style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",lineHeight:1.02}}>{label}</div>}
+    </button>;
+  };
+
+  const renderOptions=()=>{
+    const values=valueLists[slot]||[];
+    if(slot==="gender") return <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:7}}>{values.map(v=><OptionButton key={v} slotName="gender" value={v}/>)}</div>;
+    if(slot==="bg") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(54px,1fr))",gap:6}}>{values.map(v=><button key={v} type="button" onClick={()=>patch("bg",v)} style={{height:42,borderRadius:10,border:`2px solid ${cfg.bg===v?"#F6E8C8":"#7C6848"}`,background:bgGradient(v),cursor:"pointer",boxShadow:cfg.bg===v?"0 0 0 2px #D5B24F":"0 4px 10px rgba(0,0,0,.18)"}} title={AVATAR_LABELS[v]||v}/>)}</div>;
+    if(slot==="skin") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(32px,1fr))",gap:6}}>{values.map(i=><OptionButton key={i} slotName="skin" value={i} color={AVATAR_OPTIONS.skin[i]}/>)}</div>;
+    if(slot==="hairColor") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(32px,1fr))",gap:6}}>{values.map(i=><OptionButton key={i} slotName="hairColor" value={i} color={AVATAR_OPTIONS.hairColor[i]}/>)}</div>;
+    if(slot==="eyeColor") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(32px,1fr))",gap:6}}>{values.map(i=><OptionButton key={i} slotName="eyeColor" value={i} color={AVATAR_OPTIONS.eyeColor[i]}/>)}</div>;
+    return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(50px,1fr))",gap:6}}>{values.map(v=><OptionButton key={v} slotName={slot} value={v}/>)}</div>;
   };
 
   return <div className="avatar-travian-editor">
@@ -4615,72 +4668,34 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
       <div style={{background:"linear-gradient(180deg,#3A2A18,#171009)",borderBottom:"2px solid #8E7957",color:"#F6E8C8",padding:"7px 9px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
         <div style={{minWidth:0}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",letterSpacing:".5px",lineHeight:1}}>Creador de personaje</div>
-          <div style={{fontSize:".72rem",fontWeight:850,opacity:.76}}>Edición limpia por piezas · lupa automática · menos scroll</div>
+          <div style={{fontSize:".70rem",fontWeight:850,opacity:.76}}>Una sola cuadrícula por pieza · preview fijo · menos scroll</div>
         </div>
         <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
-          <Badge col="gold">{profilePoints} pts</Badge>
-          <Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn>
-          <Btn small col="green" onClick={()=>onSave?.()}>Guardar</Btn>
+          <Badge col="gold">{cfg.gender==="female"?"♀":"♂"}</Badge>
+          <Badge col="dark">{slotMeta[slot]?.label||slot}</Badge>
         </div>
       </div>
-
-      <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:8,alignItems:"flex-start"}}>
-        <PreviewBox/>
-        <div style={{flex:"1 1 460px",minWidth:0}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(52px,1fr))",gap:5,marginBottom:8}}>
-            {panels.map(t=><button key={t.id} type="button" onClick={()=>{SFX.tab();setPanel(t.id);}} style={{border:`2px solid ${panel===t.id?"#D5B24F":"#7C6848"}`,background:panel===t.id?"linear-gradient(180deg,#D5B24F,#7A5927)":"linear-gradient(180deg,#2A2116,#15100B)",color:panel===t.id?"#1B1008":"#F6E8C8",borderRadius:9,padding:"6px 4px",fontWeight:950,cursor:"pointer"}}><div style={{fontSize:".96rem",lineHeight:1}}>{t.icon}</div><div style={{fontSize:".55rem",marginTop:1}}>{t.label}</div></button>)}
+      <div style={{padding:8}}>
+        <Preview/>
+        <TopTabs/>
+        <SlotRail/>
+        <div style={{background:"rgba(255,248,226,.055)",border:"1px solid #5A4A31",borderRadius:13,padding:8,boxShadow:"inset 0 1px 0 rgba(255,255,255,.06)"}}>
+          <div style={{display:"flex",alignItems:"end",justifyContent:"space-between",gap:8,marginBottom:7}}>
+            <div>
+              <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.02rem",color:"#F6E8C8",letterSpacing:.35}}>{slotMeta[slot]?.label||slot}</div>
+              <div style={{fontSize:".58rem",fontWeight:850,color:"rgba(246,232,200,.62)"}}>{(valueLists[slot]||[]).length} opciones · toca y mira la lupa</div>
+            </div>
+            <button type="button" onClick={randomize} style={{border:"1px solid #7C6848",background:"#21170D",color:"#F6E8C8",borderRadius:999,padding:"6px 9px",fontSize:".62rem",fontWeight:950,cursor:"pointer"}}>🎲 Random</button>
           </div>
-          <div style={{background:"linear-gradient(180deg,#21170D,#100B07)",border:"2px solid #7C6848",borderRadius:12,padding:8,maxHeight:410,overflowY:"auto"}}>
-            {renderPanel()}
-          </div>
-          <div style={{marginTop:8,padding:"8px 10px",borderRadius:12,border:"1px solid rgba(213,178,79,.30)",background:"rgba(255,248,226,.07)",color:"rgba(246,232,200,.78)",fontSize:".72rem",fontWeight:820,lineHeight:1.35}}>
-            Consejo: toca una pieza y la lupa sube sola. Los selectores son pequeños para editar sin estar bajando todo el rato.
-          </div>
+          {renderOptions()}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:8}}>
+          <Btn full col="ghost" onClick={()=>onReset?.()}>↶ Restaurar</Btn>
+          <Btn full col="green" onClick={()=>onSave?.()}>💾 Guardar</Btn>
         </div>
       </div>
     </Card>
   </div>;
-}
-
-function Toast({msg,show}){if(!show)return null;return <div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",background:T.g800,color:T.white,padding:"12px 22px",borderRadius:50,fontWeight:700,fontSize:"0.88rem",zIndex:9999,whiteSpace:"nowrap",boxShadow:"0 6px 24px rgba(27,67,50,0.35)",animation:"toastIn 0.3s ease"}}>{msg}</div>;}
-function PtsPopup({pts,show}){if(!show||!pts)return null;return <div style={{position:"fixed",top:"35%",left:"50%",transform:"translateX(-50%)",zIndex:9999,animation:"ptsFloat 1.8s ease forwards",pointerEvents:"none"}}><div style={{background:T.gradGold,color:T.white,borderRadius:50,padding:"10px 24px",fontWeight:900,fontSize:"1.4rem",boxShadow:"0 6px 24px rgba(255,183,3,0.5)"}}>+{pts} pts</div></div>;}
-function Particles(){
-  const items=["✂","〰","◆","✦","•","⟡"];
-  return <div style={{position:"fixed",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:0}}>{[...Array(10)].map((_,i)=><div key={i} style={{position:"absolute",left:`${6+i*10}%`,bottom:"-10%",fontSize:i%3===0?"1.35rem":"1rem",opacity:0.1,animation:`floatUp ${13+i*2}s linear ${i*1.4}s infinite`}}>{items[i%items.length]}</div>)}</div>;
-}
-function BrandLogo(){
-  return (
-    <div style={{width:94,height:94,margin:"0 auto 14px",position:"relative",animation:"logoPulse 2.4s ease infinite"}}>
-      <div style={{position:"absolute",inset:0,borderRadius:"50%",background:"linear-gradient(135deg,#1F120B,#5C3317 52%,#D4AF37)",boxShadow:"0 10px 30px rgba(0,0,0,0.35)",border:"3px solid rgba(245,230,200,0.7)"}}/>
-      <div style={{position:"absolute",inset:8,borderRadius:"50%",border:"2px solid rgba(212,175,55,0.55)"}}/>
-      {[0,1,2,3,4].map(i=><span key={i} style={{position:"absolute",left:24+i*9,top:16,width:4,height:50,borderRadius:8,background:"linear-gradient(180deg,#F5E6C8,#8B4513)",transform:`rotate(${i%2===0?-12:12}deg)`,boxShadow:"0 2px 6px rgba(0,0,0,0.25)"}}/>)}
-      <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:"2.3rem",filter:"drop-shadow(0 3px 3px rgba(0,0,0,0.45))"}}>✂️</div>
-      <div style={{position:"absolute",left:18,right:18,bottom:15,height:2,background:"rgba(245,230,200,0.8)",animation:"bladeGlint 2.6s ease infinite"}}/>
-    </div>
-  );
-}
-
-
-
-function mascotSourcesFromSettings(settings=null){
-  const b=settings?.branding||{};
-  return [
-    b.mascota_rasta_url,
-    b.rasta_mascota_url,
-    b.imagen_mascota_url,
-    b.imagen_rasta_url,
-    b.logo_mascota_url,
-    "/rasta-mascota.png",
-    "/rasta_mascota.png",
-    "/mascota-rasta.png",
-    "/mascota_rasta.png",
-    "/rasta.png",
-    "/mascota.png",
-    "/images/rasta-mascota.png",
-    "/images/rasta.png",
-    "/img/rasta-mascota.png",
-    "/img/rasta.png"
-  ].map(x=>String(x||"").trim()).filter(Boolean);
 }
 
 function RastaMascotImage({settings=null,compact=false}={}){
