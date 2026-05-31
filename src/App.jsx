@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
@@ -13672,7 +13672,7 @@ function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefres
 }
 
 
-export default function App(){
+function AppCore(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
   const [communityTab,setCommunityTab]=useState("feed");
@@ -13741,26 +13741,37 @@ export default function App(){
   },[appSettings?.musica?.volumen_general]);
 
   useEffect(()=>{
+    let alive=true;
+    const fallbackTimer=setTimeout(()=>{
+      if(alive) setCheckingSession(false);
+    },6500);
     async function restoreSession(){
-      if(!supabase){setCheckingSession(false);return;}
-      const {data}=await supabase.auth.getSession();
-      const sessionUser=data.session?.user;
-      if(sessionUser?.email){
-        let perfil=await getUserProfileByEmail(sessionUser.email);
-        if(!perfil){
-          perfil=await createUserProfile({nombre:sessionUser.user_metadata?.nombre||sessionUser.email.split("@")[0],email:sessionUser.email});
-        }
-        if(perfil){
-          if(isBannedProfile(perfil)){
-            try{await supabase.auth.signOut();}catch{}
-          }else{
-            setUser(toAppUser(perfil));
+      try{
+        if(!supabase){return;}
+        const {data}=await supabase.auth.getSession();
+        const sessionUser=data?.session?.user;
+        if(sessionUser?.email){
+          let perfil=await getUserProfileByEmail(sessionUser.email);
+          if(!perfil){
+            perfil=await createUserProfile({nombre:sessionUser.user_metadata?.nombre||sessionUser.email.split("@")[0],email:sessionUser.email});
+          }
+          if(perfil && alive){
+            if(isBannedProfile(perfil)){
+              try{await supabase.auth.signOut();}catch{}
+            }else{
+              setUser(toAppUser(perfil));
+            }
           }
         }
+      }catch(e){
+        console.warn("No se pudo restaurar sesión",e);
+      }finally{
+        clearTimeout(fallbackTimer);
+        if(alive) setCheckingSession(false);
       }
-      setCheckingSession(false);
     }
     restoreSession();
+    return()=>{alive=false;clearTimeout(fallbackTimer);};
   },[]);
 
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
@@ -13933,4 +13944,33 @@ export default function App(){
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
+}
+
+class RastaCutsErrorBoundary extends React.Component{
+  constructor(props){super(props);this.state={error:null,info:null};}
+  static getDerivedStateFromError(error){return {error};}
+  componentDidCatch(error,info){
+    try{console.error("RastaCuts render error",error,info);this.setState({info});}catch{}
+  }
+  render(){
+    if(this.state.error){
+      const msg=String(this.state.error?.message||this.state.error||"Error desconocido");
+      const stack=String(this.state.error?.stack||"").slice(0,1200);
+      return (
+        <div style={{minHeight:"100vh",padding:18,background:"#120806",color:"#F0E0B8",fontFamily:"system-ui,-apple-system,Segoe UI,sans-serif",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{maxWidth:680,width:"100%",background:"#21140C",border:"1px solid #B99A45",borderRadius:18,padding:18,boxShadow:"0 18px 50px rgba(0,0,0,.35)"}}>
+            <h1 style={{margin:"0 0 8px",fontSize:22}}>Rasta Cuts se ha parado al cargar</h1>
+            <p style={{margin:"0 0 12px",lineHeight:1.45}}>La web no se ha roto del todo: este panel muestra el error para poder corregirlo.</p>
+            <pre style={{whiteSpace:"pre-wrap",background:"#0B0705",borderRadius:12,padding:12,overflow:"auto",fontSize:12,color:"#FFE6A3"}}>{msg+"\n\n"+stack}</pre>
+            <button onClick={()=>{try{localStorage.clear();sessionStorage.clear();}catch{};location.reload();}} style={{marginTop:12,border:0,borderRadius:12,padding:"12px 14px",fontWeight:900,background:"#B99A45",color:"#120806"}}>Limpiar datos y recargar</button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function App(){
+  return <RastaCutsErrorBoundary><AppCore/></RastaCutsErrorBoundary>;
 }
