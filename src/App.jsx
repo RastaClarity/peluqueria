@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE135A_AVATAR_LAYER_ENGINE";
-const APP_VERSION_SHORT="F135A";
+const APP_VERSION="FASE135C_EDITOR_ULTRACOMPACTO_LUPA";
+const APP_VERSION_SHORT="F135C";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -3777,7 +3777,7 @@ function Modal({show,onClose,title,children}){
     </div>
   </div>;
 }
-function Spinner(){return <div style={{width:28,height:28,border:`3px solid ${T.g200}`,borderTop:`3px solid ${T.g600}`,borderRadius:"50%",animation:"spin 0.7s linear infinite",margin:"20px auto"}}/>;}
+function Spinner(){return <div style={{width:24,height:24,border:`3px solid ${T.g200}`,borderTop:`3px solid ${T.g600}`,borderRadius:"50%",animation:"spin 0.7s linear infinite",margin:"20px auto"}}/>;}
 function EmptyState({icon,title,sub}){return <div style={{textAlign:"center",padding:"40px 20px",color:T.textSub}}><div style={{fontSize:"2.8rem",marginBottom:10}}>{icon}</div><div style={{fontWeight:800,fontSize:"1rem",color:T.g700,marginBottom:6}}>{title}</div><div style={{fontSize:"0.83rem"}}>{sub}</div></div>;}
 function PublicProfileModal({profile,onClose}){
   if(!profile)return null;
@@ -3812,9 +3812,9 @@ function PublicProfileModal({profile,onClose}){
       <Card style={{marginTop:10,textAlign:"left",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
         <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🏆 Resumen público</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,textAlign:"center"}}>
-          <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Puntos</div></div>
-          <div><div style={{fontSize:"1.4rem"}}>🔥</div><b>{profile.visitas||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Visitas</div></div>
-          <div><div style={{fontSize:"1.4rem"}}>🎮</div><b>{profile.records||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Récords</div></div>
+          <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>Puntos</div></div>
+          <div><div style={{fontSize:"1.4rem"}}>🔥</div><b>{profile.visitas||0}</b><div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>Visitas</div></div>
+          <div><div style={{fontSize:"1.4rem"}}>🎮</div><b>{profile.records||0}</b><div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>Récords</div></div>
         </div>
       </Card>
     </div>
@@ -3857,6 +3857,10 @@ const AVATAR_OPTIONS={
   hair:[...new Set([...MALE_HAIR,...FEMALE_HAIR])],
   brows:["soft","strong","angry","thin","arched"],
   eyes:["anime","sleepy","sharp","round","smile","glam"],
+  nose:["sharp","soft","long","small","wide","hook"],
+  mouth:["sharp","smile","serious","smirk","soft","open"],
+  scar:["none","cheek","cross","brow","jaw"],
+  tattoo:["none","anchor","wave","temple","neck"],
   facial:["none",...BEARD_VALUES],
   accessory:["none","earring","hoopGold","glasses","glassesGold","bandana","bandanaGreen","cap","capBlack","capGold","piercing","flowers","headphones","crown"],
   bg:["gold","dark","red","blue","paper","studio","street","royal"],
@@ -3864,9 +3868,9 @@ const AVATAR_OPTIONS={
   aura:["none","warm","flame","ocean","vip"]
 };
 
-const DEFAULT_AVATAR_CONFIG={version:"fase12",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
-const DEFAULT_MALE_AVATAR={version:"fase12",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
-const DEFAULT_FEMALE_AVATAR={version:"fase12",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
+const DEFAULT_AVATAR_CONFIG={version:"fase12",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",nose:"sharp",mouth:"sharp",scar:"none",tattoo:"none",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
+const DEFAULT_MALE_AVATAR={version:"fase12",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",nose:"sharp",mouth:"sharp",scar:"none",tattoo:"none",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
+const DEFAULT_FEMALE_AVATAR={version:"fase12",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",nose:"soft",mouth:"soft",scar:"none",tattoo:"none",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
   {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
@@ -3895,7 +3899,7 @@ const AVATAR_LABELS={
   gender:"Sexo",male:"Masculino",female:"Femenino",skin:"Piel",hair:"Peinado",hairColor:"Color pelo",face:"Cara",eyes:"Ojos",eyeColor:"Color ojos",brows:"Cejas",facial:"Barba/bigote",accessory:"Complemento",bg:"Fondo",
   oval:"Ovalada",square:"Cuadrada",heart:"Corazón",long:"Alargada",
   buzzFade:"Rapado fade",texturedCrop:"Crop texturizado",sharpFade:"Degradado limpio",dreadsLong:"Rastas largas",dreadsBun:"Nudo rasta",dreadsTop:"Rastas arriba",afro:"Afro redondo",afroPuff:"Afro puff",braidsLong:"Trenzas largas",curlyBob:"Rizos bob",longWaves:"Melena ondas",highPonytail:"Coleta alta",bob:"Bob liso",pixie:"Pixie corto",mohawk:"Cresta punk",undercut:"Undercut",
-  soft:"Suaves",strong:"Marcadas",angry:"Intensas",thin:"Finas",arched:"Arqueadas",anime:"Anime",sleepy:"Relajados",smile:"Sonrientes",glam:"Glam",
+  soft:"Suaves",strong:"Marcadas",angry:"Intensas",thin:"Finas",arched:"Arqueadas",anime:"Anime",sleepy:"Relajados",smile:"Sonrientes",glam:"Glam",sharp:"Afilado",serious:"Seria",smirk:"Pícara",open:"Abierta",small:"Pequeña",wide:"Ancha",hook:"Gancho",cheek:"Mejilla",cross:"Cruz",brow:"Ceja",jaw:"Mandíbula",anchor:"Ancla",wave:"Ola",temple:"Sien",neck:"Cuello",
   none:"Nada",stubble:"Sombra",moustache:"Bigote",goatee:"Perilla",shortBeard:"Barba corta",beard:"Barba",full:"Barba completa",
   earring:"Pendiente",glasses:"Gafas",bandana:"Bandana",cap:"Gorra",piercing:"Piercing",capBlack:"Gorra negra",capGold:"Gorra dorada",glassesGold:"Gafas doradas",bandanaGreen:"Bandana verde",crown:"Corona barber",hoopGold:"Aros dorados",flowers:"Flores",headphones:"Cascos",
   gold:"Dorado",dark:"Oscuro",red:"Rojo",blue:"Azul",paper:"Papiro",studio:"Estudio",street:"Calle",royal:"VIP",bronze:"Bronce",neon:"Neón",legend:"Leyenda",warm:"Brillo cálido",flame:"Aura fuego",ocean:"Aura mar",vip:"Aura VIP"
@@ -3927,6 +3931,10 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   if(cfg.gender==="male" && !MALE_HAIR.includes(cfg.hair)) cfg.hair="sharpFade";
   if(!AVATAR_OPTIONS.eyes.includes(cfg.eyes)) cfg.eyes=cfg.gender==="female"?"glam":"sharp";
   if(!AVATAR_OPTIONS.brows.includes(cfg.brows)) cfg.brows=cfg.gender==="female"?"arched":"strong";
+  if(!AVATAR_OPTIONS.nose.includes(cfg.nose)) cfg.nose=cfg.gender==="female"?"soft":"sharp";
+  if(!AVATAR_OPTIONS.mouth.includes(cfg.mouth)) cfg.mouth=cfg.gender==="female"?"soft":"sharp";
+  if(!AVATAR_OPTIONS.scar.includes(cfg.scar)) cfg.scar="none";
+  if(!AVATAR_OPTIONS.tattoo.includes(cfg.tattoo)) cfg.tattoo="none";
   if(!AVATAR_OPTIONS.facial.includes(cfg.facial)) cfg.facial="none";
   if(cfg.gender==="female") cfg.facial="none";
   if(!AVATAR_OPTIONS.accessory.includes(cfg.accessory)) cfg.accessory="none";
@@ -3980,7 +3988,7 @@ function randomAvatarConfig(gender=null){
   const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
   const selectedGender=gender&&AVATAR_OPTIONS.gender.includes(gender)?gender:pick(AVATAR_OPTIONS.gender);
   const base=selectedGender==="female"?DEFAULT_FEMALE_AVATAR:DEFAULT_MALE_AVATAR;
-  return normalizeAvatarConfig({...base,skin:Math.floor(Math.random()*AVATAR_OPTIONS.skin.length),hair:pick(selectedGender==="female"?FEMALE_HAIR:MALE_HAIR),hairColor:Math.floor(Math.random()*AVATAR_OPTIONS.hairColor.length),face:pick(AVATAR_OPTIONS.face),eyes:pick(AVATAR_OPTIONS.eyes),eyeColor:Math.floor(Math.random()*AVATAR_OPTIONS.eyeColor.length),brows:pick(AVATAR_OPTIONS.brows),facial:selectedGender==="female"?"none":pick(AVATAR_OPTIONS.facial),accessory:pick(BASIC_ACCESSORIES),bg:pick(["gold","dark","red","blue","paper","studio","street"])});
+  return normalizeAvatarConfig({...base,skin:Math.floor(Math.random()*AVATAR_OPTIONS.skin.length),hair:pick(selectedGender==="female"?FEMALE_HAIR:MALE_HAIR),hairColor:Math.floor(Math.random()*AVATAR_OPTIONS.hairColor.length),face:pick(AVATAR_OPTIONS.face),eyes:pick(AVATAR_OPTIONS.eyes),eyeColor:Math.floor(Math.random()*AVATAR_OPTIONS.eyeColor.length),brows:pick(AVATAR_OPTIONS.brows),nose:pick(AVATAR_OPTIONS.nose),mouth:pick(AVATAR_OPTIONS.mouth),scar:pick(AVATAR_OPTIONS.scar),tattoo:pick(AVATAR_OPTIONS.tattoo),facial:selectedGender==="female"?"none":pick(AVATAR_OPTIONS.facial),accessory:pick(BASIC_ACCESSORIES),bg:pick(["gold","dark","red","blue","paper","studio","street"])});
 }
 function bgGradient(bg){
   const b={gold:"linear-gradient(145deg,#3A1E10,#D4AF37)",dark:"linear-gradient(145deg,#130906,#8B4513)",red:"linear-gradient(145deg,#5C0F0F,#F06A3B)",blue:"linear-gradient(145deg,#1A3A5C,#E1A85D)",paper:"linear-gradient(145deg,#6E3518,#FFF4D6)",studio:"linear-gradient(145deg,#24110A,#9A4F22 58%,#FFF4D6)",street:"linear-gradient(145deg,#120806,#1A3A5C 58%,#C97934)",royal:"linear-gradient(145deg,#150B07,#8B0000 45%,#D4AF37)"};
@@ -4221,7 +4229,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="FASE135A_LAYER_ENGINE";
+const AVATAR_LAYER_ENGINE_VERSION="FASE135B_LAYER_ENGINE_COMPACT_UI";
 
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
@@ -4356,13 +4364,22 @@ function AvatarFigure({config,size=80,animated=false}){
   }
   function LayerBrows(){return <g className="layer brows" stroke="#120906" strokeWidth={browStroke} strokeLinecap="round" fill="none"><path d={brows[0]}/><path d={brows[1]}/></g>;}
   function LayerNose(){
-    const d={oval:"M99 111 C103 121 101 130 94 134",round:"M99 112 C102 120 101 128 96 131",sharp:"M100 110 C104 121 101 132 92 136",square:"M98 111 C103 122 101 130 94 134",heart:"M99 111 C102 121 100 129 95 133",long:"M100 110 C104 124 101 136 93 140"}[noseVariant]||"M100 110 C104 121 101 132 92 136";
+    const d={
+      sharp:"M100 110 C104 121 101 132 92 136",
+      soft:"M99 112 C102 120 101 128 96 131",
+      long:"M100 110 C104 124 101 136 93 140",
+      small:"M99 116 C101 123 100 128 96 131",
+      wide:"M96 114 C103 123 103 130 93 135",
+      hook:"M100 109 C108 121 101 132 91 136"
+    }[noseVariant]||"M100 110 C104 121 101 132 92 136";
     return <g className="layer nose"><path d={d} stroke={skinDeep} strokeWidth="3.2" strokeLinecap="round" fill="none" opacity=".70"/><path d="M90 136 C96 140 104 140 110 136" stroke={skinLo} strokeWidth="1.8" strokeLinecap="round" fill="none" opacity=".38"/></g>;
   }
   function LayerMouth(){
-    if(mouthVariant==="sleepy")return <path className="layer mouth" d="M83 150 C93 154 107 154 117 150" stroke="#5B1F16" strokeWidth="4" strokeLinecap="round" fill="none"/>;
+    if(mouthVariant==="serious")return <path className="layer mouth" d="M83 151 C93 153 107 153 117 151" stroke="#5B1F16" strokeWidth="4" strokeLinecap="round" fill="none"/>;
     if(mouthVariant==="smile"||mouthVariant==="anime")return <g className="layer mouth"><path d="M77 148 C88 162 113 162 124 148" stroke="#7D2417" strokeWidth="5" strokeLinecap="round" fill="none"/><path d="M85 151 C94 158 106 158 115 151" stroke="#FFF3E7" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity=".74"/></g>;
-    if(mouthVariant==="glam")return <path className="layer mouth" d={female?"M80 150 C91 159 109 159 120 150 C108 154 92 154 80 150Z":"M81 151 C91 157 109 157 119 151"} stroke="#6E2116" strokeWidth="4" strokeLinecap="round" fill={female?"#A03B3E":"none"}/>;
+    if(mouthVariant==="smirk")return <path className="layer mouth" d="M80 151 C92 158 109 156 122 146" stroke="#6E2116" strokeWidth="4.6" strokeLinecap="round" fill="none"/>;
+    if(mouthVariant==="soft"||mouthVariant==="glam")return <path className="layer mouth" d={female?"M80 150 C91 159 109 159 120 150 C108 154 92 154 80 150Z":"M82 151 C92 157 108 157 118 151"} stroke="#6E2116" strokeWidth="4" strokeLinecap="round" fill={female?"#A03B3E":"none"}/>;
+    if(mouthVariant==="open")return <g className="layer mouth"><path d="M81 149 C92 163 109 163 120 149 C113 172 88 172 81 149Z" fill="#7D2417" stroke="#55160E" strokeWidth="2"/><path d="M88 152 C95 157 105 157 113 152" stroke="#FFF3E7" strokeWidth="2.3" strokeLinecap="round" opacity=".86"/></g>;
     return <path className="layer mouth" d="M80 150 C91 157 110 157 121 148" stroke="#6E2116" strokeWidth="4.6" strokeLinecap="round" fill="none"/>;
   }
   function LayerFacialHair(){
@@ -4375,9 +4392,20 @@ function AvatarFigure({config,size=80,animated=false}){
     return <g className="layer beard"><path d="M58 122 C72 167 128 167 142 122 C145 166 126 196 100 202 C74 196 55 166 58 122Z" fill={hairLo}/><path d="M75 145 C90 156 110 156 125 145" stroke={hairHi} strokeWidth="2.4" strokeLinecap="round" opacity=".25" fill="none"/></g>;
   }
   function LayerScarsAndTattoos(){
-    const showScar=cfg.accessory==="piercing"||cfg.frame==="legend"||cfg.aura==="flame";
-    const showTattoo=cfg.aura==="ocean"||cfg.aura==="vip"||cfg.frame==="neon";
-    return <g className="layer marks" opacity=".82">{showScar&&<path d="M127 111 L141 127 M137 111 L125 126" stroke="#5C241D" strokeWidth="2" strokeLinecap="round"/>}{showTattoo&&<path d="M120 164 C132 172 138 186 132 198 C124 190 117 183 110 172" stroke="#263F4D" strokeWidth="2.6" strokeLinecap="round" fill="none" opacity=".58"/>}</g>;
+    const scar=cfg.scar||"none";
+    const tattoo=cfg.tattoo||"none";
+    const legacyScar=cfg.accessory==="piercing"||cfg.frame==="legend"||cfg.aura==="flame";
+    const legacyTattoo=cfg.aura==="ocean"||cfg.aura==="vip"||cfg.frame==="neon";
+    return <g className="layer marks" opacity=".82">
+      {(scar==="cheek"||legacyScar)&&<path d="M127 111 L141 127 M137 111 L125 126" stroke="#5C241D" strokeWidth="2" strokeLinecap="round"/>}
+      {scar==="cross"&&<path d="M67 116 L82 130 M80 113 L68 132" stroke="#5C241D" strokeWidth="2" strokeLinecap="round"/>}
+      {scar==="brow"&&<path d="M72 77 L80 95" stroke="#5C241D" strokeWidth="2.4" strokeLinecap="round"/>}
+      {scar==="jaw"&&<path d="M122 145 C131 153 134 160 132 169" stroke="#5C241D" strokeWidth="2.3" strokeLinecap="round" fill="none"/>}
+      {(tattoo==="neck"||legacyTattoo)&&<path d="M120 164 C132 172 138 186 132 198 C124 190 117 183 110 172" stroke="#263F4D" strokeWidth="2.6" strokeLinecap="round" fill="none" opacity=".58"/>}
+      {tattoo==="anchor"&&<path d="M137 139 L137 158 M130 148 L144 148 M130 158 C134 164 140 164 144 158" stroke="#263F4D" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity=".64"/>}
+      {tattoo==="wave"&&<path d="M58 139 C66 131 73 147 82 139 C88 134 91 136 94 139" stroke="#263F4D" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity=".64"/>}
+      {tattoo==="temple"&&<path d="M129 91 C138 85 143 91 137 100 C134 94 130 96 129 91Z" fill="#263F4D" opacity=".56"/>}
+    </g>;
   }
   function LayerAccessories(){
     return <g className="layer accessories">
@@ -4436,155 +4464,177 @@ function CharacterCard({idx,selected,onPick,compact=false}){
 }
 function PickerButton({active,children,onClick,locked=false}){return <button type="button" onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?T.gradGold:locked?"rgba(60,40,25,.18)":"rgba(255,244,214,.72)",color:active?T.g900:locked?T.textSub:T.g700,borderRadius:12,padding:"8px 9px",fontWeight:900,fontSize:".72rem",cursor:locked?"not-allowed":"pointer",boxShadow:active?"0 8px 18px rgba(212,175,55,.25)":"0 5px 12px rgba(20,8,4,.1)"}}>{locked?"🔒 ":""}{children}</button>;}
 function ColorDot({color,active,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:32,height:32,borderRadius:"50%",background:color,border:`3px solid ${active?T.gold:"rgba(255,244,214,.9)"}`,boxShadow:active?"0 0 0 3px rgba(212,175,55,.25)":"0 4px 10px rgba(20,8,4,.18)",cursor:"pointer"}}/>;}
-function EditorTabButton({active,icon,label,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?"linear-gradient(180deg,#FFF8E1,#E6C27A)":"rgba(255,248,225,.9)",color:active?T.g900:T.g700,borderRadius:18,padding:"8px 10px",minWidth:0,cursor:"pointer",boxShadow:active?"0 12px 24px rgba(212,175,55,.26)":"0 6px 14px rgba(20,8,4,.10)",display:"flex",flexDirection:"column",alignItems:"center",gap:3,fontWeight:950}}><div style={{fontSize:"1.08rem",lineHeight:1}}>{icon}</div><div style={{fontSize:".68rem",whiteSpace:"nowrap"}}>{label}</div></button>;}
+function EditorTabButton({active,icon,label,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?"linear-gradient(180deg,#FFF8E1,#E6C27A)":"rgba(255,248,225,.9)",color:active?T.g900:T.g700,borderRadius:18,padding:"8px 10px",minWidth:0,cursor:"pointer",boxShadow:active?"0 12px 24px rgba(212,175,55,.26)":"0 6px 14px rgba(20,8,4,.10)",display:"flex",flexDirection:"column",alignItems:"center",gap:3,fontWeight:950}}><div style={{fontSize:"1.08rem",lineHeight:1}}>{icon}</div><div style={{fontSize:".60rem",whiteSpace:"nowrap"}}>{label}</div></button>;}
 function VisualOption({label,active,onClick,locked=false,children,sub=null}){return <button type="button" onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{position:"relative",border:`2px solid ${active?T.gold:T.g200}`,background:active?"linear-gradient(180deg,#FFF8E5,#F6E5BE)":"rgba(255,248,225,.88)",borderRadius:18,padding:8,cursor:locked?"not-allowed":"pointer",boxShadow:active?"0 12px 24px rgba(212,175,55,.22)":"0 6px 14px rgba(20,8,4,.10)",textAlign:"center",opacity:locked?0.72:1,minWidth:0}}>{locked&&<div style={{position:"absolute",top:6,right:6,background:"rgba(0,0,0,.62)",color:T.white,borderRadius:999,padding:"2px 6px",fontSize:".62rem",fontWeight:950,zIndex:4}}>🔒</div>}<div style={{height:148,borderRadius:16,display:"grid",placeItems:"center",background:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.22),transparent 35%),linear-gradient(160deg,#1B0D07,#5C3317 60%,#D4AF37)",overflow:"hidden",marginBottom:7}}>{children}</div><div style={{fontSize:".73rem",fontWeight:950,color:active?T.g900:T.g800,lineHeight:1.12,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{label}</div>{sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,marginTop:2,lineHeight:1.05}}>{sub}</div>}</button>;}
 function LargeSwatch({color,active,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:46,height:46,borderRadius:"50%",border:`4px solid ${active?T.gold:"rgba(110,53,24,.16)"}`,boxShadow:active?"0 0 0 4px rgba(212,175,55,.18),0 8px 14px rgba(20,8,4,.12)":"0 6px 12px rgba(20,8,4,.1)",background:color,cursor:"pointer"}}/>;}
-function MiniSectionTitle({emoji,title,sub}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,margin:"6px 0 8px"}}><div style={{fontWeight:950,color:T.g800}}>{emoji} {title}</div>{sub&&<div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>{sub}</div>}</div>;}
+function MiniSectionTitle({emoji,title,sub}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,margin:"6px 0 8px"}}><div style={{fontWeight:950,color:T.g800}}>{emoji} {title}</div>{sub&&<div style={{fontSize:".60rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>{sub}</div>}</div>;}
 function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=null}){
   const [panel,setPanel]=useState("base");
+  const [zoom,setZoom]=useState(1.12);
+  const [lastEdit,setLastEdit]=useState("general");
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
   const premiumKeys=new Set(ownedKeys||[]);
   const isLocked=(slot,value)=>COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slot&&c.valor===value&&!premiumKeys.has(c.item_key));
   const applyConfig=(next)=>setForm(f=>({...f,avatarConfig:normalizeAvatarConfig(next,f.avatar)}));
   const patch=(key,value)=>{
     if(isLocked(key,value)){SFX.error();return;}
+    setLastEdit(key);
+    if(["eyes","brows","nose","mouth","facial","scar","tattoo"].includes(key)) setZoom(1.6);
+    else if(["hair","accessory"].includes(key)) setZoom(1.35);
     setForm(f=>{
       const current=normalizeAvatarConfig(f.avatarConfig,f.avatar);
       let next={...current,[key]:value};
       if(key==="gender"){
         const base=value==="female"?DEFAULT_FEMALE_AVATAR:DEFAULT_MALE_AVATAR;
-        next={...base,skin:current.skin,hairColor:current.hairColor,eyeColor:current.eyeColor,bg:current.bg,frame:current.frame,aura:current.aura,accessory:current.accessory};
-        if(value==="female") next={...next,facial:"none",hair:"braidsLong",face:"heart",eyes:"glam",brows:"arched",accessory:current.accessory==="crown"?"hoopGold":current.accessory};
-        if(value==="male") next={...next,hair:"dreadsTop",face:"square",eyes:"sharp",brows:"strong",facial:current.facial==="none"?"shortBeard":current.facial,accessory:current.accessory==="flowers"?"bandana":current.accessory};
+        next={...base,skin:current.skin,hairColor:current.hairColor,eyeColor:current.eyeColor,bg:current.bg,frame:current.frame,aura:current.aura,accessory:current.accessory,scar:current.scar,tattoo:current.tattoo};
+        if(value==="female") next={...next,facial:"none",hair:"braidsLong",face:"heart",eyes:"glam",brows:"arched",nose:"soft",mouth:"soft",accessory:current.accessory==="crown"?"hoopGold":current.accessory};
+        if(value==="male") next={...next,hair:"dreadsTop",face:"square",eyes:"sharp",brows:"strong",nose:"sharp",mouth:"smirk",facial:current.facial==="none"?"shortBeard":current.facial,accessory:current.accessory==="flowers"?"bandana":current.accessory};
       }
       return {...f,avatarConfig:normalizeAvatarConfig(next,f.avatar)};
     });
   };
   const randomize=()=>applyConfig(randomAvatarConfig(cfg.gender));
-  const preset=(idx)=>setForm(f=>({...f,avatar:idx,avatarConfig:normalizeAvatarConfig(AVATAR_PRESETS[idx],idx)}));
   const visibleHair=cfg.gender==="female"?FEMALE_HAIR:MALE_HAIR;
-  const panels=[
-    {id:"base",label:"Inventario",icon:"🎒"},
-    {id:"pelo",label:"Peinado",icon:"💇"},
-    {id:"cara",label:"Rostro",icon:"🙂"},
-    {id:"extras",label:"Apariencia",icon:"✨"}
-  ];
-  const hairPreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none"},form.avatar);
-  const facePreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none",facial:"none"},form.avatar);
-  const currentName=AVATAR_PRESET_NAMES?.[Number(form.avatar)%AVATAR_PRESET_NAMES.length]||avatarStyleName(cfg);
+  const currentName=avatarStyleName(cfg);
   const profilePoints=Number(user?.puntos||0);
   const editorLevel=profilePoints>=1500?"Leyenda":profilePoints>=1000?"VIP":profilePoints>=500?"Oro":profilePoints>=200?"Plata":"Bronce";
   const editorNext=profilePoints<200?200:profilePoints<500?500:profilePoints<1000?1000:profilePoints<1500?1500:2000;
   const editorPct=Math.max(5,Math.min(100,Math.round(profilePoints/editorNext*100)));
-  const activeMeta=[
-    avatarLabel(cfg.gender),
-    AVATAR_LABELS[cfg.hair],
-    avatarLabel(cfg.face,"face"),
-    AVATAR_LABELS[cfg.accessory]||cfg.accessory
+  const panels=[
+    {id:"base",label:"Base",icon:"◎"},
+    {id:"rasgos",label:"Rasgos",icon:"◉"},
+    {id:"pelo",label:"Pelo",icon:"〰"},
+    {id:"marcas",label:"Marcas",icon:"✦"},
+    {id:"colores",label:"Color",icon:"▣"}
   ];
+  const zoomLevels=[1,1.25,1.6,1.9];
+  const previewBase=normalizeAvatarConfig({...cfg,frame:"none",aura:"none"},form.avatar);
+  const facePreview=normalizeAvatarConfig({...cfg,accessory:"none",facial:"none",frame:"none",aura:"none"},form.avatar);
+  const hairPreview=normalizeAvatarConfig({...cfg,accessory:"none",frame:"none",aura:"none"},form.avatar);
 
-  const MenuButton=({id,label,icon})=><button type="button" onClick={()=>{SFX.tab();setPanel(id);}} className="avatar-travian-tab" style={{background:panel===id?"linear-gradient(180deg,#8E7957,#5C4A33)":"linear-gradient(180deg,#6B4A34,#3A2A18)",color:"#FFF8E2",border:`2px solid ${panel===id?"#D5B24F":"#8E7957"}`,fontWeight:950,cursor:"pointer",padding:"10px 8px",textAlign:"center",boxShadow:panel===id?"inset 0 2px 0 rgba(255,255,255,.22),0 4px 0 #2A1A0D":"inset 0 1px 0 rgba(255,255,255,.12)",minWidth:0}}><div style={{fontSize:"1.15rem",lineHeight:1}}>{icon}</div><div style={{fontSize:".74rem",marginTop:2,whiteSpace:"nowrap"}}>{label}</div></button>;
+  const MiniButton=({active=false,onClick,children,title=null,locked=false})=>(
+    <button type="button" title={title||""} onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{
+      minHeight:36,
+      border:`2px solid ${active?"#D5B24F":"#7C6848"}`,
+      background:active?"linear-gradient(180deg,#D5B24F,#7A5927)":"linear-gradient(180deg,#2A2116,#15100B)",
+      color:active?"#1B1008":"#F6E8C8",
+      borderRadius:9,
+      padding:"4px 6px",
+      fontWeight:950,
+      cursor:locked?"not-allowed":"pointer",
+      opacity:locked?.58:1,
+      boxShadow:active?"0 0 0 2px rgba(213,178,79,.18),0 8px 18px rgba(0,0,0,.28)":"0 4px 12px rgba(0,0,0,.18)",
+      position:"relative",
+      overflow:"hidden"
+    }}>{locked&&<span style={{position:"absolute",right:4,top:3,fontSize:11}}>🔒</span>}{children}</button>
+  );
+  const TinyTile=({slot,value,label,children,active=null,locked=null,onClick=null})=>{
+    const isActive=active??cfg[slot]===value;
+    const isLock=locked??isLocked(slot,value);
+    return <MiniButton active={isActive} locked={isLock} onClick={onClick||(()=>patch(slot,value))} title={label}>
+      <div style={{height:30,display:"grid",placeItems:"center",overflow:"hidden",borderRadius:7,background:isActive?"rgba(255,248,226,.18)":"rgba(255,248,226,.07)",marginBottom:3}}>{children}</div>
+      <div style={{fontSize:".56rem",lineHeight:1.02,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{label}</div>
+    </MiniButton>;
+  };
+  const TextTile=({slot,value,label,icon="•"})=><TinyTile slot={slot} value={value} label={label}><span style={{fontSize:"1.05rem"}}>{icon}</span></TinyTile>;
+  const PartGrid=({children,min=54})=><div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${min}px,1fr))`,gap:5}}>{children}</div>;
+  const Section=({title,sub=null,children})=><div style={{marginBottom:9}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,marginBottom:5}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:".94rem",color:"#F6E8C8",letterSpacing:.35}}>{title}</div>{sub&&<div style={{fontSize:".58rem",fontWeight:850,color:"rgba(246,232,200,.62)",textAlign:"right"}}>{sub}</div>}</div>{children}</div>;
+  const Swatch=({slot,index,color})=><button type="button" onClick={()=>patch(slot,index)} style={{width:24,height:24,borderRadius:7,border:`2px solid ${cfg[slot]===index?"#F6E8C8":"#7C6848"}`,background:color,boxShadow:cfg[slot]===index?"0 0 0 2px #D5B24F,0 5px 14px rgba(0,0,0,.28)":"0 4px 10px rgba(0,0,0,.20)",cursor:"pointer"}}/>;
+  const BgTile=({value})=><button type="button" onClick={()=>patch("bg",value)} style={{height:30,borderRadius:8,border:`2px solid ${cfg.bg===value?"#F6E8C8":"#7C6848"}`,background:bgGradient(value),cursor:"pointer",boxShadow:cfg.bg===value?"0 0 0 2px #D5B24F":"0 4px 10px rgba(0,0,0,.18)"}} title={AVATAR_LABELS[value]||value}/>;
 
-  const OptionGrid=({children,cols=3})=><div className="avatar-travian-grid" style={{display:"grid",gridTemplateColumns:`repeat(${cols},minmax(0,1fr))`,gap:8}}>{children}</div>;
+  const PreviewBox=()=> <div style={{
+    flex:"0 1 230px",
+    minWidth:210,
+    alignSelf:"flex-start",
+    position:"sticky",
+    top:6,
+    zIndex:2,
+    background:"linear-gradient(180deg,#171009,#0A0704)",
+    border:"2px solid #8E7957",
+    borderRadius:13,
+    padding:8,
+    boxShadow:"0 14px 34px rgba(0,0,0,.34)"
+  }}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:8}}>
+      <div style={{minWidth:0}}>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.02rem",color:"#F6E8C8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{form.nombre||"Rasta"}</div>
+        <div style={{fontSize:".60rem",fontWeight:850,color:"rgba(246,232,200,.66)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentName}</div>
+      </div>
+      <Badge col="gold">{editorLevel}</Badge>
+    </div>
+    <div style={{height:5,borderRadius:999,background:"rgba(246,232,200,.12)",overflow:"hidden",marginBottom:7}}><div style={{height:"100%",width:`${editorPct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F,#A72822)"}}/></div>
+    <div style={{fontSize:".56rem",fontWeight:900,color:"rgba(246,232,200,.64)",textTransform:"uppercase",letterSpacing:".05em",marginBottom:5}}>Lupa: {AVATAR_LABELS[cfg[lastEdit]]||avatarLabel(cfg[lastEdit],lastEdit)||lastEdit}</div>
+    <div style={{height:158,borderRadius:12,background:"radial-gradient(circle at 50% 25%,#FFF3CA 0%,#A58D58 48%,#24170D 49%,#0B0704 100%)",border:"2px solid #7C6848",display:"grid",placeItems:"center",overflow:"hidden",boxShadow:"inset 0 0 0 3px rgba(255,255,255,.08)"}}>
+      <div style={{transform:`scale(${zoom})`,transition:"transform .18s ease"}}><Av av={form.avatar} config={cfg} size={136}/></div>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginTop:8}}>{zoomLevels.map(z=><button key={z} type="button" onClick={()=>setZoom(z)} style={{border:`1px solid ${zoom===z?"#D5B24F":"#7C6848"}`,background:zoom===z?"#D5B24F":"#21170D",color:zoom===z?"#1B1008":"#F6E8C8",borderRadius:7,padding:"5px 3px",fontSize:".60rem",fontWeight:950,cursor:"pointer"}}>{Math.round(z*100)}%</button>)}</div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginTop:7}}>
+      <Btn full col="ghost" onClick={()=>onReset?.()}>↶ Reset</Btn>
+      <Btn full col="green" onClick={()=>onSave?.()}>💾 Guardar</Btn>
+    </div>
+  </div>;
+
+  const renderPanel=()=>{
+    if(panel==="base") return <>
+      <Section title="Base" sub="sin modelos prefabricados grandes">
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7}}>
+          <MiniButton active={cfg.gender==="male"} onClick={()=>patch("gender","male")}><div style={{fontSize:"1.18rem"}}>♂</div><div style={{fontSize:".7rem"}}>Masculino</div></MiniButton>
+          <MiniButton active={cfg.gender==="female"} onClick={()=>patch("gender","female")}><div style={{fontSize:"1.18rem"}}>♀</div><div style={{fontSize:".7rem"}}>Femenino</div></MiniButton>
+        </div>
+      </Section>
+      <Section title="Cara" sub="forma del rostro"><PartGrid>{AVATAR_OPTIONS.face.map((v,i)=><TextTile key={v} slot="face" value={v} label={avatarLabel(v,"face")} icon={["⬟","◇","◯","▣","⬢"][i%5]}/>)}</PartGrid></Section>
+      <Section title="Fondo" sub="mini escenarios"><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(54px,1fr))",gap:7}}>{AVATAR_OPTIONS.bg.map(v=><BgTile key={v} value={v}/>)}</div></Section>
+      <Section title="Aleatorio" sub="sólo si quieres probar rápido"><Btn full col="gold" onClick={randomize}>🎲 Crear combinación aleatoria</Btn></Section>
+    </>;
+    if(panel==="rasgos") return <>
+      <Section title="Ojos"><PartGrid>{AVATAR_OPTIONS.eyes.map((v,i)=><TextTile key={v} slot="eyes" value={v} label={avatarLabel(v,"eyes")} icon={["◉","◐","◕","⬤","✦"][i%5]}/>)}</PartGrid></Section>
+      <Section title="Cejas"><PartGrid>{AVATAR_OPTIONS.brows.map(v=><TextTile key={v} slot="brows" value={v} label={AVATAR_LABELS[v]||v} icon="▰"/>)}</PartGrid></Section>
+      <Section title="Nariz"><PartGrid>{AVATAR_OPTIONS.nose.map(v=><TextTile key={v} slot="nose" value={v} label={AVATAR_LABELS[v]||v} icon="⌇"/>)}</PartGrid></Section>
+      <Section title="Boca"><PartGrid>{AVATAR_OPTIONS.mouth.map(v=><TextTile key={v} slot="mouth" value={v} label={AVATAR_LABELS[v]||v} icon="⌣"/>)}</PartGrid></Section>
+    </>;
+    if(panel==="pelo") return <>
+      <Section title="Peinado" sub="piezas limpias, no personajes"><PartGrid>{visibleHair.map(v=><TinyTile key={v} slot="hair" value={v} label={AVATAR_LABELS[v]||v} locked={isLocked("hair",v)}><Av av={form.avatar} config={{...hairPreview,hair:v,facial:cfg.gender==="female"?"none":cfg.facial}} size={38}/></TinyTile>)}</PartGrid></Section>
+      {cfg.gender==="male"&&<Section title="Barba / bigote"><PartGrid>{AVATAR_OPTIONS.facial.map(v=><TinyTile key={v} slot="facial" value={v} label={AVATAR_LABELS[v]||v}><Av av={form.avatar} config={{...hairPreview,gender:"male",facial:v}} size={38}/></TinyTile>)}</PartGrid></Section>}
+    </>;
+    if(panel==="marcas") return <>
+      <Section title="Complementos"><PartGrid>{BASIC_ACCESSORIES.map(v=><TinyTile key={v} slot="accessory" value={v} label={AVATAR_LABELS[v]||v}><Av av={form.avatar} config={{...previewBase,accessory:v}} size={38}/></TinyTile>)}</PartGrid></Section>
+      <Section title="Cicatrices"><PartGrid>{AVATAR_OPTIONS.scar.map(v=><TinyTile key={v} slot="scar" value={v} label={AVATAR_LABELS[v]||v}><Av av={form.avatar} config={{...previewBase,scar:v}} size={38}/></TinyTile>)}</PartGrid></Section>
+      <Section title="Tatuajes"><PartGrid>{AVATAR_OPTIONS.tattoo.map(v=><TinyTile key={v} slot="tattoo" value={v} label={AVATAR_LABELS[v]||v}><Av av={form.avatar} config={{...previewBase,tattoo:v}} size={38}/></TinyTile>)}</PartGrid></Section>
+      <Section title="Desbloqueables"><PartGrid>{["capBlack","capGold","glassesGold","bandanaGreen","crown"].map(v=><TinyTile key={v} slot="accessory" value={v} label={AVATAR_LABELS[v]||v} locked={isLocked("accessory",v)}><Av av={form.avatar} config={{...previewBase,accessory:v}} size={38}/></TinyTile>)}</PartGrid></Section>
+    </>;
+    return <>
+      <Section title="Piel"><div style={{display:"flex",flexWrap:"wrap",gap:7}}>{AVATAR_OPTIONS.skin.map((c,i)=><Swatch key={`${c}-${i}`} slot="skin" index={i} color={c}/>)}</div></Section>
+      <Section title="Pelo"><div style={{display:"flex",flexWrap:"wrap",gap:7}}>{AVATAR_OPTIONS.hairColor.map((c,i)=><Swatch key={`${c}-${i}`} slot="hairColor" index={i} color={c}/>)}</div></Section>
+      <Section title="Ojos"><div style={{display:"flex",flexWrap:"wrap",gap:7}}>{AVATAR_OPTIONS.eyeColor.map((c,i)=><Swatch key={`${c}-${i}`} slot="eyeColor" index={i} color={c}/>)}</div></Section>
+      <Section title="Marco y aura"><PartGrid>{AVATAR_OPTIONS.frame.map(v=><TextTile key={v} slot="frame" value={v} label={AVATAR_LABELS[v]||v} icon="▧"/>)}{AVATAR_OPTIONS.aura.map(v=><TextTile key={v} slot="aura" value={v} label={AVATAR_LABELS[v]||v} icon="✦"/>)}</PartGrid></Section>
+    </>;
+  };
 
   return <div className="avatar-travian-editor">
-    <Card className="avatar-travian-window" style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#F6E8C8,#E9D8B4 60%,#D4BD8F)",border:"3px solid #8E7957",borderRadius:16,boxShadow:"0 20px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.75)",marginBottom:14}}>
-      <div style={{background:"linear-gradient(180deg,#4A3522,#241709)",borderBottom:"3px solid #8E7957",color:"#FFF8E2",padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+    <Card className="avatar-travian-window" style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#15100B,#0B0704)",border:"2px solid #8E7957",borderRadius:16,boxShadow:"0 20px 50px rgba(0,0,0,.35)",marginBottom:14}}>
+      <div style={{background:"linear-gradient(180deg,#3A2A18,#171009)",borderBottom:"2px solid #8E7957",color:"#F6E8C8",padding:"7px 9px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
         <div style={{minWidth:0}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",letterSpacing:".4px",textShadow:"0 2px 0 rgba(0,0,0,.4)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{form.nombre||"Rasta"} — {editorLevel}</div>
-          <div style={{fontSize:".76rem",fontWeight:850,opacity:.82}}>Editor visual estilo juego de navegador · pirata rasta · {profilePoints} pts</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",letterSpacing:".5px",lineHeight:1}}>Creador de personaje</div>
+          <div style={{fontSize:".72rem",fontWeight:850,opacity:.76}}>Edición limpia por piezas · lupa automática · menos scroll</div>
         </div>
-        <div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>
-          <Btn small col="ghost" onClick={()=>{onReset?.();}}>↶ Reset</Btn>
+        <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
+          <Badge col="gold">{profilePoints} pts</Badge>
           <Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn>
+          <Btn small col="green" onClick={()=>onSave?.()}>Guardar</Btn>
         </div>
       </div>
 
-      <div className="avatar-editor-layout-pro" style={{display:"grid",gridTemplateColumns:"1.05fr 1fr",gap:0,background:"linear-gradient(90deg,#203019,#304923)"}}>
-        <div className="avatar-options-panel-pro" style={{borderRight:"3px solid #8E7957"}}>
-          <div className="avatar-editor-tabs-pro" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:"3px solid #8E7957"}}>
-            {panels.map(p=><MenuButton key={p.id} {...p}/>)}
+      <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:8,alignItems:"flex-start"}}>
+        <PreviewBox/>
+        <div style={{flex:"1 1 460px",minWidth:0}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(52px,1fr))",gap:5,marginBottom:8}}>
+            {panels.map(t=><button key={t.id} type="button" onClick={()=>{SFX.tab();setPanel(t.id);}} style={{border:`2px solid ${panel===t.id?"#D5B24F":"#7C6848"}`,background:panel===t.id?"linear-gradient(180deg,#D5B24F,#7A5927)":"linear-gradient(180deg,#2A2116,#15100B)",color:panel===t.id?"#1B1008":"#F6E8C8",borderRadius:9,padding:"6px 4px",fontWeight:950,cursor:"pointer"}}><div style={{fontSize:".96rem",lineHeight:1}}>{t.icon}</div><div style={{fontSize:".55rem",marginTop:1}}>{t.label}</div></button>)}
           </div>
-
-          <div className="avatar-editor-options-scroll-pro" style={{padding:12,maxHeight:520,overflowY:"auto",background:"radial-gradient(circle at 50% 0%,rgba(213,178,79,.15),transparent 32%),linear-gradient(180deg,#304923,#162112)"}}>
-            {panel==="base"&&<>
-              <MiniSectionTitle emoji="⚧" title="Modelo" sub="Cambia el cuerpo completo"/>
-              <OptionGrid cols={2}>
-                <VisualOption label="Corsario" active={cfg.gender==="male"} onClick={()=>patch("gender","male")}><Av av={form.avatar} config={{...DEFAULT_MALE_AVATAR,skin:cfg.skin,hairColor:cfg.hairColor,eyeColor:cfg.eyeColor,bg:cfg.bg}} size={108}/></VisualOption>
-                <VisualOption label="Capitana" active={cfg.gender==="female"} onClick={()=>patch("gender","female")}><Av av={form.avatar} config={{...DEFAULT_FEMALE_AVATAR,skin:cfg.skin,hairColor:cfg.hairColor,eyeColor:cfg.eyeColor,bg:cfg.bg}} size={108}/></VisualOption>
-              </OptionGrid>
-
-              <MiniSectionTitle emoji="🧭" title="Tripulación base" sub="Presets pirata rasta"/>
-              <OptionGrid cols={3}>{AVATAR_PRESETS.map((_,i)=><CharacterCard key={i} idx={i} selected={Number(form.avatar)===i} onPick={preset} compact/>)}</OptionGrid>
-
-              <MiniSectionTitle emoji="🖼️" title="Fondos" sub="Escenario"/>
-              <OptionGrid cols={4}>{AVATAR_OPTIONS.bg.map(v=><button key={v} type="button" onClick={()=>patch("bg",v)} style={{height:54,borderRadius:9,border:`2px solid ${cfg.bg===v?T.gold:"#8E7957"}`,background:bgGradient(v),boxShadow:cfg.bg===v?"0 0 0 2px rgba(95,142,34,.35)":"0 5px 12px rgba(0,0,0,.18)",cursor:"pointer",position:"relative"}}>{isLocked("bg",v)&&<span style={{position:"absolute",top:3,right:4}}>🔒</span>}</button>)}</OptionGrid>
-            </>}
-
-            {panel==="pelo"&&<>
-              <MiniSectionTitle emoji="💇" title="Peinado" sub="Vista en tiempo real"/>
-              <OptionGrid cols={3}>{visibleHair.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.hair===v} locked={isLocked("hair",v)} onClick={()=>patch("hair",v)}><Av av={form.avatar} config={{...hairPreviewBase,hair:v,gender:cfg.gender,facial:cfg.gender==="female"?"none":cfg.facial}} size={98}/></VisualOption>)}</OptionGrid>
-              <MiniSectionTitle emoji="🎨" title="Color de pelo" sub="Paleta"/>
-              <div className="avatar-color-rack">{AVATAR_OPTIONS.hairColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.hairColor===i} onClick={()=>patch("hairColor",i)}/>)}</div>
-              {cfg.gender==="male"&&<><MiniSectionTitle emoji="🧔" title="Barba y bigote" sub="Sólo corsario"/><OptionGrid cols={3}>{AVATAR_OPTIONS.facial.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.facial===v} onClick={()=>patch("facial",v)}><Av av={form.avatar} config={{...hairPreviewBase,gender:"male",facial:v}} size={98}/></VisualOption>)}</OptionGrid></>}
-            </>}
-
-            {panel==="cara"&&<>
-              <MiniSectionTitle emoji="🙂" title="Rostro" sub="Forma y gesto"/>
-              <OptionGrid cols={3}>{AVATAR_OPTIONS.face.map(v=><VisualOption key={v} label={avatarLabel(v,"face")} active={cfg.face===v} onClick={()=>patch("face",v)}><Av av={form.avatar} config={{...facePreviewBase,face:v,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
-              <MiniSectionTitle emoji="🧑" title="Tono de piel"/>
-              <div className="avatar-color-rack">{AVATAR_OPTIONS.skin.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.skin===i} onClick={()=>patch("skin",i)}/>)}</div>
-              <MiniSectionTitle emoji="👀" title="Ojos" sub="Forma"/>
-              <OptionGrid cols={3}>{AVATAR_OPTIONS.eyes.map(v=><VisualOption key={v} label={avatarLabel(v,"eyes")} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}><Av av={form.avatar} config={{...facePreviewBase,eyes:v,eyeColor:cfg.eyeColor,brows:cfg.brows,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
-              <MiniSectionTitle emoji="🌈" title="Color de ojos"/>
-              <div className="avatar-color-rack">{AVATAR_OPTIONS.eyeColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
-            </>}
-
-            {panel==="extras"&&<>
-              <MiniSectionTitle emoji="🎒" title="Complementos" sub="Pirata, rasta y barber"/>
-              <OptionGrid cols={3}>{BASIC_ACCESSORIES.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
-              <MiniSectionTitle emoji="🔓" title="Desbloqueables" sub="Comprados en tienda"/>
-              <OptionGrid cols={3}>{["capBlack","capGold","glassesGold","bandanaGreen","crown"].map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} locked={isLocked("accessory",v)} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
-              <MiniSectionTitle emoji="✨" title="Marcos y aura" sub="Efecto de perfil"/>
-              <OptionGrid cols={3}>{AVATAR_OPTIONS.frame.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.frame===v} locked={isLocked("frame",v)} onClick={()=>patch("frame",v)}><Av av={form.avatar} config={{...cfg,frame:v,aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
-              <div style={{height:10}}/>
-              <OptionGrid cols={3}>{AVATAR_OPTIONS.aura.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.aura===v} locked={isLocked("aura",v)} onClick={()=>patch("aura",v)}><Av av={form.avatar} config={{...cfg,aura:v}} size={98}/></VisualOption>)}</OptionGrid>
-            </>}
+          <div style={{background:"linear-gradient(180deg,#21170D,#100B07)",border:"2px solid #7C6848",borderRadius:12,padding:8,maxHeight:410,overflowY:"auto"}}>
+            {renderPanel()}
           </div>
-        </div>
-
-        <div className="avatar-preview-panel-pro" style={{padding:14,background:"radial-gradient(circle at 50% 20%,#FFF8E2 0%,#D8C391 52%,#27331E 53%,#11180E 100%)",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:590}}>
-          <div style={{background:"linear-gradient(180deg,#FFF8E2,#E9D8B4)",border:"2px solid #8E7957",borderRadius:12,padding:10,boxShadow:"0 12px 28px rgba(0,0,0,.24)"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
-              <div>
-                <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800,lineHeight:1}}>Vista previa</div>
-                <div style={{fontSize:".75rem",fontWeight:850,color:T.textSub}}>Los cambios se ven al instante.</div>
-              </div>
-              <Badge col="gold">Nv. {editorLevel}</Badge>
-            </div>
-            <div style={{height:8,borderRadius:999,background:"rgba(92,74,51,.22)",overflow:"hidden",marginTop:9,border:"1px solid rgba(92,74,51,.22)"}}>
-              <div style={{height:"100%",width:`${editorPct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F,#A72822)",borderRadius:999}}/>
-            </div>
-            <div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:4}}>Siguiente rango: {editorNext} pts</div>
-          </div>
-          <div style={{display:"grid",placeItems:"center",padding:"18px 0"}}>
-            <div className="avatar-preview-stage-pro" style={{width:245,height:290,display:"grid",placeItems:"center",background:"linear-gradient(180deg,#F8F1DD,#D7C59D)",border:"3px solid #8E7957",boxShadow:"inset 0 0 0 4px rgba(255,255,255,.34),0 18px 34px rgba(0,0,0,.35)"}}>
-              <Av av={form.avatar} config={cfg} size={230}/>
-            </div>
-          </div>
-          <div style={{display:"grid",gap:8}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-              <Badge col="gold">{currentName}</Badge>
-              {activeMeta.map(x=><Badge key={x} col="green">{x}</Badge>)}
-            </div>
-            <Card style={{padding:10,background:"linear-gradient(180deg,#FFF8E2,#E9D8B4)",border:"2px solid #8E7957"}}>
-              <div style={{fontWeight:950,color:T.g800}}>🎯 Estado del look</div>
-              <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>Personalización de avatar/perfil. No afecta al Tycoon ni a los RC. Los objetos bloqueados se desbloquean con puntos web en tienda.</div>
-            </Card>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              <Btn full col="ghost" onClick={()=>onReset?.()}>↶ Restaurar</Btn>
-              <Btn full col="green" onClick={()=>onSave?.()}>💾 Guardar cambios</Btn>
-            </div>
+          <div style={{marginTop:8,padding:"8px 10px",borderRadius:12,border:"1px solid rgba(213,178,79,.30)",background:"rgba(255,248,226,.07)",color:"rgba(246,232,200,.78)",fontSize:".72rem",fontWeight:820,lineHeight:1.35}}>
+            Consejo: toca una pieza y la lupa sube sola. Los selectores son pequeños para editar sin estar bajando todo el rato.
           </div>
         </div>
       </div>
@@ -5193,13 +5243,13 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
         {onNavigate&&(
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
             <button className="landing-nav-card" onClick={()=>onNavigate("citas")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
-              <div style={{fontSize:"1.45rem"}}>📅</div><div style={{fontSize:".72rem"}}>Reserva</div>
+              <div style={{fontSize:"1.18rem"}}>📅</div><div style={{fontSize:".72rem"}}>Reserva</div>
             </button>
             <button className="landing-nav-card" onClick={()=>onNavigate("juegos")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
-              <div style={{fontSize:"1.45rem"}}>🎮</div><div style={{fontSize:".72rem"}}>Juega</div>
+              <div style={{fontSize:"1.18rem"}}>🎮</div><div style={{fontSize:".72rem"}}>Juega</div>
             </button>
             <button className="landing-nav-card" onClick={()=>onNavigate("tienda")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
-              <div style={{fontSize:"1.45rem"}}>🎁</div><div style={{fontSize:".72rem"}}>Premios</div>
+              <div style={{fontSize:"1.18rem"}}>🎁</div><div style={{fontSize:".72rem"}}>Premios</div>
             </button>
           </div>
         )}
@@ -5442,9 +5492,9 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2.25rem"}}>🧭</div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",lineHeight:1}}>Gestión real ordenada</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",lineHeight:1}}>Gestión real ordenada</div>
             <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Lo urgente primero: citas, mensajes, canjes, stock, caja y moderación en una sola vista.</div>
-            {updatedAt&&<div style={{marginTop:6,fontSize:".68rem",fontWeight:850,opacity:.72}}>Actualizado: {updatedAt.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}</div>}
+            {updatedAt&&<div style={{marginTop:6,fontSize:".60rem",fontWeight:850,opacity:.72}}>Actualizado: {updatedAt.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}</div>}
           </div>
           <Badge col={(stats.pendientes||stats.mensajes||stats.pedidos||stats.stockBajo||stats.reportes)?"gold":"green"}>{(stats.pendientes||stats.mensajes||stats.pedidos||stats.stockBajo||stats.reportes)?"revisar":"ok"}</Badge>
         </div>
@@ -5470,7 +5520,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:9}}>
           {urgencias.map(u=><button key={u.id} onClick={()=>jump(u.tab)} style={{border:`1.5px solid ${u.col==="red"?T.red:u.col==="green"?"#4F602D":T.gold}`,background:u.col==="red"?"linear-gradient(180deg,#F0D3BB,#E4B59A)":u.col==="green"?"linear-gradient(180deg,#E8F0CF,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",borderRadius:16,padding:12,textAlign:"left",cursor:"pointer",boxShadow:"0 8px 18px rgba(20,8,4,.10)"}}>
             <div style={{display:"flex",gap:9,alignItems:"flex-start"}}>
-              <div style={{fontSize:"1.45rem",lineHeight:1}}>{u.icon}</div>
+              <div style={{fontSize:"1.18rem",lineHeight:1}}>{u.icon}</div>
               <div style={{minWidth:0}}>
                 <div style={{fontWeight:950,color:T.g800,fontSize:".88rem"}}>{u.title}</div>
                 <div style={{fontSize:".74rem",fontWeight:820,color:T.textSub,lineHeight:1.3,marginTop:3}}>{u.sub}</div>
@@ -5484,7 +5534,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         <div style={{fontWeight:950,color:T.g800,marginBottom:9}}>🚀 Accesos rápidos</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(118px,1fr))",gap:8}}>
           {quick.map(q=><button key={q.id} onClick={()=>jump(q.id)} style={{border:`1.5px solid ${T.g300}`,background:"rgba(255,255,255,.34)",borderRadius:15,padding:"10px 8px",fontWeight:950,color:T.g800,cursor:"pointer",textAlign:"center"}}>
-            <div style={{fontSize:"1.45rem",lineHeight:1}}>{q.icon}</div>
+            <div style={{fontSize:"1.18rem",lineHeight:1}}>{q.icon}</div>
             <div style={{fontSize:".78rem",marginTop:4}}>{q.label}</div>
             <div style={{fontSize:".66rem",fontWeight:800,color:T.textSub,marginTop:2}}>{q.sub}</div>
           </button>)}
@@ -5527,7 +5577,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
             return <div key={c.id} style={{padding:"12px 0",borderBottom:`1px solid ${T.g200}`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap",marginBottom:7}}>
+                  <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap",marginBottom:7}}>
                     <Badge col={badgeCol}>{st==="completada"?"realizada":st}</Badge>
                     <span style={{fontWeight:950,color:T.g800}}>👤 {c.cliente_nombre||"Cliente"}</span>
                   </div>
@@ -5581,7 +5631,7 @@ function ClientDashboard({user,onNavigate,settings}){
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
           <div>
             <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.78rem",fontWeight:800}}>Hola de nuevo</div>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
             <div style={{marginTop:6,display:"flex",gap:6,flexWrap:"wrap"}}><Badge col="gold">{nivel}</Badge><Badge col="green">{user.puntos||0} pts</Badge></div>
           </div>
           <Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={58}/>
@@ -5777,7 +5827,7 @@ function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
     <div style={{height:featured?218:188,position:"relative",overflow:"hidden",borderRadius:"18px 18px 0 0",backgroundImage:`linear-gradient(180deg,rgba(19,11,6,.02) 0%,rgba(19,11,6,.08) 48%,rgba(19,11,6,.62) 100%), url(${item.image})`,backgroundSize:"cover",backgroundPosition:"center",borderBottom:`1px solid ${T.g300}`}}>
       <div style={{position:"absolute",left:12,top:12,display:"flex",gap:6,flexWrap:"wrap"}}>
         <span style={{background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"5px 10px",fontSize:".7rem",fontWeight:950,boxShadow:"0 8px 16px rgba(18,8,4,.24)"}}>{cat.icon} {cat.short}</span>
-        <span style={{background:"rgba(19,11,6,.58)",color:T.white,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:950,backdropFilter:"blur(4px)"}}>{formatNewsDate(item?.date)}</span>
+        <span style={{background:"rgba(19,11,6,.58)",color:T.white,borderRadius:999,padding:"5px 9px",fontSize:".60rem",fontWeight:950,backdropFilter:"blur(4px)"}}>{formatNewsDate(item?.date)}</span>
       </div>
       <div style={{position:"absolute",left:12,right:12,bottom:12,display:"flex",justifyContent:"space-between",alignItems:"flex-end",gap:8}}>
         <div style={{maxWidth:"70%",fontSize:".72rem",fontWeight:950,color:T.white,textShadow:"0 2px 8px rgba(0,0,0,.45)",lineHeight:1.15}}>{item?.source||"Fuente"}</div>
@@ -5791,17 +5841,17 @@ function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
       {!hasImage&&<div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
         <span style={{background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"4px 9px",fontSize:".66rem",fontWeight:950}}>{cat.icon} {cat.short}</span>
         <span style={{background:"rgba(19,11,6,.08)",color:T.g700,border:`1px solid ${T.g200}`,borderRadius:999,padding:"4px 8px",fontSize:".66rem",fontWeight:900}}>{item?.source||"Fuente"}</span>
-        <span style={{fontSize:".68rem",fontWeight:900,color:T.textSub,marginLeft:"auto"}}>{formatNewsDate(item?.date)}</span>
+        <span style={{fontSize:".60rem",fontWeight:900,color:T.textSub,marginLeft:"auto"}}>{formatNewsDate(item?.date)}</span>
       </div>}
       <div style={{fontWeight:950,color:T.g900,fontSize:featured?"1.18rem":"1rem",lineHeight:1.17,letterSpacing:"-.12px",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{title}</div>
       <div style={{fontSize:".84rem",fontWeight:750,color:T.textSub,lineHeight:1.42,marginTop:8,display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{summary}</div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginTop:12,flexWrap:"wrap"}}>
-        <div style={{display:"flex",gap:7,alignItems:"center"}}>
+        <div style={{display:"flex",gap:5,alignItems:"center"}}>
           <button onClick={openNews} style={{border:"none",background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"8px 12px",fontWeight:950,fontSize:".78rem",cursor:"pointer",boxShadow:"0 7px 14px rgba(18,8,4,.18)"}}>Leer</button>
           {showYoutube&&<button onClick={openYoutube} style={{border:`1px solid ${T.g300}`,background:"#7A241B",color:"#FFF8E5",borderRadius:999,padding:"8px 11px",fontWeight:950,fontSize:".78rem",cursor:"pointer"}}>▶ YouTube</button>}
           {item?.url&&<button onClick={openSource} style={{border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.52)",color:T.g800,borderRadius:999,padding:"8px 10px",fontWeight:950,fontSize:".76rem",cursor:"pointer"}}>Fuente ↗</button>}
         </div>
-        <div style={{display:"flex",gap:7,alignItems:"center",marginLeft:"auto"}}>
+        <div style={{display:"flex",gap:5,alignItems:"center",marginLeft:"auto"}}>
           <span style={{fontSize:".72rem",fontWeight:950,color:T.g700}}>👍 {stats?.likes||0}</span>
           <span style={{fontSize:".72rem",fontWeight:950,color:T.g700}}>💬 {stats?.comments||0}</span>
         </div>
@@ -5945,7 +5995,7 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
       </Card>
       <div style={{fontWeight:950,color:T.g800,margin:"4px 0 10px"}}>Comentarios</div>
       {comments.length===0?<EmptyState icon="💬" title="Sin comentarios todavía" sub="Sé el primero en abrir el hilo."/>:comments.map(c=><Card key={c.id} style={{marginBottom:9,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}>
-        <div style={{display:"flex",gap:9,alignItems:"center",marginBottom:7}}><PublicAvatar profile={{...c,nombre:c.usuario_nombre,avatar:c.usuario_avatar,avatar_config:c.usuario_avatar_config,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito}} size={32}/><div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{publicName({nombre:c.usuario_nombre,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito})}</div><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{formatNewsDate(c.created_at)}</div></div></div>
+        <div style={{display:"flex",gap:9,alignItems:"center",marginBottom:7}}><PublicAvatar profile={{...c,nombre:c.usuario_nombre,avatar:c.usuario_avatar,avatar_config:c.usuario_avatar_config,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito}} size={32}/><div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{publicName({nombre:c.usuario_nombre,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito})}</div><div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>{formatNewsDate(c.created_at)}</div></div></div>
         <div style={{fontSize:".88rem",fontWeight:750,color:T.text,lineHeight:1.45,whiteSpace:"pre-wrap"}}>{c.contenido}</div>
       </Card>)}
     </div>
@@ -5980,7 +6030,7 @@ function ActualidadMini({onNavigate}){
     </div>
     <div style={{padding:"12px 14px 6px"}}>
       <div style={{display:"flex",gap:10,alignItems:"flex-start",background:"rgba(255,248,225,.78)",border:`1px dashed ${T.g400}`,borderRadius:18,padding:12,marginBottom:12}}>
-        <div style={{fontSize:"1.45rem",lineHeight:1}}>💡</div>
+        <div style={{fontSize:"1.18rem",lineHeight:1}}>💡</div>
         <div><div style={{fontWeight:950,color:T.g800,fontSize:".9rem"}}>{curiosity.title}</div><div style={{fontSize:".78rem",fontWeight:750,color:T.textSub,lineHeight:1.35,marginTop:3}}>{curiosity.text}</div></div>
       </div>
       {loading?<Spinner/>:<>
@@ -6308,9 +6358,9 @@ function Citas({user,showToast,onNavigate}){
           <Badge col={(counts.pendiente||0)?"gold":"green"}>{counts.pendiente||0} pendientes</Badge>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.pendiente||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Pendientes</div></div>
-          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.propuesta||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Propuestas</div></div>
-          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.confirmada||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Confirmadas</div></div>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.pendiente||0}</div><div style={{fontSize:".60rem",fontWeight:900,color:T.textSub}}>Pendientes</div></div>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.propuesta||0}</div><div style={{fontSize:".60rem",fontWeight:900,color:T.textSub}}>Propuestas</div></div>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.confirmada||0}</div><div style={{fontSize:".60rem",fontWeight:900,color:T.textSub}}>Confirmadas</div></div>
         </div>
         <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:2}}>
           {statusTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setView(t.id);}} style={{flex:"0 0 auto",border:"none",borderRadius:999,padding:"8px 12px",background:view===t.id?T.gradGold:"rgba(255,244,214,.62)",color:view===t.id?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:view===t.id?"0 8px 18px rgba(18,8,4,.16)":"none"}}>{t.icon} {t.label} <span style={{opacity:.75}}>({counts[t.id]||0})</span></button>)}
@@ -6532,11 +6582,11 @@ function Clientes({user,showToast}){
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(c,user)}</div>
               <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.email}</div>
-              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,marginTop:2}}>📅 {c.citas_count||0} cita{(c.citas_count||0)===1?"":"s"}</div>
+              <div style={{fontSize:".60rem",fontWeight:850,color:T.textSub,marginTop:2}}>📅 {c.citas_count||0} cita{(c.citas_count||0)===1?"":"s"}</div>
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontWeight:950,color:T.g600}}>⭐ {c.puntos||0}</div>
-              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div>
+              <div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>puntos</div>
             </div>
           </div>
         </Card>
@@ -6634,9 +6684,9 @@ function Inventario({showToast}){
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div style={{flex:1}}><div style={{fontWeight:800}}>{item.nombre}</div><div style={{fontSize:"0.75rem",color:T.textSub}}>{item.categoria}</div></div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <button onClick={()=>updateStock(item.id,-1)} style={{width:28,height:28,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.red}}>-</button>
+              <button onClick={()=>updateStock(item.id,-1)} style={{width:24,height:24,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.red}}>-</button>
               <span style={{fontWeight:900,fontSize:"1.1rem",color:item.stock<=item.stock_min?T.red:T.g600,minWidth:28,textAlign:"center"}}>{item.stock}</span>
-              <button onClick={()=>updateStock(item.id,1)} style={{width:28,height:28,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.g600}}>+</button>
+              <button onClick={()=>updateStock(item.id,1)} style={{width:24,height:24,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.g600}}>+</button>
               <Badge col={item.stock<=item.stock_min?"red":"green"}>{item.stock<=item.stock_min?"Bajo":"OK"}</Badge>
             </div>
           </div>
@@ -7048,7 +7098,7 @@ function AdminUsuarios({user,showToast}){
             {id:"client",label:"Clientes",n:roleCounts.client||0},
             {id:"staff",label:"Staff",n:roleCounts.staff||0},
             {id:"admin",label:"Admin",n:roleCounts.admin||0},
-          ].map(f=><button key={f.id} onClick={()=>{SFX.tab();setRoleFilter(f.id);}} style={{border:`2px solid ${roleFilter===f.id?T.gold:T.g300}`,background:roleFilter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:roleFilter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
+          ].map(f=><button key={f.id} onClick={()=>{SFX.tab();setRoleFilter(f.id);}} style={{border:`2px solid ${roleFilter===f.id?T.gold:T.g300}`,background:roleFilter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:roleFilter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".60rem"}}>
             {f.label}<br/><span style={{opacity:.75}}>{f.n}</span>
           </button>)}
         </div>
@@ -8462,7 +8512,7 @@ function PlatformJumpGame({onWin,user}){
       <div style={{position:'absolute',top:10,left:12,right:12,display:'flex',justifyContent:'space-between',fontWeight:900,color:T.g800,fontSize:'.8rem'}}><span>Score {score}</span><span>Vel. {speed.toFixed(1)}x</span></div>
       {lanes.map((x,i)=><div key={i} onClick={()=>setLane(i)} style={{position:'absolute',left:`${x}%`,top:0,bottom:0,width:2,background:'rgba(110,53,24,.08)',cursor:'pointer'}}/>)}
       {items.map(it=><div key={it.id} style={{position:'absolute',left:`${lanes[it.lane]}%`,top:`${it.y}%`,transform:'translate(-50%,-50%)',fontSize:'2rem',filter:'drop-shadow(0 6px 8px rgba(0,0,0,.24))'}}>{it.icon}</div>)}
-      <div style={{position:'absolute',left:`${lanes[lane]}%`,bottom:28,transform:'translateX(-50%)'}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={52}/></div>
+      <div style={{position:'absolute',left:`${lanes[lane]}%`,bottom:28,transform:'translateX(-50%)'}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={38}/></div>
       <div style={{position:'absolute',left:0,right:0,bottom:18,height:4,background:'#6E3518'}}/>
       {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.50)',padding:16}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Recoge ganchillos, peines y gomas. Evita tijeras.</div><Btn col='gold' onClick={resetAndStart}>▶ Empezar</Btn></div></div>}
       {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.58)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Te cortaron la racha!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Score {score} · récord {pts}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div></div>}
@@ -8651,9 +8701,9 @@ function ArcadeInfoPanel({onOpenGacha}){
       </div>
 
       <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:10}}>
-        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>récord semanal</span>
-        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>puntos diarios</span>
-        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>premios y avatar</span>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".60rem",fontWeight:900}}>récord semanal</span>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".60rem",fontWeight:900}}>puntos diarios</span>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".60rem",fontWeight:900}}>premios y avatar</span>
       </div>
 
       {open&&<div style={{
@@ -8989,7 +9039,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     else if(h.action==="upgrade")startRoomTask(selectedId,"upgrade");
     else SFX.tab();
   }
-  function MiniStat({icon,label,value,sub}){return <div style={{background:"linear-gradient(180deg,rgba(255,244,214,.95),rgba(232,211,162,.87))",border:"1.5px solid rgba(212,175,55,.55)",borderRadius:16,padding:"10px 11px",boxShadow:"0 8px 18px rgba(0,0,0,.16)"}}><div style={{display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:"1.25rem"}}>{icon}</span><b style={{color:T.g800}}>{value}</b></div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub,marginTop:3}}>{label}</div>{sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,opacity:.82}}>{sub}</div>}</div>;}
+  function MiniStat({icon,label,value,sub}){return <div style={{background:"linear-gradient(180deg,rgba(255,244,214,.95),rgba(232,211,162,.87))",border:"1.5px solid rgba(212,175,55,.55)",borderRadius:16,padding:"10px 11px",boxShadow:"0 8px 18px rgba(0,0,0,.16)"}}><div style={{display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:"1.25rem"}}>{icon}</span><b style={{color:T.g800}}>{value}</b></div><div style={{fontSize:".60rem",fontWeight:900,color:T.textSub,marginTop:3}}>{label}</div>{sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,opacity:.82}}>{sub}</div>}</div>;}
   function Bar({label,value}){const v=clampNum(value,0,100);return <div style={{marginBottom:9}}><div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:950,color:T.g800,marginBottom:4}}><span>{label}</span><span>{Math.round(v)}%</span></div><div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.16)",overflow:"hidden"}}><div style={{height:"100%",width:`${v}%`,borderRadius:999,background:v<35?"linear-gradient(90deg,#8F2E24,#E57373)":v<70?"linear-gradient(90deg,#B99A45,#F3D37B)":"linear-gradient(90deg,#315D2D,#7FCB84)",transition:"width .25s ease"}}/></div></div>;}
   function Tab({id,icon,label}){return <button onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:"rgba(255,244,214,.25)"}`,background:tab===id?"linear-gradient(180deg,#D4AF37,#A87945)":"rgba(255,244,214,.12)",color:tab===id?T.g900:"#FFF4D6",borderRadius:16,padding:"10px 8px",fontWeight:950,cursor:"pointer",boxShadow:tab===id?"0 10px 24px rgba(212,175,55,.22)":"0 8px 18px rgba(0,0,0,.15)"}}><div style={{fontSize:"1.25rem"}}>{icon}</div><div style={{fontSize:".72rem"}}>{label}</div></button>;}
   function BuildingBadge({task}){
@@ -9003,7 +9053,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
       <div style={{position:"absolute",inset:0,pointerEvents:"none",background:"radial-gradient(circle at 18% 14%,rgba(255,244,214,.16),transparent 25%),radial-gradient(circle at 82% 8%,rgba(185,154,69,.14),transparent 32%),linear-gradient(30deg,transparent 48%,rgba(255,244,214,.055) 49%,transparent 50%)"}}/>
       <div style={{position:"relative",zIndex:2,display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",marginBottom:12}}>
         <div>
-          <div style={{fontFamily:"var(--ui-display,'Outfit',system-ui)",fontSize:"1.45rem",fontWeight:950,letterSpacing:"-.04em"}}>Mapa del negocio</div>
+          <div style={{fontFamily:"var(--ui-display,'Outfit',system-ui)",fontSize:"1.18rem",fontWeight:950,letterSpacing:"-.04em"}}>Mapa del negocio</div>
           <div style={{fontSize:".82rem",fontWeight:850,opacity:.84,lineHeight:1.35}}>Vista principal estable: entra en salas, revisa requisitos y lanza mejoras sin parpadeos.</div>
         </div>
         <Badge col="gold">{opened}/{roomList.length} zonas</Badge>
@@ -9092,7 +9142,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
 
       {[...(hotspots[roomId]||[]),...common].map((h,i)=><SceneObject key={i} h={h}/>)}
       {selectedTask&&<div style={{position:"absolute",right:14,bottom:14}}><BuildingBadge task={selectedTask}/></div>}
-      <div style={{position:"absolute",left:14,bottom:14,background:"rgba(18,8,6,.68)",border:"1px solid rgba(255,244,214,.24)",borderRadius:16,padding:"7px 10px",fontSize:".68rem",fontWeight:850,color:"rgba(255,244,214,.82)",backdropFilter:"blur(8px)"}}>
+      <div style={{position:"absolute",left:14,bottom:14,background:"rgba(18,8,6,.68)",border:"1px solid rgba(255,244,214,.24)",borderRadius:16,padding:"7px 10px",fontSize:".60rem",fontWeight:850,color:"rgba(255,244,214,.82)",backdropFilter:"blur(8px)"}}>
         Fondo: {roomImg} · si no existe, se usa escena híbrida
       </div>
     </div>;
@@ -9236,18 +9286,18 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#201208,#4F351B 56%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
         <div style={{position:"absolute",right:-18,top:-30,fontSize:"7rem",opacity:.12,transform:"rotate(-10deg)"}}>🏆</div>
         <div style={{position:"relative",zIndex:1}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",lineHeight:1}}>Rankings de clientes</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",lineHeight:1}}>Rankings de clientes</div>
           <div style={{fontSize:".8rem",fontWeight:800,opacity:.82,lineHeight:1.35,marginTop:3}}>Aquí están las estadísticas públicas de la comunidad: récords de juegos, puntos, tienda y participación.</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:12}}>
             <button onClick={()=>onOpenTops?.("games")} style={{border:"2px solid rgba(255,244,214,.42)",borderRadius:18,padding:"13px 10px",background:"rgba(255,244,214,.16)",color:T.white,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
               <div style={{fontSize:"1.75rem",lineHeight:1}}>🏆</div>
               <div style={{fontSize:"1rem",marginTop:5}}>Top 10</div>
-              <div style={{fontSize:".68rem",opacity:.78,lineHeight:1.25}}>Récords por minijuego</div>
+              <div style={{fontSize:".60rem",opacity:.78,lineHeight:1.25}}>Récords por minijuego</div>
             </button>
             <button onClick={()=>onOpenTops?.("general")} style={{border:"2px solid rgba(255,244,214,.42)",borderRadius:18,padding:"13px 10px",background:"rgba(255,244,214,.16)",color:T.white,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
               <div style={{fontSize:"1.75rem",lineHeight:1}}>👑</div>
               <div style={{fontSize:"1rem",marginTop:5}}>Top general</div>
-              <div style={{fontSize:".68rem",opacity:.78,lineHeight:1.25}}>Clientes y actividad</div>
+              <div style={{fontSize:".60rem",opacity:.78,lineHeight:1.25}}>Clientes y actividad</div>
             </button>
           </div>
         </div>
@@ -9443,7 +9493,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
       <PublicAvatar profile={r} currentUser={user} size={40}/>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontWeight:950,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(r,user)}</div>
-        <div style={{fontSize:".68rem",fontWeight:800,opacity:.68}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):section==="general"?generalMeta.sub:"marca guardada"}</div>
+        <div style={{fontSize:".60rem",fontWeight:800,opacity:.68}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):section==="general"?generalMeta.sub:"marca guardada"}</div>
       </div>
       <div style={{textAlign:"right"}}>
         <div style={{color:T.gold,fontWeight:950,fontSize:"1.12rem"}}>{Number(r.score)||0}</div>
@@ -9470,12 +9520,12 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
             <button onClick={()=>{SFX.tab();setSection("games");}} style={{border:`2px solid ${section==="games"?T.gold:"rgba(255,244,214,.28)"}`,borderRadius:18,padding:"13px 10px",background:section==="games"?"rgba(255,244,214,.22)":"rgba(255,244,214,.10)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:section==="games"?"0 10px 24px rgba(185,154,69,.24)":"none"}}>
               <div style={{fontSize:"1.75rem",lineHeight:1}}>🏆</div>
               <div style={{fontSize:"1.05rem",marginTop:5}}>Top 10</div>
-              <div style={{fontSize:".68rem",opacity:.76,lineHeight:1.25}}>récords por juego</div>
+              <div style={{fontSize:".60rem",opacity:.76,lineHeight:1.25}}>récords por juego</div>
             </button>
             <button onClick={()=>{SFX.tab();setSection("general");}} style={{border:`2px solid ${section==="general"?T.gold:"rgba(255,244,214,.28)"}`,borderRadius:18,padding:"13px 10px",background:section==="general"?"rgba(255,244,214,.22)":"rgba(255,244,214,.10)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:section==="general"?"0 10px 24px rgba(185,154,69,.24)":"none"}}>
               <div style={{fontSize:"1.75rem",lineHeight:1}}>👑</div>
               <div style={{fontSize:"1.05rem",marginTop:5}}>Top general</div>
-              <div style={{fontSize:".68rem",opacity:.76,lineHeight:1.25}}>clientes y actividad</div>
+              <div style={{fontSize:".60rem",opacity:.76,lineHeight:1.25}}>clientes y actividad</div>
             </button>
           </div>
           <div style={{fontSize:".76rem",fontWeight:800,opacity:.82,lineHeight:1.35,marginTop:10}}>
@@ -9520,7 +9570,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
             {GENERAL_KINDS.map(k=>{
               const active=generalKind===k.id;
               return <button key={k.id} onClick={()=>{SFX.tab();setGeneralKind(k.id);}} style={{border:`2px solid ${active?T.gold:T.g200}`,borderRadius:16,padding:"10px 8px",background:active?T.gradGold:T.g50,color:active?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:active?"0 10px 20px rgba(185,154,69,.22)":"0 6px 14px rgba(20,8,4,.10)",textAlign:"left"}}>
-                <div style={{fontSize:"1.45rem",lineHeight:1}}>{k.icon}</div>
+                <div style={{fontSize:"1.18rem",lineHeight:1}}>{k.icon}</div>
                 <div style={{fontSize:".86rem",marginTop:5}}>{k.title}</div>
                 <div style={{fontSize:".64rem",opacity:.75,lineHeight:1.25}}>{k.sub}</div>
               </button>;
@@ -9631,7 +9681,7 @@ function Ranking({user}){
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="🏆" title="Rankings" sub="Top 10 estilo liga"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
-        {Object.entries(cfg).map(([id,c])=><button key={id} onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g200}`,background:tab===id?T.gradGold:"rgba(255,244,214,.82)",color:tab===id?T.g900:T.g700,borderRadius:16,padding:"9px 6px",fontWeight:900,cursor:"pointer",boxShadow:tab===id?"0 8px 20px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.12)"}}><div className="icon3d" style={{fontSize:"1.35rem"}}>{c.icon}</div><div style={{fontSize:".68rem"}}>{c.title}</div></button>)}
+        {Object.entries(cfg).map(([id,c])=><button key={id} onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g200}`,background:tab===id?T.gradGold:"rgba(255,244,214,.82)",color:tab===id?T.g900:T.g700,borderRadius:16,padding:"9px 6px",fontWeight:900,cursor:"pointer",boxShadow:tab===id?"0 8px 20px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.12)"}}><div className="icon3d" style={{fontSize:"1.35rem"}}>{c.icon}</div><div style={{fontSize:".60rem"}}>{c.title}</div></button>)}
       </div>
       <Card style={{marginBottom:12,background:"linear-gradient(135deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}><div className="icon3d" style={{fontSize:"2.1rem"}}>{cfg[tab].icon}</div><div><div style={{fontWeight:900}}>{cfg[tab].title}</div><div style={{fontSize:".75rem",opacity:.78,fontWeight:700}}>{cfg[tab].sub}</div></div></div>
@@ -9969,7 +10019,7 @@ function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPo
       <div style={{display:"flex",justifyContent:"space-between",gap:6,alignItems:"center",marginBottom:8}}><Badge col={rarityColor(item.rareza)}>{rarityLabel(item.rareza)}</Badge><b style={{color:T.orange,fontSize:".78rem"}}>{item.puntos_precio} pts</b></div>
       <div style={{display:"flex",justifyContent:"center",margin:"4px 0 8px"}}><Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(item)}} size={92}/></div>
       <div style={{fontWeight:950,color:T.g800,fontSize:".84rem",lineHeight:1.1}}>{item.nombre}</div>
-      <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub,lineHeight:1.25,minHeight:34,marginTop:4}}>{item.descripcion}</div>
+      <div style={{fontSize:".60rem",fontWeight:800,color:T.textSub,lineHeight:1.25,minHeight:34,marginTop:4}}>{item.descripcion}</div>
       <div style={{marginTop:9}}>{has?<Btn full small col={active?"ghost":"gold"} onClick={()=>apply(item)}>{active?"Equipado":"Equipar"}</Btn>:<Btn full small col="gold" onClick={()=>unlock(item)}>Desbloquear</Btn>}</div>
     </div>})}</div>}
   </Card>;
@@ -10028,12 +10078,12 @@ function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}
       <div style={{filter:locked?"grayscale(1) brightness(0)":"none",opacity:locked?0.78:1,transform:"scale(.92)"}}>
         <RewardNodeIcon item={item} user={user} currentConfig={currentConfig} locked={locked}/>
       </div>
-      {owned&&<div style={{position:"absolute",right:8,top:4,background:T.gradGold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".68rem"}}>✓</div>}
-      {locked&&<div style={{position:"absolute",right:8,top:4,background:"rgba(0,0,0,.58)",color:T.white,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontSize:".68rem"}}>🔒</div>}
-      {reached&&!owned&&<div style={{position:"absolute",right:7,top:4,background:T.gold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".68rem"}}>!</div>}
+      {owned&&<div style={{position:"absolute",right:8,top:4,background:T.gradGold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".60rem"}}>✓</div>}
+      {locked&&<div style={{position:"absolute",right:8,top:4,background:"rgba(0,0,0,.58)",color:T.white,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontSize:".60rem"}}>🔒</div>}
+      {reached&&!owned&&<div style={{position:"absolute",right:7,top:4,background:T.gold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".60rem"}}>!</div>}
     </div>
     <div style={{height:18,width:3,background:owned||reached?T.gold:"rgba(255,244,214,.35)",margin:"-1px auto 0"}}/>
-    <div style={{fontSize:".68rem",fontWeight:950,color:owned||reached?T.g800:T.textSub,lineHeight:1.05}}>
+    <div style={{fontSize:".60rem",fontWeight:950,color:owned||reached?T.g800:T.textSub,lineHeight:1.05}}>
       Nv. {rewardLevelFor(item.puntos_precio)}
     </div>
     <div style={{fontSize:".63rem",fontWeight:850,color:T.textSub,lineHeight:1.05,marginTop:2}}>
@@ -10204,7 +10254,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
         <div style={{display:"flex",gap:13,alignItems:"center"}}>
           <Av av={form.avatar} config={cfg} size={86}/>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white,lineHeight:1}}>{user.nombre}</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",color:T.white,lineHeight:1}}>{user.nombre}</div>
             <div style={{fontSize:".74rem",color:"rgba(255,244,214,.82)",fontWeight:800,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.email}</div>
             <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
               <Badge col="gold">{nivel}</Badge>
@@ -10217,17 +10267,17 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
         {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${tab===t.id?T.gold:T.g300}`,background:tab===t.id?T.gradGold:"rgba(255,244,214,.82)",color:tab===t.id?T.g900:T.g700,borderRadius:16,padding:"9px 4px",fontWeight:950,cursor:"pointer",boxShadow:tab===t.id?"0 10px 22px rgba(212,175,55,.24)":"0 5px 12px rgba(20,8,4,.1)"}}>
-          <div style={{fontSize:"1.1rem",lineHeight:1}}>{t.icon}</div>
-          <div style={{fontSize:".68rem",marginTop:3}}>{t.label}</div>
+          <div style={{fontSize:".96rem",lineHeight:1}}>{t.icon}</div>
+          <div style={{fontSize:".60rem",marginTop:3}}>{t.label}</div>
         </button>)}
       </div>
 
       {tab==="resumen"&&<>
         <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
-            <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>{user.puntos||0}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div></div>
-            <div><div style={{fontSize:"1.35rem"}}>🏆</div><div style={{fontWeight:950,color:T.g800}}>{nivel}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>nivel</div></div>
-            <div><div style={{fontSize:"1.35rem"}}>🎁</div><div style={{fontWeight:950,color:T.g800}}>Camino</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>recompensas</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>{user.puntos||0}</div><div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>puntos</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>🏆</div><div style={{fontWeight:950,color:T.g800}}>{nivel}</div><div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>nivel</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>🎁</div><div style={{fontWeight:950,color:T.g800}}>Camino</div><div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>recompensas</div></div>
           </div>
         </Card>
         <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${privacy.modo_incognito?T.blue:T.g300}`}}>
@@ -10452,8 +10502,8 @@ function MusicaComunidad({showToast}){
         </div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,padding:"0 12px 14px"}}>
-        {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);setMusicSeed(0);}} style={{border:`1.5px solid ${filter===f.id?T.gold:"rgba(255,244,214,.25)"}`,borderRadius:14,padding:"8px 4px",background:filter===f.id?"rgba(255,214,107,.22)":"rgba(255,244,214,.08)",color:T.white,fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
-          <div style={{fontSize:"1.1rem",lineHeight:1}}>{f.icon}</div>
+        {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);setMusicSeed(0);}} style={{border:`1.5px solid ${filter===f.id?T.gold:"rgba(255,244,214,.25)"}`,borderRadius:14,padding:"8px 4px",background:filter===f.id?"rgba(255,214,107,.22)":"rgba(255,244,214,.08)",color:T.white,fontWeight:950,cursor:"pointer",fontSize:".60rem"}}>
+          <div style={{fontSize:".96rem",lineHeight:1}}>{f.icon}</div>
           <div style={{marginTop:3}}>{f.label}</div>
         </button>)}
       </div>
@@ -10799,7 +10849,7 @@ function DisabledSection({icon="🔒",title="Sección desactivada",sub="Esta sec
     <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{textAlign:"center",padding:"12px 6px"}}>
         <div className="icon3d" style={{fontSize:"3rem",marginBottom:8}}>{icon}</div>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.g800}}>{title}</div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",color:T.g800}}>{title}</div>
         <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub,lineHeight:1.4,marginTop:6}}>{sub}</div>
       </div>
     </Card>
@@ -11178,7 +11228,7 @@ function GestionMensajes({user,showToast,refreshUnread,unread}){
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontWeight:950,color:T.g800}}>{c.cliente_nombre}</div>
               <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.ultimo?.mensaje}</div>
-              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,marginTop:3}}>{when} · {c.total} mensajes · {c.estado==="cerrado"?"cerrada":"abierta"}</div>
+              <div style={{fontSize:".60rem",fontWeight:850,color:T.textSub,marginTop:3}}>{when} · {c.total} mensajes · {c.estado==="cerrado"?"cerrada":"abierta"}</div>
             </div>
             {c.unread>0&&<Badge col="red">{c.unread}</Badge>}
           </div>
@@ -11562,7 +11612,7 @@ function GestionAgenda({showToast}){
                             </div>
                             <div style={{textAlign:"right",whiteSpace:"nowrap"}}>
                               {!!precio&&<div style={{fontWeight:950,color:T.g600}}>{precio}€</div>}
-                              {!!dur&&<div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>hasta {endTime(slot.hora,dur)}</div>}
+                              {!!dur&&<div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>hasta {endTime(slot.hora,dur)}</div>}
                             </div>
                           </div>
                           <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:9}}>
@@ -11780,7 +11830,7 @@ function GestionModeracion({user,showToast}){
             <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:5}}><Badge col={col}>{st}</Badge><Badge col="blue">{r.target_tipo}</Badge></div>
             <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{r.target_titulo||"Contenido reportado"}</div>
             <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:3}}>Motivo: {r.motivo||"sin motivo"}</div>
-            <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub,marginTop:3}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES"):""} · Reporta: {r.reportado_por_nombre||"Usuario"}</div>
+            <div style={{fontSize:".60rem",fontWeight:800,color:T.textSub,marginTop:3}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES"):""} · Reporta: {r.reportado_por_nombre||"Usuario"}</div>
           </div>
         </div>
       </Card>;
@@ -12058,7 +12108,7 @@ function GestionSeguridad({user,showToast}){
 
       <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
-          {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);}} style={{border:`2px solid ${filter===f.id?T.gold:T.g300}`,background:filter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:filter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
+          {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);}} style={{border:`2px solid ${filter===f.id?T.gold:T.g300}`,background:filter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:filter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".60rem"}}>
             <div>{f.icon}</div><div>{f.label}</div>
           </button>)}
         </div>
@@ -12071,7 +12121,7 @@ function GestionSeguridad({user,showToast}){
               <Badge col={colTipo(r.tipo)}>{labelTipo(r.tipo)}</Badge>
               {r.entidad&&<Badge col="blue">{r.entidad}</Badge>}
             </div>
-            <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>
+            <div style={{fontSize:".60rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>
               {r.created_at?new Date(r.created_at).toLocaleString("es-ES"):""}
             </div>
           </div>
@@ -14438,7 +14488,7 @@ function HelperMascot({page,settings=null}){
           }}
         >
           <div style={{position:"relative"}}>
-            <RastaFaceAvatar size={52} speaking={open} settings={settings} forceInternal/>
+            <RastaFaceAvatar size={38} speaking={open} settings={settings} forceInternal/>
             <div style={{
               position:"absolute",
               right:-2,
@@ -14551,10 +14601,10 @@ function WalletPanel({show,onClose,user}){
         {history.length===0?<EmptyState icon="📜" title="Sin historial todavía" sub="A partir de ahora se registrarán ganancias, gastos y devoluciones."/>:
           <div style={{display:"grid",gap:7,maxHeight:260,overflowY:"auto",paddingRight:2}}>
             {history.slice(0,30).map(m=><div key={m.id} style={{display:"grid",gridTemplateColumns:"30px 1fr auto",gap:8,alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${T.g200}`}}>
-              <div style={{width:28,height:28,borderRadius:999,background:"rgba(255,244,214,.78)",display:"grid",placeItems:"center",border:`1px solid ${T.g200}`}}>{movIcon(m)}</div>
+              <div style={{width:24,height:24,borderRadius:999,background:"rgba(255,244,214,.78)",display:"grid",placeItems:"center",border:`1px solid ${T.g200}`}}>{movIcon(m)}</div>
               <div style={{minWidth:0}}>
                 <div style={{fontSize:".8rem",fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.reason||"Movimiento"}</div>
-                <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{fmtDate(m.created_at)} · {m.source||m.type}{m.balance!==null&&m.balance!==undefined?` · saldo ${m.balance}`:""}</div>
+                <div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>{fmtDate(m.created_at)} · {m.source||m.type}{m.balance!==null&&m.balance!==undefined?` · saldo ${m.balance}`:""}</div>
               </div>
               <div style={{fontWeight:950,color:movColor(m),fontSize:".86rem",whiteSpace:"nowrap"}}>{m.amount>0?"+":""}{m.amount} pts</div>
             </div>)}
@@ -14639,7 +14689,7 @@ function CartPanel({show,onClose,user,setUser,showToast}){
         <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🛒 Carrito</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Premios, tienda y personalización del avatar/perfil.</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
       </div>
-      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:7,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(255,244,214,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
+      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:5,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(255,244,214,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800}}><span>Total</span><span>{totalPts} pts</span></div>
         <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:6}}>Base preparada para añadir/quitar productos desde Tienda y Personalización en fases siguientes.</div>
@@ -14702,7 +14752,7 @@ function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefres
             <div style={{flex:1,minWidth:0}}>
               <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
                 {!n.leida&&<Badge col="red">nuevo</Badge>}{n.importante&&<Badge col="gold">importante</Badge>}{cita&&<Badge col="blue">cita</Badge>}
-                <span style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{when(n.created_at)}</span>
+                <span style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>{when(n.created_at)}</span>
               </div>
               <div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{n.titulo||"Notificación"}</div>
               {n.mensaje&&<div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4,whiteSpace:"pre-wrap"}}>{opened?n.mensaje:String(n.mensaje).slice(0,120)+(String(n.mensaje).length>120?"...":"")}</div>}
@@ -14802,7 +14852,7 @@ function SafetyVersionPanel({user=null,settings=null,checkingSession=false,sessi
     );
   }
   return (
-    <button onClick={()=>setOpen(true)} title={`Versión ${APP_VERSION_SHORT}`} style={{position:"fixed",left:10,bottom:"calc(84px + env(safe-area-inset-bottom,0px))",zIndex:2400,border:0,borderRadius:999,padding:"6px 9px",background:sessionWarning?"linear-gradient(180deg,#A72822,#672018)":"linear-gradient(180deg,#21140C,#130B06)",color:"#FFF4D6",fontWeight:1000,fontSize:".68rem",boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer",opacity:.88}}>
+    <button onClick={()=>setOpen(true)} title={`Versión ${APP_VERSION_SHORT}`} style={{position:"fixed",left:10,bottom:"calc(84px + env(safe-area-inset-bottom,0px))",zIndex:2400,border:0,borderRadius:999,padding:"6px 9px",background:sessionWarning?"linear-gradient(180deg,#A72822,#672018)":"linear-gradient(180deg,#21140C,#130B06)",color:"#FFF4D6",fontWeight:1000,fontSize:".60rem",boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer",opacity:.88}}>
       {sessionWarning?"⚠️":"🛡️"} {APP_VERSION_SHORT}
     </button>
   );
