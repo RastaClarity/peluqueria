@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE131E_HELPER_DRAG_HEADER_MOVIL";
-const APP_VERSION_SHORT="F131E";
+const APP_VERSION="FASE131F_HELPER_VISIBLE";
+const APP_VERSION_SHORT="F131F";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -3367,9 +3367,7 @@ html,body,#root{
   background-color:transparent!important;
   box-shadow:none!important;
 }
-.rasta-helper-fixed-safe .helper-hero-face-crop > div > div:first-child{
-  display:none!important;
-}
+/* F131F: no ocultar el HeroMascot completo dentro del recorte */
 .rasta-helper-fixed-safe .helper-hero-face-crop svg{
   filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))!important;
 }
@@ -3459,6 +3457,58 @@ html,body,#root{
 }
 .rasta-helper-fixed-safe .helper-hero-face-crop{
   pointer-events:none!important;
+}
+
+
+/* ===== FASE131F: Rasta helper visible, sin cuadrado amarillo ===== */
+.rasta-helper-fixed-safe button[aria-label]{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar::before{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  top:45%!important;
+  width:32px!important;
+  height:32px!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,rgba(255,214,107,.18) 0%,rgba(255,214,107,.08) 45%,transparent 74%)!important;
+  filter:blur(2px)!important;
+  pointer-events:none!important;
+  z-index:0!important;
+}
+.rasta-helper-fixed-safe .helper-hero-face-crop{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+  border-radius:50%!important;
+}
+.rasta-helper-fixed-safe .helper-hero-face-crop > div{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.rasta-helper-fixed-safe .helper-hero-face-crop svg{
+  display:block!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))!important;
+}
+@media(max-width:520px){
+  .rasta-helper-fixed-safe .rasta-face-avatar::before{
+    width:28px!important;
+    height:28px!important;
+  }
 }
 
 @media (min-width:900px){
@@ -4463,8 +4513,9 @@ function HeroMascot(){
 
 function HelperHeroMascotFaceCrop({size=50}={}){
   // Usa el mismo HeroMascot del inicio/login, pero recortado a la cabeza.
-  const innerW=size*3.35;
-  const innerH=size*2.52;
+  // El recorte está ajustado para que no se vea el cuerpo entero ni desaparezca la cara.
+  const innerW=size*3.9;
+  const innerH=size*2.92;
   return (
     <div
       className="helper-hero-face-crop"
@@ -4479,7 +4530,7 @@ function HelperHeroMascotFaceCrop({size=50}={}){
         borderRadius:"50%",
         background:"transparent",
         pointerEvents:"none",
-        zIndex:1
+        zIndex:2
       }}
     >
       <div
@@ -4487,8 +4538,8 @@ function HelperHeroMascotFaceCrop({size=50}={}){
           position:"absolute",
           width:innerW,
           height:innerH,
-          left:size/2-innerW*0.502,
-          top:size/2-innerH*0.485,
+          left:size/2-innerW*0.505,
+          top:size/2-innerH*0.47,
           background:"transparent"
         }}
       >
@@ -14066,7 +14117,7 @@ function HelperMascot({page,settings=null}){
           }}
         >
           <div style={{position:"relative"}}>
-            <RastaFaceAvatar size={50} speaking={open} settings={settings} forceInternal/>
+            <RastaFaceAvatar size={54} speaking={open} settings={settings} forceInternal/>
             <div style={{
               position:"absolute",
               right:-2,
