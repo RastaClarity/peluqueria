@@ -3255,6 +3255,23 @@ html,body,#root{
     bottom:auto!important;
   }
 }
+
+/* ===== FASE127: perfil tipo Travian, editor grande y más jugable ===== */
+.avatar-travian-window{border-radius:18px!important;overflow:hidden!important}
+.avatar-travian-tab{transition:transform .16s ease,filter .16s ease!important}
+.avatar-travian-tab:hover{transform:translateY(-1px)!important;filter:brightness(1.08)!important}
+.avatar-travian-option,.visual-option{transition:transform .16s ease,filter .16s ease!important}
+.avatar-travian-option:hover,.visual-option:hover{transform:translateY(-2px)!important;filter:brightness(1.04) saturate(1.04)!important}
+.avatar-color-rack{display:flex!important;flex-wrap:wrap!important;gap:9px!important;align-items:center!important}
+@media (max-width:760px){
+  .avatar-travian-window>div:nth-child(2){grid-template-columns:1fr!important}
+  .avatar-travian-window>div:nth-child(2)>div:first-child{border-right:0!important;border-bottom:3px solid #8E7957!important}
+  .avatar-travian-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media (min-width:980px){
+  .avatar-travian-editor .avatar-travian-window{max-width:980px!important;margin-left:auto!important;margin-right:auto!important}
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -3896,7 +3913,7 @@ function EditorTabButton({active,icon,label,onClick}){return <button type="butto
 function VisualOption({label,active,onClick,locked=false,children,sub=null}){return <button type="button" onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{position:"relative",border:`2px solid ${active?T.gold:T.g200}`,background:active?"linear-gradient(180deg,#FFF8E5,#F6E5BE)":"rgba(255,248,225,.88)",borderRadius:18,padding:8,cursor:locked?"not-allowed":"pointer",boxShadow:active?"0 12px 24px rgba(212,175,55,.22)":"0 6px 14px rgba(20,8,4,.10)",textAlign:"center",opacity:locked?0.72:1,minWidth:0}}>{locked&&<div style={{position:"absolute",top:6,right:6,background:"rgba(0,0,0,.62)",color:T.white,borderRadius:999,padding:"2px 6px",fontSize:".62rem",fontWeight:950,zIndex:4}}>🔒</div>}<div style={{height:148,borderRadius:16,display:"grid",placeItems:"center",background:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.22),transparent 35%),linear-gradient(160deg,#1B0D07,#5C3317 60%,#D4AF37)",overflow:"hidden",marginBottom:7}}>{children}</div><div style={{fontSize:".73rem",fontWeight:950,color:active?T.g900:T.g800,lineHeight:1.12,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{label}</div>{sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,marginTop:2,lineHeight:1.05}}>{sub}</div>}</button>;}
 function LargeSwatch({color,active,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:46,height:46,borderRadius:"50%",border:`4px solid ${active?T.gold:"rgba(110,53,24,.16)"}`,boxShadow:active?"0 0 0 4px rgba(212,175,55,.18),0 8px 14px rgba(20,8,4,.12)":"0 6px 12px rgba(20,8,4,.1)",background:color,cursor:"pointer"}}/>;}
 function MiniSectionTitle({emoji,title,sub}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,margin:"6px 0 8px"}}><div style={{fontWeight:950,color:T.g800}}>{emoji} {title}</div>{sub&&<div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>{sub}</div>}</div>;}
-function AvatarEditor({form,setForm,ownedKeys=[]}){
+function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=null}){
   const [panel,setPanel]=useState("base");
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
   const premiumKeys=new Set(ownedKeys||[]);
@@ -3928,6 +3945,10 @@ function AvatarEditor({form,setForm,ownedKeys=[]}){
   const hairPreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none"},form.avatar);
   const facePreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none",facial:"none"},form.avatar);
   const currentName=AVATAR_PRESET_NAMES?.[Number(form.avatar)%AVATAR_PRESET_NAMES.length]||avatarStyleName(cfg);
+  const profilePoints=Number(user?.puntos||0);
+  const editorLevel=profilePoints>=1500?"Leyenda":profilePoints>=1000?"VIP":profilePoints>=500?"Oro":profilePoints>=200?"Plata":"Bronce";
+  const editorNext=profilePoints<200?200:profilePoints<500?500:profilePoints<1000?1000:profilePoints<1500?1500:2000;
+  const editorPct=Math.max(5,Math.min(100,Math.round(profilePoints/editorNext*100)));
   const activeMeta=[
     avatarLabel(cfg.gender),
     AVATAR_LABELS[cfg.hair],
@@ -3942,12 +3963,12 @@ function AvatarEditor({form,setForm,ownedKeys=[]}){
   return <div className="avatar-travian-editor">
     <Card className="avatar-travian-window" style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#F6E8C8,#E9D8B4 60%,#D4BD8F)",border:"3px solid #8E7957",borderRadius:16,boxShadow:"0 20px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.75)",marginBottom:14}}>
       <div style={{background:"linear-gradient(180deg,#4A3522,#241709)",borderBottom:"3px solid #8E7957",color:"#FFF8E2",padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-        <div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",letterSpacing:".4px",textShadow:"0 2px 0 rgba(0,0,0,.4)"}}>Rasta — Nivel 0</div>
-          <div style={{fontSize:".76rem",fontWeight:850,opacity:.82}}>Editor visual estilo juego de navegador · pirata rasta</div>
+        <div style={{minWidth:0}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",letterSpacing:".4px",textShadow:"0 2px 0 rgba(0,0,0,.4)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{form.nombre||"Rasta"} — {editorLevel}</div>
+          <div style={{fontSize:".76rem",fontWeight:850,opacity:.82}}>Editor visual estilo juego de navegador · pirata rasta · {profilePoints} pts</div>
         </div>
-        <div style={{display:"flex",gap:7}}>
-          <Btn small col="ghost" onClick={()=>applyConfig(cfg)}>↶</Btn>
+        <div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>
+          <Btn small col="ghost" onClick={()=>{onReset?.();}}>↶ Reset</Btn>
           <Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn>
         </div>
       </div>
@@ -4007,8 +4028,17 @@ function AvatarEditor({form,setForm,ownedKeys=[]}){
 
         <div style={{padding:14,background:"radial-gradient(circle at 50% 20%,#FFF8E2 0%,#D8C391 52%,#27331E 53%,#11180E 100%)",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:590}}>
           <div style={{background:"linear-gradient(180deg,#FFF8E2,#E9D8B4)",border:"2px solid #8E7957",borderRadius:12,padding:10,boxShadow:"0 12px 28px rgba(0,0,0,.24)"}}>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800,lineHeight:1}}>Vista previa</div>
-            <div style={{fontSize:".75rem",fontWeight:850,color:T.textSub}}>Los cambios se ven al instante.</div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+              <div>
+                <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800,lineHeight:1}}>Vista previa</div>
+                <div style={{fontSize:".75rem",fontWeight:850,color:T.textSub}}>Los cambios se ven al instante.</div>
+              </div>
+              <Badge col="gold">Nv. {editorLevel}</Badge>
+            </div>
+            <div style={{height:8,borderRadius:999,background:"rgba(92,74,51,.22)",overflow:"hidden",marginTop:9,border:"1px solid rgba(92,74,51,.22)"}}>
+              <div style={{height:"100%",width:`${editorPct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F,#A72822)",borderRadius:999}}/>
+            </div>
+            <div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:4}}>Siguiente rango: {editorNext} pts</div>
           </div>
           <div style={{display:"grid",placeItems:"center",padding:"18px 0"}}>
             <div style={{width:245,height:290,display:"grid",placeItems:"center",background:"linear-gradient(180deg,#F8F1DD,#D7C59D)",border:"3px solid #8E7957",boxShadow:"inset 0 0 0 4px rgba(255,255,255,.34),0 18px 34px rgba(0,0,0,.35)"}}>
@@ -4024,6 +4054,10 @@ function AvatarEditor({form,setForm,ownedKeys=[]}){
               <div style={{fontWeight:950,color:T.g800}}>🎯 Estado del look</div>
               <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>Personalización de avatar/perfil. No afecta al Tycoon ni a los RC. Los objetos bloqueados se desbloquean con puntos web en tienda.</div>
             </Card>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              <Btn full col="ghost" onClick={()=>onReset?.()}>↶ Restaurar</Btn>
+              <Btn full col="green" onClick={()=>onSave?.()}>💾 Guardar cambios</Btn>
+            </div>
           </div>
         </div>
       </div>
@@ -9310,17 +9344,20 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
         <PerfilNewsActivity user={user}/>
       </>}
 
-      {tab==="editar"&&<Card style={{marginBottom:16}}>
+      {tab==="editar"&&<Card style={{marginBottom:16,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)",border:"2px solid #8E7957"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
-          <div><div style={{fontWeight:900,color:T.g800}}>Editor de personaje</div><div style={{fontSize:".78rem",color:T.textSub,fontWeight:700}}>El editor queda arriba, sin bajar media página.</div></div>
+          <div><div style={{fontWeight:950,color:T.g800}}>Editor de personaje</div><div style={{fontSize:".78rem",color:T.textSub,fontWeight:800,lineHeight:1.3}}>Ahora se comporta como una ventana de juego: inventario, apariencia, objetos bloqueados, vista previa y guardado directo.</div></div>
           <div className="icon3d" style={{fontSize:"2rem"}}>🎮</div>
         </div>
         <Input label="Nombre" value={form.nombre} onChange={v=>setForm(f=>({...f,nombre:v}))}/>
-        <AvatarEditor form={form} setForm={setForm} ownedKeys={ownedCosmetics}/>
-        <div style={{display:"flex",gap:8,marginTop:12}}>
-          <Btn full onClick={save}>💾 Guardar personaje</Btn>
-          <Btn full col="ghost" onClick={()=>setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)})}>Restaurar</Btn>
-        </div>
+        <AvatarEditor
+          form={form}
+          setForm={setForm}
+          ownedKeys={ownedCosmetics}
+          user={user}
+          onSave={save}
+          onReset={()=>setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)})}
+        />
       </Card>}
 
       {tab==="camino"&&<AvatarRewardPath user={user} setUser={setUser} currentConfig={cfg} onApply={(newCfg)=>{setForm(f=>({...f,avatarConfig:newCfg}));setOwnedCosmetics(localOwnedCosmetics(user));}} showToast={showToast} showPoints={showPoints}/>}
