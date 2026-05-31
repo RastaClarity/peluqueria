@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE129_GESTION_REAL_ORDENADA";
-const APP_VERSION_SHORT="F129";
+const APP_VERSION="FASE130_COMUNIDAD_TABLON_FORO";
+const APP_VERSION_SHORT="F130";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -9730,6 +9730,62 @@ function MusicaComunidad({showToast}){
 }
 
 
+
+function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=null}={}){
+  const [stats,setStats]=useState({posts:0,temas:0,respuestas:0,comentarios:0,loading:true});
+  useEffect(()=>{
+    let alive=true;
+    async function load(){
+      try{
+        const [posts,temas,respuestas,comentarios]=await Promise.all([
+          safeList("publicaciones","?tipo=neq.foro&select=id&limit=1000"),
+          safeList("foro_temas","?select=id,cerrado,fijado&limit=1000"),
+          safeList("foro_respuestas","?select=id&limit=1000"),
+          safeList("news_comments","?select=id&limit=1000")
+        ]);
+        if(alive)setStats({posts:posts.length,temas:temas.length,respuestas:respuestas.length,comentarios:comentarios.length,loading:false});
+      }catch(e){
+        if(alive)setStats(prev=>({...prev,loading:false}));
+      }
+    }
+    load();
+    return()=>{alive=false;};
+  },[]);
+  const comunidad=settings?.comunidad||{};
+  const normas=[
+    "El tablón es para avisos oficiales de la tienda.",
+    "El foro es para dudas, propuestas, votaciones y charla entre usuarios.",
+    "Los reportes sirven para mantener la comunidad limpia sin discusiones raras."
+  ];
+  const quick=tabs.slice(0,4);
+  return <div style={{marginBottom:14}}>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:10}}>
+      <StatCard icon="📌" label="Anuncios" value={stats.loading?"…":stats.posts} col="gold"/>
+      <StatCard icon="🗣️" label="Temas foro" value={stats.loading?"…":stats.temas} col="green"/>
+      <StatCard icon="💬" label="Respuestas" value={stats.loading?"…":stats.respuestas} col="blue"/>
+      <StatCard icon="📰" label="Comentarios" value={stats.loading?"…":stats.comentarios} col="pink"/>
+    </div>
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F4E0B4)",border:`1.5px solid ${T.g200}`,boxShadow:"0 10px 22px rgba(20,8,4,.10)",marginBottom:10}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",flexWrap:"wrap"}}>
+        <div style={{flex:1,minWidth:220}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.42rem",color:T.g800,lineHeight:1}}>Centro de comunidad</div>
+          <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.38,marginTop:4}}>
+            {comunidad.mensaje_comunidad||"Participa con respeto, usa el tablón para enterarte de novedades y el foro para hablar con la comunidad."}
+          </div>
+        </div>
+        <div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>
+          {quick.map(t=><button key={t.id} onClick={()=>onSelect(t.id)} style={{border:`2px solid ${activeId===t.id?T.gold:T.g200}`,background:activeId===t.id?T.gradGold:"rgba(255,255,255,.42)",color:activeId===t.id?T.g900:T.g800,borderRadius:999,padding:"7px 10px",fontWeight:950,cursor:"pointer",boxShadow:activeId===t.id?"0 8px 16px rgba(185,154,69,.22)":"none"}}>{t.icon} {t.label}</button>)}
+        </div>
+      </div>
+    </Card>
+    <Card style={{background:"linear-gradient(135deg,rgba(33,20,12,.96),rgba(75,48,27,.92))",border:"1.5px solid rgba(255,244,214,.24)",color:T.white,padding:"12px 13px"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:9}}>
+        {normas.map((n,i)=><div key={n} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:".78rem",fontWeight:820,lineHeight:1.32,color:"rgba(255,244,214,.86)"}}><span style={{display:"grid",placeItems:"center",width:22,height:22,borderRadius:999,background:i===0?"#B99A45":i===1?"#4F602D":"#263F4D",color:"#FFF4D6",fontWeight:1000,flexShrink:0}}>{i+1}</span><span>{n}</span></div>)}
+      </div>
+    </Card>
+  </div>;
+}
+
 function Comunidad(props){
   const {initialTab="feed",showToast,settings}=props;
   const sec=settings?.secciones||{};
@@ -9752,8 +9808,9 @@ function Comunidad(props){
         <div className="icon3d" style={{fontSize:"2.1rem"}}>🌐</div>
       </div>
     </Card>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
-      {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setSub(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.82)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
+    <ComunidadCentroPanel tabs={tabs} activeId={active.id} onSelect={(id)=>{SFX.tab();setSub(id);}} settings={settings}/>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(78px,1fr))",gap:8,marginBottom:12}}>
+      {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setSub(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.82)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)",minHeight:64}}>
         <div style={{fontSize:"1.28rem",lineHeight:1}}>{t.icon}</div>
         <div style={{fontSize:".75rem",marginTop:3}}>{t.label}</div>
       </button>)}
