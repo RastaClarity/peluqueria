@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE131D_HELPER_MISMO_RASTA_SIN_FOCO";
-const APP_VERSION_SHORT="F131D";
+const APP_VERSION="FASE131E_HELPER_DRAG_HEADER_MOVIL";
+const APP_VERSION_SHORT="F131E";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -3376,6 +3376,89 @@ html,body,#root{
 @media(max-width:520px){
   .rasta-helper-fixed-safe .rasta-face-avatar{width:46px!important;height:46px!important;}
   .rasta-helper-fixed-safe .rasta-face-avatar::before{width:30px!important;height:30px!important;}
+}
+
+
+/* ===== FASE131E: header móvil organizado + helper arrastrable ===== */
+@media(max-width:520px){
+  .app-header-pro{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    align-items:stretch!important;
+    gap:8px!important;
+    padding:8px 10px 10px!important;
+    border-radius:0 0 22px 22px!important;
+  }
+  .app-header-pro>div:first-child{
+    width:100%!important;
+    min-width:0!important;
+    justify-content:space-between!important;
+  }
+  .app-header-pro>div:first-child .brand-home-button{
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  .app-header-pro>div:first-child .brand-home-button span:last-child{
+    display:inline-block!important;
+    max-width:42vw!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .app-header-pro>div:last-child{
+    width:100%!important;
+    min-width:0!important;
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    justify-content:flex-start!important;
+    gap:7px!important;
+    overflow-x:auto!important;
+    overscroll-behavior-x:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:2px 2px 4px!important;
+    scrollbar-width:none!important;
+  }
+  .app-header-pro>div:last-child::-webkit-scrollbar{display:none!important}
+  .app-header-pro .header-action-pro{
+    flex:0 0 auto!important;
+    min-width:42px!important;
+    min-height:38px!important;
+    padding:7px 10px!important;
+    font-size:.74rem!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  .app-header-pro .wallet-button-pro,
+  .app-header-pro .cart-button-pro{
+    min-width:42px!important;
+  }
+  .app-header-pro .theme-toggle-pro{
+    min-width:44px!important;
+  }
+  .app-header-pro .theme-word{display:none!important}
+}
+
+.rasta-helper-fixed-safe{
+  touch-action:none!important;
+  user-select:none!important;
+}
+.rasta-helper-fixed-safe button[aria-label]{
+  min-width:66px!important;
+  min-height:66px!important;
+  justify-content:center!important;
+  align-items:center!important;
+  touch-action:none!important;
+  cursor:grab!important;
+}
+.rasta-helper-fixed-safe button[aria-label]:active{
+  cursor:grabbing!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar{
+  pointer-events:none!important;
+}
+.rasta-helper-fixed-safe .helper-hero-face-crop{
+  pointer-events:none!important;
 }
 
 @media (min-width:900px){
@@ -13698,11 +13781,15 @@ function HelperMascot({page,settings=null}){
   const dragRef=useRef({down:false,moved:false,startX:0,startY:0,baseX:0,baseY:0});
   const [pos,setPos]=useState(()=>{
     try{
-      const saved=JSON.parse(localStorage.getItem("rasta_helper_pos")||"null");
+      const saved=JSON.parse(localStorage.getItem("rasta_helper_pos_v3")||"null");
       if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)) return saved;
     }catch{}
     if(typeof window==="undefined") return {x:360,y:620};
-    return {x:Math.max(12,Math.min(window.innerWidth-66,window.innerWidth-72)),y:Math.max(90,window.innerHeight-150)};
+    const isMob=window.innerWidth<=520;
+    return {
+      x:Math.max(12,Math.min(window.innerWidth-74,window.innerWidth-(isMob?92:84))),
+      y:Math.max(86,Math.min(window.innerHeight-(isMob?168:128),window.innerHeight-(isMob?178:150)))
+    };
   });
 
   const mood=helperMood(page);
@@ -13723,7 +13810,7 @@ function HelperMascot({page,settings=null}){
       if(typeof window==="undefined")return;
       setPos(p=>{
         const next={x:Math.max(8,Math.min(window.innerWidth-66,p.x)),y:Math.max(72,Math.min(window.innerHeight-82,p.y))};
-        try{localStorage.setItem("rasta_helper_pos",JSON.stringify(next));}catch{}
+        try{localStorage.setItem("rasta_helper_pos_v3",JSON.stringify(next));}catch{}
         return next;
       });
     };
@@ -13779,34 +13866,71 @@ function HelperMascot({page,settings=null}){
     SFX.tab();
   }
 
-  function pointerDown(e){
-    dragRef.current={down:true,moved:false,startX:e.clientX,startY:e.clientY,baseX:pos.x,baseY:pos.y};
-    try{e.currentTarget.setPointerCapture(e.pointerId);}catch{}
+  function beginDrag(clientX,clientY){
+    dragRef.current={down:true,moved:false,startX:clientX,startY:clientY,baseX:pos.x,baseY:pos.y,last:{...pos}};
   }
 
-  function pointerMove(e){
+  function moveDrag(clientX,clientY){
     const d=dragRef.current;
     if(!d.down)return;
-    const dx=e.clientX-d.startX;
-    const dy=e.clientY-d.startY;
+    const dx=clientX-d.startX;
+    const dy=clientY-d.startY;
     if(Math.abs(dx)+Math.abs(dy)>5)d.moved=true;
     if(typeof window==="undefined")return;
+    const isMob=window.innerWidth<=520;
     const next={
-      x:Math.max(8,Math.min(window.innerWidth-66,d.baseX+dx)),
-      y:Math.max(72,Math.min(window.innerHeight-82,d.baseY+dy))
+      x:Math.max(8,Math.min(window.innerWidth-(isMob?62:66),d.baseX+dx)),
+      y:Math.max(72,Math.min(window.innerHeight-(isMob?118:92),d.baseY+dy))
     };
+    dragRef.current.last=next;
     setPos(next);
   }
 
-  function pointerUp(e){
+  function endDrag(){
     const d=dragRef.current;
     dragRef.current={...d,down:false};
-    try{e.currentTarget.releasePointerCapture(e.pointerId);}catch{}
-    try{localStorage.setItem("rasta_helper_pos",JSON.stringify(pos));}catch{}
+    const finalPos=d.last||pos;
+    try{localStorage.setItem("rasta_helper_pos_v3",JSON.stringify(finalPos));}catch{}
     if(!d.moved){
       SFX.click();
       setOpen(v=>!v);
     }
+  }
+
+  function pointerDown(e){
+    e.preventDefault?.();
+    beginDrag(e.clientX,e.clientY);
+    try{e.currentTarget.setPointerCapture(e.pointerId);}catch{}
+  }
+
+  function pointerMove(e){
+    e.preventDefault?.();
+    moveDrag(e.clientX,e.clientY);
+  }
+
+  function pointerUp(e){
+    e.preventDefault?.();
+    try{e.currentTarget.releasePointerCapture(e.pointerId);}catch{}
+    endDrag();
+  }
+
+  function touchStart(e){
+    const t=e.touches?.[0];
+    if(!t)return;
+    e.preventDefault?.();
+    beginDrag(t.clientX,t.clientY);
+  }
+
+  function touchMove(e){
+    const t=e.touches?.[0];
+    if(!t)return;
+    e.preventDefault?.();
+    moveDrag(t.clientX,t.clientY);
+  }
+
+  function touchEnd(e){
+    e.preventDefault?.();
+    endDrag();
   }
 
   const closeBubble=(e)=>{
@@ -13920,6 +14044,9 @@ function HelperMascot({page,settings=null}){
           onPointerMove={pointerMove}
           onPointerUp={pointerUp}
           onPointerCancel={()=>{dragRef.current.down=false;}}
+          onTouchStart={touchStart}
+          onTouchMove={touchMove}
+          onTouchEnd={touchEnd}
           aria-label={open?"Ocultar consejos del rasta":"Abrir consejos del rasta"}
           title="Toca para abrir la ayuda de Rasta"
           style={{
@@ -13927,11 +14054,15 @@ function HelperMascot({page,settings=null}){
             background:"transparent",
             cursor:"grab",
             padding:0,
+            width:70,
+            height:70,
             display:"flex",
             alignItems:"center",
+            justifyContent:"center",
             gap:10,
             WebkitTapHighlightColor:"transparent",
-            touchAction:"none"
+            touchAction:"none",
+            userSelect:"none"
           }}
         >
           <div style={{position:"relative"}}>
