@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
+import TycoonMapGame from "./tycoon/TycoonGame";
 
 // Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
 // La anon key es pública en apps frontend; lo que nunca debe ponerse aquí es la service_role/secret key.
@@ -13096,7 +13097,27 @@ export default function App(){
       <div className="rc-standalone-shell" data-rc-theme={uiTheme} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",minHeight:"100vh",background:uiTheme==="day"?"radial-gradient(circle at top,#FFF1D7 0,#FAF2E3 52%,#F1E6FF 100%)":"radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),linear-gradient(180deg,#050403,#130B06 48%,#080604)",color:"var(--rc-text,#EAF6FF)"}}>
         <style>{CSS}</style>
         <Particles/>
-        <RastaCutsTycoonGame user={currentUser} showToast={showToast} standalone onExit={closeTycoonPage}/>
+        <div>
+          <button
+            onClick={closeTycoonPage}
+            style={{
+              position:"fixed",
+              top:14,
+              left:14,
+              zIndex:9999,
+              border:"1px solid rgba(255,255,255,.25)",
+              background:"rgba(0,0,0,.62)",
+              color:"#F5E6C8",
+              borderRadius:999,
+              padding:"10px 14px",
+              fontWeight:900,
+              cursor:"pointer"
+            }}
+          >
+            ← Volver a la app
+          </button>
+          <TycoonMapGame />
+        </div>
         <Toast msg={toast.msg} show={toast.show}/>
       </div>
     );
