@@ -13097,7 +13097,7 @@ export default function App(){
       <div className="rc-standalone-shell" data-rc-theme={uiTheme} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",minHeight:"100vh",background:uiTheme==="day"?"radial-gradient(circle at top,#FFF1D7 0,#FAF2E3 52%,#F1E6FF 100%)":"radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),linear-gradient(180deg,#050403,#130B06 48%,#080604)",color:"var(--rc-text,#EAF6FF)"}}>
         <style>{CSS}</style>
         <Particles/>
-        <div>
+        <div style={{minHeight:"100vh",width:"100%",position:"relative"}}>
           <button
             onClick={closeTycoonPage}
             style={{
