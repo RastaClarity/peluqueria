@@ -1009,6 +1009,15 @@ input,select,textarea{
   :root{--app-max-width:1240px;--app-shell-pad-left:124px}
 }
 
+
+
+/* ===== FASE99: Tycoon UI mezcla PlayStore + escenas híbridas, fix parpadeo mapa ===== */
+.tycoon-map-card,.tycoon-map-card *{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.tycoon-map-card:before,.tycoon-map-card:after,.tycoon-map-board:before,.tycoon-map-board:after{content:none!important;display:none!important;animation:none!important}
+.tycoon-map-card .studio-panel:after{display:none!important;animation:none!important}
+@media (prefers-reduced-motion:no-preference){
+  .tycoon-map-card button:hover{box-shadow:0 18px 34px rgba(0,0,0,.36),0 0 22px rgba(242,207,117,.16)!important}
+}
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -4967,6 +4976,27 @@ const TYCOON_ROOM_DEFS={
   terrace:{id:"terrace",icon:"🌴",name:"Terraza",short:"Terraza",desc:"Exterior, eventos, ambiente y picos de clientela.",unlocked:false,baseCost:360,baseTime:58,unlockCost:900,req:"Zona chill nivel 2",pos:{left:"78%",top:"23%"},effect:"Aumenta mucho los picos de clientes cuando el negocio crece."}
 };
 const TYCOON_ROOM_ORDER=["hall","salon","storage","bathroom","chill","terrace"];
+
+const TYCOON_ROOM_IMAGES={
+  hall:{base:"/tycoon/hall.webp",label:"Hall / tienda"},
+  salon:{base:"/tycoon/peluqueria.webp",label:"Peluquería"},
+  storage:{base:"/tycoon/almacen.webp",label:"Almacén"},
+  bathroom:{base:"/tycoon/bano.webp",label:"Baño"},
+  chill:{base:"/tycoon/chill.webp",label:"Zona chill"},
+  terrace:{base:"/tycoon/terraza.webp",label:"Terraza"}
+};
+const TYCOON_OBJECT_IMAGES={
+  cash:"/tycoon/objetos/caja.webp",
+  chair:"/tycoon/objetos/silla.webp",
+  shelf:"/tycoon/objetos/estanteria.webp",
+  vitrine:"/tycoon/objetos/vitrina.webp",
+  plant:"/tycoon/objetos/planta.webp",
+  lights:"/tycoon/objetos/luces.webp"
+};
+function tycoonRoomImage(id){
+  return TYCOON_ROOM_IMAGES[id]?.base||"/tycoon/hall.webp";
+}
+
 function clampNum(n,min,max){return Math.max(min,Math.min(max,Number(n)||0));}
 function tycoonRoomDef(id){return TYCOON_ROOM_DEFS[id]||TYCOON_ROOM_DEFS.hall;}
 function tycoonBaseRoom(id){const d=tycoonRoomDef(id);return {id,level:d.unlocked?1:0,unlocked:Boolean(d.unlocked),name:d.name,icon:d.icon,desc:d.desc};}
@@ -5256,18 +5286,23 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     return <span style={{display:"inline-flex",gap:5,alignItems:"center",background:"rgba(18,8,6,.72)",color:T.white,borderRadius:999,padding:"4px 8px",fontSize:".64rem",fontWeight:950}}>🔨 {tycoonFormatTime(left)}</span>;
   }
   function TycoonMap(){
-    return <Card style={{background:"linear-gradient(150deg,#172114,#31401E 52%,#8A6A2B)",border:"2px solid rgba(255,244,214,.38)",color:T.white,overflow:"hidden",position:"relative"}}>
-      <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 20% 20%,rgba(255,244,214,.17),transparent 26%),linear-gradient(30deg,transparent 48%,rgba(255,244,214,.08) 49%,transparent 50%)"}}/>
-      <div style={{position:"relative",zIndex:2,display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",marginBottom:10}}>
-        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem"}}>Mapa del negocio</div><div style={{fontSize:".8rem",fontWeight:850,opacity:.86}}>Entra en cada zona como en un juego de navegador: mapa, sala, objetos y mejoras.</div></div>
-        <Badge col="gold">{roomList.filter(r=>r.unlocked).length}/{roomList.length} zonas</Badge>
+    const opened=roomList.filter(r=>r.unlocked).length;
+    return <div className="tycoon-map-card" style={{background:"linear-gradient(150deg,rgba(23,33,20,.96),rgba(49,64,30,.94) 52%,rgba(138,106,43,.92))",border:"1px solid rgba(255,244,214,.34)",color:T.white,overflow:"hidden",position:"relative",borderRadius:28,padding:16,boxShadow:"0 22px 60px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,244,214,.10)",animation:"none",transform:"translateZ(0)",backfaceVisibility:"hidden"}}>
+      <div style={{position:"absolute",inset:0,pointerEvents:"none",background:"radial-gradient(circle at 18% 14%,rgba(255,244,214,.16),transparent 25%),radial-gradient(circle at 82% 8%,rgba(185,154,69,.14),transparent 32%),linear-gradient(30deg,transparent 48%,rgba(255,244,214,.055) 49%,transparent 50%)"}}/>
+      <div style={{position:"relative",zIndex:2,display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",marginBottom:12}}>
+        <div>
+          <div style={{fontFamily:"var(--ui-display,'Outfit',system-ui)",fontSize:"1.45rem",fontWeight:950,letterSpacing:"-.04em"}}>Mapa del negocio</div>
+          <div style={{fontSize:".82rem",fontWeight:850,opacity:.84,lineHeight:1.35}}>Vista principal estable: entra en salas, revisa requisitos y lanza mejoras sin parpadeos.</div>
+        </div>
+        <Badge col="gold">{opened}/{roomList.length} zonas</Badge>
       </div>
-      <div style={{position:"relative",height:standalone?390:315,zIndex:2,borderRadius:22,overflow:"hidden",background:"linear-gradient(180deg,rgba(255,244,214,.10),rgba(0,0,0,.18))",border:"1px solid rgba(255,244,214,.18)"}}>
-        <div style={{position:"absolute",left:"6%",right:"6%",bottom:"17%",height:74,background:"rgba(72,42,20,.55)",transform:"skewX(-18deg)",borderRadius:30,boxShadow:"0 22px 40px rgba(0,0,0,.24)"}}/>
-        <div style={{position:"absolute",left:"14%",top:"18%",width:"70%",height:"58%",borderRadius:"50%",border:"3px dashed rgba(255,244,214,.18)"}}/>
+      <div className="tycoon-map-board" style={{position:"relative",height:standalone?405:325,zIndex:2,borderRadius:24,overflow:"hidden",background:"linear-gradient(180deg,rgba(255,244,214,.10),rgba(0,0,0,.22))",border:"1px solid rgba(255,244,214,.18)",boxShadow:"inset 0 0 42px rgba(0,0,0,.20)",transform:"translateZ(0)",animation:"none"}}>
+        <div style={{position:"absolute",inset:0,background:"linear-gradient(0deg,rgba(0,0,0,.16),transparent 55%),radial-gradient(circle at 50% 42%,rgba(255,244,214,.09),transparent 42%)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",left:"6%",right:"6%",bottom:"16%",height:78,background:"rgba(72,42,20,.58)",transform:"skewX(-18deg) translateZ(0)",borderRadius:32,boxShadow:"0 22px 40px rgba(0,0,0,.24)"}}/>
+        <div style={{position:"absolute",left:"14%",top:"18%",width:"70%",height:"58%",borderRadius:"50%",border:"3px dashed rgba(255,244,214,.16)",pointerEvents:"none"}}/>
         {roomList.map(r=>{
           const task=tycoonTaskFor(state,r.id),blocked=!r.unlocked,def=tycoonRoomDef(r.id);
-          return <button key={r.id} onClick={()=>r.unlocked?enterRoom(r.id):setInspect({icon:r.icon,title:r.name,roomId:r.id,unlock:tycoonCanUnlock(r.id,state),text:tycoonCanUnlock(r.id,state)?`Puedes abrir esta zona por ${tycoonUnlockCost(r.id)} RC.`:`Bloqueada. Requisito: ${def.req}.`})} style={{position:"absolute",left:def.pos.left,top:def.pos.top,transform:"translate(-50%,-50%)",width:118,minHeight:86,border:`2px solid ${blocked?"rgba(255,244,214,.25)":T.gold}`,background:blocked?"rgba(18,8,6,.72)":"linear-gradient(180deg,#FFF4D6,#C6A06A)",color:blocked?T.white:T.g900,borderRadius:18,padding:9,cursor:"pointer",boxShadow:"0 14px 24px rgba(0,0,0,.32)",textAlign:"center"}}>
+          return <button key={r.id} onClick={()=>r.unlocked?enterRoom(r.id):setInspect({icon:r.icon,title:r.name,roomId:r.id,unlock:tycoonCanUnlock(r.id,state),text:tycoonCanUnlock(r.id,state)?`Puedes abrir esta zona por ${tycoonUnlockCost(r.id)} RC.`:`Bloqueada. Requisito: ${def.req}.`})} style={{position:"absolute",left:def.pos.left,top:def.pos.top,transform:"translate(-50%,-50%) translateZ(0)",width:124,minHeight:88,border:`2px solid ${blocked?"rgba(255,244,214,.24)":T.gold}`,background:blocked?"rgba(18,8,6,.72)":"linear-gradient(180deg,#FFF4D6,#C6A06A)",color:blocked?T.white:T.g900,borderRadius:20,padding:10,cursor:"pointer",boxShadow:"0 14px 24px rgba(0,0,0,.30)",textAlign:"center",transition:"transform .18s ease, filter .18s ease, box-shadow .18s ease",animation:"none",willChange:"transform"}} onMouseEnter={e=>{e.currentTarget.style.transform="translate(-50%,-52%) translateZ(0) scale(1.03)";e.currentTarget.style.filter="brightness(1.06)";}} onMouseLeave={e=>{e.currentTarget.style.transform="translate(-50%,-50%) translateZ(0)";e.currentTarget.style.filter="none";}}>
             <div style={{fontSize:"1.65rem",lineHeight:1}}>{blocked?"🔒":r.icon}</div>
             <div style={{fontWeight:950,fontSize:".82rem",lineHeight:1.1}}>{r.short||r.name}</div>
             <div style={{fontSize:".65rem",fontWeight:850,opacity:.84}}>{r.unlocked?`Nv. ${r.level||0}`:"Bloqueada"}</div>
@@ -5278,34 +5313,76 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
       {inspect&&<div style={{position:"relative",zIndex:3,marginTop:12,background:"rgba(255,244,214,.12)",border:"1px solid rgba(255,244,214,.25)",borderRadius:18,padding:12}}>
         <div style={{display:"flex",gap:10,alignItems:"flex-start"}}><div style={{fontSize:"1.7rem"}}>{inspect.icon}</div><div style={{flex:1}}><div style={{fontWeight:950}}>{inspect.title}</div><div style={{fontSize:".78rem",fontWeight:850,opacity:.86,lineHeight:1.35}}>{inspect.text}</div></div>{inspect.roomId&&inspect.unlock&&<Btn small col="gold" onClick={()=>startRoomTask(inspect.roomId,"unlock")}>Abrir</Btn>}</div>
       </div>}
-    </Card>;
+    </div>;
   }
   function SceneObject({h}){return <button onClick={()=>handleHotspot(h)} title={h.title} style={{position:"absolute",left:h.left,top:h.top,width:h.w||82,height:h.h||64,border:"2px solid rgba(255,244,214,.65)",background:"rgba(255,244,214,.82)",color:T.g900,borderRadius:18,cursor:"pointer",boxShadow:"0 12px 26px rgba(0,0,0,.25)",fontWeight:950,display:"grid",placeItems:"center",animation:"chipFloat 4s ease-in-out infinite"}}><div style={{fontSize:"1.7rem",lineHeight:1}}>{h.icon}</div><div style={{fontSize:".66rem",lineHeight:1.05}}>{h.title}</div></button>;}
   function TycoonScene({roomId}){
     const room=state.rooms?.[roomId]||tycoonBaseRoom(roomId),def=tycoonRoomDef(roomId),lvl=room.level||0;
-    const common=[{icon:"⬆️",title:"Mejorar",text:`Sube ${def.name} para mejorar su efecto.`,left:"75%",top:"10%",action:"upgrade"}];
+    const roomImg=tycoonRoomImage(roomId);
+    const common=[{icon:"⬆️",title:"Mejorar",text:`Sube ${def.name} para mejorar su efecto.`,left:"77%",top:"11%",action:"upgrade",kind:"upgrade"}];
     const hotspots={
-      hall:[{icon:"🧾",title:"Caja",text:"La caja y el mostrador ordenan el flujo de clientes.",left:"63%",top:"55%"},{icon:"🧴",title:"Vitrina",text:"Decora el hall para que la entrada parezca más profesional.",left:"17%",top:"49%",action:"decor"}],
-      salon:[{icon:"💺",title:"Silla",text:"Atiende una tanda manual de clientes y cobra RC al momento.",left:"15%",top:"53%",action:"attend"},{icon:"🪞",title:"Espejo",text:"La peluquería sube los RC por cliente y la capacidad de servicio.",left:"44%",top:"23%"}],
-      storage:[{icon:"🧴",title:"Baldas",text:"Aquí vive el stock. Si se vacía, se frenan los ingresos por hora.",left:"13%",top:"32%",action:"restock"},{icon:"📦",title:"Cajas",text:"Reponer llena productos, toallas y bebidas.",left:"52%",top:"55%",action:"restock"}],
-      bathroom:[{icon:"🚿",title:"Lavabo",text:"El baño ayuda a que la limpieza no caiga tan rápido.",left:"20%",top:"43%",action:"clean"},{icon:"🧹",title:"Limpieza",text:"Paga RC para recuperar limpieza y satisfacción.",left:"61%",top:"54%",action:"clean"}],
-      chill:[{icon:"🛋️",title:"Sofá",text:"La zona chill mejora espera, satisfacción y reputación.",left:"18%",top:"56%"},{icon:"🎶",title:"Ambiente",text:"Más ambiente, más ganas de quedarse.",left:"58%",top:"30%"}],
-      terrace:[{icon:"🌴",title:"Terraza",text:"Eventos y ambiente exterior: sube picos de clientes.",left:"18%",top:"47%"},{icon:"☀️",title:"Evento",text:"La terraza será una zona clave para eventos futuros.",left:"58%",top:"40%"}]
+      hall:[
+        {icon:"🧾",title:"Caja",text:"Controla cobros, flujo de clientes y RC generados.",left:"67%",top:"58%",action:"upgrade",kind:"money"},
+        {icon:"🧴",title:"Vitrina",text:"Decora el escaparate para mejorar la primera impresión.",left:"17%",top:"52%",action:"decor",kind:"decor"},
+        {icon:"🚪",title:"Entrada",text:"Por aquí entran los clientes. El Hall aumenta atracción.",left:"43%",top:"47%",kind:"info"}
+      ],
+      salon:[
+        {icon:"💺",title:"Silla",text:"Atiende una tanda manual de clientes y cobra RC al momento.",left:"15%",top:"58%",action:"attend",kind:"action"},
+        {icon:"🪞",title:"Espejo",text:"La Peluquería sube los RC por cliente y la capacidad de servicio.",left:"46%",top:"24%",action:"upgrade",kind:"upgrade"},
+        {icon:"🧍",title:"Clientes",text:"La cola depende de reputación, limpieza, stock y energía.",left:"64%",top:"59%",kind:"info"}
+      ],
+      storage:[
+        {icon:"🧴",title:"Baldas",text:"Aquí vive el stock. Si se vacía, se frenan los ingresos por hora.",left:"16%",top:"35%",action:"restock",kind:"action"},
+        {icon:"📦",title:"Cajas",text:"Reponer llena productos, toallas y bebidas.",left:"54%",top:"58%",action:"restock",kind:"action"},
+        {icon:"📋",title:"Inventario",text:`Stock actual: ${Math.floor(economy.totalStock)}/${economy.capacity}.`,left:"73%",top:"32%",kind:"info"}
+      ],
+      bathroom:[
+        {icon:"🚿",title:"Lavabo",text:"El baño ayuda a que la limpieza no caiga tan rápido.",left:"21%",top:"45%",action:"clean",kind:"action"},
+        {icon:"🧹",title:"Limpieza",text:"Paga RC para recuperar limpieza y satisfacción.",left:"63%",top:"55%",action:"clean",kind:"action"}
+      ],
+      chill:[
+        {icon:"🛋️",title:"Sofá",text:"La zona chill mejora espera, satisfacción y reputación.",left:"19%",top:"60%",action:"upgrade",kind:"upgrade"},
+        {icon:"🎶",title:"Ambiente",text:"Más ambiente, más ganas de quedarse.",left:"61%",top:"33%",kind:"info"},
+        {icon:"☕",title:"Café",text:"Más comodidad para clientes VIP.",left:"49%",top:"58%",kind:"info"}
+      ],
+      terrace:[
+        {icon:"🌴",title:"Terraza",text:"Eventos y ambiente exterior: sube picos de clientes.",left:"17%",top:"48%",action:"upgrade",kind:"upgrade"},
+        {icon:"☀️",title:"Evento",text:"La terraza será clave para misiones y eventos futuros.",left:"61%",top:"42%",kind:"info"},
+        {icon:"🎤",title:"Música",text:"Aquí luego podremos activar eventos especiales.",left:"42%",top:"60%",kind:"info"}
+      ]
     };
     const bg={hall:"linear-gradient(180deg,#68401F,#24110A)",salon:"linear-gradient(180deg,#7A4A24,#2A160B)",storage:"linear-gradient(180deg,#5A3A22,#24130A)",bathroom:"linear-gradient(180deg,#557383,#20313A)",chill:"linear-gradient(180deg,#4E2A3A,#211019)",terrace:"linear-gradient(180deg,#617C42,#2A391D)"}[roomId]||"linear-gradient(180deg,#7A4A24,#2A160B)";
-    if(!room.unlocked)return <Card style={{background:"linear-gradient(180deg,#24110A,#120806)",color:T.white,border:"2px solid rgba(255,244,214,.25)"}}><div style={{textAlign:"center",padding:30}}><div style={{fontSize:"3rem"}}>🔒</div><div style={{fontWeight:950,fontSize:"1.25rem"}}>{def.name} bloqueada</div><div style={{fontSize:".85rem",fontWeight:850,opacity:.82,marginTop:6}}>Requisito: {def.req}</div><div style={{marginTop:14}}><Btn col="gold" onClick={()=>startRoomTask(roomId,"unlock")}>Abrir por {tycoonUnlockCost(roomId)} RC</Btn></div></div></Card>;
-    return <div style={{position:"relative",height:standalone?410:350,borderRadius:26,overflow:"hidden",background:bg,border:"2px solid rgba(255,244,214,.32)",boxShadow:"inset 0 -35px 80px rgba(0,0,0,.35),0 18px 40px rgba(0,0,0,.22)"}}>
-      <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 20% 10%,rgba(255,244,214,.22),transparent 30%),repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 22px)"}}/>
-      <div style={{position:"absolute",left:"8%",right:"8%",bottom:"8%",height:"34%",background:"rgba(18,8,6,.28)",transform:"skewX(-10deg)",borderRadius:28}}/>
-      {roomId==="hall"&&<><div style={{position:"absolute",left:"32%",top:"20%",width:"36%",height:"30%",borderRadius:"18px 18px 6px 6px",background:"linear-gradient(180deg,#E8D3A2,#A87945)",boxShadow:"0 12px 24px rgba(0,0,0,.25)"}}/><div style={{position:"absolute",left:"41%",top:"28%",fontFamily:"'Pirata One',cursive",fontSize:"1.25rem",color:T.g900}}>Rasta Cuts</div></>}
-      {roomId==="salon"&&<><div style={{position:"absolute",left:"35%",top:"13%",width:"28%",height:"30%",borderRadius:"18px 18px 6px 6px",background:"linear-gradient(180deg,#E8D3A2,#8A5A2E)",boxShadow:"0 12px 24px rgba(0,0,0,.25)"}}/><div style={{position:"absolute",left:"13%",top:"65%",fontSize:"2.2rem"}}>💺</div><div style={{position:"absolute",left:"34%",top:"65%",fontSize:"2.2rem"}}>💺</div>{lvl>=3&&<div style={{position:"absolute",left:"55%",top:"65%",fontSize:"2.2rem"}}>💺</div>}</>}
-      {roomId==="storage"&&<><div style={{position:"absolute",left:"10%",top:"18%",width:"30%",height:"56%",borderRadius:12,background:"linear-gradient(90deg,#6B4524,#B98B4C)",boxShadow:"inset 0 0 0 4px rgba(0,0,0,.12)"}}/><div style={{position:"absolute",left:"48%",top:"24%",width:"34%",height:"50%",borderRadius:12,background:"linear-gradient(90deg,#4B301B,#8A5A2E)"}}/><div style={{position:"absolute",left:"17%",top:"28%",fontSize:"2rem"}}>🧴</div><div style={{position:"absolute",left:"56%",top:"47%",fontSize:"2.4rem"}}>📦</div></>}
-      {roomId==="bathroom"&&<><div style={{position:"absolute",left:"18%",top:"34%",width:"24%",height:"26%",borderRadius:"50% 50% 12px 12px",background:"#DDECF0",boxShadow:"0 8px 20px rgba(0,0,0,.25)"}}/><div style={{position:"absolute",right:"18%",top:"36%",fontSize:"3rem"}}>🚽</div></>}
-      {roomId==="chill"&&<><div style={{position:"absolute",left:"14%",top:"62%",width:"40%",height:"16%",borderRadius:18,background:"#7A3424",boxShadow:"0 10px 24px rgba(0,0,0,.28)"}}/><div style={{position:"absolute",right:"18%",top:"28%",fontSize:"2.4rem"}}>🎶</div><div style={{position:"absolute",left:"48%",top:"52%",fontSize:"2rem"}}>☕</div></>}
-      {roomId==="terrace"&&<><div style={{position:"absolute",left:"8%",bottom:"18%",width:"82%",height:"18%",borderRadius:22,background:"rgba(232,211,162,.34)"}}/><div style={{position:"absolute",left:"16%",top:"42%",fontSize:"3rem"}}>🌴</div><div style={{position:"absolute",right:"18%",top:"45%",fontSize:"3rem"}}>⛱️</div></>}
-      <div style={{position:"absolute",left:16,top:14,background:"rgba(18,8,6,.62)",border:"1px solid rgba(255,244,214,.24)",borderRadius:18,padding:"8px 12px",color:T.white}}><div style={{fontWeight:950}}>{def.icon} {def.name}</div><div style={{fontSize:".72rem",fontWeight:850,opacity:.84}}>Nivel {lvl} · {def.effect}</div></div>
+    if(!room.unlocked)return <Card style={{background:"linear-gradient(180deg,#24110A,#120806)",color:T.white,border:"2px solid rgba(255,244,214,.25)"}}><div style={{textAlign:"center",padding:30}}><div style={{fontSize:"3rem"}}>🔒</div><div style={{fontWeight:950,fontSize:"1.25rem"}}>{def.name} bloqueada</div><div style={{fontSize:".85rem",fontWeight:850,opacity:.82,marginTop:6}}>Requisito: {def.req}</div><div style={{fontSize:".76rem",fontWeight:850,opacity:.72,marginTop:6}}>Imagen preparada: {roomImg}</div><div style={{marginTop:14}}><Btn col="gold" onClick={()=>startRoomTask(roomId,"unlock")}>Abrir por {tycoonUnlockCost(roomId)} RC</Btn></div></div></Card>;
+    const hasDecor=roomId==="hall";
+    return <div style={{position:"relative",height:standalone?460:380,borderRadius:28,overflow:"hidden",background:bg,border:"2px solid rgba(255,244,214,.34)",boxShadow:"inset 0 -40px 90px rgba(0,0,0,.42),0 18px 44px rgba(0,0,0,.24)"}}>
+      <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(180deg,rgba(10,5,3,.08),rgba(10,5,3,.48)),url("${roomImg}")`,backgroundSize:"cover",backgroundPosition:"center",filter:"saturate(1.08) contrast(1.02)"}}/>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 18% 8%,rgba(255,244,214,.20),transparent 30%),radial-gradient(circle at 78% 20%,rgba(185,154,69,.16),transparent 32%),linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.55))"}}/>
+      <div style={{position:"absolute",left:14,top:14,background:"rgba(18,8,6,.70)",border:"1px solid rgba(255,244,214,.28)",borderRadius:18,padding:"9px 12px",color:T.white,backdropFilter:"blur(8px)",boxShadow:"0 10px 24px rgba(0,0,0,.28)"}}>
+        <div style={{fontWeight:950}}>{def.icon} {def.name}</div>
+        <div style={{fontSize:".72rem",fontWeight:850,opacity:.84}}>Nivel {lvl} · {def.effect}</div>
+      </div>
+      <div style={{position:"absolute",right:14,top:14,display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>
+        <Badge col="gold">+{economy.netHour} RC/h</Badge>
+        <Badge col="blue">{economy.clientsHour} clientes/h</Badge>
+      </div>
+
+      {/* Fallback decorativo por si todavía no has subido imágenes reales. Queda encima como objetos de juego. */}
+      {roomId==="hall"&&<>
+        <div style={{position:"absolute",left:"38%",top:"28%",fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",color:"#FFF4D6",textShadow:"0 4px 10px #000"}}>Rasta Cuts</div>
+        {hasDecor&&[...Array(Math.min(4,state.decor?.plants||0))].map((_,i)=><div key={`p${i}`} style={{position:"absolute",left:`${8+i*20}%`,bottom:"8%",fontSize:"1.8rem",filter:"drop-shadow(0 7px 8px rgba(0,0,0,.45))"}}>🌿</div>)}
+        {hasDecor&&[...Array(Math.min(5,state.decor?.lights||0))].map((_,i)=><div key={`l${i}`} style={{position:"absolute",left:`${18+i*13}%`,top:"13%",fontSize:"1.15rem",filter:"drop-shadow(0 0 8px rgba(255,224,120,.8))"}}>💡</div>)}
+      </>}
+      {roomId==="salon"&&[...Array(Math.min(5,Math.max(1,lvl)))].map((_,i)=><div key={i} style={{position:"absolute",left:`${12+i*15}%`,bottom:"13%",fontSize:"2.3rem",filter:"drop-shadow(0 8px 8px rgba(0,0,0,.45))"}}>💺</div>)}
+      {roomId==="storage"&&[...Array(Math.min(5,Math.max(1,lvl)))].map((_,i)=><div key={i} style={{position:"absolute",left:`${11+i*16}%`,bottom:"14%",fontSize:"2.15rem",filter:"drop-shadow(0 8px 8px rgba(0,0,0,.45))"}}>📦</div>)}
+      {roomId==="bathroom"&&<><div style={{position:"absolute",left:"19%",bottom:"18%",fontSize:"2.8rem",filter:"drop-shadow(0 8px 8px rgba(0,0,0,.45))"}}>🚿</div><div style={{position:"absolute",right:"19%",bottom:"18%",fontSize:"2.8rem",filter:"drop-shadow(0 8px 8px rgba(0,0,0,.45))"}}>🚽</div></>}
+      {roomId==="chill"&&<><div style={{position:"absolute",left:"15%",bottom:"16%",fontSize:"2.8rem",filter:"drop-shadow(0 8px 8px rgba(0,0,0,.45))"}}>🛋️</div><div style={{position:"absolute",right:"20%",top:"28%",fontSize:"2.2rem",filter:"drop-shadow(0 8px 8px rgba(0,0,0,.45))"}}>🎶</div></>}
+      {roomId==="terrace"&&<><div style={{position:"absolute",left:"14%",bottom:"18%",fontSize:"3rem",filter:"drop-shadow(0 8px 8px rgba(0,0,0,.45))"}}>🌴</div><div style={{position:"absolute",right:"16%",bottom:"18%",fontSize:"3rem",filter:"drop-shadow(0 8px 8px rgba(0,0,0,.45))"}}>⛱️</div></>}
+
       {[...(hotspots[roomId]||[]),...common].map((h,i)=><SceneObject key={i} h={h}/>)}
       {selectedTask&&<div style={{position:"absolute",right:14,bottom:14}}><BuildingBadge task={selectedTask}/></div>}
+      <div style={{position:"absolute",left:14,bottom:14,background:"rgba(18,8,6,.68)",border:"1px solid rgba(255,244,214,.24)",borderRadius:16,padding:"7px 10px",fontSize:".68rem",fontWeight:850,color:"rgba(255,244,214,.82)",backdropFilter:"blur(8px)"}}>
+        Fondo: {roomImg} · si no existe, se usa escena híbrida
+      </div>
     </div>;
   }
   const guideTexts=[
