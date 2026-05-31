@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE130_COMUNIDAD_TABLON_FORO";
-const APP_VERSION_SHORT="F130";
+const APP_VERSION="FASE131B_TIENDA_CANJES_SOBRE_F130B";
+const APP_VERSION_SHORT="F131B";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -3052,6 +3052,69 @@ button:disabled{
   box-shadow:none!important;
 }
 
+
+
+/* ===== FASE131B: tienda y canjes serios sobre F130B ===== */
+.shop-command-center{
+  position:relative!important;
+  overflow:hidden!important;
+}
+.shop-command-center:before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(255,214,107,.18),transparent 28%),
+    radial-gradient(circle at 88% 12%,rgba(47,107,66,.16),transparent 32%);
+  opacity:.95;
+}
+.shop-command-center>*{position:relative;z-index:1}
+.shop-status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 10px;
+  border-radius:999px;
+  font-weight:950;
+  font-size:.72rem;
+  border:1px solid rgba(198,160,106,.72);
+  background:rgba(255,248,230,.68);
+  color:#332013;
+}
+.shop-reward-card-pro{
+  transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+.shop-reward-card-pro:hover{
+  transform:translateY(-2px);
+  box-shadow:0 14px 28px rgba(18,8,4,.22)!important;
+  filter:saturate(1.05);
+}
+.shop-rare-comun{border-left:5px solid #8A5A2E!important}
+.shop-rare-raro{border-left:5px solid #2F6B42!important}
+.shop-rare-epico{border-left:5px solid #7A241B!important}
+.shop-rare-legendario{border-left:5px solid #D4AF37!important}
+@media(max-width:520px){
+  .shop-command-grid{grid-template-columns:1fr 1fr!important}
+  .shop-action-row{flex-direction:column!important;align-items:stretch!important}
+  .shop-status-pill{justify-content:center}
+}
+
+/* ===== FASE130B: helper más pequeño, aura corta y sin tapar pantalla ===== */
+.rasta-helper-fixed-safe .rasta-face-avatar{
+  width:54px!important;
+  height:54px!important;
+  overflow:hidden!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar > div:first-child{
+  inset:18%!important;
+  filter:blur(4px)!important;
+  opacity:.68!important;
+}
+@media(max-width:520px){
+  .rasta-helper-fixed-safe .rasta-face-avatar{width:50px!important;height:50px!important;}
+}
+
 /* ===== FASE123: navegación inferior REAL fija + helper visible ===== */
 .app-shell{
   overflow:visible!important;
@@ -4384,6 +4447,41 @@ function LandingFeature({icon,title,sub,accent="#D4AF37"}){
 }
 
 
+
+function MiniRastaHelperFace({size=60,speaking=false}={}){
+  return (
+    <svg viewBox="0 0 120 120" width={size} height={size} style={{display:"block",overflow:"visible",filter:speaking?"drop-shadow(0 8px 10px rgba(0,0,0,.24)) drop-shadow(0 0 7px rgba(212,175,55,.26))":"drop-shadow(0 7px 9px rgba(0,0,0,.22))"}} aria-hidden="true">
+      <g strokeLinecap="round" fill="none">
+        <path d="M27 35 C14 47,13 66,23 82" stroke="#22130B" strokeWidth="8"/>
+        <path d="M35 28 C23 43,24 62,31 86" stroke="#3B2113" strokeWidth="8"/>
+        <path d="M45 23 C37 41,39 61,47 82" stroke="#6A3B1F" strokeWidth="7"/>
+        <path d="M93 35 C106 47,107 66,97 82" stroke="#22130B" strokeWidth="8"/>
+        <path d="M85 28 C97 43,96 62,89 86" stroke="#3B2113" strokeWidth="8"/>
+        <path d="M75 23 C83 41,81 61,73 82" stroke="#6A3B1F" strokeWidth="7"/>
+      </g>
+      <circle cx="32" cy="78" r="3" fill="#D4AF37"/>
+      <circle cx="88" cy="78" r="3" fill="#2F6B42"/>
+      <path d="M35 43 C38 25,47 16,60 16 C73 16,82 25,85 43 C78 36,69 32,60 32 C51 32,42 36,35 43Z" fill="#21130B"/>
+      <path d="M36 43 C43 37,51 34,60 34 C69 34,77 37,84 43 L82 54 C75 50,68 48,60 48 C52 48,45 50,38 54Z" fill="#2F6B42"/>
+      <path d="M38 50 H82" stroke="#D4AF37" strokeWidth="5"/>
+      <path d="M39 55 C49 61,71 61,81 55" fill="#A72822"/>
+      <path d="M37 56 C37 39,47 28,60 28 C73 28,83 39,83 56 C83 78,74 95,60 99 C46 95,37 78,37 56Z" fill="#D59463"/>
+      <ellipse cx="37" cy="62" rx="3.8" ry="7" fill="#C9855C"/>
+      <ellipse cx="83" cy="62" rx="3.8" ry="7" fill="#C9855C"/>
+      <path d="M48 52 C52 49,56 49,59 51" stroke="#24140C" strokeWidth="2.7"/>
+      <path d="M61 51 C64 49,68 49,72 52" stroke="#24140C" strokeWidth="2.7"/>
+      <ellipse cx="52" cy="61" rx="4" ry="4.8" fill="#111E2A"/>
+      <ellipse cx="68" cy="61" rx="4" ry="4.8" fill="#111E2A"/>
+      <circle cx="51" cy="59.5" r="1.1" fill="#fff"/>
+      <circle cx="67" cy="59.5" r="1.1" fill="#fff"/>
+      <path d="M59 65 C61 71,60 75,57 77" stroke="#AD6A48" strokeWidth="2"/>
+      <path d="M50 78 C54 75,57 75,60 77 C63 75,66 75,70 78" stroke="#2A170F" strokeWidth="4"/>
+      <path d="M52 84 C56 88,64 88,68 84" stroke="#8B2F1C" strokeWidth="3"/>
+      <path d="M53 80 C56 87,64 87,67 80" fill="#321D12"/>
+    </svg>
+  );
+}
+
 function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=false}={}){
   const customSources=useMemo(()=>{
     const b=settings?.branding||{};
@@ -4417,25 +4515,25 @@ function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=fal
         width:size,
         height:size,
         position:"relative",
-        overflow:"visible",
+        overflow:"hidden",
         display:"grid",
-        placeItems:"end center",
+        placeItems:"center",
         background:"transparent",
         border:"0",
         boxShadow:"none",
         animation:"helperBob 2.4s ease-in-out infinite",
         filter:speaking
-          ? "drop-shadow(0 14px 20px rgba(0,0,0,.34)) drop-shadow(0 0 12px rgba(213,178,79,.28))"
-          : "drop-shadow(0 10px 16px rgba(0,0,0,.28))"
+          ? "drop-shadow(0 9px 12px rgba(0,0,0,.28)) drop-shadow(0 0 7px rgba(213,178,79,.18))"
+          : "drop-shadow(0 7px 10px rgba(0,0,0,.22))"
       }}
     >
       <div
         style={{
           position:"absolute",
-          inset:0,
+          inset:"18%",
           borderRadius:"50%",
-          background:"radial-gradient(circle at 50% 58%,rgba(255,214,107,.28),transparent 62%)",
-          filter:"blur(10px)",
+          background:"radial-gradient(circle at 50% 52%,rgba(255,214,107,.24),transparent 64%)",
+          filter:"blur(4px)",
           zIndex:0,
           pointerEvents:"none"
         }}
@@ -4451,9 +4549,9 @@ function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=fal
           style={{
             position:"absolute",
             left:"50%",
-            bottom:-size*0.02,
-            width:size*1.68,
-            height:size*1.68,
+            bottom:size*0.02,
+            width:size*1.18,
+            height:size*1.18,
             transform:"translateX(-50%)",
             objectFit:"contain",
             objectPosition:"center bottom",
@@ -4470,17 +4568,20 @@ function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=fal
           style={{
             position:"absolute",
             left:"50%",
-            bottom:-size*0.06,
-            width:size*1.9,
-            transform:"translateX(-50%)",
+            top:"52%",
+            width:size*1.08,
+            height:size*1.08,
+            transform:"translate(-50%,-50%)",
             pointerEvents:"none",
             background:"transparent",
             border:"0",
             boxShadow:"none",
-            zIndex:1
+            zIndex:1,
+            display:"grid",
+            placeItems:"center"
           }}
         >
-          <HeroMascot/>
+          <MiniRastaHelperFace size={size*1.06} speaking={speaking}/>
         </div>
       )}
     </div>
@@ -6995,6 +7096,120 @@ function RewardNodeIcon({item,user,currentConfig,locked=false}){
   return <div style={{fontSize:"2rem",filter:locked?"grayscale(1) brightness(0)":"none"}}>{item.icono||"🎁"}</div>;
 }
 
+
+const SHOP_PHASE_LABEL = "F131B · tienda y canjes serios";
+
+function rewardRarityLabel(item={}){
+  const r=String(item.rareza||item.rarity||"comun").toLowerCase();
+  if(r.includes("legend"))return "legendario";
+  if(r.includes("epic")||r.includes("épico")||r.includes("epico"))return "epico";
+  if(r.includes("raro")||r.includes("rare"))return "raro";
+  return "comun";
+}
+function rewardTypeLabel(item={}){
+  const tipo=String(item.tipo||item.categoria||"recompensa").toLowerCase();
+  if(tipo.includes("descuento"))return "Descuento";
+  if(tipo.includes("servicio"))return "Servicio";
+  if(tipo.includes("avatar")||tipo.includes("cosmetico"))return "Cosmético";
+  if(tipo.includes("producto"))return "Producto";
+  if(tipo.includes("perfil"))return "Perfil";
+  return "Recompensa";
+}
+function rewardStockState(item={}){
+  const stock=item.stock;
+  if(stock===null||stock===undefined||stock==="")return {label:"stock libre",level:"ok"};
+  const n=Number(stock);
+  if(!Number.isFinite(n))return {label:"stock libre",level:"ok"};
+  if(n<=0)return {label:"agotado",level:"bad"};
+  if(n<=3)return {label:`quedan ${n}`,level:"warn"};
+  return {label:`stock ${n}`,level:"ok"};
+}
+function canUserRedeem(user,item,settings={}){
+  const points=Number(user?.puntos||0);
+  const price=Number(item?.puntos_precio||item?.precio_puntos||item?.precio||0);
+  const active=item?.activo!==false && item?.disabled!==true;
+  const stock=rewardStockState(item);
+  const min=Number(settings?.tienda?.puntos_minimos_canje||0);
+  if(!active)return {ok:false,reason:"No disponible"};
+  if(stock.level==="bad")return {ok:false,reason:"Agotado"};
+  if(points<min)return {ok:false,reason:`Mínimo ${min} pts`};
+  if(points<price)return {ok:false,reason:`Faltan ${Math.max(0,price-points)} pts`};
+  return {ok:true,reason:"Canjear"};
+}
+function shopRedemptionTips(user={},items=[]){
+  const pts=Number(user?.puntos||0);
+  const list=(items||[]).filter(x=>x?.activo!==false);
+  const affordable=list.filter(x=>Number(x.puntos_precio||x.precio_puntos||x.precio||0)<=pts);
+  const next=list
+    .filter(x=>Number(x.puntos_precio||x.precio_puntos||x.precio||0)>pts)
+    .sort((a,b)=>Number(a.puntos_precio||a.precio_puntos||a.precio||0)-Number(b.puntos_precio||b.precio_puntos||b.precio||0))[0];
+  return {
+    active:list.length,
+    affordable:affordable.length,
+    next,
+    missing:next?Math.max(0,Number(next.puntos_precio||next.precio_puntos||next.precio||0)-pts):0
+  };
+}
+
+function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
+  const info=shopRedemptionTips(user,items);
+  const pts=Number(user?.puntos||0);
+  const next=info.next;
+  return (
+    <Card className="shop-command-center" style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`1.5px solid ${T.g200}`,marginBottom:14}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start",flexWrap:"wrap"}}>
+        <div>
+          <div style={{fontSize:".74rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:T.textSub}}>{SHOP_PHASE_LABEL}</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.72rem",lineHeight:1,color:T.g800}}>Tienda y canjes</div>
+          <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>
+            Premios claros, stock visible y canjes con menos lío.
+          </div>
+        </div>
+        <div style={{display:"grid",gap:6,justifyItems:"end"}}>
+          <div className="shop-status-pill">💰 {pts} puntos</div>
+          <div className="shop-status-pill">🎁 {info.affordable} canjeables</div>
+        </div>
+      </div>
+      <div className="shop-command-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginTop:12}}>
+        <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
+          <div style={{fontSize:"1.35rem"}}>🛍️</div>
+          <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{info.active}</div>
+          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>premios activos</div>
+        </div>
+        <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
+          <div style={{fontSize:"1.35rem"}}>✅</div>
+          <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{info.affordable}</div>
+          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>listos para canjear</div>
+        </div>
+        <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
+          <div style={{fontSize:"1.35rem"}}>🎯</div>
+          <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{next?info.missing:0}</div>
+          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>puntos para el próximo</div>
+        </div>
+        <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
+          <div style={{fontSize:"1.35rem"}}>📦</div>
+          <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{items.filter(x=>rewardStockState(x).level==="warn").length}</div>
+          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>stock bajo</div>
+        </div>
+      </div>
+      {next&&(
+        <div style={{marginTop:10,background:"rgba(47,107,66,.10)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10,display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>Próximo objetivo: {next.icono||next.icon||"🎁"} {next.nombre||next.name||"recompensa"}</div>
+            <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>Te faltan {info.missing} puntos.</div>
+          </div>
+          {onFilter&&<Btn small col="gold" onClick={()=>onFilter("canjeables")}>Ver canjeables</Btn>}
+        </div>
+      )}
+      <div className="shop-action-row" style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
+        {onFilter&&<Btn small onClick={()=>onFilter("todos")}>🎁 Todos</Btn>}
+        {onFilter&&<Btn small onClick={()=>onFilter("descuentos")}>🏷️ Descuentos</Btn>}
+        {onFilter&&<Btn small onClick={()=>onFilter("avatar")}>🧑 Avatar</Btn>}
+      </div>
+    </Card>
+  );
+}
+
 function Tienda({user,setUser,showToast,showPoints,settings}){
   const [productos,setProductos]=useState([]);
   const [pedidos,setPedidos]=useState([]);
@@ -7091,6 +7306,14 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="🛍️" title="Tienda" sub={`Tienes ${user.puntos||0} pts`}/>
+      {/* FASE131B_SHOP_COMMAND_CENTER */}
+      <ShopCommandCenter
+        user={user}
+        items={productos||[]}
+        settings={settings||{}}
+        onFilter={(f)=>{ try{ if(f==='todos')setCat('todo'); else if(f==='avatar')setCat('avatar'); else if(f==='descuentos')setCat('cupones'); else if(f==='canjeables')setCat('todo'); }catch{} }}
+      />
+
       <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
           <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>Puntos de fidelidad</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0}</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Cosméticos de avatar/perfil con economía dura. Tycoon y RC quedan aparte.</div></div>
@@ -7606,7 +7829,7 @@ function RastaRunnerGame({onWin,user}){
         if(!last || last.x<55+Math.random()*22){
           next=[...next,{x:112+Math.random()*28,id:Date.now()+Math.random(),type:Math.random()<.82?'scissor':'comb'}];
         }
-        const hit=next.some(o=>o.x<24 && o.x>9 && yRef.current<27);
+        const hit=next.some(o=>o.type==='scissor' && o.x<20.5 && o.x>14.2 && yRef.current<19);
         if(hit){setRunning(false);runningRef.current=false;setGameOver(true);SFX.error();}
         return next;
       });
@@ -7616,7 +7839,7 @@ function RastaRunnerGame({onWin,user}){
   const pts=Math.max(1,Math.min(12,Math.floor(score/30)));
   const jumpTxt=running?`Saltos: ${jumpsLeft} · ${holding?'manteniendo':'toca para saltar'}`:'Doble salto y salto sostenido';
   return <Card style={{background:'linear-gradient(180deg,#F4E5BE,#E7CA8A)',border:`2px solid ${T.g300}`}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8,gap:8}}><div style={{fontWeight:900,color:T.g800}}>🦖✂️ Rasta Runner</div><Badge col='gold'>Doble salto</Badge></div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8,gap:8}}><div style={{fontWeight:900,color:T.g800}}>🦖✂️ Rasta Runner</div><Badge col='gold'>Hitbox ajustada</Badge></div>
     <div
       onPointerDown={e=>{e.currentTarget.setPointerCapture?.(e.pointerId);pressJump();}}
       onPointerUp={releaseJump}
@@ -7660,7 +7883,7 @@ function PlatformJumpGame({onWin,user}){
       setItems(prev=>{
         let next=prev.map(it=>({...it,y:it.y+(1.15*speed)}));
         next.forEach(it=>{
-          if(!it.done && it.y>78 && it.y<96 && it.lane===lane){
+          if(!it.done && it.y>88 && it.y<96 && it.lane===lane){
             it.done=true;
             if(it.bad){setRunning(false);setGameOver(true);SFX.error();}
             else{setScore(s=>s+it.pts);SFX.coins();}
@@ -7681,7 +7904,7 @@ function PlatformJumpGame({onWin,user}){
   },[running,lane,speed,score]);
   const pts=Math.max(1,Math.min(12,Math.floor(score/25)));
   return <Card style={{background:'linear-gradient(180deg,#F0E3C1,#E4C88F)',border:`2px solid ${T.g300}`}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}><div style={{fontWeight:900,color:T.g800}}>🌤️ Rasta Jump</div><Badge col='pink'>Velocidad gradual</Badge></div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}><div style={{fontWeight:900,color:T.g800}}>🌤️ Rasta Jump</div><Badge col='pink'>Hitbox ajustada</Badge></div>
     <div style={{position:'relative',height:300,borderRadius:20,overflow:'hidden',background:'linear-gradient(180deg,#D8ECFF,#F7F1DA 72%,#B9863D 72%)',border:'2px solid rgba(62,35,18,.15)',touchAction:'manipulation'}}>
       <div style={{position:'absolute',top:10,left:12,right:12,display:'flex',justifyContent:'space-between',fontWeight:900,color:T.g800,fontSize:'.8rem'}}><span>Score {score}</span><span>Vel. {speed.toFixed(1)}x</span></div>
       {lanes.map((x,i)=><div key={i} onClick={()=>setLane(i)} style={{position:'absolute',left:`${x}%`,top:0,bottom:0,width:2,background:'rgba(110,53,24,.08)',cursor:'pointer'}}/>)}
@@ -13381,7 +13604,7 @@ function HelperMascot({page,settings=null}){
       if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)) return saved;
     }catch{}
     if(typeof window==="undefined") return {x:360,y:620};
-    return {x:Math.max(12,Math.min(window.innerWidth-82,window.innerWidth-92)),y:Math.max(90,window.innerHeight-170)};
+    return {x:Math.max(12,Math.min(window.innerWidth-66,window.innerWidth-72)),y:Math.max(90,window.innerHeight-150)};
   });
 
   const mood=helperMood(page);
@@ -13401,7 +13624,7 @@ function HelperMascot({page,settings=null}){
     const onResize=()=>{
       if(typeof window==="undefined")return;
       setPos(p=>{
-        const next={x:Math.max(8,Math.min(window.innerWidth-78,p.x)),y:Math.max(72,Math.min(window.innerHeight-94,p.y))};
+        const next={x:Math.max(8,Math.min(window.innerWidth-66,p.x)),y:Math.max(72,Math.min(window.innerHeight-82,p.y))};
         try{localStorage.setItem("rasta_helper_pos",JSON.stringify(next));}catch{}
         return next;
       });
@@ -13471,8 +13694,8 @@ function HelperMascot({page,settings=null}){
     if(Math.abs(dx)+Math.abs(dy)>5)d.moved=true;
     if(typeof window==="undefined")return;
     const next={
-      x:Math.max(8,Math.min(window.innerWidth-78,d.baseX+dx)),
-      y:Math.max(72,Math.min(window.innerHeight-94,d.baseY+dy))
+      x:Math.max(8,Math.min(window.innerWidth-66,d.baseX+dx)),
+      y:Math.max(72,Math.min(window.innerHeight-82,d.baseY+dy))
     };
     setPos(next);
   }
@@ -13494,8 +13717,8 @@ function HelperMascot({page,settings=null}){
   };
 
   const bubbleSideStyle=isRight
-    ? {right:78,bottom:8}
-    : {left:78,bottom:8};
+    ? {right:62,bottom:6}
+    : {left:62,bottom:6};
 
   const arrowStyle=isRight
     ? {right:-10,bottom:18,borderRight:`2px solid ${T.g200}`,borderBottom:`2px solid ${T.g200}`}
@@ -13614,7 +13837,7 @@ function HelperMascot({page,settings=null}){
           }}
         >
           <div style={{position:"relative"}}>
-            <RastaFaceAvatar size={68} speaking={open} settings={settings} forceInternal/>
+            <RastaFaceAvatar size={54} speaking={open} settings={settings} forceInternal/>
             <div style={{
               position:"absolute",
               right:-2,
@@ -13668,7 +13891,7 @@ function HelperInline({page,settings=null}){
   const text=rastaPageHelpIntro(page);
   return <div style={{background:"rgba(255,248,230,.72)",border:`1px solid ${T.g200}`,borderRadius:18,padding:10}}>
     <button onClick={()=>setOpen(v=>!v)} style={{border:"none",background:"transparent",display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:0,width:"100%",textAlign:"left"}}>
-      <RastaFaceAvatar size={38} speaking={open} settings={settings}/>
+      <RastaFaceAvatar size={34} speaking={open} settings={settings}/>
       <div style={{flex:1}}>
         <div style={{fontWeight:950,color:T.g800,fontSize:".84rem"}}>{helperTitle(page)}</div>
         <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{open?"Ocultar explicación":"Ver explicación rápida"}</div>
