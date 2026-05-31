@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
-// FASE119_RESCATE_ESTABLE: base FASE115 compilable, sin imports externos del tycoon para no romper Vercel.
 
 // Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
 // La anon key es pública en apps frontend; lo que nunca debe ponerse aquí es la service_role/secret key.
@@ -39,7 +38,6 @@ async function db(table, method="GET", body=null, query="") {
 const dbGet   = (t,q="") => db(t,"GET",null,q);
 const dbPost  = (t,b)    => db(t,"POST",b,"");
 const dbPatch = (t,q,b)  => db(t,"PATCH",b,q);
-const dbDelete = (t,q="") => db(t,"DELETE",null,q);
 
 async function createNotification(payload={}){
   try{
@@ -2725,92 +2723,6 @@ body[data-rc-theme="day"]{
   border:2px solid #8E7957!important;
 }
 
-
-/* ===== FASE108: navegación fija, Rasta helper limpio, cartera/carrito/notificaciones ===== */
-.bottom-nav-pro{
-  position:fixed!important;
-  left:50%!important;
-  right:auto!important;
-  bottom:0!important;
-  transform:translateX(-50%)!important;
-  width:min(100vw,var(--app-max-width,480px))!important;
-  max-width:var(--app-max-width,480px)!important;
-  padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
-  z-index:1200!important;
-}
-.app-shell{
-  padding-bottom:calc(var(--app-bottom-pad,82px) + env(safe-area-inset-bottom,0px))!important;
-}
-.page-content-pro{
-  padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important;
-}
-.brand-home-button:hover .brand-scissors{
-  transform:rotate(-10deg) scale(1.12);
-  filter:drop-shadow(0 0 8px rgba(213,178,79,.55));
-}
-.brand-scissors{
-  transition:transform .18s ease,filter .18s ease;
-}
-.rasta-face-avatar{
-  isolation:isolate;
-}
-.rasta-face-avatar > div:first-child{
-  filter:drop-shadow(0 10px 18px rgba(0,0,0,.25));
-}
-.wallet-button-pro,.cart-button-pro{
-  display:inline-grid!important;
-  place-items:center!important;
-}
-@media (max-width:520px){
-  .wallet-button-pro,.cart-button-pro{padding:5px 7px!important;font-size:.82rem!important}
-  .app-header-pro{gap:6px!important;padding:10px 10px!important}
-  .app-header-pro .theme-word{display:none!important}
-}
-
-
-/* ===== FASE109: tienda personalización avatar/perfil + carrito funcional base ===== */
-.cart-button-pro{position:relative}
-.app-shell[data-rc-theme] .page-content-pro .shop-avatar-tag{
-  background:linear-gradient(180deg,#FFF8E8,#E9D8B4)!important;
-  color:#3A2A18!important;
-}
-
-
-/* ===== FASE110: confirmar carrito + desbloqueo de cosméticos ===== */
-.cart-button-pro:after{
-  content:"";
-}
-
-
-/* ===== FASE111: economía diaria dura ===== */
-.daily-cap-warning{
-  font-weight:950;
-}
-
-
-/* ===== FASE112: auditoría de puntos web ===== */
-.points-audit-note{
-  font-weight:950;
-}
-
-
-/* ===== FASE113: likes únicos en tablón ===== */
-button:disabled{
-  pointer-events:auto;
-}
-
-
-/* ===== FASE114: likes toggle en tablón ===== */
-.feed-like-toggle{
-  user-select:none;
-}
-
-
-/* ===== FASE115: likes toggle globales ===== */
-.like-toggle-active{
-  user-select:none;
-}
-
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -3065,170 +2977,6 @@ const COSMETIC_CATALOG_FALLBACK=[
   {item_key:"bg_street",nombre:"Fondo calle",descripcion:"Fondo urbano para perfiles de comunidad.",categoria:"fondos",slot:"bg",valor:"street",puntos_precio:280,rareza:"raro",activo:true},
   {item_key:"bg_royal",nombre:"Fondo VIP",descripcion:"Fondo legendario para perfiles premium.",categoria:"fondos",slot:"bg",valor:"royal",puntos_precio:900,rareza:"legendario",activo:true},
 ];
-
-const WEB_POINTS_DAILY_NORMAL_CAP=50;
-
-function webPointsDayKey(uid){return `web_points_day_${uid||"anon"}_${new Date().toISOString().split("T")[0]}`;}
-function getWebPointsToday(uid){try{return Number(localStorage.getItem(webPointsDayKey(uid))||0);}catch{return 0;}}
-function addWebPointsToday(uid,pts){try{const next=getWebPointsToday(uid)+(Number(pts)||0);localStorage.setItem(webPointsDayKey(uid),String(next));return next;}catch{return 0;}}
-function webPointsRemainingToday(uid){return Math.max(0,WEB_POINTS_DAILY_NORMAL_CAP-getWebPointsToday(uid));}
-async function awardWebPoints({user,setUser,showToast,showPoints,points,reason="",excludeDailyCap=false}){
-  const requested=Math.max(0,Number(points)||0);
-  if(!user?.id||requested<=0)return 0;
-  const allowed=excludeDailyCap?requested:Math.min(requested,webPointsRemainingToday(user.id));
-  if(allowed<=0){
-    showToast?.(`Límite diario normal de ${WEB_POINTS_DAILY_NORMAL_CAP} puntos alcanzado`);
-    return 0;
-  }
-  if(!excludeDailyCap)addWebPointsToday(user.id,allowed);
-  const nuevos=(Number(user.puntos)||0)+allowed;
-  await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-  setUser?.(u=>({...u,puntos:nuevos}));
-  showPoints?.(allowed);
-  SFX.coins();
-  showToast?.(`${reason||"Puntos añadidos"} +${allowed} pts${allowed<requested?` · límite diario aplicado`:``}`);
-  return allowed;
-}
-async function awardWebPointsByUserId({usuarioId,points,reason="",excludeDailyCap=false}){
-  const requested=Math.max(0,Number(points)||0);
-  if(!usuarioId||requested<=0)return 0;
-  const allowed=excludeDailyCap?requested:Math.min(requested,webPointsRemainingToday(usuarioId));
-  if(allowed<=0)return 0;
-  try{
-    const rows=await dbGet("usuarios",`?id=eq.${usuarioId}&select=id,puntos&limit=1`);
-    const actual=Number(rows?.[0]?.puntos||0);
-    const nuevos=Math.max(0,actual+allowed);
-    const ok=await dbPatch("usuarios",`?id=eq.${usuarioId}`,{puntos:nuevos});
-    if(ok&&!excludeDailyCap)addWebPointsToday(usuarioId,allowed);
-    return ok?allowed:0;
-  }catch(e){
-    console.warn(`No se pudieron sumar puntos web (${reason})`,e);
-    return 0;
-  }
-}
-function feedLikeStorageKey(user){return `feed_likes_${user?.id||"anon"}`;}
-function readLocalFeedLikes(user){
-  try{return JSON.parse(localStorage.getItem(feedLikeStorageKey(user))||"[]");}catch{return [];}
-}
-function saveLocalFeedLikes(user,ids){
-  try{localStorage.setItem(feedLikeStorageKey(user),JSON.stringify([...new Set((ids||[]).map(String))]));}catch{}
-}
-function hasLocalFeedLike(user,postId){
-  return readLocalFeedLikes(user).includes(String(postId));
-}
-function addLocalFeedLike(user,postId){
-  const ids=[...new Set([...readLocalFeedLikes(user),String(postId)])];
-  saveLocalFeedLikes(user,ids);
-  return ids;
-}
-function removeLocalFeedLike(user,postId){
-  const ids=readLocalFeedLikes(user).filter(id=>String(id)!==String(postId));
-  saveLocalFeedLikes(user,ids);
-  return ids;
-}
-
-const PERSONALIZATION_SHOP_EXTRA=[
-  {id:"title_fresh_cut",item_key:"title_fresh_cut",icono:"🏷️",nombre:"Título: Corte Fresco",descripcion:"Título visible para tu perfil. Personalización web, no Tycoon.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Corte Fresco",puntos_precio:180,rareza:"comun",activo:true,stock:null},
-  {id:"title_barrio_vip",item_key:"title_barrio_vip",icono:"👑",nombre:"Título: Barrio VIP",descripcion:"Título premium para perfiles con flow.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Barrio VIP",puntos_precio:650,rareza:"epico",activo:true,stock:null},
-  {id:"name_gold",item_key:"name_gold",icono:"✨",nombre:"Nombre dorado",descripcion:"Color especial para destacar tu nombre en perfil y comunidad.",categoria:"avatar",tipo:"perfil_color",slot:"nameColor",valor:"gold",puntos_precio:420,rareza:"raro",activo:true,stock:null},
-  {id:"name_green",item_key:"name_green",icono:"🟢",nombre:"Nombre verde rasta",descripcion:"Color verde para tu nombre público.",categoria:"avatar",tipo:"perfil_color",slot:"nameColor",valor:"green",puntos_precio:320,rareza:"comun",activo:true,stock:null},
-  {id:"profile_card_wood",item_key:"profile_card_wood",icono:"🪵",nombre:"Tarjeta pergamino",descripcion:"Estilo visual para tu tarjeta de perfil.",categoria:"avatar",tipo:"perfil_card",slot:"profileCard",valor:"wood",puntos_precio:500,rareza:"raro",activo:true,stock:null},
-  {id:"profile_card_night",item_key:"profile_card_night",icono:"🌙",nombre:"Tarjeta noche verde",descripcion:"Marco oscuro/verde para tu tarjeta de perfil.",categoria:"avatar",tipo:"perfil_card",slot:"profileCard",valor:"nightGreen",puntos_precio:580,rareza:"epico",activo:true,stock:null},
-  {id:"sticker_scissors",item_key:"sticker_scissors",icono:"✂️",nombre:"Pegatina tijeras",descripcion:"Pegatina coleccionable para futuras tarjetas de perfil.",categoria:"avatar",tipo:"perfil_sticker",slot:"sticker",valor:"scissors",puntos_precio:120,rareza:"comun",activo:true,stock:null},
-  {id:"sticker_dread",item_key:"sticker_dread",icono:"🦁",nombre:"Pegatina dread",descripcion:"Pegatina rasta para futuras tarjetas de perfil.",categoria:"avatar",tipo:"perfil_sticker",slot:"sticker",valor:"dread",puntos_precio:180,rareza:"raro",activo:true,stock:null}
-].map(x=>({...x,origen:"fallback_personalizacion"}));
-function personalizationProductFromCosmetic(c){
-  return {
-    id:c.item_key||`${c.slot}_${c.valor}`,
-    item_key:c.item_key,
-    icono:c.slot==="frame"?"🖼️":c.slot==="bg"?"🌄":c.slot==="aura"?"✨":"🎭",
-    nombre:c.nombre,
-    descripcion:`${c.descripcion||"Personalización del avatar/perfil."} No afecta al Tycoon.`,
-    categoria:"avatar",
-    tipo:"cosmetico_avatar",
-    slot:c.slot,
-    valor:c.valor,
-    puntos_precio:Number(c.puntos_precio)||0,
-    rareza:c.rareza||"comun",
-    activo:c.activo!==false,
-    stock:null,
-    origen:"fallback_avatar"
-  };
-}
-function avatarShopFallbackItems(){
-  return [
-    ...COSMETIC_CATALOG_FALLBACK.map(personalizationProductFromCosmetic),
-    ...PERSONALIZATION_SHOP_EXTRA
-  ].filter(x=>x.activo!==false);
-}
-function cartStorageKey(user){return `rasta_cart_v1_${user?.id||"anon"}`;}
-function readCart(user){
-  try{return JSON.parse(localStorage.getItem(cartStorageKey(user))||"[]");}catch{return [];}
-}
-function writeCart(user,items){
-  try{
-    localStorage.setItem(cartStorageKey(user),JSON.stringify(Array.isArray(items)?items:[]));
-    window.dispatchEvent(new CustomEvent("rasta-cart-updated"));
-  }catch{}
-}
-function addToLocalCart(user,item,qty=1){
-  const current=readCart(user);
-  const id=String(item.id||item.item_key||item.nombre||Date.now());
-  const existing=current.find(x=>String(x.id)===id);
-  let next;
-  if(existing){
-    next=current.map(x=>String(x.id)===id?{...x,qty:(Number(x.qty)||1)+qty}:x);
-  }else{
-    next=[...current,{
-      id,
-      item_key:item.item_key||null,
-      nombre:item.nombre||item.titulo||"Artículo",
-      tipo:item.tipo||"tienda",
-      categoria:item.categoria||"premios",
-      icono:item.icono||"🎁",
-      precio_puntos:Number(item.puntos_precio||item.precio_puntos||item.puntos||0),
-      puntos:Number(item.puntos_precio||item.precio_puntos||item.puntos||0),
-      slot:item.slot||null,
-      valor:item.valor||null,
-      rareza:item.rareza||"comun",
-      descripcion:item.descripcion||"",
-      qty
-    }];
-  }
-  writeCart(user,next);
-  return next;
-}
-
-
-function catalogItemByKey(key){
-  if(!key)return null;
-  const all=[...avatarShopFallbackItems()];
-  return all.find(x=>x.item_key===key || x.id===key)||null;
-}
-function hydrateCartItem(it){
-  const found=catalogItemByKey(it.item_key||it.id);
-  return {...(found||{}),...it};
-}
-function isAvatarPersonalizationItem(it){
-  const h=hydrateCartItem(it);
-  const c=String(h.categoria||"").toLowerCase();
-  const t=String(h.tipo||"").toLowerCase();
-  return c==="avatar"||t.includes("avatar")||t.includes("perfil")||!!h.slot;
-}
-async function unlockCosmeticForUser(user,item){
-  const h=hydrateCartItem(item);
-  if(!h.item_key)return false;
-  const keys=[...new Set([...localOwnedCosmetics(user),h.item_key])];
-  saveLocalOwnedCosmetics(user,keys);
-  try{
-    await supabase.from("user_cosmetics").upsert(
-      {usuario_id:String(user.id),item_key:h.item_key,created_at:new Date().toISOString()},
-      {onConflict:"usuario_id,item_key"}
-    );
-  }catch{}
-  return true;
-}
-
 function rarityLabel(r){return {comun:"Común",raro:"Raro",epico:"Épico",legendario:"Legendario"}[r]||"Especial";}
 function rarityColor(r){return {comun:"green",raro:"blue",epico:"pink",legendario:"gold"}[r]||"green";}
 function cosmeticPatch(item){return item?.slot?{[item.slot]:item.valor}:{};}
@@ -3736,43 +3484,6 @@ function LandingFeature({icon,title,sub,accent="#D4AF37"}){
         </div>
       </div>
       <div style={{position:"absolute",left:12,right:12,bottom:8,height:3,borderRadius:999,background:`linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)`,opacity:.85}}/>
-    </div>
-  );
-}
-
-
-function RastaFaceAvatar({size=66,speaking=false}={}){
-  return (
-    <div
-      className="rasta-face-avatar"
-      style={{
-        width:size,
-        height:size,
-        borderRadius:"50%",
-        overflow:"hidden",
-        position:"relative",
-        display:"grid",
-        placeItems:"center",
-        background:"radial-gradient(circle at 50% 35%,#F7D76D,#2A1A0D 70%)",
-        border:"3px solid #D5B24F",
-        boxShadow:speaking
-          ?"0 14px 28px rgba(0,0,0,.34),0 0 0 6px rgba(213,178,79,.18)"
-          :"0 10px 22px rgba(0,0,0,.28)",
-        animation:"helperBob 2.4s ease-in-out infinite"
-      }}
-    >
-      <div style={{
-        position:"absolute",
-        width:size*3.25,
-        left:-size*1.13,
-        top:-size*.86,
-        transform:"scale(1)",
-        transformOrigin:"center top",
-        pointerEvents:"none"
-      }}>
-        <HeroMascot/>
-      </div>
-      <div style={{position:"absolute",inset:0,borderRadius:"50%",boxShadow:"inset 0 0 0 2px rgba(255,248,226,.35),inset 0 -18px 22px rgba(0,0,0,.20)"}}/>
     </div>
   );
 }
@@ -4293,8 +4004,11 @@ async function grantNewsPoints({user,setUser,showToast,showPoints,eventKey,point
       console.warn("news_point_events error",evError);
       return false;
     }
-    const awarded=await awardWebPoints({user,setUser,showToast,showPoints,points,reason:description});
-    return awarded>0;
+    const nuevos=(user.puntos||0)+points;
+    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    setUser?.(u=>({...u,puntos:nuevos}));
+    showPoints?.(points);SFX.coins();showToast?.(`${description} +${points} pts`);
+    return true;
   }catch(e){console.warn("No se pudieron dar puntos de actualidad",e);return false;}
 }
 function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
@@ -4416,28 +4130,13 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
     }catch(e){console.warn(e);}
   }
   async function like(){
-    if(!item?.id||!user?.id)return;
+    if(!item?.id||liked)return;
     setLoading(true);
     try{
-      if(liked){
-        await supabase.from("news_likes").delete().eq("news_id",String(item.id)).eq("usuario_id",String(user.id));
-        setLiked(false);
-        setLikes(n=>Math.max(0,n-1));
-        onChanged?.(item.id,"unlike");
-        SFX.success();
-      }else{
-        const {error}=await supabase.from("news_likes").insert({news_id:String(item.id),news_title:item.title,news_url:item.url,news_category:item.category,usuario_id:String(user.id),usuario_nombre:user.nombre});
-        if(error){
-          // Si ya existía por carrera o dispositivo, lo tratamos como estado activo.
-          setLiked(true);
-          SFX.success();
-        }else{
-          setLiked(true);
-          setLikes(n=>n+1);
-          onChanged?.(item.id,"like");
-          await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_like:${item.id}`,points:1,description:"Primer like en esta noticia"});
-        }
-      }
+      const {error}=await supabase.from("news_likes").insert({news_id:String(item.id),news_title:item.title,news_url:item.url,news_category:item.category,usuario_id:String(user.id),usuario_nombre:user.nombre});
+      if(error){showToast?.("Ya habías marcado esta noticia o falta ejecutar el SQL.");setLoading(false);return;}
+      setLiked(true);setLikes(n=>n+1);onChanged?.(item.id,"like");
+      await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_like:${item.id}`,points:1,description:"Primer like en esta noticia"});
     }finally{setLoading(false);}
   }
   async function sendComment(){
@@ -4454,8 +4153,8 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
         await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_comment:${item.id}`,points:3,description:"Primer comentario en esta noticia"});
         const {data:mine}=await supabase.from("news_comments").select("news_id").eq("usuario_id",String(user.id));
         const distinct=new Set((mine||[]).map(x=>String(x.news_id))).size;
-        if(distinct>=3) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_3",points:5,description:"Has comentado 3 noticias distintas"});
-        if(distinct>=10) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_10",points:8,description:"Has comentado 10 noticias distintas"});
+        if(distinct>=3) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_3",points:8,description:"Has comentado 3 noticias distintas"});
+        if(distinct>=10) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_10",points:20,description:"Has comentado 10 noticias distintas"});
       }
     }finally{setLoading(false);}
   }
@@ -4469,7 +4168,7 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
         <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
           <Btn small col="gold" onClick={()=>window.open(item.url,"_blank","noopener,noreferrer")}>Leer fuente original ↗</Btn>
           {item?.youtubeUrl&&<Btn small col="red" onClick={()=>window.open(item.youtubeUrl,"_blank","noopener,noreferrer")}>▶ Buscar en YouTube</Btn>}
-          <Btn small col={liked?"gold":"dark"} disabled={loading} onClick={like}>{liked?"💛 Quitar like":"🤍 Me gusta"}</Btn>
+          <Btn small col={liked?"ghost":"dark"} disabled={loading||liked} onClick={like}>{liked?"👍 Te gusta":"👍 Me gusta"}</Btn>
         </div>
         <div style={{display:"flex",gap:10,marginTop:10,fontSize:".75rem",fontWeight:900,color:T.g700}}><span>👍 {likes}</span><span>💬 {comments.length}</span><span>{formatNewsDate(item.date)}</span></div>
       </div>
@@ -5204,7 +4903,7 @@ function Caja({user,showToast}){
   const [clienteNombre,setClienteNombre]=useState("");
   const [citaCobro,setCitaCobro]=useState(null);
   const [cobroForm,setCobroForm]=useState({metodo_pago:"efectivo",importe:"",puntos_generados:"10",descripcion:""});
-  const [puntosCitaDefault,setPuntosCitaDefault]=useState(5);
+  const [puntosCitaDefault,setPuntosCitaDefault]=useState(10);
 
   const today=()=>new Date().toISOString().split("T")[0];
   const monthStart=()=>{
@@ -5215,9 +4914,19 @@ function Caja({user,showToast}){
   const metodoLabel=m=>({efectivo:"Efectivo",tarjeta:"Tarjeta",bizum:"Bizum",mixto:"Mixto"})[m]||m||"Sin método";
 
   async function sumarPuntosFidelidad(usuarioId,puntos=0){
+    if(!usuarioId)return false;
     const add=Math.max(0,parseInt(puntos||0,10)||0);
-    if(!usuarioId||!add)return 0;
-    return await awardWebPointsByUserId({usuarioId,points:add,reason:"Cita cobrada"});
+    if(!add)return true;
+    try{
+      const rows=await dbGet("usuarios",`?id=eq.${usuarioId}&select=id,puntos&limit=1`);
+      const actual=Number(rows?.[0]?.puntos||0);
+      const nuevos=Math.max(0,actual + add);
+      const ok=await dbPatch("usuarios",`?id=eq.${usuarioId}`,{puntos:nuevos});
+      return Boolean(ok);
+    }catch(e){
+      console.warn("No se pudieron sumar puntos de fidelidad",e);
+      return false;
+    }
   }
 
   useEffect(()=>{loadCaja();},[]);
@@ -5230,7 +4939,7 @@ function Caja({user,showToast}){
       dbGet("app_settings","?setting_key=eq.puntos&select=setting_value&limit=1")
     ]);
     const puntosCfg=settingsRows?.[0]?.setting_value||{};
-    const puntosDefault=Math.max(0,parseInt(puntosCfg.puntos_por_cita_cobrada??5,10)||5);
+    const puntosDefault=Math.max(0,parseInt(puntosCfg.puntos_por_cita_cobrada??10,10)||10);
     setPuntosCitaDefault(puntosDefault);
     const cleanCobros=Array.isArray(cobs)?cobs:[];
     setCobros(cleanCobros);
@@ -5323,9 +5032,9 @@ function Caja({user,showToast}){
     if(ok){
       const cobroId=Array.isArray(ok)?ok?.[0]?.id:null;
       if(cobroId) await dbPatch("citas",`?id=eq.${citaCobro.id}`,{cobro_id:cobroId,updated_at:new Date().toISOString()});
-      const puntosDados=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
+      const puntosOk=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
       SFX.coins();
-      showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosDados}/${puntosGenerados} pts de fidelidad`:""}${puntosGenerados&&puntosDados<puntosGenerados?" · límite diario aplicado":""}`);
+      showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosGenerados} pts de fidelidad`:""}${!puntosOk?" · revisa puntos":""}`);
       setCitaCobro(null);
       await loadCaja();
     }else{
@@ -5659,7 +5368,7 @@ function AdminUsuarios({user,showToast}){
 }
 // FEED / TABLON
 function SocialFeed({user,setUser,showToast,showPoints}){
-  const [posts,setPosts]=useState([]);const [newPost,setNewPost]=useState("");const [loading,setLoading]=useState(true);const [profiles,setProfiles]=useState([]);const [selectedProfile,setSelectedProfile]=useState(null);const [likedPosts,setLikedPosts]=useState(()=>new Set(readLocalFeedLikes(user)));
+  const [posts,setPosts]=useState([]);const [newPost,setNewPost]=useState("");const [loading,setLoading]=useState(true);const [profiles,setProfiles]=useState([]);const [selectedProfile,setSelectedProfile]=useState(null);
   const canPost=normalizeRole(user.rol||user.role)!==ROLES.CLIENT;
   useEffect(()=>{load();},[]);
   async function load(){
@@ -5668,19 +5377,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
       dbGet("publicaciones","?tipo=neq.foro&order=created_at.desc&limit=30&select=*"),
       dbGet("usuarios","?select=*")
     ]);
-    const cleanPosts=Array.isArray(raw)?raw:[];
-    setPosts(cleanPosts);
-    setProfiles(await enrichProfilesWithAvatarConfigs(Array.isArray(users)?users:[]));
-    let likedIds=readLocalFeedLikes(user);
-    try{
-      const rows=await dbGet("publicacion_likes",`?usuario_id=eq.${user.id}&select=publicacion_id`);
-      if(Array.isArray(rows)&&rows.length){
-        likedIds=[...new Set([...likedIds,...rows.map(r=>String(r.publicacion_id))])];
-        saveLocalFeedLikes(user,likedIds);
-      }
-    }catch{}
-    setLikedPosts(new Set(likedIds));
-    setLoading(false);
+    setPosts(Array.isArray(raw)?raw:[]);setProfiles(await enrichProfilesWithAvatarConfigs(Array.isArray(users)?users:[]));setLoading(false);
   }
   function authorOf(post){return profiles.find(u=>String(u.id)===String(post.autor_id))||user;}
   async function publish(){
@@ -5689,39 +5386,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
     await dbPost("publicaciones",{contenido:newPost.trim(),autor_id:user.id,tipo:"anuncio",likes_count:0});
     setNewPost("");SFX.success();showToast("Anuncio publicado");load();
   }
-  async function likePost(post){
-    if(!post?.id||!user?.id)return;
-    const postId=String(post.id);
-    const alreadyLiked=likedPosts.has(postId)||hasLocalFeedLike(user,postId);
-    const delta=alreadyLiked?-1:1;
-    const nextLikes=new Set(likedPosts);
-    if(alreadyLiked){
-      nextLikes.delete(postId);
-      removeLocalFeedLike(user,postId);
-    }else{
-      nextLikes.add(postId);
-      addLocalFeedLike(user,postId);
-    }
-    setLikedPosts(nextLikes);
-    const nextCount=Math.max(0,(Number(post.likes_count)||0)+delta);
-    setPosts(prev=>prev.map(p=>String(p.id)===postId?{...p,likes_count:Math.max(0,(Number(p.likes_count)||0)+delta)}:p));
-    try{
-      if(alreadyLiked){
-        await dbDelete("publicacion_likes",`?publicacion_id=eq.${encodeURIComponent(postId)}&usuario_id=eq.${encodeURIComponent(String(user.id))}`);
-      }else{
-        await dbPost("publicacion_likes",{
-          publicacion_id:postId,
-          usuario_id:String(user.id),
-          usuario_nombre:user.nombre||user.email||"Usuario",
-          created_at:new Date().toISOString()
-        });
-      }
-    }catch(e){
-      console.warn("publicacion_likes no disponible; usando toggle local",e);
-    }
-    await dbPatch("publicaciones",`?id=eq.${post.id}`,{likes_count:nextCount});
-    SFX.success();
-  }
+  async function likePost(post){ await dbPatch("publicaciones",`?id=eq.${post.id}`,{likes_count:(post.likes_count||0)+1});load(); }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="📌" title="Tablón de anuncios" sub="Noticias, promociones y avisos oficiales de la tienda"/>
@@ -5743,7 +5408,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
           <div style={{fontSize:"0.93rem",fontWeight:700,color:T.text,lineHeight:1.55,whiteSpace:'pre-wrap'}}>{p.contenido}</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
             <span style={{fontSize:"0.76rem",color:T.textSub,fontWeight:800}}>{p.created_at?new Date(p.created_at).toLocaleDateString("es-ES"):""}</span>
-            <button onClick={()=>likePost(p)} title={likedPosts.has(String(p.id))?"Quitar like":"Dar like"} style={{background:likedPosts.has(String(p.id))?T.gradGold:T.g150,border:`1.5px solid ${likedPosts.has(String(p.id))?T.gold:T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:likedPosts.has(String(p.id))?T.g900:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999,opacity:1}}>{likedPosts.has(String(p.id))?"💛":"🤍"} {p.likes_count||0}</button>
+            <button onClick={()=>likePost(p)} style={{background:T.g150,border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999}}>❤️ {p.likes_count||0}</button>
           </div>
         </Card>;
       })}
@@ -5942,27 +5607,17 @@ function Foro({user,showToast}){
   }
 
   async function voteTarget(target,tipo="tema"){
-    if(!target?.id||!user?.id)return;
     const id=target.id;
-    const already=voted(tipo,id);
+    if(voted(tipo,id)){showToast("Ya has votado esto");SFX.error();return;}
+    const ok=await dbPost("foro_votos",{usuario_id:String(user.id),target_tipo:tipo,target_id:id});
+    if(!ok){showToast("No se pudo votar o ya estaba votado");SFX.error();return;}
     const table=tipo==="tema"?"foro_temas":"foro_respuestas";
-    const nextLikes=Math.max(0,(Number(target.likes)||0)+(already?-1:1));
-    if(already){
-      try{await dbDelete("foro_votos",`?usuario_id=eq.${encodeURIComponent(String(user.id))}&target_tipo=eq.${encodeURIComponent(tipo)}&target_id=eq.${encodeURIComponent(String(id))}`);}catch(e){console.warn("No se pudo borrar voto foro",e);}
-      setVotes(prev=>prev.filter(v=>!(String(v.target_tipo)===tipo&&String(v.target_id)===String(id))));
-    }else{
-      const ok=await dbPost("foro_votos",{usuario_id:String(user.id),target_tipo:tipo,target_id:id});
-      if(!ok){showToast("No se pudo votar");SFX.error();return;}
-      setVotes(prev=>[...prev,{usuario_id:String(user.id),target_tipo:tipo,target_id:id}]);
-    }
+    const nextLikes=(Number(target.likes)||0)+1;
     await dbPatch(table,`?id=eq.${id}`,{likes:nextLikes});
-    if(tipo==="tema"){
-      setTopics(prev=>prev.map(t=>String(t.id)===String(id)?{...t,likes:nextLikes}:t));
-      setActive(a=>a?.id===id?{...a,likes:nextLikes}:a);
-    }else{
-      setReplies(prev=>prev.map(r=>String(r.id)===String(id)?{...r,likes:nextLikes}:r));
-    }
-    SFX.success();
+    SFX.coins();
+    showToast("Voto guardado");
+    await load();
+    if(tipo==="tema") setActive(a=>a?.id===id?{...a,likes:nextLikes}:a);
   }
 
   async function togglePinned(topic){
@@ -6055,7 +5710,7 @@ function Foro({user,showToast}){
           <Badge col="blue">💬 {topicReplies(shown.id).length} respuestas</Badge>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             <Btn small col={isFollowing(shown)?"green":"ghost"} onClick={()=>toggleFollow(shown)}>{isFollowing(shown)?"✓ Siguiendo":"Seguir"}</Btn>
-            <Btn small col={voted("tema",shown.id)?"gold":"ghost"} onClick={()=>voteTarget(shown,"tema")}>{voted("tema",shown.id)?"💛":"🤍"} {shown.likes||0}</Btn>
+            <Btn small col={voted("tema",shown.id)?"ghost":"gold"} onClick={()=>voteTarget(shown,"tema")}>👍 {shown.likes||0}</Btn>
             {!canModerate&&<Btn small col="ghost" onClick={()=>openReport("tema",shown)}>🚩 Reportar</Btn>}
           </div>
         </div>
@@ -6078,7 +5733,7 @@ function Foro({user,showToast}){
           <div style={{fontSize:".86rem",fontWeight:750,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div>
           <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:8,flexWrap:"wrap"}}>
             {!canModerate&&<button onClick={()=>openReport("respuesta",r)} style={{background:"rgba(255,244,214,.72)",border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.76rem",color:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999}}>🚩 Reportar</button>}
-            <button onClick={()=>voteTarget(r,"respuesta")} title={voted("respuesta",r.id)?"Quitar voto":"Votar"} style={{background:voted("respuesta",r.id)?T.gradGold:T.g150,border:`1.5px solid ${voted("respuesta",r.id)?T.gold:T.g200}`,cursor:"pointer",fontSize:"0.76rem",color:voted("respuesta",r.id)?T.g900:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999,opacity:1}}>{voted("respuesta",r.id)?"💛":"🤍"} {r.likes||0}</button>
+            <button onClick={()=>voteTarget(r,"respuesta")} disabled={voted("respuesta",r.id)} style={{background:T.g150,border:`1.5px solid ${T.g200}`,cursor:voted("respuesta",r.id)?"default":"pointer",fontSize:"0.76rem",color:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999,opacity:voted("respuesta",r.id)?.65:1}}>👍 {r.likes||0}</button>
           </div>
         </Card>;
       })}
@@ -6151,10 +5806,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
       data=await dbGet("premios","?activo=eq.true&order=puntos_precio.asc&select=*");
     }
     const pedidosRows=await dbGet("tienda_pedidos",`?usuario_id=eq.${user.id}&order=created_at.desc&limit=8&select=*`);
-    const baseItems=Array.isArray(data)?data:[];
-    const hasAvatar=baseItems.some(p=>String(p.categoria||"").toLowerCase()==="avatar"||String(p.tipo||"").includes("avatar")||String(p.tipo||"").includes("perfil"));
-    const merged=hasAvatar?baseItems:[...baseItems,...avatarShopFallbackItems()];
-    setProductos(merged);
+    setProductos(Array.isArray(data)?data:[]);
     setPedidos(Array.isArray(pedidosRows)?pedidosRows:[]);
     setLoading(false);
   }
@@ -6194,25 +5846,16 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
       await dbPatch("tienda_items",`?id=eq.${p.id}`,{stock:Math.max(0,Number(p.stock)-1)});
     }
     if(okUser){
-      const isAvatar=isAvatarPersonalizationItem(p);
-      if(isAvatar) await unlockCosmeticForUser(user,p);
       setUser(u=>({...u,puntos:nuevos}));
       SFX.coins();
       await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Nuevo pedido de tienda",mensaje:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:true});
-      await createNotification({usuario_id:user.id,rol_destino:"client",tipo:isAvatar?"avatar":"pedido",titulo:isAvatar?"Personalización desbloqueada":"Pedido creado",mensaje:isAvatar?`Has desbloqueado ${p.nombre}. Ve a Perfil > Editor para equiparlo.`:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:isAvatar?"avatar":"tienda_pedido",entidad_id:pedidoId||p.id,importante:false});
-      showToast(isAvatar?`${p.nombre} desbloqueado`:`${p.nombre} pedido correctamente`);
+      await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"pedido",titulo:"Pedido creado",mensaje:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:false});
+      showToast(`${p.nombre} pedido correctamente`);
       await load();
     }else{
       showToast("Pedido guardado, pero revisa los puntos del usuario");
     }
   }
-
-  function addCart(p){
-    addToLocalCart(user,p,1);
-    SFX.coins();
-    showToast(`${p.nombre} añadido al carrito`);
-  }
-
 
   const cats=[
     {id:"todo",label:"Todo",icon:"✨"},
@@ -6275,10 +5918,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
               </div>
               <div style={{marginTop:12}}>
                 {agotado?<div style={{textAlign:"center",fontSize:"0.78rem",color:T.red,fontWeight:950}}>Agotado</div>:
-                <div style={{display:"grid",gridTemplateColumns:ok?"1fr 1fr":"1fr",gap:8}}>
-                  <Btn full small col="ghost" onClick={()=>addCart(p)}>🛒 Añadir</Btn>
-                  {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>Canjear</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} pts</div>}
-                </div>}
+                ok?<Btn full small col="gold" onClick={()=>canjear(p)}>Canjear</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850}}>Faltan {precio-(user.puntos||0)} pts</div>}
               </div>
             </Card>
           );
@@ -6326,7 +5966,7 @@ function Cupones({user,showToast}){
 const TODAY_KEY=()=>new Date().toISOString().split("T")[0];
 function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${uid}_${TODAY_KEY()}`)==="1";}
 function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
-const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gacha:50};
+const GAME_DAILY_REWARDS={stitch:15,runner:12,jump:12,memoria:15,sopa:15,trivia:8,gacha:50};
 const ARCADE_GAMES=[
   {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda en tiempo real con moneda RC propia",pts:0},
   {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de premios: 50 tiradas al día",pts:GAME_DAILY_REWARDS.gacha},
@@ -6337,7 +5977,7 @@ const ARCADE_GAMES=[
   {id:"sopa",icon:"🔤",title:"Sopa diaria",desc:"Sopa 14x14 que cambia cada día",pts:GAME_DAILY_REWARDS.sopa},
   {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:GAME_DAILY_REWARDS.trivia}
 ];
-const GAME_DAILY_CAP=20;
+const GAME_DAILY_CAP=75;
 const GACHA_DAILY_PULL_LIMIT=50;
 function gachaPullsKey(uid){return `gacha_pulls_${uid||"anon"}_${TODAY_KEY()}`;}
 function getGachaPullsToday(uid){try{return Number(localStorage.getItem(gachaPullsKey(uid))||0);}catch{return 0;}}
@@ -7554,8 +7194,11 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
       setActiveGame(null);
       return;
     }
-    const awarded=await awardWebPoints({user,setUser,showToast,showPoints,points:reward,reason:"Arcade"});
-    if(awarded>0)addDailyGamePointsTotal(user.id,awarded);
+    addDailyGamePointsTotal(user.id,reward);
+    const nuevos=(user.puntos||0)+reward;
+    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    setUser(u=>({...u,puntos:nuevos}));
+    showPoints(reward);SFX.coins();showToast(`+${reward} puntos reales!`);
     setActiveGame(null);
   }
 
@@ -7918,8 +7561,9 @@ function Retos({user,setUser,showToast,showPoints}){
   async function reclamar(reto){
     const prog=progresos[reto.id];if(!prog||prog.completado)return;
     await dbPatch("retos_progreso",`?id=eq.${prog.id}`,{completado:true});
-    await awardWebPoints({user,setUser,showToast,showPoints,points:Number(reto.puntos_premio)||0,reason:"Reto"});
-    load();
+    const nuevos=(user.puntos||0)+reto.puntos_premio;
+    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    setUser(u=>({...u,puntos:nuevos}));showPoints(reto.puntos_premio);SFX.coins();showToast(`+${reto.puntos_premio} puntos!`);load();
   }
   function daysLeft(f){const d=Math.ceil((new Date(f)-new Date())/86400000);return d<=0?"Vence hoy":`${d} dias`;}
   return(
@@ -8044,8 +7688,9 @@ function Reviews({user,setUser,showToast,showPoints}){
   async function submit(){
     if(!comment.trim()){showToast("Escribe un comentario");return;}
     await dbPost("reviews",{usuario_id:user.id,autor_nombre:user.nombre,autor_avatar:user.avatar,rating,comentario:comment});
-    await awardWebPoints({user,setUser,showToast,showPoints,points:5,reason:"Reseña"});
-    showToast("Gracias por tu reseña");
+    const nuevos=(user.puntos||0)+10;
+    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    setUser(u=>({...u,puntos:nuevos}));showPoints(10);showToast("Gracias por tu resena! +10 pts");
     setShowNew(false);setComment("");setRating(5);SFX.success();load();
   }
   const avg=reviews.length>0?(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1):"--";
@@ -8149,12 +7794,12 @@ function PerfilNewsActivity({user}){
 
 // MISIONES Y TROFEOS
 const MISSION_DEFS=[
-  {key:"daily_game",period:"day",icon:"🎮",title:"Una partida al día",desc:"Guarda una partida de Arcade hoy",goal:1,points:2,type:"gamesToday"},
+  {key:"daily_game",period:"day",icon:"🎮",title:"Una partida al día",desc:"Guarda una partida de Arcade hoy",goal:1,points:3,type:"gamesToday"},
   {key:"daily_news_comment",period:"day",icon:"💬",title:"Opina en Actualidad",desc:"Comenta una noticia hoy",goal:1,points:3,type:"commentsToday"},
   {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy",goal:1,points:1,type:"likesToday"},
-  {key:"weekly_arcade_3",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 3 partidas esta semana",goal:3,points:6,type:"gamesWeek"},
-  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana",goal:5,points:8,type:"commentsWeek"},
-  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana",goal:3,points:6,type:"mixedWeek"},
+  {key:"weekly_arcade_3",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 3 partidas esta semana",goal:3,points:8,type:"gamesWeek"},
+  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana",goal:5,points:10,type:"commentsWeek"},
+  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana",goal:3,points:8,type:"mixedWeek"},
 ];
 const TROPHY_DEFS=[
   {key:"first_game",icon:"🎮",title:"Primer arcade",desc:"Guarda tu primera partida",condition:s=>s.gamesAll>=1},
@@ -8250,8 +7895,11 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
     try{
       const {error}=await supabase.from("user_mission_claims").insert({usuario_id:String(user.id),mission_key:m.key,period_key:period,puntos:m.points});
       if(error){showToast?.("Objetivo ya reclamado o no disponible");return;}
-      await awardWebPoints({user,setUser,showToast,showPoints,points:m.points,reason:"Objetivo"});
+      const nuevos=(user.puntos||0)+m.points;
+      await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+      setUser?.(u=>({...u,puntos:nuevos}));
       setClaimed(v=>({...v,[key]:true}));
+      showPoints?.(m.points);SFX.coins();showToast?.(`Objetivo reclamado: +${m.points} pts`);
     }catch{showToast?.("No se pudo reclamar el objetivo");}
   }
   const unlockedCount=Object.values(trophies).filter(Boolean).length;
@@ -12111,30 +11759,6 @@ const HELP_TIPS = {
     "El cliente lee y reacciona; staff y admin publican. Ordenado, limpio y sin convertirlo en chat loco.",
     "Un aviso bien puesto evita veinte preguntas repetidas. Eso es magia sin IA, mi pana.",
     "Los posts importantes deberían poder fijarse arriba como cartel de barbería."
-  ],
-  cartera:[
-    "La cartera separa las economías: puntos web para perfil, tienda y comunidad; RC sólo para el Tycoon; dinero real futuro aparte.",
-    "La regla buena queda aplicada: máximo normal de 50 puntos al día si completas todo perfecto. Gacha, RC del Tycoon, compras y devoluciones quedan aparte.",
-    "Aquí verás puntos disponibles, progreso diario y, más adelante, historial de movimientos.",
-    "Si algún día activas pagos, el saldo real debe vivir aquí, separado de los puntos para no mezclar churras con rastas."
-  ],
-  carrito:[
-    "El carrito guardará compras de tienda y personalización del avatar/perfil antes de confirmar el canje.",
-    "Aquí no entra el Tycoon. El Tycoon tendrá sus RC y su propia economía cuando lo mejoremos más adelante.",
-    "Lo ideal es que puedas añadir, quitar, vaciar y revisar total antes de gastar puntos.",
-    "Buen carrito: claro, sin letra pequeña y con el total siempre visible. Que nadie compre un peine pensando que era una corona."
-  ],
-  personalizacion:[
-    "La personalización es para avatar, perfil y presencia dentro de la web: marcos, fondos, títulos, colores e insignias.",
-    "Los cosméticos son perfectos para endurecer la economía sin tener que regalar premios reales todo el tiempo.",
-    "Primero se desbloquea el objeto; después se aplica desde el editor de personaje o perfil.",
-    "El Tycoon queda fuera de esta tienda por ahora. Sus muebles y mejoras visuales irán con RC cuando toque."
-  ],
-  notificaciones:[
-    "La campana es el buzón rápido: citas, mensajes, canjes y avisos importantes.",
-    "Una notificación de cita debe enseñar fecha, hora, servicio, estado y mensaje completo sin obligarte a buscar a ciegas.",
-    "Si algo es importante, debe verse como importante. Si ya lo leíste, que no siga gritando como loro en barbería.",
-    "Desde aquí deberías poder abrir la sección relacionada: Citas, comunidad, tienda o perfil."
   ]
 };
 
@@ -12298,8 +11922,7 @@ function helperMood(page){
   if(page==="dashboard")return "welcome";
   if(page==="arcade"||page==="tops"||String(page).startsWith("game_"))return "arcade";
   if(page==="noticias"||page==="comunidad"||page==="feed"||page==="foro")return "noticias";
-  if(page==="perfil"||page==="cartera"||page==="carrito")return "success";
-  if(page==="notificaciones")return "noticias";
+  if(page==="perfil")return "success";
   return "idle";
 }
 function helperTitle(page){
@@ -12313,9 +11936,6 @@ function helperTitle(page){
   if(page==="arcade"||page==="juegos")return "Rasta Arcade";
   if(page==="tienda")return "Rasta en tienda";
   if(page==="perfil")return "Tu estilo, mi pana";
-  if(page==="cartera")return "Rasta cartera";
-  if(page==="carrito")return "Rasta carrito";
-  if(page==="notificaciones")return "Rasta campana";
   if(page==="comunidad"||page==="foro"||page==="feed")return "Rasta comunidad";
   if(page==="noticias")return "Rasta magazine";
   return "Rasta al habla";
@@ -12339,10 +11959,7 @@ function rastaPageHelpIntro(page){
     perfil:"Estás en Perfil. Aquí editas avatar, privacidad, nombre y opciones de cuenta.",
     inventario:"Estás en Stock. Aquí se revisa inventario y productos.",
     caja:"Estás en Caja. Aquí se revisan ingresos, ventas y actividad económica.",
-    ranking:"Estás en Ranking. Aquí se comparan puntos y progreso entre clientes.",
-    cartera:"Estás en Cartera. Aquí se separan los puntos web, el límite diario, el saldo futuro y la economía del Tycoon.",
-    carrito:"Estás en Carrito. Aquí se guardarán compras de tienda y personalización del avatar antes de confirmar el canje.",
-    notificaciones:"Estás en Notificaciones. Aquí se leen avisos completos, citas, mensajes y accesos rápidos a la sección relacionada."
+    ranking:"Estás en Ranking. Aquí se comparan puntos y progreso entre clientes."
   };
   return base[key]||HELP_TEXTS[key]||"Pulsa una zona de la app y te explicaré para qué sirve.";
 }
@@ -12371,14 +11988,6 @@ function rastaElementHelp(target,page){
   if(tag==="select")return "Este desplegable sirve para elegir una opción de la lista.";
 
   if(t.includes("sonido")||t.includes("silenciar"))return "Activa o silencia la música y los efectos. Si haces doble toque en Sonido, cambia el tema musical.";
-  if(t.includes("cartera")||t.includes("👛"))return "Abre la cartera: puntos disponibles, límite diario de 50 puntos, saldo futuro y economías separadas.";
-  if(t.includes("carrito")||t.includes("🛒"))return "Abre el carrito: aquí se guardarán compras de tienda y personalización de avatar/perfil antes de confirmar.";
-  if(t.includes("notificaciones")||t.includes("🔔")||t.includes("campana"))return "Abre la campana. Aquí puedes leer citas, avisos y mensajes completos sin perderte.";
-  if(t.includes("ver detalle"))return "Despliega la notificación para leer el mensaje completo y los datos importantes.";
-  if(t.includes("abrir cita"))return "Te lleva a Citas para revisar o gestionar la reserva relacionada.";
-  if(t.includes("marcar leída")||t.includes("marcar leidas")||t.includes("marcar leídas"))return "Marca la notificación como leída para que deje de aparecer como nueva.";
-  if(t.includes("vaciar"))return "Vacía el carrito. Úsalo sólo si quieres quitar todos los artículos guardados.";
-  if(t.includes("confirmación")||t.includes("confirmar carrito")||t==="confirmar")return "Confirma el carrito: descuenta puntos, registra pedidos y desbloquea personalización de avatar/perfil si corresponde.";
   if(t.includes("top 10"))return "Top 10 abre los rankings de minijuegos: semanal e histórico por cada juego.";
   if(t.includes("top general"))return "Top general muestra estadísticas globales de clientes: puntos, juegos, tienda y comunidad.";
   if(t.includes("ver top")||t.includes("abrir top"))return "Este botón abre la página de rankings para ver los mejores jugadores y estadísticas.";
@@ -12393,7 +12002,7 @@ function rastaElementHelp(target,page){
   if(t.includes("publicar"))return "Publica el texto en el tablón, foro o comunidad según la sección donde estés.";
   if(t.includes("responder"))return "Añade una respuesta al tema o conversación actual.";
   if(t.includes("comentar")||t.includes("comentario"))return "Abre o añade comentarios. Participar en comunidad puede servir para puntos y actividad.";
-  if(t.includes("me gusta")||t.includes("like")||t.includes("👍"))return "Pulsa una vez para dar like y vuelve a pulsar para quitarlo. Sólo cuenta un like activo por usuario y publicación, tema, respuesta o noticia.";
+  if(t.includes("me gusta")||t.includes("like")||t.includes("👍"))return "Marca que te gusta esta publicación o noticia. Sirve para participación y estadísticas.";
   if(t.includes("youtube"))return "Abre una búsqueda o enlace de YouTube relacionado, normalmente para música o vídeos oficiales.";
   if(t.includes("fuente")||t.includes("leer fuente"))return "Abre la fuente original de la noticia fuera de la app.";
   if(t.includes("abrir debate"))return "Abre la conversación de esa noticia para poder leer o comentar.";
@@ -12675,8 +12284,8 @@ function HelperMascot({page}){
             touchAction:"none"
           }}
         >
-          <div style={{position:"relative"}}>
-            <RastaFaceAvatar size={68} speaking={open}/>
+          <div style={{position:"relative",animation:"helperBob 2.4s ease-in-out infinite"}}>
+            <LoginHelperAvatar size={66} speaking={open} mood={helpMode?"success":mood}/>
             <div style={{
               position:"absolute",
               right:-2,
@@ -12722,213 +12331,21 @@ function pageTheme(page,communityTab,role){
   if(key==="musica") return PAGE_THEMES.noticias||PAGE_THEMES.comunidad;
   return PAGE_THEMES[key]||PAGE_THEMES[page]||PAGE_THEMES.dashboard;
 }
-
-
-
-function HelperInline({page}){
-  const [open,setOpen]=useState(false);
-  const text=rastaPageHelpIntro(page);
-  return <div style={{background:"rgba(255,248,230,.72)",border:`1px solid ${T.g200}`,borderRadius:18,padding:10}}>
-    <button onClick={()=>setOpen(v=>!v)} style={{border:"none",background:"transparent",display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:0,width:"100%",textAlign:"left"}}>
-      <RastaFaceAvatar size={38} speaking={open}/>
-      <div style={{flex:1}}>
-        <div style={{fontWeight:950,color:T.g800,fontSize:".84rem"}}>{helperTitle(page)}</div>
-        <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{open?"Ocultar explicación":"Ver explicación rápida"}</div>
-      </div>
-      <div style={{fontWeight:950,color:T.g700}}>{open?"−":"+"}</div>
-    </button>
-    {open&&<div style={{fontSize:".8rem",fontWeight:820,color:T.text,lineHeight:1.42,marginTop:8,whiteSpace:"pre-wrap"}}>{text}</div>}
-  </div>;
-}
-
-function WalletPanel({show,onClose,user}){
-  if(!show)return null;
-  const pts=Number(user?.puntos||0);
-  const dailyMax=50;
-  const todayEarned=getWebPointsToday(user?.id);
-  const pct=Math.max(0,Math.min(100,Math.round(todayEarned/dailyMax*100)));
-  return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
-        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>👛 Cartera</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Puntos web separados del Tycoon y de pagos futuros.</div></div>
-        <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
-        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>⭐</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>{pts}</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Puntos disponibles</div></Card>
-        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>💳</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>0,00 €</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Saldo futuro</div></Card>
-      </div>
-      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}>
-        <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>Límite diario normal</span><span>{todayEarned}/{dailyMax} pts</span></div>
-        <div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F)",borderRadius:999}}/></div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 puntos/día completando todo perfecto. Gacha, RC del Tycoon, compras y devoluciones quedan aparte.</div>
-      </Card>
-      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
-        <div style={{fontWeight:950,color:T.g800}}>Economías separadas</div>
-        <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:6}}>Puntos web: avatar, perfil, tienda y comunidad. RC: sólo Tycoon. Dinero real futuro: pagos, reservas o saldo, siempre separado.</div>
-      </Card>
-      <div style={{marginTop:10}}><HelperInline page="cartera"/></div>
-    </div>
-  </div>;
-}
-
-function CartPanel({show,onClose,user,setUser,showToast}){
-  const [items,setItems]=useState(()=>readCart(user));
-  useEffect(()=>{
-    const reload=()=>setItems(readCart(user));
-    window.addEventListener("rasta-cart-updated",reload);
-    return()=>window.removeEventListener("rasta-cart-updated",reload);
-  },[user?.id]);
-  useEffect(()=>{writeCart(user,items);},[items,user?.id]);
-  if(!show)return null;
-  const hydratedItems=items.map(hydrateCartItem);
-  const totalPts=hydratedItems.reduce((sum,it)=>sum+(Number(it.precio_puntos||it.puntos||0)*Number(it.qty||1)),0);
-  function clearCart(){setItems([]);showToast?.("Carrito vaciado");}
-  function removeItem(i){setItems(items.filter((_,idx)=>idx!==i));SFX.tab();}
-  async function confirmCart(){
-    if(!hydratedItems.length)return;
-    if((user.puntos||0)<totalPts){showToast?.(`Te faltan ${totalPts-(user.puntos||0)} puntos`);SFX.error();return;}
-    const nuevos=Math.max(0,(user.puntos||0)-totalPts);
-    const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    const avatarItems=[];
-    for(const raw of hydratedItems){
-      const qty=Math.max(1,Number(raw.qty||1));
-      for(let n=0;n<qty;n++){
-        const isAvatar=isAvatarPersonalizationItem(raw);
-        if(isAvatar){avatarItems.push(raw);await unlockCosmeticForUser(user,raw);}
-        try{
-          await dbPost("canjes",{
-            usuario_id:user.id,
-            premio_id:raw.id||raw.item_key||null,
-            premio_nombre:raw.nombre||"Artículo",
-            puntos_gastados:Number(raw.precio_puntos||raw.puntos||0),
-            item_key:raw.item_key||null,
-            categoria:raw.categoria||"premios",
-            tipo:raw.tipo||"carrito"
-          });
-        }catch{}
-        try{
-          await dbPost("tienda_pedidos",{
-            usuario_id:String(user.id),
-            cliente_nombre:user.nombre||user.email||"Cliente",
-            cliente_email:user.email||null,
-            item_id:String(raw.id||raw.item_key||"cart"),
-            item_nombre:raw.nombre||"Artículo",
-            item_categoria:raw.categoria||"premios",
-            item_tipo:raw.tipo||"carrito",
-            puntos_coste:Number(raw.precio_puntos||raw.puntos||0),
-            precio_euros:0,
-            estado:isAvatar?"entregado":"pendiente",
-            notas_cliente:isAvatar?"Personalización desbloqueada automáticamente.":"Pedido creado desde carrito.",
-            updated_at:new Date().toISOString()
-          });
-        }catch{}
-      }
-    }
-    if(okUser){
-      setUser?.(u=>({...u,puntos:nuevos}));
-    }
-    try{
-      if(avatarItems.length){
-        await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"avatar",titulo:"Personalización desbloqueada",mensaje:`Has desbloqueado ${avatarItems.length} artículo${avatarItems.length===1?"":"s"} para tu avatar/perfil. Ve a Perfil > Editor para equiparlo.`,entidad_tipo:"avatar",entidad_id:String(user.id),importante:false});
-      }
-      await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Carrito confirmado",mensaje:`${user.nombre||user.email||"Cliente"} confirmó un carrito de ${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"} por ${totalPts} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:String(user.id),importante:false});
-    }catch{}
-    setItems([]);
-    SFX.coins();
-    showToast?.(avatarItems.length?`Carrito confirmado. Personalización desbloqueada.`:"Carrito confirmado");
-    onClose?.();
-  }
-  return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
-        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🛒 Carrito</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Premios, tienda y personalización del avatar/perfil.</div></div>
-        <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
-      </div>
-      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:7,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(255,244,214,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
-      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
-        <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800}}><span>Total</span><span>{totalPts} pts</span></div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:6}}>Base preparada para añadir/quitar productos desde Tienda y Personalización en fases siguientes.</div>
-      </Card>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}><Btn small col="ghost" onClick={clearCart} disabled={!items.length}>Vaciar</Btn><Btn small col="gold" onClick={confirmCart} disabled={!hydratedItems.length}>Confirmar</Btn></div>
-      <div style={{marginTop:10}}><HelperInline page="carrito"/></div>
-    </div>
-  </div>;
-}
-
-function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefresh,onOpenCitas}){
-  const [openId,setOpenId]=useState(null);
+function NotificacionesPanel({show,onClose,items=[],onMarkAll,onRefresh}){
   if(!show)return null;
   const unread=items.filter(n=>!n.leida).length;
   const when=v=>{try{return new Date(v).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});}catch{return "";}};
-  const isCita=n=>{
-    const t=`${n.tipo||""} ${n.titulo||""} ${n.mensaje||""}`.toLowerCase();
-    return t.includes("cita")||t.includes("reserva")||t.includes("agenda");
-  };
-  const safePayload=n=>{
-    const raw=n.payload||n.meta||n.datos||n.extra||null;
-    if(!raw)return {};
-    if(typeof raw==="object")return raw;
-    try{return JSON.parse(raw);}catch{return {};}
-  };
-  const detailRows=n=>{
-    const p=safePayload(n);
-    const rows=[
-      ["Fecha",n.fecha||p.fecha||p.dia||p.date],
-      ["Hora",n.hora||p.hora||p.time],
-      ["Servicio",n.servicio||p.servicio||p.tratamiento||p.service],
-      ["Estado",n.estado||p.estado||p.status],
-      ["Cliente",n.cliente||p.cliente||p.nombre_cliente],
-      ["Notas",n.notas||p.notas||p.comentario]
-    ].filter(([,v])=>v!==undefined&&v!==null&&String(v).trim()!=="");
-    return rows;
-  };
-  async function readOne(n){
-    if(!n?.leida) await onMarkOne?.(n);
-  }
-  async function openCitas(n){
-    await readOne(n);
-    onClose?.();
-    onOpenCitas?.();
-  }
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:700,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:480,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
         <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🔔 Notificaciones</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>{unread} sin leer · {items.length} recientes</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}><Btn small col="ghost" onClick={onRefresh}>Actualizar</Btn><Btn small col="gold" onClick={onMarkAll} disabled={!unread}>Marcar leídas</Btn></div>
-      {items.length===0?<EmptyState icon="🔔" title="Sin notificaciones" sub="Cuando haya citas, mensajes o canjes nuevos aparecerán aquí."/>:items.map(n=>{
-        const opened=openId===n.id;
-        const cita=isCita(n);
-        const rows=detailRows(n);
-        return <Card key={n.id} style={{marginBottom:9,padding:12,background:n.leida?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",border:n.importante?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
-          <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-            <div className="icon3d" style={{fontSize:"1.6rem"}}>{notificationIcon(n.tipo)}</div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
-                {!n.leida&&<Badge col="red">nuevo</Badge>}{n.importante&&<Badge col="gold">importante</Badge>}{cita&&<Badge col="blue">cita</Badge>}
-                <span style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{when(n.created_at)}</span>
-              </div>
-              <div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{n.titulo||"Notificación"}</div>
-              {n.mensaje&&<div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4,whiteSpace:"pre-wrap"}}>{opened?n.mensaje:String(n.mensaje).slice(0,120)+(String(n.mensaje).length>120?"...":"")}</div>}
-              {opened&&rows.length>0&&<div style={{marginTop:10,display:"grid",gap:6,background:"rgba(255,248,230,.64)",border:`1px solid ${T.g200}`,borderRadius:14,padding:10}}>
-                {rows.map(([k,v])=><div key={k} style={{display:"grid",gridTemplateColumns:"82px 1fr",gap:8,fontSize:".78rem",fontWeight:850,color:T.text}}>
-                  <span style={{color:T.g700,fontWeight:950}}>{k}</span><span>{String(v)}</span>
-                </div>)}
-              </div>}
-              <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:10}}>
-                <Btn small col="ghost" onClick={async()=>{setOpenId(opened?null:n.id); if(!opened) await readOne(n);}}>{opened?"Ocultar":"Ver detalle"}</Btn>
-                {cita&&<Btn small col="gold" onClick={()=>openCitas(n)}>Abrir cita</Btn>}
-                {!n.leida&&<Btn small col="green" onClick={()=>readOne(n)}>Marcar leída</Btn>}
-              </div>
-            </div>
-          </div>
-        </Card>;
-      })}
+      {items.length===0?<EmptyState icon="🔔" title="Sin notificaciones" sub="Cuando haya citas, mensajes o canjes nuevos aparecerán aquí."/>:items.map(n=><Card key={n.id} style={{marginBottom:9,padding:12,background:n.leida?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",border:n.importante?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}><div style={{display:"flex",gap:10,alignItems:"flex-start"}}><div className="icon3d" style={{fontSize:"1.6rem"}}>{notificationIcon(n.tipo)}</div><div style={{flex:1,minWidth:0}}><div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>{!n.leida&&<Badge col="red">nuevo</Badge>}{n.importante&&<Badge col="gold">importante</Badge>}<span style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{when(n.created_at)}</span></div><div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{n.titulo}</div>{n.mensaje&&<div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4,whiteSpace:"pre-wrap"}}>{n.mensaje}</div>}</div></div></Card>)}
     </div>
   </div>;
 }
-
 
 export default function App(){
   const [user,setUser]=useState(null);
@@ -12951,8 +12368,6 @@ export default function App(){
   const [appSettings,setAppSettings]=useState(DEFAULT_APP_SETTINGS);
   const [unread,setUnread]=useState({client:0,admin:0});
   const [notifOpen,setNotifOpen]=useState(false);
-  const [walletOpen,setWalletOpen]=useState(false);
-  const [cartOpen,setCartOpen]=useState(false);
   const [notifications,setNotifications]=useState([]);
   const [notifCount,setNotifCount]=useState(0);
   const [tycoonRoute,setTycoonRoute]=useState(()=>typeof window!=="undefined"&&window.location.hash==="#/tycoon");
@@ -13042,11 +12457,6 @@ export default function App(){
     const ids=notifications.filter(n=>!n.leida).map(n=>n.id).filter(Boolean);
     if(!ids.length)return;
     await dbPatch("notificaciones",`?id=in.(${ids.join(",")})`,{leida:true});
-    await loadNotifications();
-  }
-  async function markNotificationRead(n){
-    if(!n?.id||n.leida)return;
-    await dbPatch("notificaciones",`?id=eq.${n.id}`,{leida:true});
     await loadNotifications();
   }
 
@@ -13154,13 +12564,11 @@ export default function App(){
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
       <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.22), inset 0 -1px 0 ${clinicAccent}55`}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button className="brand-home-button" onClick={()=>navTo("dashboard")} title="Ir al inicio" style={{display:"inline-flex",alignItems:"center",gap:7,border:"none",background:"transparent",padding:0,cursor:"pointer",fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}><span className="brand-scissors" style={{fontSize:"1.3rem"}}>{appSettings?.branding?.emoji_principal||"✂️"}</span><span>{appSettings?.branding?.nombre_tienda||BRAND.name}</span></button>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}>{appSettings?.branding?.emoji_principal||"✂️"} {appSettings?.branding?.nombre_tienda||BRAND.name}</div>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones · campana de avisos y citas" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
-          <button className="header-action-pro wallet-button-pro" onClick={()=>setWalletOpen(true)} title="Cartera · puntos, saldo y límite diario" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>👛</button>
-          <button className="header-action-pro cart-button-pro" onClick={()=>setCartOpen(true)} title="Carrito · compras y personalización" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🛒</button>
+          <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
           <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: reiniciar tema (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           <button className="header-action-pro theme-toggle-pro" onClick={toggleUiTheme} title={uiTheme==="night"?"Cambiar a modo día":"Cambiar a modo noche"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.72rem",display:"inline-flex",alignItems:"center",gap:4}}>{uiTheme==="night"?"☀️":"🌙"} <span className="theme-word">{uiTheme==="night"?"Día":"Noche"}</span></button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
@@ -13185,9 +12593,7 @@ export default function App(){
           </button>
         );})}
       </div>
-      <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead} onMarkOne={markNotificationRead} onOpenCitas={()=>navTo("citas")}/>
-      <WalletPanel show={walletOpen} onClose={()=>setWalletOpen(false)} user={currentUser}/>
-      <CartPanel show={cartOpen} onClose={()=>setCartOpen(false)} user={currentUser} setUser={setUser} showToast={showToast}/>
+      <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
