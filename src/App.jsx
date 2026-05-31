@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE134_AVATAR_CORREGIDO_ANIME_PIRATA";
-const APP_VERSION_SHORT="F134";
+const APP_VERSION="FASE135A_AVATAR_LAYER_ENGINE";
+const APP_VERSION_SHORT="F135A";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -3854,23 +3854,19 @@ const AVATAR_OPTIONS={
   hairColor:["#14100C","#3B2414","#6A3B1F","#B86A2E","#D4AF37","#8B0000","#145C8A","#663399","#EDE1C8","#E66A9A","#21A35B"],
   eyeColor:["#1A120C","#5B341A","#1A3A5C","#2F6B42","#7B3FA1","#D4AF37"],
   face:["oval","round","sharp","square","heart","long"],
-  nose:["straight","hook","small","wide","sharp","broken"],
-  mouth:["smirk","grin","serious","soft","wide","scarSmile"],
   hair:[...new Set([...MALE_HAIR,...FEMALE_HAIR])],
   brows:["soft","strong","angry","thin","arched"],
   eyes:["anime","sleepy","sharp","round","smile","glam"],
   facial:["none",...BEARD_VALUES],
-  scar:["none","cheek","eye","brow","chin","cross"],
-  tattoo:["none","anchor","wave","skull","sun","tribal"],
   accessory:["none","earring","hoopGold","glasses","glassesGold","bandana","bandanaGreen","cap","capBlack","capGold","piercing","flowers","headphones","crown"],
   bg:["gold","dark","red","blue","paper","studio","street","royal"],
   frame:["none","bronze","gold","neon","legend"],
   aura:["none","warm","flame","ocean","vip"]
 };
 
-const DEFAULT_AVATAR_CONFIG={version:"fase13",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",nose:"straight",mouth:"smirk",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",scar:"none",tattoo:"none",accessory:"none",bg:"gold",frame:"none",aura:"none"};
-const DEFAULT_MALE_AVATAR={version:"fase13",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",nose:"straight",mouth:"smirk",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",scar:"cheek",tattoo:"anchor",accessory:"none",bg:"street",frame:"none",aura:"none"};
-const DEFAULT_FEMALE_AVATAR={version:"fase13",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",nose:"small",mouth:"soft",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",scar:"none",tattoo:"wave",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
+const DEFAULT_AVATAR_CONFIG={version:"fase12",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
+const DEFAULT_MALE_AVATAR={version:"fase12",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
+const DEFAULT_FEMALE_AVATAR={version:"fase12",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
   {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
@@ -3896,20 +3892,17 @@ const AVATAR_PRESET_NAMES=[
   "Leyenda Barber","Bob de Taberna","Beat del Puerto","Dread Esmeralda"
 ]
 const AVATAR_LABELS={
-  gender:"Sexo",male:"Masculino",female:"Femenino",skin:"Piel",hair:"Peinado",hairColor:"Color pelo",face:"Cara",nose:"Nariz",mouth:"Boca",eyes:"Ojos",eyeColor:"Color ojos",brows:"Cejas",facial:"Barba/bigote",scar:"Cicatriz",tattoo:"Tatuaje",accessory:"Complemento",bg:"Fondo",
+  gender:"Sexo",male:"Masculino",female:"Femenino",skin:"Piel",hair:"Peinado",hairColor:"Color pelo",face:"Cara",eyes:"Ojos",eyeColor:"Color ojos",brows:"Cejas",facial:"Barba/bigote",accessory:"Complemento",bg:"Fondo",
   oval:"Ovalada",square:"Cuadrada",heart:"Corazón",long:"Alargada",
   buzzFade:"Rapado fade",texturedCrop:"Crop texturizado",sharpFade:"Degradado limpio",dreadsLong:"Rastas largas",dreadsBun:"Nudo rasta",dreadsTop:"Rastas arriba",afro:"Afro redondo",afroPuff:"Afro puff",braidsLong:"Trenzas largas",curlyBob:"Rizos bob",longWaves:"Melena ondas",highPonytail:"Coleta alta",bob:"Bob liso",pixie:"Pixie corto",mohawk:"Cresta punk",undercut:"Undercut",
   soft:"Suaves",strong:"Marcadas",angry:"Intensas",thin:"Finas",arched:"Arqueadas",anime:"Anime",sleepy:"Relajados",smile:"Sonrientes",glam:"Glam",
-  straight:"Recta",hook:"Garfio",small:"Pequeña",wide:"Ancha",broken:"Rota",smirk:"Sonrisa ladina",grin:"Sonrisa pirata",serious:"Seria",wide:"Amplia",scarSmile:"Sonrisa marcada",
-  none:"Nada",stubble:"Sombra",moustache:"Bigote",goatee:"Perilla",shortBeard:"Barba corta",beard:"Barba",full:"Barba completa",cheek:"Mejilla",eye:"Ojo",brow:"Ceja",chin:"Barbilla",cross:"Cruz",anchor:"Ancla",wave:"Ola",skull:"Calavera",sun:"Sol",tribal:"Tribal",
+  none:"Nada",stubble:"Sombra",moustache:"Bigote",goatee:"Perilla",shortBeard:"Barba corta",beard:"Barba",full:"Barba completa",
   earring:"Pendiente",glasses:"Gafas",bandana:"Bandana",cap:"Gorra",piercing:"Piercing",capBlack:"Gorra negra",capGold:"Gorra dorada",glassesGold:"Gafas doradas",bandanaGreen:"Bandana verde",crown:"Corona barber",hoopGold:"Aros dorados",flowers:"Flores",headphones:"Cascos",
   gold:"Dorado",dark:"Oscuro",red:"Rojo",blue:"Azul",paper:"Papiro",studio:"Estudio",street:"Calle",royal:"VIP",bronze:"Bronce",neon:"Neón",legend:"Leyenda",warm:"Brillo cálido",flame:"Aura fuego",ocean:"Aura mar",vip:"Aura VIP"
 };
 function avatarLabel(value,kind=null){
   if(kind==="face") return {oval:"Ovalada",round:"Redonda",sharp:"Afilada anime",square:"Cuadrada",heart:"Corazón",long:"Alargada"}[value]||AVATAR_LABELS[value]||value;
   if(kind==="eyes") return {anime:"Anime",sleepy:"Relajados",round:"Redondos",sharp:"Afilados",smile:"Sonrientes",glam:"Glam"}[value]||AVATAR_LABELS[value]||value;
-  if(kind==="nose") return {straight:"Recta",hook:"Garfio",small:"Pequeña",wide:"Ancha",sharp:"Afilada",broken:"Rota"}[value]||AVATAR_LABELS[value]||value;
-  if(kind==="mouth") return {smirk:"Sonrisa ladina",grin:"Sonrisa pirata",serious:"Seria",soft:"Suave",wide:"Amplia",scarSmile:"Marcada"}[value]||AVATAR_LABELS[value]||value;
   return AVATAR_LABELS[value]||value;
 }
 function safeJsonParse(value){
@@ -3922,14 +3915,12 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   const fallback=AVATAR_PRESETS[(Number(legacyAvatar)||0)%AVATAR_PRESETS.length]||DEFAULT_AVATAR_CONFIG;
   const cfg={...DEFAULT_AVATAR_CONFIG,...fallback,...(parsed||{})};
   const clamp=(n,max)=>Math.max(0,Math.min(max,Number.isFinite(Number(n))?Number(n):0));
-  cfg.version="fase13";
+  cfg.version="fase12";
   cfg.skin=clamp(cfg.skin,AVATAR_OPTIONS.skin.length-1);
   cfg.hairColor=clamp(cfg.hairColor,AVATAR_OPTIONS.hairColor.length-1);
   cfg.eyeColor=clamp(cfg.eyeColor,AVATAR_OPTIONS.eyeColor.length-1);
   if(!AVATAR_OPTIONS.gender.includes(cfg.gender)) cfg.gender=BEARD_VALUES.includes(cfg.facial)?"male":"female";
   if(!AVATAR_OPTIONS.face.includes(cfg.face)) cfg.face="oval";
-  if(!AVATAR_OPTIONS.nose.includes(cfg.nose)) cfg.nose=cfg.gender==="female"?"small":"straight";
-  if(!AVATAR_OPTIONS.mouth.includes(cfg.mouth)) cfg.mouth=cfg.gender==="female"?"soft":"smirk";
   const legacyHair={fade:"sharpFade",punk:"mohawk"};
   cfg.hair=legacyHair[cfg.hair]||cfg.hair;
   if(cfg.gender==="female" && !FEMALE_HAIR.includes(cfg.hair)) cfg.hair="longWaves";
@@ -3937,8 +3928,6 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   if(!AVATAR_OPTIONS.eyes.includes(cfg.eyes)) cfg.eyes=cfg.gender==="female"?"glam":"sharp";
   if(!AVATAR_OPTIONS.brows.includes(cfg.brows)) cfg.brows=cfg.gender==="female"?"arched":"strong";
   if(!AVATAR_OPTIONS.facial.includes(cfg.facial)) cfg.facial="none";
-  if(!AVATAR_OPTIONS.scar.includes(cfg.scar)) cfg.scar="none";
-  if(!AVATAR_OPTIONS.tattoo.includes(cfg.tattoo)) cfg.tattoo="none";
   if(cfg.gender==="female") cfg.facial="none";
   if(!AVATAR_OPTIONS.accessory.includes(cfg.accessory)) cfg.accessory="none";
   if(cfg.gender==="male" && cfg.accessory==="flowers") cfg.accessory="earring";
@@ -3991,7 +3980,7 @@ function randomAvatarConfig(gender=null){
   const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
   const selectedGender=gender&&AVATAR_OPTIONS.gender.includes(gender)?gender:pick(AVATAR_OPTIONS.gender);
   const base=selectedGender==="female"?DEFAULT_FEMALE_AVATAR:DEFAULT_MALE_AVATAR;
-  return normalizeAvatarConfig({...base,skin:Math.floor(Math.random()*AVATAR_OPTIONS.skin.length),hair:pick(selectedGender==="female"?FEMALE_HAIR:MALE_HAIR),hairColor:Math.floor(Math.random()*AVATAR_OPTIONS.hairColor.length),face:pick(AVATAR_OPTIONS.face),nose:pick(AVATAR_OPTIONS.nose),mouth:pick(AVATAR_OPTIONS.mouth),eyes:pick(AVATAR_OPTIONS.eyes),eyeColor:Math.floor(Math.random()*AVATAR_OPTIONS.eyeColor.length),brows:pick(AVATAR_OPTIONS.brows),facial:selectedGender==="female"?"none":pick(AVATAR_OPTIONS.facial),scar:pick(AVATAR_OPTIONS.scar),tattoo:pick(AVATAR_OPTIONS.tattoo),accessory:pick(BASIC_ACCESSORIES),bg:pick(["gold","dark","red","blue","paper","studio","street"])});
+  return normalizeAvatarConfig({...base,skin:Math.floor(Math.random()*AVATAR_OPTIONS.skin.length),hair:pick(selectedGender==="female"?FEMALE_HAIR:MALE_HAIR),hairColor:Math.floor(Math.random()*AVATAR_OPTIONS.hairColor.length),face:pick(AVATAR_OPTIONS.face),eyes:pick(AVATAR_OPTIONS.eyes),eyeColor:Math.floor(Math.random()*AVATAR_OPTIONS.eyeColor.length),brows:pick(AVATAR_OPTIONS.brows),facial:selectedGender==="female"?"none":pick(AVATAR_OPTIONS.facial),accessory:pick(BASIC_ACCESSORIES),bg:pick(["gold","dark","red","blue","paper","studio","street"])});
 }
 function bgGradient(bg){
   const b={gold:"linear-gradient(145deg,#3A1E10,#D4AF37)",dark:"linear-gradient(145deg,#130906,#8B4513)",red:"linear-gradient(145deg,#5C0F0F,#F06A3B)",blue:"linear-gradient(145deg,#1A3A5C,#E1A85D)",paper:"linear-gradient(145deg,#6E3518,#FFF4D6)",studio:"linear-gradient(145deg,#24110A,#9A4F22 58%,#FFF4D6)",street:"linear-gradient(145deg,#120806,#1A3A5C 58%,#C97934)",royal:"linear-gradient(145deg,#150B07,#8B0000 45%,#D4AF37)"};
@@ -4232,212 +4221,208 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
+const AVATAR_LAYER_ENGINE_VERSION="FASE135A_LAYER_ENGINE";
+
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
   const female=cfg.gender==="female";
   const skin=AVATAR_OPTIONS.skin[cfg.skin]||"#C98258";
   const hair=AVATAR_OPTIONS.hairColor[cfg.hairColor]||"#14100C";
   const eye=AVATAR_OPTIONS.eyeColor[cfg.eyeColor]||"#1A120C";
-  const uid=`av134-${String(size).replace(/\W/g,"")}-${cfg.gender}-${cfg.skin}-${cfg.hair}-${cfg.hairColor}-${cfg.face}-${cfg.nose}-${cfg.mouth}-${cfg.eyes}-${cfg.brows}-${cfg.facial}-${cfg.scar}-${cfg.tattoo}-${cfg.accessory}-${cfg.bg}`;
-  const hairHi=shadeHex(hair,55), hairMid=shadeHex(hair,20), hairLo=shadeHex(hair,-48);
-  const skinHi=shadeHex(skin,22), skinLo=shadeHex(skin,-28), skinShade=shadeHex(skin,-42);
+  const uid=`av15-${String(size).replace(/\W/g,"")}-${cfg.gender}-${cfg.skin}-${cfg.hair}-${cfg.hairColor}-${cfg.face}-${cfg.eyes}-${cfg.eyeColor}-${cfg.brows}-${cfg.facial}-${cfg.accessory}-${cfg.bg}-${cfg.frame}-${cfg.aura}`;
+  const hairHi=shadeHex(hair,34), hairMid=shadeHex(hair,10), hairLo=shadeHex(hair,-42);
+  const skinHi=shadeHex(skin,22), skinLo=shadeHex(skin,-30), skinDeep=shadeHex(skin,-44);
+  const coatA=female?"#7A1F2E":"#191511";
+  const coatB=female?"#32111A":"#050403";
+  const cloth=female?"#D7B36A":"#EFE3CB";
+  const gold="#D4AF37";
+  const bandanaColor=cfg.accessory==="bandanaGreen"?"#2F6B42":"#A72822";
+  const capColor=cfg.accessory==="capGold"?"#D4AF37":cfg.accessory==="capBlack"?"#0C0B09":"#263F4D";
+  const auraColor=cfg.aura==="vip"?"rgba(255,241,168,.74)":cfg.aura==="flame"?"rgba(240,106,59,.66)":cfg.aura==="ocean"?"rgba(95,215,255,.56)":"rgba(212,175,55,.46)";
   const hasCap=["cap","capBlack","capGold"].includes(cfg.accessory);
   const hasBandana=["bandana","bandanaGreen"].includes(cfg.accessory);
-  const capColor=cfg.accessory==="capGold"?"#C9952D":cfg.accessory==="capBlack"?"#17110D":"#20384B";
-  const bandanaColor=cfg.accessory==="bandanaGreen"?"#2F6B42":"#A72822";
-  const auraColor=cfg.aura==="vip"?"rgba(255,241,168,.78)":cfg.aura==="flame"?"rgba(240,106,59,.68)":cfg.aura==="ocean"?"rgba(95,215,255,.58)":"rgba(212,175,55,.46)";
-
-  const facePath={
-    oval:"M101 82 C137 82 158 112 154 168 C151 219 130 259 100 276 C70 259 49 219 46 168 C42 112 65 82 101 82Z",
-    round:"M100 92 C139 92 163 123 158 170 C154 214 130 247 100 256 C70 247 46 214 42 170 C37 123 61 92 100 92Z",
-    sharp:"M100 78 C136 78 156 110 153 167 C150 215 127 252 100 286 C73 252 50 215 47 167 C44 110 64 78 100 78Z",
-    square:"M100 84 C138 84 160 114 156 168 L146 232 C133 260 67 260 54 232 L44 168 C40 114 62 84 100 84Z",
-    heart:"M100 84 C117 73 149 92 158 131 C170 184 137 244 100 276 C63 244 30 184 42 131 C51 92 83 73 100 84Z",
-    long:"M100 70 C131 70 151 104 150 163 C149 220 128 264 100 286 C72 264 51 220 50 163 C49 104 69 70 100 70Z"
-  }[cfg.face]||"M100 84 C138 84 160 114 156 168 L146 232 C133 260 67 260 54 232 L44 168 C40 114 62 84 100 84Z";
-
-  const viewBox="0 0 200 300";
-  const coatA=female?"#84221E":"#17110D";
-  const coatB=female?"#2D1010":"#2B2119";
-  const shirt=female?"#F6E5C1":"#FFF1D2";
-
-  function bead(cx,cy,color="#D4AF37"){
-    return <g><circle cx={cx} cy={cy} r="2.8" fill={color}/><circle cx={cx-1} cy={cy-1} r=".8" fill="#FFF1A8" opacity=".72"/></g>;
-  }
-  function dread(d,w=7){return <g><path d={d} stroke={hairLo} strokeWidth={w+2.2} strokeLinecap="round" fill="none" opacity=".72"/><path d={d} stroke={hair} strokeWidth={w} strokeLinecap="round" fill="none"/><path d={d} stroke={hairHi} strokeWidth="1.4" strokeLinecap="round" fill="none" opacity=".28"/></g>;}
-  function bladeHair(d){return <path d={d} fill={`url(#${uid}-hair)`} stroke={hairLo} strokeWidth="1.4" strokeLinejoin="round"/>;}
-
-  function backHair(){
-    if(["dreadsLong","dreadsBun","dreadsTop","braidsLong"].includes(cfg.hair)){
-      return <g opacity=".98">
-        {dread("M47 98 C25 128 27 193 47 262",8)}
-        {dread("M61 82 C39 123 42 190 59 274",7)}
-        {dread("M139 82 C161 123 158 190 141 274",7)}
-        {dread("M153 98 C175 128 173 193 153 262",8)}
-        {dread("M75 75 C60 126 64 191 77 258",5.8)}
-        {dread("M125 75 C140 126 136 191 123 258",5.8)}
-        {bead(46,260)}{bead(59,272,"#2F6B42")}{bead(141,272,"#A72822")}{bead(154,260)}
-      </g>;
+  const hasHeadwear=hasCap||hasBandana;
+  const noseVariant=cfg.nose||cfg.face||"sharp";
+  const mouthVariant=cfg.mouth||cfg.eyes||"sharp";
+  const facePaths={
+    male:{
+      oval:"M57 105 C57 63 73 36 100 36 C127 36 143 63 143 105 C143 139 126 164 100 176 C74 164 57 139 57 105Z",
+      round:"M53 108 C53 70 72 44 100 44 C128 44 147 70 147 108 C147 139 128 161 100 168 C72 161 53 139 53 108Z",
+      sharp:"M57 103 C57 62 74 35 100 35 C126 35 143 62 143 103 C143 136 126 161 100 181 C74 161 57 136 57 103Z",
+      square:"M53 102 C53 61 72 38 100 38 C128 38 147 61 147 102 L139 153 C128 173 72 173 61 153Z",
+      heart:"M55 103 C55 62 74 38 100 45 C126 38 145 62 145 103 C145 138 125 162 100 176 C75 162 55 138 55 103Z",
+      long:"M64 98 C64 56 77 31 100 31 C123 31 136 56 136 98 C136 140 123 169 100 184 C77 169 64 140 64 98Z"
+    },
+    female:{
+      oval:"M62 105 C62 63 77 36 100 36 C123 36 138 63 138 105 C138 136 124 160 100 173 C76 160 62 136 62 105Z",
+      round:"M57 108 C57 72 74 47 100 47 C126 47 143 72 143 108 C143 137 126 158 100 164 C74 158 57 137 57 108Z",
+      sharp:"M62 101 C62 61 77 35 100 35 C123 35 138 61 138 101 C138 132 124 156 100 181 C76 156 62 132 62 101Z",
+      square:"M60 102 C60 62 76 40 100 40 C124 40 140 62 140 102 L134 148 C123 166 77 166 66 148Z",
+      heart:"M56 103 C56 62 76 36 100 44 C124 36 144 62 144 103 C144 134 123 156 100 176 C77 156 56 134 56 103Z",
+      long:"M66 98 C66 55 79 31 100 31 C121 31 134 55 134 98 C134 139 122 169 100 182 C78 169 66 139 66 98Z"
     }
-    if(["longWaves","highPonytail","bob","curlyBob","afro","afroPuff"].includes(cfg.hair)){
-      const puff=cfg.hair==="afro"||cfg.hair==="afroPuff";
-      if(puff) return <g fill={`url(#${uid}-hair)`} stroke={hairLo} strokeWidth="1.4">
-        {[[48,112,31],[68,80,29],[100,65,38],[132,80,29],[152,112,31],[57,149,27],[143,149,27]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}</g>;
-      return <path d="M32 144 C22 78 56 37 100 36 C144 37 178 78 168 144 C163 211 139 260 119 287 C114 238 86 238 81 287 C61 260 37 211 32 144Z" fill={`url(#${uid}-hair)`} stroke={hairLo} strokeWidth="2"/>;
-    }
-    return null;
-  }
+  };
+  const facePath=(female?facePaths.female:facePaths.male)[cfg.face]||(female?facePaths.female.heart:facePaths.male.square);
+  const neckPath=female?"M79 158 C85 170 115 170 121 158 L116 202 C105 211 95 211 84 202Z":"M76 158 C84 171 116 171 124 158 L120 198 C108 207 92 207 80 198Z";
+  const bodyPath=female?"M28 224 C42 184 70 163 100 163 C130 163 158 184 172 224 C138 240 62 240 28 224Z":"M20 224 C36 181 67 162 100 162 C133 162 164 181 180 224 C143 240 57 240 20 224Z";
+  const browStroke=cfg.brows==="thin"?3.6:cfg.brows==="angry"?6.6:5.4;
+  const brows={
+    soft:["M64 86 C73 81 83 81 91 85","M109 85 C117 81 127 81 136 86"],
+    strong:["M62 85 C72 78 84 78 93 84","M107 84 C116 78 128 78 138 85"],
+    angry:["M62 84 L93 91","M107 91 L138 84"],
+    thin:["M64 85 C74 82 84 82 92 85","M108 85 C116 82 126 82 136 85"],
+    arched:["M62 87 C73 75 85 77 94 85","M106 85 C115 77 127 75 138 87"]
+  }[cfg.brows]||["M62 85 C72 78 84 78 93 84","M107 84 C116 78 128 78 138 85"];
+  const eyeSpec={
+    anime:{rx:female?12:10.8,ry:female?9.8:8.4,y:104,tilt:0},
+    sleepy:{rx:12,ry:3.8,y:105,tilt:0},
+    sharp:{rx:12,ry:5.2,y:104,tilt:female?0:0},
+    round:{rx:8.6,ry:8.6,y:104,tilt:0},
+    smile:{rx:11,ry:3.4,y:105,tilt:0},
+    glam:{rx:female?13.2:11.6,ry:female?7.2:5.8,y:104,tilt:0}
+  }[cfg.eyes]||{rx:10,ry:6,y:104,tilt:0};
 
-  function frontHair(){
-    if(hasCap) return <g>{bladeHair("M46 121 C64 94 134 94 154 121 C126 108 74 108 46 121Z")}</g>;
-    if(hasBandana) return <g>{bladeHair("M44 123 C63 93 137 93 156 123 C128 109 72 109 44 123Z")}</g>;
+  function line(d,w=5,color=hair,opacity=1,fill="none"){
+    return <path d={d} stroke={color} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" fill={fill} opacity={opacity}/>;
+  }
+  function dread(cx,top,bot,side=1,wide=10){
+    const bend=side*18;
+    return <path d={`M${cx} ${top} C${cx+bend} ${top+38}, ${cx-bend*.55} ${bot-48}, ${cx+side*8} ${bot}`} stroke={hair} strokeWidth={wide} strokeLinecap="round" fill="none"/>;
+  }
+  function bead(cx,cy,c=gold){return <circle cx={cx} cy={cy} r="3.1" fill={c} stroke="#23160B" strokeWidth="1"/>;}
+
+  function LayerBackHair(){
+    if(hasCap||hasBandana){
+      if(["dreadsLong","dreadsBun","dreadsTop","braidsLong"].includes(cfg.hair)){
+        return <g className="layer hair-back">{[48,61,138,152].map((x,i)=>dread(x,82,205,i<2?-1:1,i%2?9:11))}{[bead(45,184),bead(62,199,"#B56E2C"),bead(141,199),bead(155,184,"#B56E2C")]}</g>;
+      }
+      if(female && ["longWaves","highPonytail","bob"].includes(cfg.hair)) return <path className="layer hair-back" d="M35 101 C31 55 59 27 100 27 C141 27 169 55 165 101 C161 152 139 198 120 216 C116 177 84 177 80 216 C61 198 39 152 35 101Z" fill={hair} opacity=".96"/>;
+      return null;
+    }
     switch(cfg.hair){
-      case "buzzFade":return bladeHair("M48 122 C57 91 75 78 100 78 C125 78 143 91 152 122 C124 109 76 109 48 122Z");
-      case "texturedCrop":return <g>{bladeHair("M43 125 C50 87 74 62 101 63 C130 64 151 88 157 124 C133 102 116 117 100 101 C84 119 65 101 43 125Z")}<path d="M71 105 L82 67 L91 108 M101 103 L116 66 L126 111" stroke={hairHi} strokeWidth="4.5" strokeLinecap="round" opacity=".42" fill="none"/></g>;
-      case "sharpFade":return bladeHair("M43 124 C50 90 75 69 102 70 C128 71 149 92 156 124 C131 108 115 111 100 124 C86 111 67 108 43 124Z");
-      case "mohawk":return <g>{bladeHair("M50 124 C58 91 78 80 100 80 C122 80 142 91 150 124 C123 111 77 111 50 124Z")}<path d="M80 86 C88 42 99 18 105 6 C118 40 129 61 121 100 C105 80 93 80 80 86Z" fill={hair} stroke={hairLo} strokeWidth="2"/></g>;
-      case "undercut":return bladeHair("M45 122 C55 82 83 58 117 66 C139 72 153 94 156 123 C130 106 103 104 45 122Z");
-      case "dreadsLong":return <g>{bladeHair("M42 123 C50 84 74 64 100 65 C126 66 150 84 158 123 C130 103 117 114 100 100 C82 116 67 103 42 123Z")}<path d="M65 111 C82 91 118 91 135 111" stroke={hairHi} strokeWidth="3.5" strokeLinecap="round" opacity=".34" fill="none"/></g>;
-      case "dreadsBun":return <g><ellipse cx="100" cy="50" rx="39" ry="24" fill={hair} stroke={hairLo} strokeWidth="2"/>{bladeHair("M45 122 C56 87 76 72 100 72 C124 72 144 87 155 122 C128 106 72 106 45 122Z")}</g>;
-      case "dreadsTop":return <g><g>{dread("M70 82 C50 44 76 25 92 66",6)}{dread("M102 69 C111 23 141 36 124 84",6)}{dread("M124 92 C157 58 173 94 138 113",5.5)}</g>{bladeHair("M44 123 C54 86 77 70 100 70 C123 70 146 86 156 123 C129 106 71 106 44 123Z")}</g>;
-      case "afro":case "afroPuff":return <g>{frontHairPuff()}</g>;
-      case "braidsLong":return <g>{bladeHair("M41 124 C51 82 74 62 100 63 C126 64 149 82 159 124 C132 100 69 100 41 124Z")}<path d="M70 111 C83 91 96 94 100 111 C107 91 122 95 134 113" stroke={hairHi} strokeWidth="3.6" strokeLinecap="round" opacity=".38" fill="none"/></g>;
-      case "curlyBob":return <g fill={`url(#${uid}-hair)`} stroke={hairLo} strokeWidth="1.3">{[[54,121,20],[74,99,22],[100,90,25],[126,99,22],[146,121,20]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}</g>;
-      case "longWaves":return <g>{bladeHair("M39 124 C50 80 74 52 100 53 C126 54 150 80 161 124 C131 97 112 111 100 127 C86 111 68 97 39 124Z")}<path d="M60 118 C79 91 92 98 100 119 C113 92 133 101 145 124" stroke={hairHi} strokeWidth="4" strokeLinecap="round" opacity=".34" fill="none"/></g>;
-      case "highPonytail":return <g>{bladeHair("M40 122 C52 78 75 55 100 55 C125 55 148 78 160 122 C130 99 70 99 40 122Z")}<path d="M126 57 C177 46 184 102 136 147 C155 100 146 72 126 57Z" fill={hair} stroke={hairLo} strokeWidth="2"/></g>;
-      case "bob":return bladeHair("M40 124 C50 84 72 63 100 64 C128 65 150 84 160 124 C132 101 68 101 40 124Z");
-      case "pixie":return bladeHair("M45 122 C55 88 75 69 101 70 C130 72 149 92 155 122 C130 107 114 111 100 124 C85 106 67 110 45 122Z");
-      default:return bladeHair("M45 123 C55 91 77 73 100 73 C123 73 145 91 155 123 C128 109 72 109 45 123Z");
+      case "dreadsLong":return <g className="layer hair-back">{[40,53,67,133,147,160].map((x,i)=>dread(x,72+i%2*8,207,i<3?-1:1,i%2?10:12))}{[bead(45,188),bead(61,202),bead(143,202),bead(157,188)]}</g>;
+      case "dreadsBun":return <g className="layer hair-back"><ellipse cx="100" cy="33" rx="39" ry="24" fill={hair}/>{[48,62,138,152].map((x,i)=>dread(x,76,193,i<2?-1:1,9))}</g>;
+      case "braidsLong":return <g className="layer hair-back"><path d="M39 103 C34 55 61 30 100 29 C139 30 166 55 161 103 C157 154 136 201 120 218 C116 177 84 177 80 218 C64 201 43 154 39 103Z" fill={hair}/>{[52,146].map((x,i)=><path key={i} d={`M${x} 96 C${x+(i?12:-12)} 126 ${x+(i?5:-5)} 166 ${x+(i?2:-2)} 206`} stroke={hairLo} strokeWidth="5" strokeLinecap="round" opacity=".55" fill="none"/> )}</g>;
+      case "longWaves":return <g className="layer hair-back"><path d="M31 106 C27 56 56 25 100 24 C144 25 173 56 169 106 C165 160 143 202 122 221 C119 178 81 178 78 221 C57 202 35 160 31 106Z" fill={hair}/><path d="M48 102 C37 135 49 178 70 209 M152 102 C163 135 151 178 130 209" stroke={hairHi} strokeWidth="5" strokeLinecap="round" opacity=".38" fill="none"/></g>;
+      case "highPonytail":return <g className="layer hair-back"><path d="M62 64 C54 27 146 27 138 64 C155 80 159 112 146 134 C122 113 78 113 54 134 C41 112 45 80 62 64Z" fill={hair}/><path d="M124 38 C180 34 191 93 138 136 C159 82 143 55 124 38Z" fill={hair}/></g>;
+      case "curlyBob":return <g className="layer hair-back" fill={hair}>{[[48,85,24],[66,60,24],[100,48,31],[134,60,24],[152,85,24],[52,115,22],[148,115,22],[77,136,18],[123,136,18]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}</g>;
+      case "afro":return <g className="layer hair-back" fill={hair}>{[[45,83,31],[67,53,32],[100,42,38],[133,53,32],[155,83,31],[45,113,27],[155,113,27]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}</g>;
+      case "afroPuff":return <g className="layer hair-back" fill={hair}><circle cx="55" cy="70" r="35"/><circle cx="145" cy="70" r="35"/><circle cx="100" cy="54" r="31"/></g>;
+      case "bob":return <path className="layer hair-back" d="M38 102 C35 60 59 35 100 34 C141 35 165 60 162 102 C158 145 137 178 118 192 C114 153 86 153 82 192 C63 178 42 145 38 102Z" fill={hair}/>;
+      case "pixie":return <path className="layer hair-back" d="M49 95 C51 57 76 35 100 36 C128 37 149 58 152 95 C132 83 116 80 100 88 C84 80 68 83 49 95Z" fill={hair}/>;
+      default:return null;
     }
   }
-  function frontHairPuff(){return <g fill={`url(#${uid}-hair)`} stroke={hairLo} strokeWidth="1.2">{[[53,114,20],[75,93,23],[100,85,27],[125,93,23],[147,114,20]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}</g>;}
 
-  function headwear(){
-    if(hasBandana) return <g><path d="M39 116 C58 89 143 89 161 116 L155 132 C126 116 73 116 45 132Z" fill={bandanaColor} stroke="#26120A" strokeWidth="2"/><path d="M61 112 C83 99 118 99 140 112" stroke="#FFD66B" strokeWidth="2" opacity=".55"/><path d="M150 113 C170 106 177 120 159 135" fill={bandanaColor} stroke="#26120A" strokeWidth="2"/></g>;
-    if(hasCap) return <g><path d="M48 105 C55 72 79 55 104 57 C134 59 153 79 158 110 L156 124 C129 110 75 110 45 124Z" fill={capColor} stroke="#080605" strokeWidth="2"/><path d="M114 100 C143 95 174 107 191 124 C161 128 136 124 112 112Z" fill={capColor} stroke="#080605" strokeWidth="2"/><path d="M66 94 C87 75 124 76 141 95" stroke="rgba(255,255,255,.24)" strokeWidth="4" strokeLinecap="round" fill="none"/></g>;
+  function LayerHairFront(){
+    if(hasCap||hasBandana) return <path className="layer hair-front" d={female?"M53 92 C72 78 128 78 147 92 C121 85 79 85 53 92Z":"M55 92 C75 82 125 82 145 92 C122 87 78 87 55 92Z"} fill={hair}/>;
+    switch(cfg.hair){
+      case "buzzFade":return <path d="M56 91 C63 67 79 53 100 53 C121 53 137 67 144 91 C125 82 75 82 56 91Z" fill={hair}/>;
+      case "texturedCrop":return <g><path d="M50 91 C58 57 77 38 100 38 C123 38 142 57 150 91 C128 77 114 88 100 80 C84 90 70 77 50 91Z" fill={hair}/>{line("M68 77 L80 43 L91 80 M97 76 L109 39 L122 81",5,hairHi,.52)}</g>;
+      case "sharpFade":return <path d="M51 91 C59 59 78 42 100 42 C122 42 141 59 149 91 C126 81 113 83 100 89 C87 83 74 81 51 91Z" fill={hair}/>;
+      case "mohawk":return <g><path d="M53 91 C60 61 78 50 100 50 C122 50 140 61 147 91 C124 82 76 82 53 91Z" fill={hair}/><path d="M77 60 C85 24 95 7 100 4 C109 16 120 39 124 64" stroke={hair} strokeWidth="18" strokeLinecap="round" fill="none"/></g>;
+      case "dreadsLong":return <g><path d="M45 93 C54 55 75 38 100 38 C125 38 146 55 155 93 C130 76 115 84 100 79 C84 87 70 76 45 93Z" fill={hair}/>{line("M69 82 C84 70 116 70 131 82",4,hairHi,.38)}</g>;
+      case "dreadsBun":return <path d="M50 93 C58 57 77 43 100 43 C123 43 142 57 150 93 C128 80 72 80 50 93Z" fill={hair}/>;
+      case "dreadsTop":return <g>{line("M74 49 C57 19 85 9 96 39",13,hair)}{line("M100 39 C110 6 136 18 122 55",13,hair)}{line("M122 58 C146 30 164 56 135 75",13,hair)}<path d="M50 92 C59 60 78 44 100 44 C122 44 141 60 150 92 C126 80 74 80 50 92Z" fill={hair}/></g>;
+      case "afro":return <path d="M47 90 C57 61 75 48 100 46 C125 48 143 61 153 90 C128 76 72 76 47 90Z" fill={hair}/>;
+      case "afroPuff":return <path d="M54 90 C61 64 78 51 100 51 C122 51 139 64 146 90 C125 80 75 80 54 90Z" fill={hair}/>;
+      case "braidsLong":return <g><path d="M45 93 C55 55 75 38 100 38 C125 38 145 55 155 93 C130 72 70 72 45 93Z" fill={hair}/>{line("M69 82 C83 66 94 70 100 82 C107 66 123 70 133 84",4,hairHi,.38)}</g>;
+      case "curlyBob":return <g fill={hair}>{[[57,91,18],[75,72,21],[100,63,23],[125,72,21],[143,91,18]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}</g>;
+      case "longWaves":return <path d="M39 96 C49 53 73 36 100 36 C127 36 151 53 161 96 C129 71 118 88 100 81 C82 91 68 73 39 96Z" fill={hair}/>;
+      case "highPonytail":return <path d="M51 93 C59 57 78 42 100 42 C122 42 141 57 149 93 C127 79 73 79 51 93Z" fill={hair}/>;
+      case "bob":return <path d="M43 96 C51 59 75 39 100 39 C125 39 149 59 157 96 C130 77 115 85 100 82 C84 87 70 77 43 96Z" fill={hair}/>;
+      case "pixie":return <path d="M48 94 C54 60 77 40 100 40 C126 40 147 60 153 94 C128 78 112 87 99 80 C83 89 68 78 48 94Z" fill={hair}/>;
+      case "undercut":return <path d={female?"M48 96 C53 55 80 28 109 35 C135 42 150 64 152 96 C126 81 91 82 48 96Z":"M50 96 C56 57 76 39 100 39 C127 39 146 60 150 96 C126 81 91 82 50 96Z"} fill={hair}/>;
+      default:return <path d="M52 93 C59 57 77 39 100 39 C123 39 141 57 148 93 C126 80 74 80 52 93Z" fill={hair}/>;
+    }
+  }
+
+  function LayerHeadwear(){
+    if(hasBandana)return <g className="layer accessory bandana"><path d="M46 82 C61 67 139 67 154 82 L151 94 C128 83 72 83 49 94Z" fill={bandanaColor}/><path d="M50 82 C70 75 130 75 150 82" stroke="#F4C981" strokeWidth="4" strokeLinecap="round" opacity=".72"/><path d="M147 84 L173 75 L158 99Z" fill={bandanaColor}/><circle cx="100" cy="80" r="4" fill={gold}/></g>;
+    if(hasCap)return <g className="layer accessory cap"><path d="M42 86 C47 52 72 31 100 31 C128 31 153 52 158 86 C132 75 68 75 42 86Z" fill={capColor}/><path d="M47 84 C72 70 133 70 157 86 L181 95 C186 98 185 104 179 106 L143 97 C122 89 77 89 57 97Z" fill={capColor}/><path d="M65 59 C81 48 119 48 135 59" stroke="rgba(255,255,255,.18)" strokeWidth="5" strokeLinecap="round"/></g>;
     return null;
   }
 
-  function eyes(){
-    const y=cfg.eyes==="sleepy"?154:151;
-    const tilt=cfg.eyes==="sharp"||cfg.eyes==="glam"||cfg.eyes==="anime";
-    const leftD=tilt?"M61 150 C72 139 88 140 98 151 C86 158 72 158 61 150Z":"M62 151 C72 143 88 143 98 151 C88 160 72 160 62 151Z";
-    const rightD=tilt?"M102 151 C112 140 128 139 139 150 C128 158 114 158 102 151Z":"M102 151 C112 143 128 143 138 151 C128 160 112 160 102 151Z";
-    if(cfg.eyes==="smile") return <g stroke="#160B05" strokeWidth="4.2" strokeLinecap="round" fill="none"><path d="M63 152 C75 142 88 143 98 153"/><path d="M102 153 C113 143 126 142 138 152"/></g>;
-    if(cfg.eyes==="sleepy") return <g stroke="#160B05" strokeWidth="4.2" strokeLinecap="round" fill="none"><path d="M62 152 C75 148 87 148 98 152"/><path d="M102 152 C113 148 126 148 138 152"/></g>;
-    return <g>
-      <path d={leftD} fill="#FFF9EC" stroke="#160B05" strokeWidth="2.5"/>
-      <path d={rightD} fill="#FFF9EC" stroke="#160B05" strokeWidth="2.5"/>
-      <ellipse cx="80" cy={y} rx={cfg.eyes==="round"?6:5} ry={cfg.eyes==="anime"?8:6.2} fill={eye}/>
-      <ellipse cx="120" cy={y} rx={cfg.eyes==="round"?6:5} ry={cfg.eyes==="anime"?8:6.2} fill={eye}/>
-      <circle cx="78" cy={y-3} r="1.8" fill="#fff"/><circle cx="118" cy={y-3} r="1.8" fill="#fff"/>
-      {cfg.eyes==="glam"&&<g stroke="#160B05" strokeWidth="1.5" strokeLinecap="round"><path d="M62 146 L56 142"/><path d="M138 146 L144 142"/></g>}
+  function LayerEyes(){
+    const y=eyeSpec.y;
+    if(cfg.eyes==="sleepy")return <g className="layer eyes" stroke="#1A0B05" strokeWidth="4.4" strokeLinecap="round" fill="none"><path d={`M67 ${y} C76 ${y-3} 85 ${y-3} 93 ${y}`}/><path d={`M107 ${y} C116 ${y-3} 125 ${y-3} 133 ${y}`}/></g>;
+    if(cfg.eyes==="smile")return <g className="layer eyes" stroke="#1A0B05" strokeWidth="4.4" strokeLinecap="round" fill="none"><path d="M67 104 C76 111 86 111 94 104"/><path d="M106 104 C115 111 125 111 133 104"/></g>;
+    const eyePath=(cx,mirror=1)=>{
+      if(cfg.eyes==="sharp")return `M${cx-15*mirror} ${y+1} C${cx-7*mirror} ${y-9}, ${cx+9*mirror} ${y-7}, ${cx+16*mirror} ${y+1} C${cx+5*mirror} ${y+7}, ${cx-7*mirror} ${y+7}, ${cx-15*mirror} ${y+1}Z`;
+      if(cfg.eyes==="glam")return `M${cx-16*mirror} ${y} C${cx-7*mirror} ${y-10}, ${cx+10*mirror} ${y-9}, ${cx+17*mirror} ${y} C${cx+9*mirror} ${y+8}, ${cx-8*mirror} ${y+8}, ${cx-16*mirror} ${y}Z`;
+      return `M${cx-14*mirror} ${y} C${cx-7*mirror} ${y-8}, ${cx+8*mirror} ${y-8}, ${cx+14*mirror} ${y} C${cx+7*mirror} ${y+8}, ${cx-7*mirror} ${y+8}, ${cx-14*mirror} ${y}Z`;
+    };
+    return <g className="layer eyes"><path d={eyePath(79,1)} fill="#FFF7E8" stroke="#160A05" strokeWidth="2.4"/><path d={eyePath(121,-1)} fill="#FFF7E8" stroke="#160A05" strokeWidth="2.4"/><ellipse cx="79" cy={y+1} rx={eyeSpec.rx*.55} ry={eyeSpec.ry*.82} fill={eye}/><ellipse cx="121" cy={y+1} rx={eyeSpec.rx*.55} ry={eyeSpec.ry*.82} fill={eye}/><ellipse cx="77" cy={y-2} rx="2.6" ry="3" fill="#fff" opacity=".95"/><ellipse cx="119" cy={y-2} rx="2.6" ry="3" fill="#fff" opacity=".95"/><ellipse cx="79" cy={y+2} rx="2.5" ry="3.1" fill="#050302" opacity=".72"/><ellipse cx="121" cy={y+2} rx="2.5" ry="3.1" fill="#050302" opacity=".72"/></g>;
+  }
+  function LayerBrows(){return <g className="layer brows" stroke="#120906" strokeWidth={browStroke} strokeLinecap="round" fill="none"><path d={brows[0]}/><path d={brows[1]}/></g>;}
+  function LayerNose(){
+    const d={oval:"M99 111 C103 121 101 130 94 134",round:"M99 112 C102 120 101 128 96 131",sharp:"M100 110 C104 121 101 132 92 136",square:"M98 111 C103 122 101 130 94 134",heart:"M99 111 C102 121 100 129 95 133",long:"M100 110 C104 124 101 136 93 140"}[noseVariant]||"M100 110 C104 121 101 132 92 136";
+    return <g className="layer nose"><path d={d} stroke={skinDeep} strokeWidth="3.2" strokeLinecap="round" fill="none" opacity=".70"/><path d="M90 136 C96 140 104 140 110 136" stroke={skinLo} strokeWidth="1.8" strokeLinecap="round" fill="none" opacity=".38"/></g>;
+  }
+  function LayerMouth(){
+    if(mouthVariant==="sleepy")return <path className="layer mouth" d="M83 150 C93 154 107 154 117 150" stroke="#5B1F16" strokeWidth="4" strokeLinecap="round" fill="none"/>;
+    if(mouthVariant==="smile"||mouthVariant==="anime")return <g className="layer mouth"><path d="M77 148 C88 162 113 162 124 148" stroke="#7D2417" strokeWidth="5" strokeLinecap="round" fill="none"/><path d="M85 151 C94 158 106 158 115 151" stroke="#FFF3E7" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity=".74"/></g>;
+    if(mouthVariant==="glam")return <path className="layer mouth" d={female?"M80 150 C91 159 109 159 120 150 C108 154 92 154 80 150Z":"M81 151 C91 157 109 157 119 151"} stroke="#6E2116" strokeWidth="4" strokeLinecap="round" fill={female?"#A03B3E":"none"}/>;
+    return <path className="layer mouth" d="M80 150 C91 157 110 157 121 148" stroke="#6E2116" strokeWidth="4.6" strokeLinecap="round" fill="none"/>;
+  }
+  function LayerFacialHair(){
+    if(female||cfg.facial==="none")return null;
+    if(cfg.facial==="stubble")return <path d="M71 133 C83 155 117 155 129 133 C125 164 75 164 71 133Z" fill="#1A0F09" opacity=".18"/>;
+    if(cfg.facial==="moustache")return <g className="layer beard" fill={hairLo}><path d="M76 137 C84 128 96 132 100 139 C91 143 83 144 76 137Z"/><path d="M124 137 C116 128 104 132 100 139 C109 143 117 144 124 137Z"/></g>;
+    if(cfg.facial==="goatee")return <g className="layer beard" fill={hairLo}><path d="M84 139 C92 134 108 134 116 139 C108 143 92 143 84 139Z"/><path d="M93 158 C99 168 101 168 107 158 L104 174 L96 174Z"/></g>;
+    if(cfg.facial==="shortBeard")return <g className="layer beard"><path d="M68 130 C79 158 121 158 132 130 C130 168 70 168 68 130Z" fill={hairLo} opacity=".72"/><path d="M81 140 C91 148 109 148 119 140" stroke={hairHi} strokeWidth="2.2" strokeLinecap="round" opacity=".28" fill="none"/></g>;
+    if(cfg.facial==="beard")return <path className="layer beard" d="M63 126 C76 165 124 165 137 126 C138 160 122 182 100 188 C78 182 62 160 63 126Z" fill={hairLo} opacity=".84"/>;
+    return <g className="layer beard"><path d="M58 122 C72 167 128 167 142 122 C145 166 126 196 100 202 C74 196 55 166 58 122Z" fill={hairLo}/><path d="M75 145 C90 156 110 156 125 145" stroke={hairHi} strokeWidth="2.4" strokeLinecap="round" opacity=".25" fill="none"/></g>;
+  }
+  function LayerScarsAndTattoos(){
+    const showScar=cfg.accessory==="piercing"||cfg.frame==="legend"||cfg.aura==="flame";
+    const showTattoo=cfg.aura==="ocean"||cfg.aura==="vip"||cfg.frame==="neon";
+    return <g className="layer marks" opacity=".82">{showScar&&<path d="M127 111 L141 127 M137 111 L125 126" stroke="#5C241D" strokeWidth="2" strokeLinecap="round"/>}{showTattoo&&<path d="M120 164 C132 172 138 186 132 198 C124 190 117 183 110 172" stroke="#263F4D" strokeWidth="2.6" strokeLinecap="round" fill="none" opacity=".58"/>}</g>;
+  }
+  function LayerAccessories(){
+    return <g className="layer accessories">
+      {cfg.accessory==="earring"&&<g fill={gold} stroke="#23160B" strokeWidth="1"><circle cx="58" cy="117" r="4"/><circle cx="142" cy="117" r="4"/></g>}
+      {cfg.accessory==="hoopGold"&&<g stroke={gold} strokeWidth="3" fill="none"><circle cx="58" cy="117" r="8"/><circle cx="142" cy="117" r="8"/></g>}
+      {(cfg.accessory==="glasses"||cfg.accessory==="glassesGold")&&<g stroke={cfg.accessory==="glassesGold"?gold:"#120906"} strokeWidth="4" fill="rgba(255,255,255,.10)"><circle cx="79" cy="104" r="14"/><circle cx="121" cy="104" r="14"/><path d="M93 104 L107 104"/><path d="M65 101 L56 97 M135 101 L144 97" strokeLinecap="round"/></g>}
+      {cfg.accessory==="piercing"&&<circle cx="112" cy="134" r="3" fill={gold} stroke="#23160B" strokeWidth="1"/>}
+      {cfg.accessory==="headphones"&&<g stroke="#17100A" strokeWidth="7" fill="none" strokeLinecap="round"><path d="M57 105 C57 58 143 58 143 105"/><rect x="40" y="100" width="18" height="34" rx="8" fill="#17100A" stroke="none"/><rect x="142" y="100" width="18" height="34" rx="8" fill="#17100A" stroke="none"/></g>}
+      {cfg.accessory==="flowers"&&female&&<g><circle cx="135" cy="71" r="6" fill="#F06A3B"/><circle cx="143" cy="74" r="5" fill="#D4AF37"/><circle cx="131" cy="78" r="5" fill="#E66A9A"/></g>}
+      {cfg.accessory==="crown"&&<g><path d="M68 58 L79 39 L95 58 L111 39 L124 58 L134 42 L139 72 L61 72Z" fill={gold} stroke="#321B08" strokeWidth="3"/><circle cx="79" cy="52" r="3" fill="#A72822"/><circle cx="111" cy="52" r="3" fill="#2F6B42"/></g>}
     </g>;
   }
-  function brows(){
-    const d={
-      angry:"M58 130 L95 142 M105 142 L142 130",
-      thin:"M60 133 Q79 127 96 132 M104 132 Q121 127 140 133",
-      arched:"M58 135 Q78 119 97 132 M103 132 Q122 119 142 135",
-      soft:"M59 134 Q79 128 96 133 M104 133 Q121 128 141 134",
-      strong:"M57 133 Q78 122 97 132 M103 132 Q122 122 143 133"
-    }[cfg.brows]||"M57 133 Q78 122 97 132 M103 132 Q122 122 143 133";
-    return <path d={d} stroke="#100805" strokeWidth={cfg.brows==="thin"?3:5.2} strokeLinecap="round" fill="none"/>;
-  }
-  function nose(){
-    const base={
-      straight:"M100 160 C104 173 102 183 94 188 M92 190 C98 194 106 194 112 190",
-      hook:"M101 158 C110 174 106 186 94 190 C101 194 111 193 116 187",
-      small:"M101 164 C104 176 100 183 95 187 M96 189 C101 191 107 191 111 188",
-      wide:"M98 160 C104 174 100 184 91 190 M91 191 C99 196 111 196 118 191",
-      sharp:"M101 158 L93 189 C101 193 109 190 114 184",
-      broken:"M101 158 L96 173 L104 181 L95 190 M92 191 C99 196 110 196 116 191"
-    }[cfg.nose]||"M100 160 C104 173 102 183 94 188 M92 190 C98 194 106 194 112 190";
-    return <path d={base} stroke={skinShade} strokeWidth="3.1" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity=".66"/>;
-  }
-  function mouth(){
-    const stroke="#7A2719";
-    if(cfg.mouth==="grin") return <g><path d="M73 208 C88 226 115 226 130 207 C111 213 91 213 73 208Z" fill="#3B0E0A"/><path d="M81 211 C94 218 109 218 123 211" stroke="#FFF4E4" strokeWidth="2.8" strokeLinecap="round"/></g>;
-    if(cfg.mouth==="serious") return <path d="M78 211 L123 211" stroke={stroke} strokeWidth="4" strokeLinecap="round" fill="none"/>;
-    if(cfg.mouth==="soft") return <g><path d="M80 205 C92 214 110 214 121 205 C113 219 90 219 80 205Z" fill="#B94858"/><path d="M86 207 C95 211 106 211 116 207" stroke="rgba(255,255,255,.45)" strokeWidth="1.8" strokeLinecap="round"/></g>;
-    if(cfg.mouth==="wide") return <path d="M73 206 C90 224 113 224 130 206" stroke={stroke} strokeWidth="4.5" strokeLinecap="round" fill="none"/>;
-    if(cfg.mouth==="scarSmile") return <g><path d="M78 207 C92 218 110 218 123 207" stroke={stroke} strokeWidth="4" strokeLinecap="round" fill="none"/><path d="M126 201 L137 215" stroke="#5B1F17" strokeWidth="2.4" strokeLinecap="round"/></g>;
-    return <path d="M78 207 C93 218 111 217 124 204" stroke={stroke} strokeWidth="4" strokeLinecap="round" fill="none"/>;
-  }
-  function facialHair(){
-    if(female||cfg.facial==="none") return null;
-    if(cfg.facial==="stubble") return <path d="M55 195 C68 229 132 229 145 195 C130 224 70 224 55 195Z" fill={hairLo} opacity=".22"/>;
-    const moustache=<g><path d="M69 195 C84 186 95 190 100 199 C105 190 117 186 132 195" stroke={hairLo} strokeWidth="6.2" strokeLinecap="round" fill="none"/><path d="M74 195 C86 192 95 195 100 200 C105 195 114 192 127 195" stroke={hair} strokeWidth="3" strokeLinecap="round" fill="none" opacity=".88"/></g>;
-    if(cfg.facial==="moustache") return moustache;
-    if(cfg.facial==="goatee") return <g>{moustache}<path d="M94 222 Q100 240 106 222" stroke={hairLo} strokeWidth="7" strokeLinecap="round" fill="none"/></g>;
-    if(cfg.facial==="shortBeard") return <g>{moustache}<path d="M54 196 C63 234 137 234 146 196 C132 225 68 225 54 196Z" fill={hairLo} opacity=".82"/></g>;
-    if(cfg.facial==="beard") return <g>{moustache}<path d="M49 190 C58 252 142 252 151 190 C135 241 65 241 49 190Z" fill={hairLo} opacity=".92"/><path d="M71 237 C86 252 114 252 129 237" stroke={hairHi} strokeWidth="2.5" opacity=".18" fill="none"/></g>;
-    if(cfg.facial==="full") return <g>{moustache}<path d="M43 180 C51 262 149 262 157 180 C137 251 63 251 43 180Z" fill={hairLo} opacity=".98"/><path d="M61 231 C80 257 120 257 139 231" stroke={hairHi} strokeWidth="3" opacity=".16" fill="none"/></g>;
-    return null;
-  }
-  function marks(){
-    const scarColor="#632014";
-    const scar={
-      cheek:<path d="M131 184 L151 198" stroke={scarColor} strokeWidth="3" strokeLinecap="round"/>,
-      eye:<path d="M67 124 L86 178" stroke={scarColor} strokeWidth="3" strokeLinecap="round"/>,
-      brow:<path d="M116 124 L132 143" stroke={scarColor} strokeWidth="3" strokeLinecap="round"/>,
-      chin:<path d="M95 230 L106 246" stroke={scarColor} strokeWidth="3" strokeLinecap="round"/>,
-      cross:<g stroke={scarColor} strokeWidth="3" strokeLinecap="round"><path d="M132 181 L150 199"/><path d="M150 181 L132 199"/></g>
-    }[cfg.scar];
-    const tattoo={
-      anchor:<g stroke="#11394C" strokeWidth="2.7" strokeLinecap="round" fill="none" opacity=".78"><path d="M142 215 L142 235"/><path d="M134 226 C142 242 150 226 142 242"/><circle cx="142" cy="211" r="3.4"/></g>,
-      wave:<path d="M55 214 C64 204 71 224 80 214 C89 205 95 219 102 211" stroke="#145C8A" strokeWidth="3" fill="none" strokeLinecap="round" opacity=".75"/>,
-      skull:<g fill="#1A120C" opacity=".70"><circle cx="60" cy="214" r="6"/><rect x="56" y="219" width="8" height="7" rx="2"/><circle cx="58" cy="213" r="1.3" fill={skin}/><circle cx="62" cy="213" r="1.3" fill={skin}/></g>,
-      sun:<g stroke="#A8662B" strokeWidth="2" strokeLinecap="round" opacity=".78"><circle cx="60" cy="214" r="6" fill="none"/><path d="M60 202 L60 207 M60 221 L60 226 M48 214 L53 214 M67 214 L72 214"/></g>,
-      tribal:<path d="M55 203 C66 195 70 211 60 217 C74 216 77 231 63 236" stroke="#1A120C" strokeWidth="3" fill="none" strokeLinecap="round" opacity=".72"/>
-    }[cfg.tattoo];
-    return <g>{tattoo}{scar}</g>;
-  }
-  function accessories(){
-    return <g>
-      {cfg.accessory==="earring"&&<g fill="#FFD66B"><circle cx="42" cy="168" r="4"/><circle cx="158" cy="168" r="4"/></g>}
-      {cfg.accessory==="hoopGold"&&<g stroke="#FFD66B" strokeWidth="3" fill="none"><circle cx="42" cy="169" r="7"/><circle cx="158" cy="169" r="7"/></g>}
-      {(cfg.accessory==="glasses"||cfg.accessory==="glassesGold")&&<g stroke={cfg.accessory==="glassesGold"?"#D4AF37":"#1A120C"} strokeWidth="4" fill="rgba(255,255,255,.10)"><circle cx="80" cy="151" r="16"/><circle cx="120" cy="151" r="16"/><path d="M96 151 L104 151"/><path d="M64 149 L52 143 M136 149 L148 143" strokeLinecap="round"/></g>}
-      {cfg.accessory==="piercing"&&<circle cx="116" cy="191" r="3" fill="#D4AF37"/>}
-      {cfg.accessory==="flowers"&&<g transform="translate(141 106)"><circle r="8" fill="#E66A9A"/><circle cx="-6" cy="0" r="4" fill="#FFF1A8"/><circle cx="6" cy="0" r="4" fill="#FFF1A8"/><circle cy="-6" r="4" fill="#FFF1A8"/><circle cy="6" r="4" fill="#FFF1A8"/></g>}
-      {cfg.accessory==="crown"&&<path d="M65 72 L80 49 L99 73 L119 49 L135 72 L128 91 L72 91Z" fill="#D4AF37" stroke="#4B301B" strokeWidth="2"/>}
-    </g>;
+  function LayerShirt(){
+    return <g className="layer body"><path d={bodyPath} fill={`url(#${uid}-coat)`}/><path d="M61 179 L99 226 L139 179 C127 168 113 163 100 163 C87 163 73 168 61 179Z" fill={cloth}/><path d={neckPath} fill={`url(#${uid}-skin)`}/><path d="M45 195 C63 180 72 172 88 168 L95 228 L73 214Z" fill={coatA} opacity=".96"/><path d="M155 195 C137 180 128 172 112 168 L105 228 L127 214Z" fill={coatA} opacity=".96"/><path d="M66 189 L91 220 M134 189 L109 220" stroke={gold} strokeWidth="3" strokeLinecap="round" opacity=".55"/><circle cx="72" cy="195" r="3" fill={gold}/><circle cx="128" cy="195" r="3" fill={gold}/></g>;
   }
 
-  return <svg viewBox={viewBox} width={size} height={size} style={{display:"block",overflow:"visible",filter:"drop-shadow(0 16px 16px rgba(0,0,0,.34))"}}>
+  return <svg viewBox="0 0 200 235" width={size} height={size} style={{display:"block",overflow:"visible",filter:"drop-shadow(0 16px 18px rgba(0,0,0,.25))"}} data-avatar-layer-engine={AVATAR_LAYER_ENGINE_VERSION} aria-label="Avatar por capas">
     <defs>
-      <linearGradient id={`${uid}-skin`} x1="43" y1="82" x2="157" y2="282"><stop offset="0%" stopColor={skinHi}/><stop offset="56%" stopColor={skin}/><stop offset="100%" stopColor={skinLo}/></linearGradient>
-      <linearGradient id={`${uid}-hair`} x1="40" y1="35" x2="160" y2="286"><stop offset="0%" stopColor={hairHi}/><stop offset="28%" stopColor={hair}/><stop offset="100%" stopColor={hairLo}/></linearGradient>
-      <linearGradient id={`${uid}-coat`} x1="28" y1="218" x2="172" y2="300"><stop offset="0%" stopColor={coatA}/><stop offset="58%" stopColor={coatB}/><stop offset="100%" stopColor="#070302"/></linearGradient>
-      <radialGradient id={`${uid}-soft`} cx="38%" cy="16%" r="82%"><stop offset="0%" stopColor="rgba(255,255,255,.44)"/><stop offset="48%" stopColor="rgba(255,255,255,.08)"/><stop offset="100%" stopColor="rgba(0,0,0,.22)"/></radialGradient>
+      <linearGradient id={`${uid}-skin`} x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor={skinHi}/><stop offset=".55" stopColor={skin}/><stop offset="1" stopColor={skinLo}/></linearGradient>
+      <linearGradient id={`${uid}-coat`} x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor={coatA}/><stop offset=".68" stopColor={coatB}/><stop offset="1" stopColor="#050302"/></linearGradient>
+      <radialGradient id={`${uid}-soft`} cx="50%" cy="35%" r="72%"><stop offset="0" stopColor="rgba(255,241,168,.20)"/><stop offset="72%" stopColor="rgba(255,255,255,.04)"/><stop offset="100%" stopColor="rgba(0,0,0,.18)"/></radialGradient>
     </defs>
-    <g style={animated?{animation:"avatarIdlePro 3.3s ease-in-out infinite",transformOrigin:"100px 158px"}:null}>
-      <ellipse cx="100" cy="289" rx="67" ry="12" fill="rgba(0,0,0,.28)"/>
-      <circle cx="100" cy="158" r="97" fill={`url(#${uid}-soft)`}/>
-      {cfg.aura!=="none"&&<circle cx="100" cy="158" r="96" fill="none" stroke={auraColor} strokeWidth="5" opacity=".75"/>}
-      {backHair()}
-      <path d="M29 300 C37 246 66 220 100 220 C134 220 163 246 171 300Z" fill={`url(#${uid}-coat)`}/>
-      <path d="M53 280 L82 226 L100 286 L118 226 L147 280" fill="none" stroke="#D4AF37" strokeWidth="5" strokeLinecap="round" opacity=".88"/>
-      <path d="M75 228 C83 245 117 245 125 228 L121 273 C109 286 91 286 79 273Z" fill={`url(#${uid}-skin)`}/>
-      <path d={`M67 239 C82 256 118 256 133 239 L100 291Z`} fill={shirt} opacity=".95"/>
-      <circle cx="42" cy="166" r={female?7:8} fill={skin}/><circle cx="158" cy="166" r={female?7:8} fill={skin}/>
-      <path d={facePath} fill={`url(#${uid}-skin)`} stroke={skinShade} strokeWidth="1.4"/>
-      <path d={female?"M76 216 C88 234 112 234 124 216 C117 242 83 242 76 216Z":"M70 215 C83 239 117 239 130 215 C121 249 79 249 70 215Z"} fill="rgba(70,30,15,.10)"/>
-      {frontHair()}
-      {headwear()}
-      {brows()}
-      {eyes()}
-      {nose()}
-      {marks()}
-      {facialHair()}
-      {female&&<g fill="#D96583" opacity=".24"><ellipse cx="66" cy="190" rx="8" ry="4"/><ellipse cx="134" cy="190" rx="8" ry="4"/></g>}
-      {mouth()}
-      {accessories()}
-      <path d="M65 97 C81 76 118 76 134 97" stroke="rgba(255,255,255,.18)" strokeWidth="4" strokeLinecap="round" fill="none"/>
+    <g style={animated?{animation:"avatarIdlePro 3.3s ease-in-out infinite",transformOrigin:"100px 118px"}:null}>
+      <ellipse cx="100" cy="218" rx="67" ry="13" fill="rgba(0,0,0,.25)"/>
+      <circle cx="100" cy="107" r="92" fill={`url(#${uid}-soft)`}/>
+      {cfg.aura!=="none"&&<circle cx="100" cy="108" r="91" fill="none" stroke={auraColor} strokeWidth="5" opacity=".78"/>}
+      <LayerBackHair/>
+      <LayerShirt/>
+      <circle cx="59" cy="111" r={female?7.2:8.3} fill={skin}/><circle cx="141" cy="111" r={female?7.2:8.3} fill={skin}/>
+      <path d={facePath} fill={`url(#${uid}-skin)`} stroke={skinDeep} strokeWidth="1.2" opacity=".98"/>
+      <path d={female?"M75 143 C88 158 112 158 125 143 C118 164 82 164 75 143Z":"M70 142 C83 162 117 162 130 142 C121 170 79 170 70 142Z"} fill="rgba(65,30,18,.10)"/>
+      <LayerHairFront/>
+      <LayerHeadwear/>
+      <LayerBrows/>
+      <LayerEyes/>
+      <LayerNose/>
+      <LayerScarsAndTattoos/>
+      <LayerFacialHair/>
+      {female&&<g fill="#D96583" opacity=".24"><ellipse cx="69" cy="127" rx="9" ry="4"/><ellipse cx="131" cy="127" rx="9" ry="4"/></g>}
+      <LayerMouth/>
+      <LayerAccessories/>
+      <path d={female?"M70 64 C84 45 119 45 132 64":"M69 65 C85 48 118 48 132 65"} stroke="rgba(255,255,255,.17)" strokeWidth="4" strokeLinecap="round" fill="none"/>
     </g>
   </svg>;
 }
-
 function Av({av=0,config=null,size=36}){
   const cfg=normalizeAvatarConfig(config,av);
   const frame={none:`2px solid rgba(255,244,214,.9)`,bronze:`3px solid #C97934`,gold:`3px solid #D4AF37`,neon:`3px solid #5FD7FF`,legend:`3px solid #FFF1A8`}[cfg.frame]||`2px solid rgba(255,244,214,.9)`;
@@ -4468,7 +4453,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
       let next={...current,[key]:value};
       if(key==="gender"){
         const base=value==="female"?DEFAULT_FEMALE_AVATAR:DEFAULT_MALE_AVATAR;
-        next={...base,skin:current.skin,hairColor:current.hairColor,eyeColor:current.eyeColor,bg:current.bg,frame:current.frame,aura:current.aura,accessory:current.accessory,nose:current.nose,mouth:current.mouth,scar:current.scar,tattoo:current.tattoo};
+        next={...base,skin:current.skin,hairColor:current.hairColor,eyeColor:current.eyeColor,bg:current.bg,frame:current.frame,aura:current.aura,accessory:current.accessory};
         if(value==="female") next={...next,facial:"none",hair:"braidsLong",face:"heart",eyes:"glam",brows:"arched",accessory:current.accessory==="crown"?"hoopGold":current.accessory};
         if(value==="male") next={...next,hair:"dreadsTop",face:"square",eyes:"sharp",brows:"strong",facial:current.facial==="none"?"shortBeard":current.facial,accessory:current.accessory==="flowers"?"bandana":current.accessory};
       }
@@ -4495,8 +4480,6 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     avatarLabel(cfg.gender),
     AVATAR_LABELS[cfg.hair],
     avatarLabel(cfg.face,"face"),
-    avatarLabel(cfg.nose,"nose"),
-    avatarLabel(cfg.mouth,"mouth"),
     AVATAR_LABELS[cfg.accessory]||cfg.accessory
   ];
 
@@ -4555,12 +4538,6 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
               <OptionGrid cols={3}>{AVATAR_OPTIONS.eyes.map(v=><VisualOption key={v} label={avatarLabel(v,"eyes")} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}><Av av={form.avatar} config={{...facePreviewBase,eyes:v,eyeColor:cfg.eyeColor,brows:cfg.brows,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
               <MiniSectionTitle emoji="🌈" title="Color de ojos"/>
               <div className="avatar-color-rack">{AVATAR_OPTIONS.eyeColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
-              <MiniSectionTitle emoji="〰️" title="Cejas" sub="Expresión"/>
-              <OptionGrid cols={3}>{AVATAR_OPTIONS.brows.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.brows===v} onClick={()=>patch("brows",v)}><Av av={form.avatar} config={{...facePreviewBase,brows:v,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
-              <MiniSectionTitle emoji="👃" title="Nariz" sub="Rasgo separado"/>
-              <OptionGrid cols={3}>{AVATAR_OPTIONS.nose.map(v=><VisualOption key={v} label={avatarLabel(v,"nose")} active={cfg.nose===v} onClick={()=>patch("nose",v)}><Av av={form.avatar} config={{...facePreviewBase,nose:v,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
-              <MiniSectionTitle emoji="👄" title="Boca" sub="Gesto"/>
-              <OptionGrid cols={3}>{AVATAR_OPTIONS.mouth.map(v=><VisualOption key={v} label={avatarLabel(v,"mouth")} active={cfg.mouth===v} onClick={()=>patch("mouth",v)}><Av av={form.avatar} config={{...facePreviewBase,mouth:v,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
             </>}
 
             {panel==="extras"&&<>
@@ -4568,10 +4545,6 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
               <OptionGrid cols={3}>{BASIC_ACCESSORIES.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
               <MiniSectionTitle emoji="🔓" title="Desbloqueables" sub="Comprados en tienda"/>
               <OptionGrid cols={3}>{["capBlack","capGold","glassesGold","bandanaGreen","crown"].map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} locked={isLocked("accessory",v)} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
-              <MiniSectionTitle emoji="⚔️" title="Cicatrices" sub="Capa independiente"/>
-              <OptionGrid cols={3}>{AVATAR_OPTIONS.scar.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.scar===v} onClick={()=>patch("scar",v)}><Av av={form.avatar} config={{...cfg,scar:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
-              <MiniSectionTitle emoji="🌊" title="Tatuajes" sub="Marca pirata/rasta"/>
-              <OptionGrid cols={3}>{AVATAR_OPTIONS.tattoo.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.tattoo===v} onClick={()=>patch("tattoo",v)}><Av av={form.avatar} config={{...cfg,tattoo:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
               <MiniSectionTitle emoji="✨" title="Marcos y aura" sub="Efecto de perfil"/>
               <OptionGrid cols={3}>{AVATAR_OPTIONS.frame.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.frame===v} locked={isLocked("frame",v)} onClick={()=>patch("frame",v)}><Av av={form.avatar} config={{...cfg,frame:v,aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
               <div style={{height:10}}/>
@@ -10197,7 +10170,7 @@ async function reveal(item){
 
 
 function Perfil({user,setUser,onLogout,showToast,showPoints}){
-  const [tab,setTab]=useState("editar");
+  const [tab,setTab]=useState("resumen");
   const [ownedCosmetics,setOwnedCosmetics]=useState(localOwnedCosmetics(user));
   const [privacy,setPrivacy]=useState(normalizePrivacy(user));
   const [form,setForm]=useState({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});
