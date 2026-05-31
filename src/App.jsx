@@ -13914,7 +13914,7 @@ export default function App(){
       <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
         <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${clinicAccent}99,${clinicAccent2}77,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${clinicAccent}44`,opacity:.92}}/>
         {pages[ap]||pages["dashboard"]}
-        <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)} settings={settings}/>
+        <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)} settings={appSettings}/>
       </div>
       <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"var(--rc-card-strong)",borderTop:`2px solid ${clinicAccent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>{
