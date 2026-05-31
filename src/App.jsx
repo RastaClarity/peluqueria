@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
-import TycoonMapGame from "./tycoon/TycoonGame";
 
 // Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
 // La anon key es pública en apps frontend; lo que nunca debe ponerse aquí es la service_role/secret key.
@@ -13116,7 +13115,7 @@ export default function App(){
           >
             ← Volver a la app
           </button>
-          <TycoonMapGame />
+          <RastaCutsTycoonGame user={currentUser} showToast={showToast} standalone={true} onExit={closeTycoonPage} />
         </div>
         <Toast msg={toast.msg} show={toast.show}/>
       </div>
