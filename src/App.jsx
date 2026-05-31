@@ -101,6 +101,11 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
+const APP_VERSION="FASE129_GESTION_REAL_ORDENADA";
+const APP_VERSION_SHORT="F129";
+const APP_BUILD_DATE="2026-05-31";
+const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
+
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
 let masterVolume=0.7;
 let backgroundAudio=null,backgroundAudioAvailable=true;
@@ -4690,34 +4695,80 @@ function Auth({onLogin,showToast,settings}){
   );
 }
 
-function DashboardAdmin({user,showToast}){
-  const [stats,setStats]=useState({citas:0,clientes:0,ingresos:0,stockBajo:0,pendientes:0,confirmadas:0});
+function DashboardAdmin({user,showToast,onOpenTab}={}){
+  const [stats,setStats]=useState({citas:0,clientes:0,ingresos:0,stockBajo:0,pendientes:0,confirmadas:0,pedidos:0,mensajes:0,reportes:0,realizadas:0});
   const [citasHoy,setCitasHoy]=useState([]);
+  const [urgencias,setUrgencias]=useState([]);
   const [loading,setLoading]=useState(true);
+  const [updatedAt,setUpdatedAt]=useState(null);
+  const CHECK_KEY="rasta_gestion_check_hoy_v1";
+  const todayKey=new Date().toISOString().split("T")[0];
+  const [checked,setChecked]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem(`${CHECK_KEY}_${todayKey}`)||"{}");}
+    catch{return {};}
+  });
 
   async function load(){
     setLoading(true);
     const today=new Date().toISOString().split("T")[0];
-    const [citas,clientes,ventas,stock]=await Promise.all([
-      dbGet("citas",`?fecha=gte.${today}&order=fecha.asc,hora.asc&select=*`),
+    const [citas,clientes,ventas,stock,pedidos,mensajes,reportes]=await Promise.all([
+      dbGet("citas",`?fecha=gte.${today}&order=fecha.asc,hora.asc&limit=80&select=*`),
       dbGet("usuarios","?role=eq.client&select=id"),
       dbGet("cobros",`?fecha=gte.${today}&select=importe,estado`),
-      dbGet("inventario","?stock=lte.5&select=id"),
+      dbGet("inventario","?stock=lte.5&select=id,nombre,stock"),
+      dbGet("tienda_pedidos","?estado=in.(pendiente,preparando,listo)&order=created_at.desc&limit=80&select=*"),
+      dbGet("mensajes_privados","?autor_rol=eq.client&leido_admin=eq.false&order=created_at.desc&limit=80&select=*"),
+      dbGet("reportes_comunidad","?estado=eq.pendiente&order=created_at.desc&limit=80&select=*"),
     ]);
-    const list=citas||[];
-    setStats({
-      citas:list.length,
-      pendientes:list.filter(c=>String(c.estado||"pendiente").toLowerCase()==="pendiente").length,
-      confirmadas:list.filter(c=>String(c.estado||"pendiente").toLowerCase()==="confirmada").length,
-      clientes:(clientes||[]).length,
-      ingresos:(ventas||[]).filter(v=>String(v.estado||"pagado").toLowerCase()!=="anulado").reduce((sum,v)=>sum+(Number(v.importe)||0),0),
-      stockBajo:(stock||[]).length
-    });
-    setCitasHoy(list.slice(0,8));
+    const citasList=Array.isArray(citas)?citas:[];
+    const pedidosList=Array.isArray(pedidos)?pedidos:[];
+    const mensajesList=Array.isArray(mensajes)?mensajes:[];
+    const reportesList=Array.isArray(reportes)?reportes:[];
+    const stockList=Array.isArray(stock)?stock:[];
+    const ventasList=Array.isArray(ventas)?ventas:[];
+    const pendientes=citasList.filter(c=>String(c.estado||"pendiente").toLowerCase()==="pendiente").length;
+    const confirmadas=citasList.filter(c=>String(c.estado||"pendiente").toLowerCase()==="confirmada").length;
+    const realizadas=citasList.filter(c=>String(c.estado||"").toLowerCase()==="completada").length;
+    const nextStats={
+      citas:citasList.length,
+      pendientes,
+      confirmadas,
+      realizadas,
+      clientes:(Array.isArray(clientes)?clientes:[]).length,
+      ingresos:ventasList.filter(v=>String(v.estado||"pagado").toLowerCase()!=="anulado").reduce((sum,v)=>sum+(Number(v.importe)||0),0),
+      stockBajo:stockList.length,
+      pedidos:pedidosList.length,
+      mensajes:mensajesList.length,
+      reportes:reportesList.length
+    };
+    const urgent=[];
+    if(pendientes>0) urgent.push({id:"citas",icon:"📅",title:`${pendientes} citas pendientes`,sub:"Confirma o cancela las reservas que aún esperan respuesta.",tab:"citas",col:"gold"});
+    if(mensajesList.length>0) urgent.push({id:"mensajes",icon:"📩",title:`${mensajesList.length} mensajes sin leer`,sub:"Clientes esperando respuesta en el buzón privado.",tab:"mensajes",col:"red"});
+    if(pedidosList.length>0) urgent.push({id:"pedidos",icon:"🛍️",title:`${pedidosList.length} canjes activos`,sub:"Pedidos pendientes, preparando o listos para entregar.",tab:"pedidos",col:"blue"});
+    if(stockList.length>0) urgent.push({id:"stock",icon:"📦",title:`${stockList.length} productos con stock bajo`,sub:"Revisa inventario antes de quedarte sin material.",tab:"stock",col:"red"});
+    if(reportesList.length>0) urgent.push({id:"moderacion",icon:"🚩",title:`${reportesList.length} reportes pendientes`,sub:"Revisa contenido marcado por la comunidad.",tab:"moderacion",col:"red"});
+    if(!urgent.length) urgent.push({id:"ok",icon:"✅",title:"Sin urgencias fuertes",sub:"La gestión no tiene avisos críticos ahora mismo.",tab:"agenda",col:"green"});
+    setStats(nextStats);
+    setUrgencias(urgent);
+    setCitasHoy(citasList.slice(0,8));
+    setUpdatedAt(new Date());
     setLoading(false);
   }
 
   useEffect(()=>{load();},[]);
+
+  function toggleCheck(id){
+    setChecked(prev=>{
+      const next={...prev,[id]:!prev[id]};
+      try{localStorage.setItem(`${CHECK_KEY}_${todayKey}`,JSON.stringify(next));}catch{}
+      return next;
+    });
+  }
+
+  function jump(tab){
+    SFX.tab();
+    if(onOpenTab) onOpenTab(tab);
+  }
 
   async function updateCita(cita,patch,msg){
     const ok=await dbPatch("citas",`?id=eq.${cita.id}`,patch);
@@ -4725,24 +4776,96 @@ function DashboardAdmin({user,showToast}){
     else{showToast?.("No se pudo actualizar la cita");SFX.error();}
   }
 
+  const checkItems=[
+    {id:"citas",icon:"📅",text:"Revisar citas pendientes y confirmar lo que toque",tab:"citas"},
+    {id:"mensajes",icon:"📩",text:"Responder mensajes privados de clientes",tab:"mensajes"},
+    {id:"pedidos",icon:"🛍️",text:"Preparar o entregar canjes pendientes",tab:"pedidos"},
+    {id:"stock",icon:"📦",text:"Mirar stock bajo y anotar reposición",tab:"stock"},
+    {id:"caja",icon:"💰",text:"Revisar caja/resumen económico del día",tab:"facturacion"}
+  ];
+  const quick=[
+    {id:"agenda",icon:"🗓️",label:"Agenda",sub:"Día por horas"},
+    {id:"citas",icon:"📅",label:"Citas",sub:"Confirmar reservas"},
+    {id:"clientes",icon:"👥",label:"Clientes",sub:"Fichas rápidas"},
+    {id:"facturacion",icon:"💰",label:"Caja",sub:"Resumen dinero"},
+    {id:"pedidos",icon:"🛍️",label:"Canjes",sub:"Pedidos tienda"},
+    {id:"mensajes",icon:"📩",label:"Mensajes",sub:"Buzón privado"},
+    {id:"moderacion",icon:"🛡️",label:"Moderar",sub:"Reportes"},
+    {id:"stock",icon:"📦",label:"Stock",sub:"Inventario"},
+  ];
+
   if(loading)return <Spinner/>;
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🏠" title={`Resumen de gestión`} sub={new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"})}/>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:18}}>
-        <StatCard icon="📅" label="Próximas citas" value={stats.citas} col="green"/>
+      <SectionHeader icon="🏠" title="Centro de mando" sub={new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"})} action={<Btn small col="ghost" onClick={load}>Actualizar</Btn>}/>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#D4AF37)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-22,top:-26,fontSize:"6.8rem",opacity:.10}}>🧾</div>
+        <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
+          <div className="icon3d" style={{fontSize:"2.25rem"}}>🧭</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",lineHeight:1}}>Gestión real ordenada</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Lo urgente primero: citas, mensajes, canjes, stock, caja y moderación en una sola vista.</div>
+            {updatedAt&&<div style={{marginTop:6,fontSize:".68rem",fontWeight:850,opacity:.72}}>Actualizado: {updatedAt.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}</div>}
+          </div>
+          <Badge col={(stats.pendientes||stats.mensajes||stats.pedidos||stats.stockBajo||stats.reportes)?"gold":"green"}>{(stats.pendientes||stats.mensajes||stats.pedidos||stats.stockBajo||stats.reportes)?"revisar":"ok"}</Badge>
+        </div>
+      </Card>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+        <StatCard icon="📅" label="Citas próximas" value={stats.citas} col="green"/>
         <StatCard icon="🟡" label="Pendientes" value={stats.pendientes} col="gold"/>
-        <StatCard icon="✅" label="Confirmadas" value={stats.confirmadas} col="blue"/>
-        <StatCard icon="👥" label="Clientes" value={stats.clientes} col="blue"/>
+        <StatCard icon="📩" label="Mensajes" value={stats.mensajes} col={stats.mensajes?"red":"blue"}/>
+        <StatCard icon="🛍️" label="Canjes activos" value={stats.pedidos} col={stats.pedidos?"gold":"green"}/>
+        <StatCard icon="💰" label="Ingresos hoy" value={`${Number(stats.ingresos||0).toFixed(2)}€`} col="gold"/>
+        <StatCard icon="📦" label="Stock bajo" value={stats.stockBajo} col={stats.stockBajo?"red":"blue"}/>
       </div>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div className="icon3d" style={{fontSize:"2.2rem"}}>🧾</div>
-          <div style={{flex:1}}>
-            <div style={{fontWeight:950,fontSize:"1.02rem"}}>Inicio interno de gestión</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Aquí va el resumen que antes estaba en Inicio: próximas citas, estado, hora, precio y acciones rápidas.</div>
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>⚡ Lo urgente</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Pulsa una tarjeta para ir directo al bloque correcto.</div>
           </div>
+          <Badge col="gold">acción</Badge>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:9}}>
+          {urgencias.map(u=><button key={u.id} onClick={()=>jump(u.tab)} style={{border:`1.5px solid ${u.col==="red"?T.red:u.col==="green"?"#4F602D":T.gold}`,background:u.col==="red"?"linear-gradient(180deg,#F0D3BB,#E4B59A)":u.col==="green"?"linear-gradient(180deg,#E8F0CF,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",borderRadius:16,padding:12,textAlign:"left",cursor:"pointer",boxShadow:"0 8px 18px rgba(20,8,4,.10)"}}>
+            <div style={{display:"flex",gap:9,alignItems:"flex-start"}}>
+              <div style={{fontSize:"1.45rem",lineHeight:1}}>{u.icon}</div>
+              <div style={{minWidth:0}}>
+                <div style={{fontWeight:950,color:T.g800,fontSize:".88rem"}}>{u.title}</div>
+                <div style={{fontSize:".74rem",fontWeight:820,color:T.textSub,lineHeight:1.3,marginTop:3}}>{u.sub}</div>
+              </div>
+            </div>
+          </button>)}
+        </div>
+      </Card>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:9}}>🚀 Accesos rápidos</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(118px,1fr))",gap:8}}>
+          {quick.map(q=><button key={q.id} onClick={()=>jump(q.id)} style={{border:`1.5px solid ${T.g300}`,background:"rgba(255,255,255,.34)",borderRadius:15,padding:"10px 8px",fontWeight:950,color:T.g800,cursor:"pointer",textAlign:"center"}}>
+            <div style={{fontSize:"1.45rem",lineHeight:1}}>{q.icon}</div>
+            <div style={{fontSize:".78rem",marginTop:4}}>{q.label}</div>
+            <div style={{fontSize:".66rem",fontWeight:800,color:T.textSub,marginTop:2}}>{q.sub}</div>
+          </button>)}
+        </div>
+      </Card>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",marginBottom:9}}>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>✅ Rutina rápida de hoy</div>
+            <div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>Lista local del dispositivo. Sirve para no olvidar lo básico.</div>
+          </div>
+          <Badge col="blue">{Object.values(checked).filter(Boolean).length}/{checkItems.length}</Badge>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr",gap:7}}>
+          {checkItems.map(item=><div key={item.id} style={{display:"flex",gap:7,alignItems:"stretch"}}>
+            <button onClick={()=>toggleCheck(item.id)} style={{flex:1,border:`1.5px solid ${checked[item.id]?"#4F602D":T.g300}`,background:checked[item.id]?"linear-gradient(180deg,#E8F0CF,#D8BE87)":"rgba(255,244,214,.72)",borderRadius:13,padding:"9px 10px",fontWeight:900,color:T.g800,textAlign:"left",cursor:"pointer"}}>{checked[item.id]?"✅":"⬜"} {item.icon} {item.text}</button>
+            <button onClick={()=>jump(item.tab)} style={{border:`1.5px solid ${T.g300}`,background:"rgba(255,244,214,.72)",borderRadius:13,padding:"0 10px",fontWeight:950,color:T.g700,cursor:"pointer"}}>Ir</button>
+          </div>)}
         </div>
       </Card>
 
@@ -12492,7 +12615,7 @@ function GestionChecklist({user,showToast}){
   </div>;
 }
 
-function GestionAdmin({user,setUser,showToast,showPoints,unread}){
+function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
   const isStaff=role===ROLES.STAFF;
@@ -12618,7 +12741,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread}){
         </div>
       </Card>
 
-      {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast}/>}
+      {tab==="resumen"&&<DashboardAdmin user={user} showToast={showToast} onOpenTab={(id)=>{ const target=tabs.find(t=>t.id===id); if(target){ setGestionGroup(target.group); setTab(target.id); } }}/>}
       {tab==="agenda"&&<GestionAgenda showToast={showToast}/>}
       {tab==="citas"&&<Citas user={user} showToast={showToast}/>}
       {tab==="clientes"&&<Clientes user={user} showToast={showToast}/>}
@@ -13721,6 +13844,89 @@ function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefres
 }
 
 
+
+function clearRastaCutsClientData(){
+  try{
+    const keepTheme=localStorage.getItem("rastaCutsUiTheme");
+    localStorage.clear();
+    sessionStorage.clear();
+    if(keepTheme) localStorage.setItem("rastaCutsUiTheme",keepTheme);
+  }catch{}
+  try{location.reload();}catch{window.location.reload();}
+}
+
+function makeDebugInfo({user=null,settings=null,checkingSession=false,sessionWarning=false}={}){
+  let ua="";
+  let width="";
+  let online="";
+  try{ua=navigator.userAgent||"";width=`${window.innerWidth}x${window.innerHeight}`;online=String(navigator.onLine);}catch{}
+  return {
+    version:APP_VERSION,
+    build:APP_BUILD_DATE,
+    user:user?.email||user?.nombre||"sin sesión",
+    role:user?.rol||user?.role||"none",
+    page:typeof window!=="undefined"?window.location.href:"",
+    viewport:width,
+    online,
+    checkingSession:Boolean(checkingSession),
+    sessionWarning:Boolean(sessionWarning),
+    supabaseUrl:SUPA_URL,
+    theme:typeof document!=="undefined"?document.body?.dataset?.rcTheme||"":"",
+    settingsLoaded:Boolean(settings),
+    userAgent:ua.slice(0,220)
+  };
+}
+
+function SafetyVersionPanel({user=null,settings=null,checkingSession=false,sessionWarning=false}={}){
+  const [open,setOpen]=useState(false);
+  const [copied,setCopied]=useState(false);
+  const [safeMode,setSafeMode]=useState(()=>{
+    try{return localStorage.getItem(APP_SAFE_MODE_KEY)==="1";}catch{return false;}
+  });
+  const info=makeDebugInfo({user,settings,checkingSession,sessionWarning});
+  async function copyInfo(){
+    const txt=JSON.stringify(info,null,2);
+    try{await navigator.clipboard.writeText(txt);setCopied(true);setTimeout(()=>setCopied(false),1600);}catch{setCopied(false);}
+  }
+  function toggleSafeMode(){
+    const next=!safeMode;
+    setSafeMode(next);
+    try{localStorage.setItem(APP_SAFE_MODE_KEY,next?"1":"0");}catch{}
+  }
+  if(open){
+    return (
+      <div style={{position:"fixed",left:10,right:10,bottom:"calc(76px + env(safe-area-inset-bottom,0px))",zIndex:2500,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
+        <div style={{width:"min(460px,100%)",pointerEvents:"auto",background:"linear-gradient(180deg,#FFF8E6,#E9D3A4)",color:T.g900,border:`2px solid ${sessionWarning?T.red:T.gold}`,borderRadius:18,boxShadow:"0 18px 46px rgba(0,0,0,.36)",padding:12,fontFamily:"'Outfit',system-ui,sans-serif"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:8}}>
+            <div>
+              <div style={{fontWeight:1000,fontSize:".92rem",color:T.g900}}>🛡️ Diagnóstico Rasta Cuts</div>
+              <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{APP_VERSION_SHORT} · {APP_BUILD_DATE}</div>
+            </div>
+            <button onClick={()=>setOpen(false)} style={{border:0,borderRadius:999,width:30,height:30,background:T.g150,color:T.g800,fontWeight:1000,cursor:"pointer"}}>×</button>
+          </div>
+          {sessionWarning&&<div style={{background:"#FFF1C8",border:`1px solid ${T.orange}`,borderRadius:12,padding:9,marginBottom:8,fontSize:".78rem",fontWeight:900,color:T.g800}}>Supabase o la sesión están tardando más de lo normal. Si se queda cargando, limpia datos y recarga.</div>}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,fontSize:".72rem",fontWeight:850,color:T.textSub,marginBottom:10}}>
+            <div><b>Usuario:</b><br/>{info.user}</div>
+            <div><b>Rol:</b><br/>{info.role}</div>
+            <div><b>Pantalla:</b><br/>{info.viewport||"--"}</div>
+            <div><b>Online:</b><br/>{info.online||"--"}</div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            <button onClick={copyInfo} style={{border:0,borderRadius:12,padding:"10px 8px",background:T.g700,color:T.white,fontWeight:1000,cursor:"pointer"}}>{copied?"Copiado":"Copiar debug"}</button>
+            <button onClick={clearRastaCutsClientData} style={{border:0,borderRadius:12,padding:"10px 8px",background:T.red,color:T.white,fontWeight:1000,cursor:"pointer"}}>Limpiar datos</button>
+            <button onClick={toggleSafeMode} style={{gridColumn:"1 / -1",border:`1px solid ${T.g300}`,borderRadius:12,padding:"9px 8px",background:safeMode?"#F8E0B4":"#FFF8E6",color:T.g800,fontWeight:1000,cursor:"pointer"}}>Modo seguro local: {safeMode?"ON":"OFF"}</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <button onClick={()=>setOpen(true)} title={`Versión ${APP_VERSION_SHORT}`} style={{position:"fixed",left:10,bottom:"calc(84px + env(safe-area-inset-bottom,0px))",zIndex:2400,border:0,borderRadius:999,padding:"6px 9px",background:sessionWarning?"linear-gradient(180deg,#A72822,#672018)":"linear-gradient(180deg,#21140C,#130B06)",color:"#FFF4D6",fontWeight:1000,fontSize:".68rem",boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer",opacity:.88}}>
+      {sessionWarning?"⚠️":"🛡️"} {APP_VERSION_SHORT}
+    </button>
+  );
+}
+
 function AppCore(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
@@ -13737,6 +13943,7 @@ function AppCore(){
     return "night";
   });
   const [checkingSession,setCheckingSession]=useState(true);
+  const [sessionWarning,setSessionWarning]=useState(false);
   const [helperPage,setHelperPage]=useState(null);
   const [topsInitial,setTopsInitial]=useState("games");
   const [appSettings,setAppSettings]=useState(DEFAULT_APP_SETTINGS);
@@ -13791,6 +13998,7 @@ function AppCore(){
 
   useEffect(()=>{
     let alive=true;
+    const warningTimer=setTimeout(()=>{if(alive) setSessionWarning(true);},3500);
     const fallbackTimer=setTimeout(()=>{
       if(alive) setCheckingSession(false);
     },6500);
@@ -13815,12 +14023,13 @@ function AppCore(){
       }catch(e){
         console.warn("No se pudo restaurar sesión",e);
       }finally{
+        clearTimeout(warningTimer);
         clearTimeout(fallbackTimer);
-        if(alive) setCheckingSession(false);
+        if(alive){setCheckingSession(false);setSessionWarning(false);}
       }
     }
     restoreSession();
-    return()=>{alive=false;clearTimeout(fallbackTimer);};
+    return()=>{alive=false;clearTimeout(warningTimer);clearTimeout(fallbackTimer);};
   },[]);
 
   const showToast=useCallback(msg=>{setToast({show:true,msg});setTimeout(()=>setToast({show:false,msg:""}),3200);},[]);
@@ -13905,10 +14114,11 @@ function AppCore(){
   };
   const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");};
 
-  if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/></div>;
+  if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/><SafetyVersionPanel user={null} settings={appSettings} checkingSession sessionWarning={sessionWarning}/></div>;
   if(!user)return (
     <>
       <Auth onLogin={u=>{setUser(u);setPage(normalizeRole(u.rol||u.role)===ROLES.CLIENT?"dashboard":"gestion");}} showToast={showToast} settings={appSettings}/>
+      <SafetyVersionPanel user={null} settings={appSettings} checkingSession={false} sessionWarning={sessionWarning}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </>
   );
@@ -13923,7 +14133,7 @@ function AppCore(){
   const clinicAccent=uiTheme==="day"?"#23B6F2":"#43D6FF";
   const clinicAccent2=uiTheme==="day"?"#9C6BFF":"#9C7DFF";
   const currentUser={...user,rol:role};
-  const sp={showToast,showPoints,user:currentUser,setUser,settings:appSettings,refreshUnread,unread,loadNotifications};
+  const sp={showToast,showPoints,user:currentUser,setUser,settings:appSettings,refreshUnread,unread,loadNotifications,onNavigate:navTo};
   const isAdmin=role===ROLES.ADMIN || role===ROLES.STAFF;
 
   if(tycoonRoute){
@@ -13990,6 +14200,7 @@ function AppCore(){
       <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead} onMarkOne={markNotificationRead} onOpenCitas={()=>navTo("citas")}/>
       <WalletPanel show={walletOpen} onClose={()=>setWalletOpen(false)} user={currentUser}/>
       <CartPanel show={cartOpen} onClose={()=>setCartOpen(false)} user={currentUser} setUser={setUser} showToast={showToast}/>
+      <SafetyVersionPanel user={currentUser} settings={appSettings} checkingSession={false} sessionWarning={sessionWarning}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
@@ -14020,7 +14231,7 @@ function MobileRuntimeGuard({children}){
     return (
       <div style={{minHeight:"100vh",padding:18,background:"#120806",color:"#F0E0B8",fontFamily:"system-ui,-apple-system,Segoe UI,sans-serif",display:"flex",alignItems:"center",justifyContent:"center"}}>
         <div style={{maxWidth:680,width:"100%",background:"#21140C",border:"1px solid #B99A45",borderRadius:18,padding:18,boxShadow:"0 18px 50px rgba(0,0,0,.35)"}}>
-          <h1 style={{margin:"0 0 8px",fontSize:22}}>Rasta Cuts se ha parado al cargar</h1>
+          <h1 style={{margin:"0 0 8px",fontSize:22}}>Rasta Cuts se ha parado al cargar</h1><div style={{fontSize:".78rem",fontWeight:850,opacity:.8,marginBottom:8}}>{APP_VERSION_SHORT} · {APP_BUILD_DATE}</div>
           <p style={{margin:"0 0 12px",lineHeight:1.45}}>Este panel evita la pantalla en blanco y muestra el fallo para poder corregirlo.</p>
           <pre style={{whiteSpace:"pre-wrap",background:"#0B0705",borderRadius:12,padding:12,overflow:"auto",fontSize:12,color:"#FFE6A3"}}>{String(runtimeError.msg)+"\n\n"+String(runtimeError.stack||"").slice(0,1200)}</pre>
           <button onClick={()=>{try{localStorage.clear();sessionStorage.clear();}catch{};window.location.reload();}} style={{marginTop:12,border:0,borderRadius:12,padding:"12px 14px",fontWeight:900,background:"#B99A45",color:"#120806"}}>Limpiar datos y recargar</button>
