@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE131F_HELPER_VISIBLE";
-const APP_VERSION_SHORT="F131F";
+const APP_VERSION="FASE131G_JUEGOS_HITBOX_FINAS";
+const APP_VERSION_SHORT="F131G";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -8018,6 +8018,10 @@ function RastaRunnerGame({onWin,user}){
   const [jumpsLeft,setJumpsLeft]=useState(2);
   const [holding,setHolding]=useState(false);
   const yRef=useRef(0),vyRef=useRef(0),jumpRef=useRef(2),holdRef=useRef(false),holdMsRef=useRef(0),runningRef=useRef(false);
+  const runnerBoardRef=useRef(null);
+  const RUNNER_PLAYER_BOX={left:22,right:50};
+  const RUNNER_SCISSOR_BOX={leftPad:6,rightPad:22};
+  const RUNNER_GROUND_HIT_Y=15;
 
   function resetAndStart(){
     yRef.current=0;vyRef.current=0;jumpRef.current=2;holdRef.current=false;holdMsRef.current=0;runningRef.current=true;
@@ -8061,7 +8065,16 @@ function RastaRunnerGame({onWin,user}){
         if(!last || last.x<55+Math.random()*22){
           next=[...next,{x:112+Math.random()*28,id:Date.now()+Math.random(),type:Math.random()<.82?'scissor':'comb'}];
         }
-        const hit=next.some(o=>o.type==='scissor' && o.x<20.5 && o.x>14.2 && yRef.current<19);
+        const boardW=runnerBoardRef.current?.clientWidth||360;
+        const hit=next.some(o=>{
+          if(o.type!=='scissor')return false;
+          const ox=(o.x/100)*boardW;
+          const scissorLeft=ox+RUNNER_SCISSOR_BOX.leftPad;
+          const scissorRight=ox+RUNNER_SCISSOR_BOX.rightPad;
+          const horizontal=scissorRight>=RUNNER_PLAYER_BOX.left && scissorLeft<=RUNNER_PLAYER_BOX.right;
+          const vertical=yRef.current<RUNNER_GROUND_HIT_Y;
+          return horizontal && vertical;
+        });
         if(hit){setRunning(false);runningRef.current=false;setGameOver(true);SFX.error();}
         return next;
       });
@@ -8071,8 +8084,9 @@ function RastaRunnerGame({onWin,user}){
   const pts=Math.max(1,Math.min(12,Math.floor(score/30)));
   const jumpTxt=running?`Saltos: ${jumpsLeft} · ${holding?'manteniendo':'toca para saltar'}`:'Doble salto y salto sostenido';
   return <Card style={{background:'linear-gradient(180deg,#F4E5BE,#E7CA8A)',border:`2px solid ${T.g300}`}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8,gap:8}}><div style={{fontWeight:900,color:T.g800}}>🦖✂️ Rasta Runner</div><Badge col='gold'>Hitbox ajustada</Badge></div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8,gap:8}}><div style={{fontWeight:900,color:T.g800}}>🦖✂️ Rasta Runner</div><Badge col='gold'>Hitbox fina</Badge></div>
     <div
+      ref={runnerBoardRef}
       onPointerDown={e=>{e.currentTarget.setPointerCapture?.(e.pointerId);pressJump();}}
       onPointerUp={releaseJump}
       onPointerCancel={releaseJump}
@@ -8087,7 +8101,7 @@ function RastaRunnerGame({onWin,user}){
       {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.42)',padding:18}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:10}}>Más rápido, salto largo y doble salto.</div><Btn col='gold' onClick={resetAndStart}>▶ Empezar</Btn></div></div>}
       {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.56)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Tijera esquivada hasta {score}!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Récord de ronda: {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div></div>}
     </div>
-    <div style={{marginTop:10,fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45}}>Controles: toca y mantén para saltar más tiempo, suelta para caer antes. Puedes pulsar dos veces para doble salto. Teclado: espacio/flecha arriba.</div>
+    <div style={{marginTop:10,fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45}}>Controles: toca y mantén para saltar más tiempo, suelta para caer antes. Hitbox reducida: las tijeras sólo cuentan cerca del cuerpo, no desde lejos. Teclado: espacio/flecha arriba.</div>
   </Card>;
 }
 
@@ -8101,6 +8115,8 @@ function PlatformJumpGame({onWin,user}){
   const [speed,setSpeed]=useState(1);
   const lanes=[18,50,82];
   const GOOD=[{icon:'🪝',pts:10,name:'ganchillo'},{icon:'🪮',pts:8,name:'peine'},{icon:'🧵',pts:12,name:'goma'},{icon:'💈',pts:6,name:'barber'}];
+  const JUMP_HIT_MIN=91.6;
+  const JUMP_HIT_MAX=94.4;
   function resetAndStart(){setLane(1);setItems([]);setScore(0);setSpeed(1);setGameOver(false);setRunning(true);}
   function move(dir){setLane(l=>Math.max(0,Math.min(2,l+dir)));SFX.click();}
   useEffect(()=>{
@@ -8115,7 +8131,7 @@ function PlatformJumpGame({onWin,user}){
       setItems(prev=>{
         let next=prev.map(it=>({...it,y:it.y+(1.15*speed)}));
         next.forEach(it=>{
-          if(!it.done && it.y>88 && it.y<96 && it.lane===lane){
+          if(!it.done && it.y>JUMP_HIT_MIN && it.y<JUMP_HIT_MAX && it.lane===lane){
             it.done=true;
             if(it.bad){setRunning(false);setGameOver(true);SFX.error();}
             else{setScore(s=>s+it.pts);SFX.coins();}
@@ -8136,7 +8152,7 @@ function PlatformJumpGame({onWin,user}){
   },[running,lane,speed,score]);
   const pts=Math.max(1,Math.min(12,Math.floor(score/25)));
   return <Card style={{background:'linear-gradient(180deg,#F0E3C1,#E4C88F)',border:`2px solid ${T.g300}`}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}><div style={{fontWeight:900,color:T.g800}}>🌤️ Rasta Jump</div><Badge col='pink'>Hitbox ajustada</Badge></div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}><div style={{fontWeight:900,color:T.g800}}>🌤️ Rasta Jump</div><Badge col='pink'>Hitbox fina</Badge></div>
     <div style={{position:'relative',height:300,borderRadius:20,overflow:'hidden',background:'linear-gradient(180deg,#D8ECFF,#F7F1DA 72%,#B9863D 72%)',border:'2px solid rgba(62,35,18,.15)',touchAction:'manipulation'}}>
       <div style={{position:'absolute',top:10,left:12,right:12,display:'flex',justifyContent:'space-between',fontWeight:900,color:T.g800,fontSize:'.8rem'}}><span>Score {score}</span><span>Vel. {speed.toFixed(1)}x</span></div>
       {lanes.map((x,i)=><div key={i} onClick={()=>setLane(i)} style={{position:'absolute',left:`${x}%`,top:0,bottom:0,width:2,background:'rgba(110,53,24,.08)',cursor:'pointer'}}/>)}
@@ -8147,7 +8163,7 @@ function PlatformJumpGame({onWin,user}){
       {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.58)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Te cortaron la racha!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Score {score} · récord {pts}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div></div>}
     </div>
     {running&&<div style={{display:'flex',gap:8,marginTop:12}}><Btn full col='ghost' onClick={()=>move(-1)}>⬅️ Izq.</Btn><Btn full col='dark' onClick={()=>setLane(1)}>Centro</Btn><Btn full col='ghost' onClick={()=>move(1)}>Der. ➡️</Btn></div>}
-    <div style={{marginTop:10,fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45}}>El ritmo sube poco a poco hasta una velocidad alta. Cada objeto aparece en carriles aleatorios.</div>
+    <div style={{marginTop:10,fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45}}>El ritmo sube poco a poco. La recogida/daño ahora se calcula en una franja más baja y corta para evitar choques antes de tiempo.</div>
   </Card>;
 }
 
