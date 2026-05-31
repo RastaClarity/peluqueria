@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
+import studioTycoonMap from "./tycoon/estudio tycoon peluqueria.png";
 
 // Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
 // La anon key es pública en apps frontend; lo que nunca debe ponerse aquí es la service_role/secret key.
@@ -38,6 +39,7 @@ async function db(table, method="GET", body=null, query="") {
 const dbGet   = (t,q="") => db(t,"GET",null,q);
 const dbPost  = (t,b)    => db(t,"POST",b,"");
 const dbPatch = (t,q,b)  => db(t,"PATCH",b,q);
+const dbDelete = (t,q="") => db(t,"DELETE",null,q);
 
 async function createNotification(payload={}){
   try{
@@ -2773,6 +2775,100 @@ body[data-rc-theme="day"]{
   color:#3A2A18!important;
 }
 
+
+/* ===== FASE110: confirmar carrito + desbloqueo de cosméticos ===== */
+.cart-button-pro:after{
+  content:"";
+}
+
+
+/* ===== FASE111: economía diaria dura ===== */
+.daily-cap-warning{
+  font-weight:950;
+}
+
+
+/* ===== FASE112: auditoría de puntos web ===== */
+.points-audit-note{
+  font-weight:950;
+}
+
+
+/* ===== FASE113: likes únicos en tablón ===== */
+button:disabled{
+  pointer-events:auto;
+}
+
+
+/* ===== FASE114: likes toggle en tablón ===== */
+.feed-like-toggle{
+  user-select:none;
+}
+
+
+/* ===== FASE115: likes toggle globales ===== */
+.like-toggle-active{
+  user-select:none;
+}
+
+
+/* ===== FASE116: historial de puntos en cartera ===== */
+.wallet-history-row{
+  min-height:42px;
+}
+
+
+/* ===== FASE117: editor de avatar estilo Travian / pirata rasta ===== */
+.avatar-travian-editor .visual-option,
+.avatar-travian-option{
+  image-rendering:auto;
+}
+.avatar-travian-editor .studio-panel,
+.avatar-travian-window{
+  position:relative;
+}
+.avatar-travian-tab:first-child{border-top-left-radius:0}
+.avatar-travian-tab:last-child{border-top-right-radius:0}
+.avatar-travian-tab:hover,
+.avatar-travian-option:hover{
+  transform:translateY(-2px);
+  filter:saturate(1.06) brightness(1.02);
+}
+.avatar-travian-editor .avatar-color-rack{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+  padding:10px;
+  margin-bottom:12px;
+  background:linear-gradient(180deg,#F6E8C8,#D4BD8F);
+  border:2px solid #8E7957;
+  border-radius:12px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55);
+}
+.avatar-travian-editor button{
+  font-family:'Outfit',system-ui,sans-serif;
+}
+@media (max-width:620px){
+  .avatar-travian-window > div:nth-child(2){
+    grid-template-columns:1fr!important;
+  }
+  .avatar-travian-window > div:nth-child(2) > div:first-child{
+    border-right:0!important;
+    border-bottom:3px solid #8E7957!important;
+  }
+  .avatar-travian-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+
+/* ===== FASE118: tienda y camino de recompensas pirata rasta ===== */
+.shop-reward-card{position:relative;transition:transform .18s ease,filter .18s ease;}
+.shop-reward-card:before{content:"";position:absolute;inset:3px;border:1px solid rgba(92,74,51,.22);border-radius:12px;pointer-events:none;}
+.shop-reward-card:hover{transform:translateY(-2px);filter:saturate(1.04) brightness(1.01);}
+.reward-path-node{user-select:none;}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -2897,23 +2993,29 @@ const DEFAULT_AVATAR_CONFIG={version:"fase12",gender:"male",skin:2,hair:"sharpFa
 const DEFAULT_MALE_AVATAR={version:"fase12",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
 const DEFAULT_FEMALE_AVATAR={version:"fase12",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
-  {gender:"male",skin:3,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:1,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street"},
-  {gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper"},
-  {gender:"male",skin:2,hair:"dreadsLong",hairColor:1,face:"oval",eyes:"anime",eyeColor:0,brows:"strong",facial:"goatee",accessory:"earring",bg:"gold"},
-  {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"oval",eyes:"round",eyeColor:3,brows:"soft",facial:"none",accessory:"flowers",bg:"red"},
-  {gender:"male",skin:4,hair:"afro",hairColor:0,face:"long",eyes:"sleepy",eyeColor:0,brows:"soft",facial:"full",accessory:"glasses",bg:"blue"},
-  {gender:"female",skin:3,hair:"afroPuff",hairColor:7,face:"round",eyes:"smile",eyeColor:5,brows:"strong",facial:"none",accessory:"piercing",bg:"royal"},
-  {gender:"male",skin:1,hair:"texturedCrop",hairColor:3,face:"sharp",eyes:"glam",eyeColor:4,brows:"thin",facial:"stubble",accessory:"cap",bg:"dark"},
-  {gender:"female",skin:0,hair:"curlyBob",hairColor:4,face:"heart",eyes:"anime",eyeColor:4,brows:"arched",facial:"none",accessory:"glasses",bg:"studio"},
-  {gender:"male",skin:5,hair:"dreadsBun",hairColor:2,face:"square",eyes:"round",eyeColor:2,brows:"angry",facial:"beard",accessory:"bandana",bg:"studio"},
-  {gender:"female",skin:4,hair:"highPonytail",hairColor:8,face:"long",eyes:"sharp",eyeColor:1,brows:"strong",facial:"none",accessory:"headphones",bg:"blue"},
-  {gender:"male",skin:2,hair:"mohawk",hairColor:5,face:"round",eyes:"sharp",eyeColor:3,brows:"angry",facial:"moustache",accessory:"piercing",bg:"red"},
-  {gender:"female",skin:2,hair:"bob",hairColor:6,face:"square",eyes:"sleepy",eyeColor:2,brows:"thin",facial:"none",accessory:"earring",bg:"gold"},
-  {gender:"male",skin:1,hair:"buzzFade",hairColor:0,face:"heart",eyes:"anime",eyeColor:5,brows:"arched",facial:"none",accessory:"capBlack",bg:"royal"},
-  {gender:"female",skin:1,hair:"pixie",hairColor:10,face:"sharp",eyes:"glam",eyeColor:3,brows:"angry",facial:"none",accessory:"capGold",bg:"street"},
-  {gender:"male",skin:3,hair:"dreadsTop",hairColor:4,face:"oval",eyes:"round",eyeColor:4,brows:"strong",facial:"shortBeard",accessory:"glassesGold",bg:"dark"},
-  {gender:"female",skin:5,hair:"undercut",hairColor:5,face:"oval",eyes:"sharp",eyeColor:0,brows:"strong",facial:"none",accessory:"bandanaGreen",bg:"red"},
+  {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
+  {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
+  {gender:"male",skin:4,hair:"dreadsBun",hairColor:0,face:"oval",eyes:"round",eyeColor:2,brows:"strong",facial:"beard",accessory:"earring",bg:"street"},
+  {gender:"female",skin:3,hair:"longWaves",hairColor:4,face:"oval",eyes:"sharp",eyeColor:5,brows:"strong",facial:"none",accessory:"bandana",bg:"red"},
+  {gender:"male",skin:2,hair:"mohawk",hairColor:0,face:"sharp",eyes:"sharp",eyeColor:0,brows:"angry",facial:"goatee",accessory:"piercing",bg:"paper"},
+  {gender:"female",skin:5,hair:"afroPuff",hairColor:1,face:"round",eyes:"smile",eyeColor:3,brows:"soft",facial:"none",accessory:"flowers",bg:"studio"},
+  {gender:"male",skin:1,hair:"sharpFade",hairColor:3,face:"square",eyes:"glam",eyeColor:4,brows:"thin",facial:"stubble",accessory:"capBlack",bg:"royal"},
+  {gender:"female",skin:1,hair:"undercut",hairColor:9,face:"sharp",eyes:"anime",eyeColor:4,brows:"angry",facial:"none",accessory:"glassesGold",bg:"dark"},
+  {gender:"male",skin:5,hair:"afro",hairColor:0,face:"long",eyes:"sleepy",eyeColor:1,brows:"soft",facial:"full",accessory:"glasses",bg:"blue"},
+  {gender:"female",skin:0,hair:"curlyBob",hairColor:8,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"capGold",bg:"gold"},
+  {gender:"male",skin:3,hair:"dreadsTop",hairColor:4,face:"oval",eyes:"round",eyeColor:4,brows:"strong",facial:"moustache",accessory:"bandana",bg:"red"},
+  {gender:"female",skin:4,hair:"highPonytail",hairColor:7,face:"long",eyes:"sharp",eyeColor:1,brows:"strong",facial:"none",accessory:"piercing",bg:"blue"},
+  {gender:"male",skin:1,hair:"buzzFade",hairColor:0,face:"heart",eyes:"anime",eyeColor:5,brows:"arched",facial:"none",accessory:"crown",bg:"royal"},
+  {gender:"female",skin:2,hair:"bob",hairColor:6,face:"square",eyes:"sleepy",eyeColor:2,brows:"thin",facial:"none",accessory:"earring",bg:"paper"},
+  {gender:"male",skin:2,hair:"texturedCrop",hairColor:5,face:"round",eyes:"sharp",eyeColor:3,brows:"angry",facial:"shortBeard",accessory:"headphones",bg:"studio"},
+  {gender:"female",skin:2,hair:"dreadsLong",hairColor:10,face:"oval",eyes:"round",eyeColor:0,brows:"strong",facial:"none",accessory:"bandanaGreen",bg:"street"},
 ];
+const AVATAR_PRESET_NAMES=[
+  "Capitán Dread","Reina Marea","Corsario Rasta","Sirena Rebelde",
+  "Mohawk Pirata","Afro Caribe","Barber Urbano","Neón Caribe",
+  "Guardia del Puerto","Dama Dorada","Rasta del Muelles","Ponytail Punk",
+  "Leyenda Barber","Bob de Taberna","Beat del Puerto","Dread Esmeralda"
+]
 const AVATAR_LABELS={
   gender:"Sexo",male:"Masculino",female:"Femenino",skin:"Piel",hair:"Peinado",hairColor:"Color pelo",face:"Cara",eyes:"Ojos",eyeColor:"Color ojos",brows:"Cejas",facial:"Barba/bigote",accessory:"Complemento",bg:"Fondo",
   oval:"Ovalada",square:"Cuadrada",heart:"Corazón",long:"Alargada",
@@ -3011,33 +3113,129 @@ function bgGradient(bg){
 }
 
 const COSMETIC_CATALOG_FALLBACK=[
-  {item_key:"cap_black",nombre:"Gorra negra Rasta Cuts",descripcion:"Gorra urbana mejor encajada para el avatar.",categoria:"gorras",slot:"accessory",valor:"capBlack",puntos_precio:120,rareza:"comun",activo:true},
-  {item_key:"cap_gold",nombre:"Gorra dorada",descripcion:"Accesorio premium con brillo dorado.",categoria:"gorras",slot:"accessory",valor:"capGold",puntos_precio:260,rareza:"raro",activo:true},
-  {item_key:"glasses_gold",nombre:"Gafas doradas",descripcion:"Gafas estilo barber con marco dorado.",categoria:"gafas",slot:"accessory",valor:"glassesGold",puntos_precio:180,rareza:"raro",activo:true},
-  {item_key:"bandana_green",nombre:"Bandana verde",descripcion:"Detalle verde para looks rasta más marcados.",categoria:"extras",slot:"accessory",valor:"bandanaGreen",puntos_precio:160,rareza:"comun",activo:true},
-  {item_key:"crown_barber",nombre:"Corona barber",descripcion:"Recompensa especial para perfiles con estilo leyenda.",categoria:"extras",slot:"accessory",valor:"crown",puntos_precio:700,rareza:"epico",activo:true},
-  {item_key:"frame_bronze",nombre:"Marco bronce",descripcion:"Marco de perfil desbloqueable.",categoria:"marcos",slot:"frame",valor:"bronze",puntos_precio:100,rareza:"comun",activo:true},
-  {item_key:"frame_gold",nombre:"Marco dorado",descripcion:"Marco brillante para destacar tu personaje.",categoria:"marcos",slot:"frame",valor:"gold",puntos_precio:350,rareza:"raro",activo:true},
-  {item_key:"frame_neon",nombre:"Marco neón",descripcion:"Marco urbano para destacar en la comunidad.",categoria:"marcos",slot:"frame",valor:"neon",puntos_precio:520,rareza:"epico",activo:true},
-  {item_key:"aura_warm",nombre:"Brillo cálido",descripcion:"Aura suave alrededor del avatar.",categoria:"auras",slot:"aura",valor:"warm",puntos_precio:220,rareza:"raro",activo:true},
-  {item_key:"aura_flame",nombre:"Aura fuego",descripcion:"Efecto intenso para perfiles activos.",categoria:"auras",slot:"aura",valor:"flame",puntos_precio:650,rareza:"epico",activo:true},
-  {item_key:"aura_ocean",nombre:"Aura mar",descripcion:"Efecto azul para perfiles raros.",categoria:"auras",slot:"aura",valor:"ocean",puntos_precio:650,rareza:"epico",activo:true},
-  {item_key:"aura_vip",nombre:"Aura VIP",descripcion:"Brillo legendario de perfil premium.",categoria:"auras",slot:"aura",valor:"vip",puntos_precio:1100,rareza:"legendario",activo:true},
-  {item_key:"bg_studio",nombre:"Fondo estudio",descripcion:"Fondo de barber shop para el avatar.",categoria:"fondos",slot:"bg",valor:"studio",puntos_precio:200,rareza:"comun",activo:true},
-  {item_key:"bg_street",nombre:"Fondo calle",descripcion:"Fondo urbano para perfiles de comunidad.",categoria:"fondos",slot:"bg",valor:"street",puntos_precio:280,rareza:"raro",activo:true},
-  {item_key:"bg_royal",nombre:"Fondo VIP",descripcion:"Fondo legendario para perfiles premium.",categoria:"fondos",slot:"bg",valor:"royal",puntos_precio:900,rareza:"legendario",activo:true},
-];
+  {item_key:"bandana_green",icono:"🟢",nombre:"Bandana Isla Verde",descripcion:"Bandana rasta de puerto. Primer desbloqueable útil para empezar a personalizar.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"accessory",valor:"bandanaGreen",puntos_precio:180,rareza:"comun",activo:true},
+  {item_key:"frame_bronze",icono:"🟤",nombre:"Marco Bronce del Muelle",descripcion:"Marco básico de perfil con borde envejecido.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"frame",valor:"bronze",puntos_precio:220,rareza:"comun",activo:true},
+  {item_key:"cap_black",icono:"🧢",nombre:"Gorra Negra Barber",descripcion:"Gorra urbana para avatar pirata/rasta.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"accessory",valor:"capBlack",puntos_precio:260,rareza:"comun",activo:true},
+  {item_key:"bg_paper",icono:"🗺️",nombre:"Fondo Mapa Antiguo",descripcion:"Fondo tipo pergamino para perfil y avatar.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"paper",puntos_precio:300,rareza:"comun",activo:true},
+  {item_key:"glasses_gold",icono:"🕶️",nombre:"Gafas Doradas del Puerto",descripcion:"Gafas de marco dorado para destacar en comunidad.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"accessory",valor:"glassesGold",puntos_precio:420,rareza:"raro",activo:true},
+  {item_key:"bg_street",icono:"🏴‍☠️",nombre:"Fondo Callejón Barber",descripcion:"Escenario urbano de barbería y puerto.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"street",puntos_precio:480,rareza:"raro",activo:true},
+  {item_key:"cap_gold",icono:"🧢",nombre:"Gorra Dorada de Capitán",descripcion:"Gorra premium con brillo dorado.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"accessory",valor:"capGold",puntos_precio:650,rareza:"raro",activo:true},
+  {item_key:"frame_gold",icono:"🟡",nombre:"Marco Oro Caribe",descripcion:"Marco dorado para perfiles con progreso real.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"frame",valor:"gold",puntos_precio:760,rareza:"raro",activo:true},
+  {item_key:"bg_royal",icono:"👑",nombre:"Fondo Camarote VIP",descripcion:"Fondo de perfil con ambiente de camarote exclusivo.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"royal",puntos_precio:900,rareza:"epico",activo:true},
+  {item_key:"aura_warm",icono:"🔥",nombre:"Aura Atardecer Caribe",descripcion:"Brillo cálido alrededor del avatar.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"aura",valor:"warm",puntos_precio:1100,rareza:"epico",activo:true},
+  {item_key:"frame_neon",icono:"💠",nombre:"Marco Neón Taberna",descripcion:"Marco urbano luminoso para destacar.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"frame",valor:"neon",puntos_precio:1300,rareza:"epico",activo:true},
+  {item_key:"aura_flame",icono:"🔥",nombre:"Aura Fuego del Barbero",descripcion:"Aura intensa para perfiles veteranos.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"aura",valor:"flame",puntos_precio:1500,rareza:"epico",activo:true},
+  {item_key:"bg_dark",icono:"🌙",nombre:"Fondo Noche en el Muelle",descripcion:"Fondo oscuro de puerto nocturno.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"dark",puntos_precio:1700,rareza:"epico",activo:true},
+  {item_key:"aura_ocean",icono:"🌊",nombre:"Aura Marea Verde",descripcion:"Aura fresca de mar y reggae.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"aura",valor:"ocean",puntos_precio:2100,rareza:"legendario",activo:true},
+  {item_key:"crown_barber",icono:"👑",nombre:"Corona Leyenda Barber",descripcion:"Corona especial para perfiles de leyenda.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"accessory",valor:"crown",puntos_precio:2600,rareza:"legendario",activo:true},
+  {item_key:"frame_legend",icono:"🏆",nombre:"Marco Leyenda Rasta",descripcion:"Marco final de prestigio para el perfil.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"frame",valor:"legend",puntos_precio:3200,rareza:"legendario",activo:true},
+  {item_key:"aura_vip",icono:"✨",nombre:"Aura VIP Dorada",descripcion:"Aura máxima para avatar y perfil.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"aura",valor:"vip",puntos_precio:3600,rareza:"legendario",activo:true}
+]
 
 const WEB_POINTS_DAILY_NORMAL_CAP=50;
+
+function webPointsDayKey(uid){return `web_points_day_${uid||"anon"}_${new Date().toISOString().split("T")[0]}`;}
+function getWebPointsToday(uid){try{return Number(localStorage.getItem(webPointsDayKey(uid))||0);}catch{return 0;}}
+function addWebPointsToday(uid,pts){try{const next=getWebPointsToday(uid)+(Number(pts)||0);localStorage.setItem(webPointsDayKey(uid),String(next));return next;}catch{return 0;}}
+function webPointsRemainingToday(uid){return Math.max(0,WEB_POINTS_DAILY_NORMAL_CAP-getWebPointsToday(uid));}
+
+function pointHistoryKey(uid){return `web_points_history_${uid||"anon"}`;}
+function readPointHistory(uid){
+  try{return JSON.parse(localStorage.getItem(pointHistoryKey(uid))||"[]");}catch{return [];}
+}
+function writePointHistory(uid,items){
+  try{localStorage.setItem(pointHistoryKey(uid),JSON.stringify((Array.isArray(items)?items:[]).slice(0,80)));}catch{}
+}
+function recordPointMovement(uid,{amount=0,type="info",reason="",source="",balance=null,meta={}}={}){
+  if(!uid)return;
+  const row={
+    id:`mov_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+    created_at:new Date().toISOString(),
+    amount:Number(amount)||0,
+    type,
+    reason,
+    source,
+    balance,
+    meta
+  };
+  writePointHistory(uid,[row,...readPointHistory(uid)].slice(0,80));
+  try{window.dispatchEvent(new CustomEvent("rasta-points-history-updated"));}catch{}
+}
+function clearPointHistory(uid){
+  writePointHistory(uid,[]);
+  try{window.dispatchEvent(new CustomEvent("rasta-points-history-updated"));}catch{}
+}
+
+async function awardWebPoints({user,setUser,showToast,showPoints,points,reason="",excludeDailyCap=false}){
+  const requested=Math.max(0,Number(points)||0);
+  if(!user?.id||requested<=0)return 0;
+  const allowed=excludeDailyCap?requested:Math.min(requested,webPointsRemainingToday(user.id));
+  if(allowed<=0){
+    showToast?.(`Límite diario normal de ${WEB_POINTS_DAILY_NORMAL_CAP} puntos alcanzado`);
+    return 0;
+  }
+  if(!excludeDailyCap)addWebPointsToday(user.id,allowed);
+  const nuevos=(Number(user.puntos)||0)+allowed;
+  await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+  recordPointMovement(user.id,{amount:allowed,type:"earn",reason:reason||"Puntos añadidos",source:"web",balance:nuevos,meta:{requested,allowed,excludeDailyCap}});
+  setUser?.(u=>({...u,puntos:nuevos}));
+  showPoints?.(allowed);
+  SFX.coins();
+  showToast?.(`${reason||"Puntos añadidos"} +${allowed} pts${allowed<requested?` · límite diario aplicado`:``}`);
+  return allowed;
+}
+async function awardWebPointsByUserId({usuarioId,points,reason="",excludeDailyCap=false}){
+  const requested=Math.max(0,Number(points)||0);
+  if(!usuarioId||requested<=0)return 0;
+  const allowed=excludeDailyCap?requested:Math.min(requested,webPointsRemainingToday(usuarioId));
+  if(allowed<=0)return 0;
+  try{
+    const rows=await dbGet("usuarios",`?id=eq.${usuarioId}&select=id,puntos&limit=1`);
+    const actual=Number(rows?.[0]?.puntos||0);
+    const nuevos=Math.max(0,actual+allowed);
+    const ok=await dbPatch("usuarios",`?id=eq.${usuarioId}`,{puntos:nuevos});
+    if(ok){
+      if(!excludeDailyCap)addWebPointsToday(usuarioId,allowed);
+      recordPointMovement(usuarioId,{amount:allowed,type:"earn",reason:reason||"Puntos añadidos",source:"staff/caja",balance:nuevos,meta:{requested,allowed,excludeDailyCap}});
+    }
+    return ok?allowed:0;
+  }catch(e){
+    console.warn(`No se pudieron sumar puntos web (${reason})`,e);
+    return 0;
+  }
+}
+function feedLikeStorageKey(user){return `feed_likes_${user?.id||"anon"}`;}
+function readLocalFeedLikes(user){
+  try{return JSON.parse(localStorage.getItem(feedLikeStorageKey(user))||"[]");}catch{return [];}
+}
+function saveLocalFeedLikes(user,ids){
+  try{localStorage.setItem(feedLikeStorageKey(user),JSON.stringify([...new Set((ids||[]).map(String))]));}catch{}
+}
+function hasLocalFeedLike(user,postId){
+  return readLocalFeedLikes(user).includes(String(postId));
+}
+function addLocalFeedLike(user,postId){
+  const ids=[...new Set([...readLocalFeedLikes(user),String(postId)])];
+  saveLocalFeedLikes(user,ids);
+  return ids;
+}
+function removeLocalFeedLike(user,postId){
+  const ids=readLocalFeedLikes(user).filter(id=>String(id)!==String(postId));
+  saveLocalFeedLikes(user,ids);
+  return ids;
+}
+
 const PERSONALIZATION_SHOP_EXTRA=[
-  {id:"title_fresh_cut",item_key:"title_fresh_cut",icono:"🏷️",nombre:"Título: Corte Fresco",descripcion:"Título visible para tu perfil. Personalización web, no Tycoon.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Corte Fresco",puntos_precio:180,rareza:"comun",activo:true,stock:null},
-  {id:"title_barrio_vip",item_key:"title_barrio_vip",icono:"👑",nombre:"Título: Barrio VIP",descripcion:"Título premium para perfiles con flow.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Barrio VIP",puntos_precio:650,rareza:"epico",activo:true,stock:null},
-  {id:"name_gold",item_key:"name_gold",icono:"✨",nombre:"Nombre dorado",descripcion:"Color especial para destacar tu nombre en perfil y comunidad.",categoria:"avatar",tipo:"perfil_color",slot:"nameColor",valor:"gold",puntos_precio:420,rareza:"raro",activo:true,stock:null},
-  {id:"name_green",item_key:"name_green",icono:"🟢",nombre:"Nombre verde rasta",descripcion:"Color verde para tu nombre público.",categoria:"avatar",tipo:"perfil_color",slot:"nameColor",valor:"green",puntos_precio:320,rareza:"comun",activo:true,stock:null},
-  {id:"profile_card_wood",item_key:"profile_card_wood",icono:"🪵",nombre:"Tarjeta pergamino",descripcion:"Estilo visual para tu tarjeta de perfil.",categoria:"avatar",tipo:"perfil_card",slot:"profileCard",valor:"wood",puntos_precio:500,rareza:"raro",activo:true,stock:null},
-  {id:"profile_card_night",item_key:"profile_card_night",icono:"🌙",nombre:"Tarjeta noche verde",descripcion:"Marco oscuro/verde para tu tarjeta de perfil.",categoria:"avatar",tipo:"perfil_card",slot:"profileCard",valor:"nightGreen",puntos_precio:580,rareza:"epico",activo:true,stock:null},
-  {id:"sticker_scissors",item_key:"sticker_scissors",icono:"✂️",nombre:"Pegatina tijeras",descripcion:"Pegatina coleccionable para futuras tarjetas de perfil.",categoria:"avatar",tipo:"perfil_sticker",slot:"sticker",valor:"scissors",puntos_precio:120,rareza:"comun",activo:true,stock:null},
-  {id:"sticker_dread",item_key:"sticker_dread",icono:"🦁",nombre:"Pegatina dread",descripcion:"Pegatina rasta para futuras tarjetas de perfil.",categoria:"avatar",tipo:"perfil_sticker",slot:"sticker",valor:"dread",puntos_precio:180,rareza:"raro",activo:true,stock:null}
+  {id:"title_fresh_cut",item_key:"title_fresh_cut",icono:"🏷️",nombre:"Título: Corte Fresco",descripcion:"Título visible para tu perfil. Personalización web, no Tycoon.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Corte Fresco",puntos_precio:250,rareza:"comun",activo:true,stock:null},
+  {id:"title_puerto_rasta",item_key:"title_puerto_rasta",icono:"⚓",nombre:"Título: Puerto Rasta",descripcion:"Título de perfil con aire marinero/barber.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Puerto Rasta",puntos_precio:450,rareza:"raro",activo:true,stock:null},
+  {id:"title_barrio_vip",item_key:"title_barrio_vip",icono:"👑",nombre:"Título: Barrio VIP",descripcion:"Título premium para perfiles con flow.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Barrio VIP",puntos_precio:1200,rareza:"epico",activo:true,stock:null},
+  {id:"title_capitan_barber",item_key:"title_capitan_barber",icono:"🏴‍☠️",nombre:"Título: Capitán Barber",descripcion:"Título legendario para perfiles veteranos.",categoria:"avatar",tipo:"perfil_titulo",slot:"profileTitle",valor:"Capitán Barber",puntos_precio:2600,rareza:"legendario",activo:true,stock:null},
+  {id:"name_green",item_key:"name_green",icono:"🟢",nombre:"Nombre verde rasta",descripcion:"Color verde para tu nombre público.",categoria:"avatar",tipo:"perfil_color",slot:"nameColor",valor:"green",puntos_precio:420,rareza:"comun",activo:true,stock:null},
+  {id:"name_gold",item_key:"name_gold",icono:"✨",nombre:"Nombre dorado",descripcion:"Color especial para destacar tu nombre en perfil y comunidad.",categoria:"avatar",tipo:"perfil_color",slot:"nameColor",valor:"gold",puntos_precio:850,rareza:"raro",activo:true,stock:null},
+  {id:"profile_card_wood",item_key:"profile_card_wood",icono:"🪵",nombre:"Tarjeta Pergamino",descripcion:"Estilo visual de tarjeta de perfil tipo Travian.",categoria:"avatar",tipo:"perfil_card",slot:"profileCard",valor:"wood",puntos_precio:700,rareza:"raro",activo:true,stock:null},
+  {id:"profile_card_night",item_key:"profile_card_night",icono:"🌙",nombre:"Tarjeta Muelle Nocturno",descripcion:"Marco oscuro/verde para tarjeta de perfil.",categoria:"avatar",tipo:"perfil_card",slot:"profileCard",valor:"nightGreen",puntos_precio:1300,rareza:"epico",activo:true,stock:null},
+  {id:"sticker_scissors",item_key:"sticker_scissors",icono:"✂️",nombre:"Pegatina Tijeras",descripcion:"Pegatina coleccionable para futuras tarjetas de perfil.",categoria:"avatar",tipo:"perfil_sticker",slot:"sticker",valor:"scissors",puntos_precio:180,rareza:"comun",activo:true,stock:null},
+  {id:"sticker_dread",item_key:"sticker_dread",icono:"🦁",nombre:"Pegatina Dread",descripcion:"Pegatina rasta para futuras tarjetas de perfil.",categoria:"avatar",tipo:"perfil_sticker",slot:"sticker",valor:"dread",puntos_precio:320,rareza:"raro",activo:true,stock:null}
 ].map(x=>({...x,origen:"fallback_personalizacion"}));
 function personalizationProductFromCosmetic(c){
   return {
@@ -3090,11 +3288,45 @@ function addToLocalCart(user,item,qty=1){
       icono:item.icono||"🎁",
       precio_puntos:Number(item.puntos_precio||item.precio_puntos||item.puntos||0),
       puntos:Number(item.puntos_precio||item.precio_puntos||item.puntos||0),
+      slot:item.slot||null,
+      valor:item.valor||null,
+      rareza:item.rareza||"comun",
+      descripcion:item.descripcion||"",
       qty
     }];
   }
   writeCart(user,next);
   return next;
+}
+
+
+function catalogItemByKey(key){
+  if(!key)return null;
+  const all=[...avatarShopFallbackItems()];
+  return all.find(x=>x.item_key===key || x.id===key)||null;
+}
+function hydrateCartItem(it){
+  const found=catalogItemByKey(it.item_key||it.id);
+  return {...(found||{}),...it};
+}
+function isAvatarPersonalizationItem(it){
+  const h=hydrateCartItem(it);
+  const c=String(h.categoria||"").toLowerCase();
+  const t=String(h.tipo||"").toLowerCase();
+  return c==="avatar"||t.includes("avatar")||t.includes("perfil")||!!h.slot;
+}
+async function unlockCosmeticForUser(user,item){
+  const h=hydrateCartItem(item);
+  if(!h.item_key)return false;
+  const keys=[...new Set([...localOwnedCosmetics(user),h.item_key])];
+  saveLocalOwnedCosmetics(user,keys);
+  try{
+    await supabase.from("user_cosmetics").upsert(
+      {usuario_id:String(user.id),item_key:h.item_key,created_at:new Date().toISOString()},
+      {onConflict:"usuario_id,item_key"}
+    );
+  }catch{}
+  return true;
 }
 
 function rarityLabel(r){return {comun:"Común",raro:"Raro",epico:"Épico",legendario:"Legendario"}[r]||"Especial";}
@@ -3269,7 +3501,8 @@ function Av({av=0,config=null,size=36}){
 }
 function CharacterCard({idx,selected,onPick,compact=false}){
   const cfg=normalizeAvatarConfig(AVATAR_PRESETS[idx%AVATAR_PRESETS.length],idx);
-  return <button type="button" onClick={()=>{SFX.tab();onPick(idx);}} style={{background:selected?"linear-gradient(180deg,#FFF4D6,#F6E5BE)":"rgba(255,244,214,.72)",border:`2px solid ${selected?T.gold:T.g200}`,borderRadius:18,padding:compact?8:10,cursor:"pointer",boxShadow:selected?"0 10px 24px rgba(212,175,55,.3)":"0 6px 16px rgba(20,8,4,.12)",textAlign:"center",transition:"all .18s ease"}}><div style={{display:"flex",justifyContent:"center",marginBottom:6}}><Av av={idx} config={cfg} size={compact?52:72}/></div><div style={{fontWeight:950,fontSize:compact?".7rem":".78rem",color:T.g800,lineHeight:1.05}}>{AVATAR_LABELS[cfg.hair]}</div>{!compact&&<div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:2}}>{AVATAR_LABELS[cfg.gender]} · {avatarLabel(cfg.face,"face")}</div>}</button>;
+  const name=AVATAR_PRESET_NAMES?.[idx%AVATAR_PRESET_NAMES.length]||AVATAR_LABELS[cfg.hair];
+  return <button type="button" className="avatar-travian-option" onClick={()=>{SFX.tab();onPick(idx);}} style={{background:selected?"linear-gradient(180deg,#FFF8E2,#E3CE9D)":"linear-gradient(180deg,#E9D8B4,#CDB78C)",border:`2px solid ${selected?T.gold:"#8E7957"}`,borderRadius:10,padding:compact?7:8,cursor:"pointer",boxShadow:selected?"0 0 0 2px rgba(95,142,34,.35),0 10px 24px rgba(0,0,0,.22)":"0 6px 14px rgba(20,8,4,.18)",textAlign:"center",transition:"all .18s ease",position:"relative",overflow:"hidden"}}><div style={{display:"flex",justifyContent:"center",marginBottom:5,background:"linear-gradient(180deg,#263820,#10160F)",border:"1px solid #8E7957",borderRadius:8,padding:4}}><Av av={idx} config={cfg} size={compact?52:76}/></div><div style={{fontWeight:950,fontSize:compact?".68rem":".74rem",color:T.g800,lineHeight:1.05,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{name}</div>{!compact&&<div style={{fontSize:".62rem",fontWeight:850,color:T.textSub,marginTop:2}}>{AVATAR_LABELS[cfg.gender]} · {AVATAR_LABELS[cfg.hair]}</div>}{selected&&<div style={{position:"absolute",top:5,right:5,background:"#5F8E22",color:"#FFF8E2",border:"1px solid #D5B24F",borderRadius:999,fontSize:".62rem",fontWeight:950,padding:"1px 5px"}}>✓</div>}</button>;
 }
 function PickerButton({active,children,onClick,locked=false}){return <button type="button" onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?T.gradGold:locked?"rgba(60,40,25,.18)":"rgba(255,244,214,.72)",color:active?T.g900:locked?T.textSub:T.g700,borderRadius:12,padding:"8px 9px",fontWeight:900,fontSize:".72rem",cursor:locked?"not-allowed":"pointer",boxShadow:active?"0 8px 18px rgba(212,175,55,.25)":"0 5px 12px rgba(20,8,4,.1)"}}>{locked?"🔒 ":""}{children}</button>;}
 function ColorDot({color,active,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:32,height:32,borderRadius:"50%",background:color,border:`3px solid ${active?T.gold:"rgba(255,244,214,.9)"}`,boxShadow:active?"0 0 0 3px rgba(212,175,55,.25)":"0 4px 10px rgba(20,8,4,.18)",cursor:"pointer"}}/>;}
@@ -3291,8 +3524,8 @@ function AvatarEditor({form,setForm,ownedKeys=[]}){
       if(key==="gender"){
         const base=value==="female"?DEFAULT_FEMALE_AVATAR:DEFAULT_MALE_AVATAR;
         next={...base,skin:current.skin,hairColor:current.hairColor,eyeColor:current.eyeColor,bg:current.bg,frame:current.frame,aura:current.aura,accessory:current.accessory};
-        if(value==="female") next={...next,facial:"none",hair:"longWaves",face:"heart",eyes:"glam",brows:"arched",accessory:current.accessory==="crown"?"hoopGold":current.accessory};
-        if(value==="male") next={...next,hair:"sharpFade",face:"square",eyes:"sharp",brows:"strong",facial:current.facial==="none"?"shortBeard":current.facial,accessory:current.accessory==="flowers"?"earring":current.accessory};
+        if(value==="female") next={...next,facial:"none",hair:"braidsLong",face:"heart",eyes:"glam",brows:"arched",accessory:current.accessory==="crown"?"hoopGold":current.accessory};
+        if(value==="male") next={...next,hair:"dreadsTop",face:"square",eyes:"sharp",brows:"strong",facial:current.facial==="none"?"shortBeard":current.facial,accessory:current.accessory==="flowers"?"bandana":current.accessory};
       }
       return {...f,avatarConfig:normalizeAvatarConfig(next,f.avatar)};
     });
@@ -3300,54 +3533,115 @@ function AvatarEditor({form,setForm,ownedKeys=[]}){
   const randomize=()=>applyConfig(randomAvatarConfig(cfg.gender));
   const preset=(idx)=>setForm(f=>({...f,avatar:idx,avatarConfig:normalizeAvatarConfig(AVATAR_PRESETS[idx],idx)}));
   const visibleHair=cfg.gender==="female"?FEMALE_HAIR:MALE_HAIR;
-  const panels=[{id:"base",label:"Base",icon:"👤"},{id:"pelo",label:"Pelo",icon:"💇"},{id:"cara",label:"Cara",icon:"🙂"},{id:"extras",label:"Extras",icon:"🎒"}];
+  const panels=[
+    {id:"base",label:"Inventario",icon:"🎒"},
+    {id:"pelo",label:"Peinado",icon:"💇"},
+    {id:"cara",label:"Rostro",icon:"🙂"},
+    {id:"extras",label:"Apariencia",icon:"✨"}
+  ];
   const hairPreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none"},form.avatar);
   const facePreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none",facial:"none"},form.avatar);
-  return <div>
-    <Card style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF8E8,#F5E1B6)",border:`2px solid ${T.gold}`,marginBottom:14}}>
-      <div style={{padding:12,background:"radial-gradient(circle at 50% 14%,rgba(255,241,168,.26),transparent 38%),linear-gradient(160deg,#160B07,#3A1E10 55%,#D4AF37)",color:T.white}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:8}}><div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.25rem",letterSpacing:".4px"}}>Creador de personaje</div><div style={{fontSize:".72rem",fontWeight:850,opacity:.82}}>Modelo nuevo: masculino y femenino separados, colores reales y miniaturas visuales.</div></div><Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn></div>
-        <div style={{display:"grid",gridTemplateColumns:"184px 1fr",gap:12,alignItems:"center"}}><div style={{display:"flex",justifyContent:"center"}}><Av av={form.avatar} config={cfg} size={172}/></div><div><div style={{fontWeight:950,fontSize:"1rem",lineHeight:1.05,marginBottom:4}}>{avatarStyleName(cfg)}</div><div style={{fontSize:".72rem",fontWeight:800,opacity:.86,marginBottom:8}}>Toca cualquier miniatura: debe cambiar arriba al instante.</div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{[{v:cfg.gender},{v:cfg.hair},{v:cfg.face,k:"face"},{v:cfg.accessory}].map(x=><span key={`${x.v}-${x.k||""}`} style={{background:"rgba(255,255,255,.14)",border:"1px solid rgba(255,255,255,.18)",padding:"4px 8px",borderRadius:999,fontSize:".64rem",fontWeight:900}}>{avatarLabel(x.v,x.k)}</span>)}</div></div></div>
+  const currentName=AVATAR_PRESET_NAMES?.[Number(form.avatar)%AVATAR_PRESET_NAMES.length]||avatarStyleName(cfg);
+  const activeMeta=[
+    avatarLabel(cfg.gender),
+    AVATAR_LABELS[cfg.hair],
+    avatarLabel(cfg.face,"face"),
+    AVATAR_LABELS[cfg.accessory]||cfg.accessory
+  ];
+
+  const MenuButton=({id,label,icon})=><button type="button" onClick={()=>{SFX.tab();setPanel(id);}} className="avatar-travian-tab" style={{background:panel===id?"linear-gradient(180deg,#8E7957,#5C4A33)":"linear-gradient(180deg,#6B4A34,#3A2A18)",color:"#FFF8E2",border:`2px solid ${panel===id?"#D5B24F":"#8E7957"}`,fontWeight:950,cursor:"pointer",padding:"10px 8px",textAlign:"center",boxShadow:panel===id?"inset 0 2px 0 rgba(255,255,255,.22),0 4px 0 #2A1A0D":"inset 0 1px 0 rgba(255,255,255,.12)",minWidth:0}}><div style={{fontSize:"1.15rem",lineHeight:1}}>{icon}</div><div style={{fontSize:".74rem",marginTop:2,whiteSpace:"nowrap"}}>{label}</div></button>;
+
+  const OptionGrid=({children,cols=3})=><div className="avatar-travian-grid" style={{display:"grid",gridTemplateColumns:`repeat(${cols},minmax(0,1fr))`,gap:8}}>{children}</div>;
+
+  return <div className="avatar-travian-editor">
+    <Card className="avatar-travian-window" style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#F6E8C8,#E9D8B4 60%,#D4BD8F)",border:"3px solid #8E7957",borderRadius:16,boxShadow:"0 20px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.75)",marginBottom:14}}>
+      <div style={{background:"linear-gradient(180deg,#4A3522,#241709)",borderBottom:"3px solid #8E7957",color:"#FFF8E2",padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+        <div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",letterSpacing:".4px",textShadow:"0 2px 0 rgba(0,0,0,.4)"}}>Rasta — Nivel 0</div>
+          <div style={{fontSize:".76rem",fontWeight:850,opacity:.82}}>Editor visual estilo juego de navegador · pirata rasta</div>
+        </div>
+        <div style={{display:"flex",gap:7}}>
+          <Btn small col="ghost" onClick={()=>applyConfig(cfg)}>↶</Btn>
+          <Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn>
+        </div>
       </div>
-      <div style={{padding:12}}><div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>{panels.map(p=><EditorTabButton key={p.id} active={panel===p.id} icon={p.icon} label={p.label} onClick={()=>setPanel(p.id)}/>)}</div></div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1.05fr 1fr",gap:0,background:"linear-gradient(90deg,#203019,#304923)"}}>
+        <div style={{borderRight:"3px solid #8E7957"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:"3px solid #8E7957"}}>
+            {panels.map(p=><MenuButton key={p.id} {...p}/>)}
+          </div>
+
+          <div style={{padding:12,maxHeight:520,overflowY:"auto",background:"radial-gradient(circle at 50% 0%,rgba(213,178,79,.15),transparent 32%),linear-gradient(180deg,#304923,#162112)"}}>
+            {panel==="base"&&<>
+              <MiniSectionTitle emoji="⚧" title="Modelo" sub="Cambia el cuerpo completo"/>
+              <OptionGrid cols={2}>
+                <VisualOption label="Corsario" active={cfg.gender==="male"} onClick={()=>patch("gender","male")}><Av av={form.avatar} config={{...DEFAULT_MALE_AVATAR,skin:cfg.skin,hairColor:cfg.hairColor,eyeColor:cfg.eyeColor,bg:cfg.bg}} size={108}/></VisualOption>
+                <VisualOption label="Capitana" active={cfg.gender==="female"} onClick={()=>patch("gender","female")}><Av av={form.avatar} config={{...DEFAULT_FEMALE_AVATAR,skin:cfg.skin,hairColor:cfg.hairColor,eyeColor:cfg.eyeColor,bg:cfg.bg}} size={108}/></VisualOption>
+              </OptionGrid>
+
+              <MiniSectionTitle emoji="🧭" title="Tripulación base" sub="Presets pirata rasta"/>
+              <OptionGrid cols={3}>{AVATAR_PRESETS.map((_,i)=><CharacterCard key={i} idx={i} selected={Number(form.avatar)===i} onPick={preset} compact/>)}</OptionGrid>
+
+              <MiniSectionTitle emoji="🖼️" title="Fondos" sub="Escenario"/>
+              <OptionGrid cols={4}>{AVATAR_OPTIONS.bg.map(v=><button key={v} type="button" onClick={()=>patch("bg",v)} style={{height:54,borderRadius:9,border:`2px solid ${cfg.bg===v?T.gold:"#8E7957"}`,background:bgGradient(v),boxShadow:cfg.bg===v?"0 0 0 2px rgba(95,142,34,.35)":"0 5px 12px rgba(0,0,0,.18)",cursor:"pointer",position:"relative"}}>{isLocked("bg",v)&&<span style={{position:"absolute",top:3,right:4}}>🔒</span>}</button>)}</OptionGrid>
+            </>}
+
+            {panel==="pelo"&&<>
+              <MiniSectionTitle emoji="💇" title="Peinado" sub="Vista en tiempo real"/>
+              <OptionGrid cols={3}>{visibleHair.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.hair===v} locked={isLocked("hair",v)} onClick={()=>patch("hair",v)}><Av av={form.avatar} config={{...hairPreviewBase,hair:v,gender:cfg.gender,facial:cfg.gender==="female"?"none":cfg.facial}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="🎨" title="Color de pelo" sub="Paleta"/>
+              <div className="avatar-color-rack">{AVATAR_OPTIONS.hairColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.hairColor===i} onClick={()=>patch("hairColor",i)}/>)}</div>
+              {cfg.gender==="male"&&<><MiniSectionTitle emoji="🧔" title="Barba y bigote" sub="Sólo corsario"/><OptionGrid cols={3}>{AVATAR_OPTIONS.facial.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.facial===v} onClick={()=>patch("facial",v)}><Av av={form.avatar} config={{...hairPreviewBase,gender:"male",facial:v}} size={98}/></VisualOption>)}</OptionGrid></>}
+            </>}
+
+            {panel==="cara"&&<>
+              <MiniSectionTitle emoji="🙂" title="Rostro" sub="Forma y gesto"/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.face.map(v=><VisualOption key={v} label={avatarLabel(v,"face")} active={cfg.face===v} onClick={()=>patch("face",v)}><Av av={form.avatar} config={{...facePreviewBase,face:v,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="🧑" title="Tono de piel"/>
+              <div className="avatar-color-rack">{AVATAR_OPTIONS.skin.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.skin===i} onClick={()=>patch("skin",i)}/>)}</div>
+              <MiniSectionTitle emoji="👀" title="Ojos" sub="Forma"/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.eyes.map(v=><VisualOption key={v} label={avatarLabel(v,"eyes")} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}><Av av={form.avatar} config={{...facePreviewBase,eyes:v,eyeColor:cfg.eyeColor,brows:cfg.brows,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="🌈" title="Color de ojos"/>
+              <div className="avatar-color-rack">{AVATAR_OPTIONS.eyeColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
+            </>}
+
+            {panel==="extras"&&<>
+              <MiniSectionTitle emoji="🎒" title="Complementos" sub="Pirata, rasta y barber"/>
+              <OptionGrid cols={3}>{BASIC_ACCESSORIES.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="🔓" title="Desbloqueables" sub="Comprados en tienda"/>
+              <OptionGrid cols={3}>{["capBlack","capGold","glassesGold","bandanaGreen","crown"].map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} locked={isLocked("accessory",v)} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="✨" title="Marcos y aura" sub="Efecto de perfil"/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.frame.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.frame===v} locked={isLocked("frame",v)} onClick={()=>patch("frame",v)}><Av av={form.avatar} config={{...cfg,frame:v,aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
+              <div style={{height:10}}/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.aura.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.aura===v} locked={isLocked("aura",v)} onClick={()=>patch("aura",v)}><Av av={form.avatar} config={{...cfg,aura:v}} size={98}/></VisualOption>)}</OptionGrid>
+            </>}
+          </div>
+        </div>
+
+        <div style={{padding:14,background:"radial-gradient(circle at 50% 20%,#FFF8E2 0%,#D8C391 52%,#27331E 53%,#11180E 100%)",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:590}}>
+          <div style={{background:"linear-gradient(180deg,#FFF8E2,#E9D8B4)",border:"2px solid #8E7957",borderRadius:12,padding:10,boxShadow:"0 12px 28px rgba(0,0,0,.24)"}}>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800,lineHeight:1}}>Vista previa</div>
+            <div style={{fontSize:".75rem",fontWeight:850,color:T.textSub}}>Los cambios se ven al instante.</div>
+          </div>
+          <div style={{display:"grid",placeItems:"center",padding:"18px 0"}}>
+            <div style={{width:245,height:290,display:"grid",placeItems:"center",background:"linear-gradient(180deg,#F8F1DD,#D7C59D)",border:"3px solid #8E7957",boxShadow:"inset 0 0 0 4px rgba(255,255,255,.34),0 18px 34px rgba(0,0,0,.35)"}}>
+              <Av av={form.avatar} config={cfg} size={230}/>
+            </div>
+          </div>
+          <div style={{display:"grid",gap:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+              <Badge col="gold">{currentName}</Badge>
+              {activeMeta.map(x=><Badge key={x} col="green">{x}</Badge>)}
+            </div>
+            <Card style={{padding:10,background:"linear-gradient(180deg,#FFF8E2,#E9D8B4)",border:"2px solid #8E7957"}}>
+              <div style={{fontWeight:950,color:T.g800}}>🎯 Estado del look</div>
+              <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>Personalización de avatar/perfil. No afecta al Tycoon ni a los RC. Los objetos bloqueados se desbloquean con puntos web en tienda.</div>
+            </Card>
+          </div>
+        </div>
+      </div>
     </Card>
-    {panel==="base"&&<>
-      <MiniSectionTitle emoji="⚧" title="Sexo del personaje" sub="Cambia el modelo entero"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}><VisualOption label="Masculino" active={cfg.gender==="male"} onClick={()=>patch("gender","male")}><Av av={form.avatar} config={{...DEFAULT_MALE_AVATAR,skin:cfg.skin,hairColor:cfg.hairColor,eyeColor:cfg.eyeColor,bg:cfg.bg}} size={108}/></VisualOption><VisualOption label="Femenino" active={cfg.gender==="female"} onClick={()=>patch("gender","female")}><Av av={form.avatar} config={{...DEFAULT_FEMALE_AVATAR,skin:cfg.skin,hairColor:cfg.hairColor,eyeColor:cfg.eyeColor,bg:cfg.bg}} size={108}/></VisualOption></div>
-      <MiniSectionTitle emoji="🎭" title="Presets de personaje" sub="Modelos muy distintos"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>{AVATAR_PRESETS.map((_,i)=><CharacterCard key={i} idx={i} selected={Number(form.avatar)===i} onPick={preset}/>)}</div>
-      <MiniSectionTitle emoji="🖼️" title="Fondos" sub="Escenario"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:14}}>{AVATAR_OPTIONS.bg.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.bg===v} locked={isLocked("bg",v)} onClick={()=>patch("bg",v)}><div style={{width:66,height:66,borderRadius:"50%",background:bgGradient(v),border:"3px solid rgba(255,255,255,.82)",boxShadow:"0 10px 18px rgba(0,0,0,.18)"}}/></VisualOption>)}</div>
-      <MiniSectionTitle emoji="✨" title="Marcos" sub="Borde del avatar"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>{AVATAR_OPTIONS.frame.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.frame===v} locked={isLocked("frame",v)} onClick={()=>patch("frame",v)}><Av av={form.avatar} config={{...cfg,frame:v,aura:"none"}} size={92}/></VisualOption>)}</div>
-    </>}
-    {panel==="pelo"&&<>
-      <MiniSectionTitle emoji="💇" title={`Peinados ${AVATAR_LABELS[cfg.gender].toLowerCase()}`} sub="El color debe notarse"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>{visibleHair.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.hair===v} locked={isLocked("hair",v)} onClick={()=>patch("hair",v)}><Av av={form.avatar} config={{...hairPreviewBase,hair:v,gender:cfg.gender,facial:cfg.gender==="female"?"none":cfg.facial}} size={108}/></VisualOption>)}</div>
-      <MiniSectionTitle emoji="🎨" title="Color de pelo" sub="Color directo, sin camuflar"/>
-      <Card style={{marginBottom:14,background:"rgba(255,248,225,.75)",border:`2px solid ${T.g200}`}}><div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>{AVATAR_OPTIONS.hairColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.hairColor===i} onClick={()=>patch("hairColor",i)}/>)}</div></Card>
-      {cfg.gender==="male"&&<><MiniSectionTitle emoji="🧔" title="Barba y bigote" sub="Solo masculino"/><div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{AVATAR_OPTIONS.facial.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.facial===v} onClick={()=>patch("facial",v)}><Av av={form.avatar} config={{...hairPreviewBase,gender:"male",facial:v}} size={108}/></VisualOption>)}</div></>}
-    </>}
-    {panel==="cara"&&<>
-      <MiniSectionTitle emoji="🙂" title="Forma de cara" sub="Silueta y mandíbula"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>{AVATAR_OPTIONS.face.map(v=><VisualOption key={v} label={avatarLabel(v,"face")} active={cfg.face===v} onClick={()=>patch("face",v)}><Av av={form.avatar} config={{...facePreviewBase,face:v,gender:cfg.gender}} size={108}/></VisualOption>)}</div>
-      <MiniSectionTitle emoji="🧑" title="Tono de piel"/>
-      <Card style={{marginBottom:14,background:"rgba(255,248,225,.75)",border:`2px solid ${T.g200}`}}><div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>{AVATAR_OPTIONS.skin.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.skin===i} onClick={()=>patch("skin",i)}/>)}</div></Card>
-      <MiniSectionTitle emoji="👀" title="Ojos"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>{AVATAR_OPTIONS.eyes.map(v=><VisualOption key={v} label={avatarLabel(v,"eyes")} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}><Av av={form.avatar} config={{...facePreviewBase,eyes:v,eyeColor:cfg.eyeColor,brows:cfg.brows,gender:cfg.gender}} size={108}/></VisualOption>)}</div>
-      <MiniSectionTitle emoji="🖋️" title="Cejas"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>{AVATAR_OPTIONS.brows.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.brows===v} onClick={()=>patch("brows",v)}><Av av={form.avatar} config={{...facePreviewBase,brows:v,eyes:cfg.eyes,eyeColor:cfg.eyeColor,gender:cfg.gender}} size={108}/></VisualOption>)}</div>
-      <MiniSectionTitle emoji="🌈" title="Color de ojos"/>
-      <Card style={{background:"rgba(255,248,225,.75)",border:`2px solid ${T.g200}`}}><div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>{AVATAR_OPTIONS.eyeColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div></Card>
-    </>}
-    {panel==="extras"&&<>
-      <MiniSectionTitle emoji="🎒" title="Complementos básicos" sub="Gafas, gorra, pendientes, flores..."/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>{BASIC_ACCESSORIES.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={108}/></VisualOption>)}</div>
-      <MiniSectionTitle emoji="🔓" title="Desbloqueables" sub="Negro con candado si no están comprados"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>{["capBlack","capGold","glassesGold","bandanaGreen","crown"].map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} locked={isLocked("accessory",v)} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={108}/></VisualOption>)}</div>
-      <MiniSectionTitle emoji="🌟" title="Aura" sub="Brillo y rareza"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{AVATAR_OPTIONS.aura.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.aura===v} locked={isLocked("aura",v)} onClick={()=>patch("aura",v)}><Av av={form.avatar} config={{...cfg,aura:v}} size={108}/></VisualOption>)}</div>
-    </>}
   </div>;
 }
 
@@ -4161,11 +4455,8 @@ async function grantNewsPoints({user,setUser,showToast,showPoints,eventKey,point
       console.warn("news_point_events error",evError);
       return false;
     }
-    const nuevos=(user.puntos||0)+points;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser?.(u=>({...u,puntos:nuevos}));
-    showPoints?.(points);SFX.coins();showToast?.(`${description} +${points} pts`);
-    return true;
+    const awarded=await awardWebPoints({user,setUser,showToast,showPoints,points,reason:description});
+    return awarded>0;
   }catch(e){console.warn("No se pudieron dar puntos de actualidad",e);return false;}
 }
 function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
@@ -4287,13 +4578,28 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
     }catch(e){console.warn(e);}
   }
   async function like(){
-    if(!item?.id||liked)return;
+    if(!item?.id||!user?.id)return;
     setLoading(true);
     try{
-      const {error}=await supabase.from("news_likes").insert({news_id:String(item.id),news_title:item.title,news_url:item.url,news_category:item.category,usuario_id:String(user.id),usuario_nombre:user.nombre});
-      if(error){showToast?.("Ya habías marcado esta noticia o falta ejecutar el SQL.");setLoading(false);return;}
-      setLiked(true);setLikes(n=>n+1);onChanged?.(item.id,"like");
-      await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_like:${item.id}`,points:1,description:"Primer like en esta noticia"});
+      if(liked){
+        await supabase.from("news_likes").delete().eq("news_id",String(item.id)).eq("usuario_id",String(user.id));
+        setLiked(false);
+        setLikes(n=>Math.max(0,n-1));
+        onChanged?.(item.id,"unlike");
+        SFX.success();
+      }else{
+        const {error}=await supabase.from("news_likes").insert({news_id:String(item.id),news_title:item.title,news_url:item.url,news_category:item.category,usuario_id:String(user.id),usuario_nombre:user.nombre});
+        if(error){
+          // Si ya existía por carrera o dispositivo, lo tratamos como estado activo.
+          setLiked(true);
+          SFX.success();
+        }else{
+          setLiked(true);
+          setLikes(n=>n+1);
+          onChanged?.(item.id,"like");
+          await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_like:${item.id}`,points:1,description:"Primer like en esta noticia"});
+        }
+      }
     }finally{setLoading(false);}
   }
   async function sendComment(){
@@ -4310,8 +4616,8 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
         await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:`news_comment:${item.id}`,points:3,description:"Primer comentario en esta noticia"});
         const {data:mine}=await supabase.from("news_comments").select("news_id").eq("usuario_id",String(user.id));
         const distinct=new Set((mine||[]).map(x=>String(x.news_id))).size;
-        if(distinct>=3) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_3",points:8,description:"Has comentado 3 noticias distintas"});
-        if(distinct>=10) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_10",points:20,description:"Has comentado 10 noticias distintas"});
+        if(distinct>=3) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_3",points:5,description:"Has comentado 3 noticias distintas"});
+        if(distinct>=10) await grantNewsPoints({user,setUser,showToast,showPoints,eventKey:"news_comment_milestone_10",points:8,description:"Has comentado 10 noticias distintas"});
       }
     }finally{setLoading(false);}
   }
@@ -4325,7 +4631,7 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
         <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
           <Btn small col="gold" onClick={()=>window.open(item.url,"_blank","noopener,noreferrer")}>Leer fuente original ↗</Btn>
           {item?.youtubeUrl&&<Btn small col="red" onClick={()=>window.open(item.youtubeUrl,"_blank","noopener,noreferrer")}>▶ Buscar en YouTube</Btn>}
-          <Btn small col={liked?"ghost":"dark"} disabled={loading||liked} onClick={like}>{liked?"👍 Te gusta":"👍 Me gusta"}</Btn>
+          <Btn small col={liked?"gold":"dark"} disabled={loading} onClick={like}>{liked?"💛 Quitar like":"🤍 Me gusta"}</Btn>
         </div>
         <div style={{display:"flex",gap:10,marginTop:10,fontSize:".75rem",fontWeight:900,color:T.g700}}><span>👍 {likes}</span><span>💬 {comments.length}</span><span>{formatNewsDate(item.date)}</span></div>
       </div>
@@ -5060,7 +5366,7 @@ function Caja({user,showToast}){
   const [clienteNombre,setClienteNombre]=useState("");
   const [citaCobro,setCitaCobro]=useState(null);
   const [cobroForm,setCobroForm]=useState({metodo_pago:"efectivo",importe:"",puntos_generados:"10",descripcion:""});
-  const [puntosCitaDefault,setPuntosCitaDefault]=useState(10);
+  const [puntosCitaDefault,setPuntosCitaDefault]=useState(5);
 
   const today=()=>new Date().toISOString().split("T")[0];
   const monthStart=()=>{
@@ -5071,19 +5377,9 @@ function Caja({user,showToast}){
   const metodoLabel=m=>({efectivo:"Efectivo",tarjeta:"Tarjeta",bizum:"Bizum",mixto:"Mixto"})[m]||m||"Sin método";
 
   async function sumarPuntosFidelidad(usuarioId,puntos=0){
-    if(!usuarioId)return false;
     const add=Math.max(0,parseInt(puntos||0,10)||0);
-    if(!add)return true;
-    try{
-      const rows=await dbGet("usuarios",`?id=eq.${usuarioId}&select=id,puntos&limit=1`);
-      const actual=Number(rows?.[0]?.puntos||0);
-      const nuevos=Math.max(0,actual + add);
-      const ok=await dbPatch("usuarios",`?id=eq.${usuarioId}`,{puntos:nuevos});
-      return Boolean(ok);
-    }catch(e){
-      console.warn("No se pudieron sumar puntos de fidelidad",e);
-      return false;
-    }
+    if(!usuarioId||!add)return 0;
+    return await awardWebPointsByUserId({usuarioId,points:add,reason:"Cita cobrada"});
   }
 
   useEffect(()=>{loadCaja();},[]);
@@ -5096,7 +5392,7 @@ function Caja({user,showToast}){
       dbGet("app_settings","?setting_key=eq.puntos&select=setting_value&limit=1")
     ]);
     const puntosCfg=settingsRows?.[0]?.setting_value||{};
-    const puntosDefault=Math.max(0,parseInt(puntosCfg.puntos_por_cita_cobrada??10,10)||10);
+    const puntosDefault=Math.max(0,parseInt(puntosCfg.puntos_por_cita_cobrada??5,10)||5);
     setPuntosCitaDefault(puntosDefault);
     const cleanCobros=Array.isArray(cobs)?cobs:[];
     setCobros(cleanCobros);
@@ -5189,9 +5485,9 @@ function Caja({user,showToast}){
     if(ok){
       const cobroId=Array.isArray(ok)?ok?.[0]?.id:null;
       if(cobroId) await dbPatch("citas",`?id=eq.${citaCobro.id}`,{cobro_id:cobroId,updated_at:new Date().toISOString()});
-      const puntosOk=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
+      const puntosDados=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
       SFX.coins();
-      showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosGenerados} pts de fidelidad`:""}${!puntosOk?" · revisa puntos":""}`);
+      showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosDados}/${puntosGenerados} pts de fidelidad`:""}${puntosGenerados&&puntosDados<puntosGenerados?" · límite diario aplicado":""}`);
       setCitaCobro(null);
       await loadCaja();
     }else{
@@ -5525,7 +5821,7 @@ function AdminUsuarios({user,showToast}){
 }
 // FEED / TABLON
 function SocialFeed({user,setUser,showToast,showPoints}){
-  const [posts,setPosts]=useState([]);const [newPost,setNewPost]=useState("");const [loading,setLoading]=useState(true);const [profiles,setProfiles]=useState([]);const [selectedProfile,setSelectedProfile]=useState(null);
+  const [posts,setPosts]=useState([]);const [newPost,setNewPost]=useState("");const [loading,setLoading]=useState(true);const [profiles,setProfiles]=useState([]);const [selectedProfile,setSelectedProfile]=useState(null);const [likedPosts,setLikedPosts]=useState(()=>new Set(readLocalFeedLikes(user)));
   const canPost=normalizeRole(user.rol||user.role)!==ROLES.CLIENT;
   useEffect(()=>{load();},[]);
   async function load(){
@@ -5534,7 +5830,19 @@ function SocialFeed({user,setUser,showToast,showPoints}){
       dbGet("publicaciones","?tipo=neq.foro&order=created_at.desc&limit=30&select=*"),
       dbGet("usuarios","?select=*")
     ]);
-    setPosts(Array.isArray(raw)?raw:[]);setProfiles(await enrichProfilesWithAvatarConfigs(Array.isArray(users)?users:[]));setLoading(false);
+    const cleanPosts=Array.isArray(raw)?raw:[];
+    setPosts(cleanPosts);
+    setProfiles(await enrichProfilesWithAvatarConfigs(Array.isArray(users)?users:[]));
+    let likedIds=readLocalFeedLikes(user);
+    try{
+      const rows=await dbGet("publicacion_likes",`?usuario_id=eq.${user.id}&select=publicacion_id`);
+      if(Array.isArray(rows)&&rows.length){
+        likedIds=[...new Set([...likedIds,...rows.map(r=>String(r.publicacion_id))])];
+        saveLocalFeedLikes(user,likedIds);
+      }
+    }catch{}
+    setLikedPosts(new Set(likedIds));
+    setLoading(false);
   }
   function authorOf(post){return profiles.find(u=>String(u.id)===String(post.autor_id))||user;}
   async function publish(){
@@ -5543,7 +5851,39 @@ function SocialFeed({user,setUser,showToast,showPoints}){
     await dbPost("publicaciones",{contenido:newPost.trim(),autor_id:user.id,tipo:"anuncio",likes_count:0});
     setNewPost("");SFX.success();showToast("Anuncio publicado");load();
   }
-  async function likePost(post){ await dbPatch("publicaciones",`?id=eq.${post.id}`,{likes_count:(post.likes_count||0)+1});load(); }
+  async function likePost(post){
+    if(!post?.id||!user?.id)return;
+    const postId=String(post.id);
+    const alreadyLiked=likedPosts.has(postId)||hasLocalFeedLike(user,postId);
+    const delta=alreadyLiked?-1:1;
+    const nextLikes=new Set(likedPosts);
+    if(alreadyLiked){
+      nextLikes.delete(postId);
+      removeLocalFeedLike(user,postId);
+    }else{
+      nextLikes.add(postId);
+      addLocalFeedLike(user,postId);
+    }
+    setLikedPosts(nextLikes);
+    const nextCount=Math.max(0,(Number(post.likes_count)||0)+delta);
+    setPosts(prev=>prev.map(p=>String(p.id)===postId?{...p,likes_count:Math.max(0,(Number(p.likes_count)||0)+delta)}:p));
+    try{
+      if(alreadyLiked){
+        await dbDelete("publicacion_likes",`?publicacion_id=eq.${encodeURIComponent(postId)}&usuario_id=eq.${encodeURIComponent(String(user.id))}`);
+      }else{
+        await dbPost("publicacion_likes",{
+          publicacion_id:postId,
+          usuario_id:String(user.id),
+          usuario_nombre:user.nombre||user.email||"Usuario",
+          created_at:new Date().toISOString()
+        });
+      }
+    }catch(e){
+      console.warn("publicacion_likes no disponible; usando toggle local",e);
+    }
+    await dbPatch("publicaciones",`?id=eq.${post.id}`,{likes_count:nextCount});
+    SFX.success();
+  }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="📌" title="Tablón de anuncios" sub="Noticias, promociones y avisos oficiales de la tienda"/>
@@ -5565,7 +5905,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
           <div style={{fontSize:"0.93rem",fontWeight:700,color:T.text,lineHeight:1.55,whiteSpace:'pre-wrap'}}>{p.contenido}</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
             <span style={{fontSize:"0.76rem",color:T.textSub,fontWeight:800}}>{p.created_at?new Date(p.created_at).toLocaleDateString("es-ES"):""}</span>
-            <button onClick={()=>likePost(p)} style={{background:T.g150,border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999}}>❤️ {p.likes_count||0}</button>
+            <button onClick={()=>likePost(p)} title={likedPosts.has(String(p.id))?"Quitar like":"Dar like"} style={{background:likedPosts.has(String(p.id))?T.gradGold:T.g150,border:`1.5px solid ${likedPosts.has(String(p.id))?T.gold:T.g200}`,cursor:"pointer",fontSize:"0.8rem",color:likedPosts.has(String(p.id))?T.g900:T.g700,fontWeight:900,padding:'7px 12px',borderRadius:999,opacity:1}}>{likedPosts.has(String(p.id))?"💛":"🤍"} {p.likes_count||0}</button>
           </div>
         </Card>;
       })}
@@ -5764,17 +6104,27 @@ function Foro({user,showToast}){
   }
 
   async function voteTarget(target,tipo="tema"){
+    if(!target?.id||!user?.id)return;
     const id=target.id;
-    if(voted(tipo,id)){showToast("Ya has votado esto");SFX.error();return;}
-    const ok=await dbPost("foro_votos",{usuario_id:String(user.id),target_tipo:tipo,target_id:id});
-    if(!ok){showToast("No se pudo votar o ya estaba votado");SFX.error();return;}
+    const already=voted(tipo,id);
     const table=tipo==="tema"?"foro_temas":"foro_respuestas";
-    const nextLikes=(Number(target.likes)||0)+1;
+    const nextLikes=Math.max(0,(Number(target.likes)||0)+(already?-1:1));
+    if(already){
+      try{await dbDelete("foro_votos",`?usuario_id=eq.${encodeURIComponent(String(user.id))}&target_tipo=eq.${encodeURIComponent(tipo)}&target_id=eq.${encodeURIComponent(String(id))}`);}catch(e){console.warn("No se pudo borrar voto foro",e);}
+      setVotes(prev=>prev.filter(v=>!(String(v.target_tipo)===tipo&&String(v.target_id)===String(id))));
+    }else{
+      const ok=await dbPost("foro_votos",{usuario_id:String(user.id),target_tipo:tipo,target_id:id});
+      if(!ok){showToast("No se pudo votar");SFX.error();return;}
+      setVotes(prev=>[...prev,{usuario_id:String(user.id),target_tipo:tipo,target_id:id}]);
+    }
     await dbPatch(table,`?id=eq.${id}`,{likes:nextLikes});
-    SFX.coins();
-    showToast("Voto guardado");
-    await load();
-    if(tipo==="tema") setActive(a=>a?.id===id?{...a,likes:nextLikes}:a);
+    if(tipo==="tema"){
+      setTopics(prev=>prev.map(t=>String(t.id)===String(id)?{...t,likes:nextLikes}:t));
+      setActive(a=>a?.id===id?{...a,likes:nextLikes}:a);
+    }else{
+      setReplies(prev=>prev.map(r=>String(r.id)===String(id)?{...r,likes:nextLikes}:r));
+    }
+    SFX.success();
   }
 
   async function togglePinned(topic){
@@ -5867,7 +6217,7 @@ function Foro({user,showToast}){
           <Badge col="blue">💬 {topicReplies(shown.id).length} respuestas</Badge>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             <Btn small col={isFollowing(shown)?"green":"ghost"} onClick={()=>toggleFollow(shown)}>{isFollowing(shown)?"✓ Siguiendo":"Seguir"}</Btn>
-            <Btn small col={voted("tema",shown.id)?"ghost":"gold"} onClick={()=>voteTarget(shown,"tema")}>👍 {shown.likes||0}</Btn>
+            <Btn small col={voted("tema",shown.id)?"gold":"ghost"} onClick={()=>voteTarget(shown,"tema")}>{voted("tema",shown.id)?"💛":"🤍"} {shown.likes||0}</Btn>
             {!canModerate&&<Btn small col="ghost" onClick={()=>openReport("tema",shown)}>🚩 Reportar</Btn>}
           </div>
         </div>
@@ -5890,7 +6240,7 @@ function Foro({user,showToast}){
           <div style={{fontSize:".86rem",fontWeight:750,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div>
           <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:8,flexWrap:"wrap"}}>
             {!canModerate&&<button onClick={()=>openReport("respuesta",r)} style={{background:"rgba(255,244,214,.72)",border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.76rem",color:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999}}>🚩 Reportar</button>}
-            <button onClick={()=>voteTarget(r,"respuesta")} disabled={voted("respuesta",r.id)} style={{background:T.g150,border:`1.5px solid ${T.g200}`,cursor:voted("respuesta",r.id)?"default":"pointer",fontSize:"0.76rem",color:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999,opacity:voted("respuesta",r.id)?.65:1}}>👍 {r.likes||0}</button>
+            <button onClick={()=>voteTarget(r,"respuesta")} title={voted("respuesta",r.id)?"Quitar voto":"Votar"} style={{background:voted("respuesta",r.id)?T.gradGold:T.g150,border:`1.5px solid ${voted("respuesta",r.id)?T.gold:T.g200}`,cursor:"pointer",fontSize:"0.76rem",color:voted("respuesta",r.id)?T.g900:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999,opacity:1}}>{voted("respuesta",r.id)?"💛":"🤍"} {r.likes||0}</button>
           </div>
         </Card>;
       })}
@@ -5947,6 +6297,39 @@ function Foro({user,showToast}){
 
 
 // TIENDA
+
+function shopCategoryLabel(cat){
+  return {todo:"Todo",cupones:"Cupones",avatar:"Avatar",marcos:"Marcos",fondos:"Fondos",auras:"Auras",complementos:"Complementos",perfil:"Perfil",juegos:"Juegos",premios:"Premios"}[cat]||cat||"Premios";
+}
+function itemShopCategory(p){
+  const slot=String(p.slot||"");
+  const tipo=String(p.tipo||"");
+  if(slot==="frame")return "marcos";
+  if(slot==="bg")return "fondos";
+  if(slot==="aura")return "auras";
+  if(slot==="accessory")return "complementos";
+  if(slot==="profileTitle"||slot==="nameColor"||slot==="profileCard"||slot==="sticker"||tipo.includes("perfil"))return "perfil";
+  return String(p.categoria||"premios");
+}
+function rarityPriceRange(r){
+  return {comun:"120–300 pts",raro:"350–900 pts",epico:"1.000–1.800 pts",legendario:"2.000–3.600 pts"}[r]||"Especial";
+}
+function shopItemPreview(p,user){
+  const cfg=normalizeAvatarConfig(user?.avatarConfig||user?.avatar_config,user?.avatar||0);
+  if(isAvatarPersonalizationItem(p)&&p.slot&&["accessory","frame","aura","bg"].includes(p.slot)){
+    return <Av av={user?.avatar||0} config={{...cfg,...cosmeticPatch(p)}} size={76}/>;
+  }
+  const icon=p.icono||({perfil_titulo:"🏷️",perfil_color:"🎨",perfil_card:"🪪",perfil_sticker:"🏴‍☠️"}[p.tipo]||"🎁");
+  return <div style={{fontSize:"2.15rem",filter:"drop-shadow(0 6px 8px rgba(0,0,0,.22))"}}>{icon}</div>;
+}
+function RewardNodeIcon({item,user,currentConfig,locked=false}){
+  const preview=normalizeAvatarConfig({...currentConfig,...cosmeticPatch(item)},user.avatar);
+  if(item?.slot&&["accessory","frame","aura","bg"].includes(item.slot)){
+    return <Av av={user.avatar} config={preview} size={62}/>;
+  }
+  return <div style={{fontSize:"2rem",filter:locked?"grayscale(1) brightness(0)":"none"}}>{item.icono||"🎁"}</div>;
+}
+
 function Tienda({user,setUser,showToast,showPoints,settings}){
   const [productos,setProductos]=useState([]);
   const [pedidos,setPedidos]=useState([]);
@@ -6006,11 +6389,14 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
       await dbPatch("tienda_items",`?id=eq.${p.id}`,{stock:Math.max(0,Number(p.stock)-1)});
     }
     if(okUser){
+      const isAvatar=isAvatarPersonalizationItem(p);
+      if(isAvatar) await unlockCosmeticForUser(user,p);
+      recordPointMovement(user.id,{amount:-precio,type:"spend",reason:`Canje: ${p.nombre}`,source:isAvatar?"personalizacion":"tienda",balance:nuevos,meta:{item_id:p.id,item_key:p.item_key||null}});
       setUser(u=>({...u,puntos:nuevos}));
       SFX.coins();
       await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Nuevo pedido de tienda",mensaje:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:true});
-      await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"pedido",titulo:"Pedido creado",mensaje:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:false});
-      showToast(`${p.nombre} pedido correctamente`);
+      await createNotification({usuario_id:user.id,rol_destino:"client",tipo:isAvatar?"avatar":"pedido",titulo:isAvatar?"Personalización desbloqueada":"Pedido creado",mensaje:isAvatar?`Has desbloqueado ${p.nombre}. Ve a Perfil > Editor para equiparlo.`:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:isAvatar?"avatar":"tienda_pedido",entidad_id:pedidoId||p.id,importante:false});
+      showToast(isAvatar?`${p.nombre} desbloqueado`:`${p.nombre} pedido correctamente`);
       await load();
     }else{
       showToast("Pedido guardado, pero revisa los puntos del usuario");
@@ -6026,19 +6412,23 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
   const cats=[
     {id:"todo",label:"Todo",icon:"✨"},
-    {id:"cupones",label:"Cupones",icon:"🎟️"},
     {id:"avatar",label:"Avatar",icon:"🎭"},
-    {id:"juegos",label:"Juegos",icon:"🎮"},
+    {id:"marcos",label:"Marcos",icon:"🖼️"},
+    {id:"fondos",label:"Fondos",icon:"🌄"},
+    {id:"auras",label:"Auras",icon:"✨"},
+    {id:"complementos",label:"Complementos",icon:"🎒"},
+    {id:"perfil",label:"Perfil",icon:"🏷️"},
+    {id:"cupones",label:"Cupones",icon:"🎟️"},
     {id:"premios",label:"Premios",icon:"🎁"}
   ];
-  const visibles=cat==="todo"?productos:productos.filter(p=>String(p.categoria||"premios")===cat);
+  const visibles=cat==="todo"?productos:cat==="avatar"?productos.filter(p=>isAvatarPersonalizationItem(p)):productos.filter(p=>itemShopCategory(p)===cat || String(p.categoria||"premios")===cat);
 
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="🛍️" title="Tienda" sub={`Tienes ${user.puntos||0} pts`}/>
       <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>Puntos de fidelidad</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0}</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Canjea por cupones, avatar, juegos y premios. No equivalen a euros.</div></div>
+          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>Puntos de fidelidad</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0}</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Cosméticos de avatar/perfil con economía dura. Tycoon y RC quedan aparte.</div></div>
           <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
@@ -6067,28 +6457,34 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
           const stockLimitado=p.stock!==null && p.stock!==undefined && String(p.stock)!=="";
           const agotado=stockLimitado && Number(p.stock)<=0;
           return(
-            <Card key={p.id} style={{marginBottom:12,border:ok&&!agotado?`2px solid ${T.g400}`:`1px solid ${T.g150}`,opacity:ok&&!agotado?1:0.78,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
-                <div style={{display:"flex",gap:10,flex:1,minWidth:0}}>
-                  <div className="icon3d" style={{fontSize:"2rem"}}>{p.icono||"🎁"}</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:950,color:T.g800}}>{p.nombre}</div>
-                    <div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2,fontWeight:800,lineHeight:1.35}}>{p.descripcion}</div>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                      <Badge col="gold">{p.categoria||"premios"}</Badge>
-                      <Badge col={p.rareza==="epico"?"pink":p.rareza==="raro"?"blue":p.rareza==="legendario"?"gold":"green"}>{rarityLabel(p.rareza||"comun")}</Badge>
-                      {stockLimitado&&<Badge col={agotado?"red":"green"}>Stock {Number(p.stock)||0}</Badge>}
+            <Card key={p.id||p.item_key} className="shop-reward-card" style={{marginBottom:12,border:ok&&!agotado?`2px solid ${T.gold}`:`2px solid #8E7957`,opacity:agotado?0.62:1,background:"linear-gradient(180deg,#FFF8E2,#E9D8B4 60%,#D4BD8F)",overflow:"hidden",padding:0}}>
+              <div style={{display:"grid",gridTemplateColumns:"92px 1fr",gap:0}}>
+                <div style={{minHeight:124,display:"grid",placeItems:"center",background:ok?"radial-gradient(circle at 50% 25%,rgba(213,178,79,.35),transparent 42%),linear-gradient(180deg,#304923,#10160F)":"linear-gradient(180deg,#3A2A18,#10160F)",borderRight:"2px solid #8E7957",position:"relative"}}>
+                  <div style={{filter:ok||isAvatarPersonalizationItem(p)?"none":"grayscale(1) brightness(.55)",transform:"scale(1.03)"}}>{shopItemPreview(p,user)}</div>
+                  {!ok&&<div style={{position:"absolute",top:7,right:7,background:"rgba(0,0,0,.66)",color:"#FFF8E2",borderRadius:999,padding:"2px 6px",fontSize:".62rem",fontWeight:950}}>🔒</div>}
+                </div>
+                <div style={{padding:12,minWidth:0}}>
+                  <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
+                    <div style={{minWidth:0}}>
+                      <div style={{fontWeight:950,color:T.g800,fontSize:".94rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.nombre}</div>
+                      <div style={{fontSize:"0.78rem",color:T.textSub,marginTop:3,fontWeight:820,lineHeight:1.35}}>{p.descripcion}</div>
                     </div>
+                    <div style={{fontWeight:950,color:T.orange,fontSize:"1.02rem",whiteSpace:"nowrap"}}>{precio} pts</div>
+                  </div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+                    <Badge col="gold">{shopCategoryLabel(itemShopCategory(p))}</Badge>
+                    <Badge col={p.rareza==="epico"?"pink":p.rareza==="raro"?"blue":p.rareza==="legendario"?"gold":"green"}>{rarityLabel(p.rareza||"comun")}</Badge>
+                    <Badge col="ghost">{rarityPriceRange(p.rareza||"comun")}</Badge>
+                    {stockLimitado&&<Badge col={agotado?"red":"green"}>Stock {Number(p.stock)||0}</Badge>}
+                  </div>
+                  <div style={{marginTop:10}}>
+                    {agotado?<div style={{textAlign:"center",fontSize:"0.78rem",color:T.red,fontWeight:950}}>Agotado</div>:
+                    <div style={{display:"grid",gridTemplateColumns:ok?"1fr 1fr":"1fr",gap:8}}>
+                      <Btn full small col="ghost" onClick={()=>addCart(p)}>🛒 Añadir</Btn>
+                      {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>Canjear</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} pts</div>}
+                    </div>}
                   </div>
                 </div>
-                <div style={{fontWeight:950,color:T.orange,fontSize:"1.08rem",whiteSpace:"nowrap"}}>{precio} pts</div>
-              </div>
-              <div style={{marginTop:12}}>
-                {agotado?<div style={{textAlign:"center",fontSize:"0.78rem",color:T.red,fontWeight:950}}>Agotado</div>:
-                <div style={{display:"grid",gridTemplateColumns:ok?"1fr 1fr":"1fr",gap:8}}>
-                  <Btn full small col="ghost" onClick={()=>addCart(p)}>🛒 Añadir</Btn>
-                  {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>Canjear</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} pts</div>}
-                </div>}
               </div>
             </Card>
           );
@@ -6136,7 +6532,7 @@ function Cupones({user,showToast}){
 const TODAY_KEY=()=>new Date().toISOString().split("T")[0];
 function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${uid}_${TODAY_KEY()}`)==="1";}
 function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
-const GAME_DAILY_REWARDS={stitch:15,runner:12,jump:12,memoria:15,sopa:15,trivia:8,gacha:50};
+const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gacha:50};
 const ARCADE_GAMES=[
   {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda en tiempo real con moneda RC propia",pts:0},
   {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de premios: 50 tiradas al día",pts:GAME_DAILY_REWARDS.gacha},
@@ -6147,7 +6543,7 @@ const ARCADE_GAMES=[
   {id:"sopa",icon:"🔤",title:"Sopa diaria",desc:"Sopa 14x14 que cambia cada día",pts:GAME_DAILY_REWARDS.sopa},
   {id:"trivia",icon:"💈",title:"Trivia Barber",desc:"Preguntas capilares",pts:GAME_DAILY_REWARDS.trivia}
 ];
-const GAME_DAILY_CAP=75;
+const GAME_DAILY_CAP=20;
 const GACHA_DAILY_PULL_LIMIT=50;
 function gachaPullsKey(uid){return `gacha_pulls_${uid||"anon"}_${TODAY_KEY()}`;}
 function getGachaPullsToday(uid){try{return Number(localStorage.getItem(gachaPullsKey(uid))||0);}catch{return 0;}}
@@ -6843,12 +7239,12 @@ function ArcadeInfoPanel({onOpenGacha}){
 
 
 const TYCOON_ROOM_DEFS={
-  hall:{id:"hall",icon:"🏪",name:"Hall / tienda",short:"Hall",desc:"Escaparate, caja, recepción y primera impresión del negocio.",unlocked:true,baseCost:130,baseTime:26,unlockCost:0,req:"Inicio",pos:{left:"39%",top:"18%"},effect:"Atrae más clientes y mejora el ritmo de caja."},
-  salon:{id:"salon",icon:"💈",name:"Peluquería",short:"Peluquería",desc:"Sillas, espejos, herramientas y servicios principales.",unlocked:true,baseCost:170,baseTime:32,unlockCost:0,req:"Inicio",pos:{left:"12%",top:"45%"},effect:"Sube los RC por cliente y la capacidad de atender tandas."},
-  storage:{id:"storage",icon:"📦",name:"Almacén",short:"Almacén",desc:"Estanterías, baldas, cajas, toallas y productos de trabajo.",unlocked:true,baseCost:115,baseTime:24,unlockCost:0,req:"Inicio",pos:{left:"66%",top:"47%"},effect:"Aumenta la capacidad de stock y abarata las reposiciones."},
-  bathroom:{id:"bathroom",icon:"🚻",name:"Baño",short:"Baño",desc:"Limpieza, comodidad y satisfacción de los clientes.",unlocked:false,baseCost:155,baseTime:30,unlockCost:260,req:"Hall nivel 2",pos:{left:"28%",top:"69%"},effect:"Reduce la pérdida de limpieza y mejora la satisfacción."},
-  chill:{id:"chill",icon:"🛋️",name:"Zona chill",short:"Chill",desc:"Sofás, música, café y espera agradable.",unlocked:false,baseCost:235,baseTime:42,unlockCost:460,req:"Almacén nivel 2",pos:{left:"52%",top:"70%"},effect:"Mejora reputación, clientes VIP y estabilidad de ingresos."},
-  terrace:{id:"terrace",icon:"🌴",name:"Terraza",short:"Terraza",desc:"Exterior, eventos, ambiente y picos de clientela.",unlocked:false,baseCost:360,baseTime:58,unlockCost:900,req:"Zona chill nivel 2",pos:{left:"78%",top:"23%"},effect:"Aumenta mucho los picos de clientes cuando el negocio crece."}
+  hall:{id:"hall",icon:"🏪",name:"Hall / tienda",short:"Hall",desc:"Escaparate, caja, recepción y primera impresión del negocio.",unlocked:true,baseCost:130,baseTime:26,unlockCost:0,req:"Inicio",pos:{left:"48%",top:"73%"},effect:"Atrae más clientes y mejora el ritmo de caja."},
+  salon:{id:"salon",icon:"💈",name:"Peluquería",short:"Peluquería",desc:"Sillas, espejos, herramientas y servicios principales.",unlocked:true,baseCost:170,baseTime:32,unlockCost:0,req:"Inicio",pos:{left:"57%",top:"35%"},effect:"Sube los RC por cliente y la capacidad de atender tandas."},
+  storage:{id:"storage",icon:"📦",name:"Almacén",short:"Almacén",desc:"Estanterías, baldas, cajas, toallas y productos de trabajo.",unlocked:true,baseCost:115,baseTime:24,unlockCost:0,req:"Inicio",pos:{left:"22%",top:"22%"},effect:"Aumenta la capacidad de stock y abarata las reposiciones."},
+  bathroom:{id:"bathroom",icon:"🚻",name:"Baño",short:"Baño",desc:"Limpieza, comodidad y satisfacción de los clientes.",unlocked:false,baseCost:155,baseTime:30,unlockCost:260,req:"Hall nivel 2",pos:{left:"24%",top:"63%"},effect:"Reduce la pérdida de limpieza y mejora la satisfacción."},
+  chill:{id:"chill",icon:"🛋️",name:"Zona chill",short:"Chill",desc:"Sofás, música, café y espera agradable.",unlocked:false,baseCost:235,baseTime:42,unlockCost:460,req:"Almacén nivel 2",pos:{left:"84%",top:"46%"},effect:"Mejora reputación, clientes VIP y estabilidad de ingresos."},
+  terrace:{id:"terrace",icon:"🌴",name:"Terraza",short:"Terraza",desc:"Exterior, eventos, ambiente y picos de clientela.",unlocked:false,baseCost:360,baseTime:58,unlockCost:900,req:"Zona chill nivel 2",pos:{left:"70%",top:"76%"},effect:"Aumenta mucho los picos de clientes cuando el negocio crece."}
 };
 const TYCOON_ROOM_ORDER=["hall","salon","storage","bathroom","chill","terrace"];
 
@@ -7171,10 +7567,10 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
         </div>
         <Badge col="gold">{opened}/{roomList.length} zonas</Badge>
       </div>
-      <div className="tycoon-map-board" style={{position:"relative",height:standalone?405:325,zIndex:2,borderRadius:24,overflow:"hidden",background:"linear-gradient(180deg,rgba(255,244,214,.10),rgba(0,0,0,.22))",border:"1px solid rgba(255,244,214,.18)",boxShadow:"inset 0 0 42px rgba(0,0,0,.20)",transform:"translateZ(0)",animation:"none"}}>
+      <div className="tycoon-map-board" style={{position:"relative",height:standalone?520:390,zIndex:2,borderRadius:24,overflow:"hidden",background:`linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.24)), url(${studioTycoonMap}) center/cover no-repeat`,border:"1px solid rgba(255,244,214,.18)",boxShadow:"inset 0 0 42px rgba(0,0,0,.20)",transform:"translateZ(0)",animation:"none"}}>
         <div style={{position:"absolute",inset:0,background:"linear-gradient(0deg,rgba(0,0,0,.16),transparent 55%),radial-gradient(circle at 50% 42%,rgba(255,244,214,.09),transparent 42%)",pointerEvents:"none"}}/>
-        <div style={{position:"absolute",left:"6%",right:"6%",bottom:"16%",height:78,background:"rgba(72,42,20,.58)",transform:"skewX(-18deg) translateZ(0)",borderRadius:32,boxShadow:"0 22px 40px rgba(0,0,0,.24)"}}/>
-        <div style={{position:"absolute",left:"14%",top:"18%",width:"70%",height:"58%",borderRadius:"50%",border:"3px dashed rgba(255,244,214,.16)",pointerEvents:"none"}}/>
+        <div style={{display:"none"}}/>
+        <div style={{display:"none"}}/>
         {roomList.map(r=>{
           const task=tycoonTaskFor(state,r.id),blocked=!r.unlocked,def=tycoonRoomDef(r.id);
           return <button key={r.id} onClick={()=>r.unlocked?enterRoom(r.id):setInspect({icon:r.icon,title:r.name,roomId:r.id,unlock:tycoonCanUnlock(r.id,state),text:tycoonCanUnlock(r.id,state)?`Puedes abrir esta zona por ${tycoonUnlockCost(r.id)} RC.`:`Bloqueada. Requisito: ${def.req}.`})} style={{position:"absolute",left:def.pos.left,top:def.pos.top,transform:"translate(-50%,-50%) translateZ(0)",width:124,minHeight:88,border:`2px solid ${blocked?"rgba(255,244,214,.24)":T.gold}`,background:blocked?"rgba(18,8,6,.72)":"linear-gradient(180deg,#FFF4D6,#C6A06A)",color:blocked?T.white:T.g900,borderRadius:20,padding:10,cursor:"pointer",boxShadow:"0 14px 24px rgba(0,0,0,.30)",textAlign:"center",transition:"transform .18s ease, filter .18s ease, box-shadow .18s ease",animation:"none",willChange:"transform"}} onMouseEnter={e=>{e.currentTarget.style.transform="translate(-50%,-52%) translateZ(0) scale(1.03)";e.currentTarget.style.filter="brightness(1.06)";}} onMouseLeave={e=>{e.currentTarget.style.transform="translate(-50%,-50%) translateZ(0)";e.currentTarget.style.filter="none";}}>
@@ -7364,11 +7760,8 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
       setActiveGame(null);
       return;
     }
-    addDailyGamePointsTotal(user.id,reward);
-    const nuevos=(user.puntos||0)+reward;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser(u=>({...u,puntos:nuevos}));
-    showPoints(reward);SFX.coins();showToast(`+${reward} puntos reales!`);
+    const awarded=await awardWebPoints({user,setUser,showToast,showPoints,points:reward,reason:"Arcade"});
+    if(awarded>0)addDailyGamePointsTotal(user.id,awarded);
     setActiveGame(null);
   }
 
@@ -7731,9 +8124,8 @@ function Retos({user,setUser,showToast,showPoints}){
   async function reclamar(reto){
     const prog=progresos[reto.id];if(!prog||prog.completado)return;
     await dbPatch("retos_progreso",`?id=eq.${prog.id}`,{completado:true});
-    const nuevos=(user.puntos||0)+reto.puntos_premio;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser(u=>({...u,puntos:nuevos}));showPoints(reto.puntos_premio);SFX.coins();showToast(`+${reto.puntos_premio} puntos!`);load();
+    await awardWebPoints({user,setUser,showToast,showPoints,points:Number(reto.puntos_premio)||0,reason:"Reto"});
+    load();
   }
   function daysLeft(f){const d=Math.ceil((new Date(f)-new Date())/86400000);return d<=0?"Vence hoy":`${d} dias`;}
   return(
@@ -7858,9 +8250,8 @@ function Reviews({user,setUser,showToast,showPoints}){
   async function submit(){
     if(!comment.trim()){showToast("Escribe un comentario");return;}
     await dbPost("reviews",{usuario_id:user.id,autor_nombre:user.nombre,autor_avatar:user.avatar,rating,comentario:comment});
-    const nuevos=(user.puntos||0)+10;
-    await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    setUser(u=>({...u,puntos:nuevos}));showPoints(10);showToast("Gracias por tu resena! +10 pts");
+    await awardWebPoints({user,setUser,showToast,showPoints,points:5,reason:"Reseña"});
+    showToast("Gracias por tu reseña");
     setShowNew(false);setComment("");setRating(5);SFX.success();load();
   }
   const avg=reviews.length>0?(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1):"--";
@@ -7964,12 +8355,12 @@ function PerfilNewsActivity({user}){
 
 // MISIONES Y TROFEOS
 const MISSION_DEFS=[
-  {key:"daily_game",period:"day",icon:"🎮",title:"Una partida al día",desc:"Guarda una partida de Arcade hoy",goal:1,points:3,type:"gamesToday"},
+  {key:"daily_game",period:"day",icon:"🎮",title:"Una partida al día",desc:"Guarda una partida de Arcade hoy",goal:1,points:2,type:"gamesToday"},
   {key:"daily_news_comment",period:"day",icon:"💬",title:"Opina en Actualidad",desc:"Comenta una noticia hoy",goal:1,points:3,type:"commentsToday"},
   {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy",goal:1,points:1,type:"likesToday"},
-  {key:"weekly_arcade_3",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 3 partidas esta semana",goal:3,points:8,type:"gamesWeek"},
-  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana",goal:5,points:10,type:"commentsWeek"},
-  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana",goal:3,points:8,type:"mixedWeek"},
+  {key:"weekly_arcade_3",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 3 partidas esta semana",goal:3,points:6,type:"gamesWeek"},
+  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana",goal:5,points:8,type:"commentsWeek"},
+  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana",goal:3,points:6,type:"mixedWeek"},
 ];
 const TROPHY_DEFS=[
   {key:"first_game",icon:"🎮",title:"Primer arcade",desc:"Guarda tu primera partida",condition:s=>s.gamesAll>=1},
@@ -8065,11 +8456,8 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
     try{
       const {error}=await supabase.from("user_mission_claims").insert({usuario_id:String(user.id),mission_key:m.key,period_key:period,puntos:m.points});
       if(error){showToast?.("Objetivo ya reclamado o no disponible");return;}
-      const nuevos=(user.puntos||0)+m.points;
-      await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-      setUser?.(u=>({...u,puntos:nuevos}));
+      await awardWebPoints({user,setUser,showToast,showPoints,points:m.points,reason:"Objetivo"});
       setClaimed(v=>({...v,[key]:true}));
-      showPoints?.(m.points);SFX.coins();showToast?.(`Objetivo reclamado: +${m.points} pts`);
     }catch{showToast?.("No se pudo reclamar el objetivo");}
   }
   const unlockedCount=Object.values(trophies).filter(Boolean).length;
@@ -8197,7 +8585,7 @@ function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}
       animation:reached&&!owned?"rewardPulsePro 2.2s ease-in-out infinite":"none"
     }}>
       <div style={{filter:locked?"grayscale(1) brightness(0)":"none",opacity:locked?0.78:1,transform:"scale(.92)"}}>
-        {locked?<Av av={user.avatar} config={preview} size={62}/>:<Av av={user.avatar} config={preview} size={62}/>}
+        <RewardNodeIcon item={item} user={user} currentConfig={currentConfig} locked={locked}/>
       </div>
       {owned&&<div style={{position:"absolute",right:8,top:4,background:T.gradGold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".68rem"}}>✓</div>}
       {locked&&<div style={{position:"absolute",right:8,top:4,background:"rgba(0,0,0,.58)",color:T.white,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontSize:".68rem"}}>🔒</div>}
@@ -8208,7 +8596,7 @@ function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}
       Nv. {rewardLevelFor(item.puntos_precio)}
     </div>
     <div style={{fontSize:".63rem",fontWeight:850,color:T.textSub,lineHeight:1.05,marginTop:2}}>
-      {item.puntos_precio} XP
+      {item.puntos_precio} pts
     </div>
   </button>;
 }
@@ -8239,22 +8627,28 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
     setLoading(false);
   }
 
-  async function reveal(item){
+async function reveal(item){
     if(!item)return;
     if(owned.includes(item.item_key)){apply(item);return;}
-    if((user.puntos||0)<Number(item.puntos_precio||0)){
-      showToast?.(`Necesitas ${item.puntos_precio} XP para desbloquear esta silueta`);
+    const price=Number(item.puntos_precio||0);
+    if((user.puntos||0)<price){
+      showToast?.(`Necesitas ${price} puntos para desbloquear esta silueta`);
       SFX.error();
       return;
     }
+    const nuevos=Math.max(0,(user.puntos||0)-price);
+    const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    if(!okUser){showToast?.("No se pudieron descontar los puntos");SFX.error();return;}
     try{
       await supabase.from("user_cosmetics").upsert({usuario_id:String(user.id),item_key:item.item_key,created_at:new Date().toISOString()},{onConflict:"usuario_id,item_key"});
     }catch{}
     const keys=[...new Set([...owned,item.item_key])];
     saveLocalOwnedCosmetics(user,keys);
     setOwned(keys);
+    recordPointMovement(user.id,{amount:-price,type:"spend",reason:`Desbloqueo: ${item.nombre}`,source:"camino_avatar",balance:nuevos,meta:{item_key:item.item_key}});
+    setUser?.(u=>({...u,puntos:nuevos}));
     SFX.success();
-    showToast?.(`${item.nombre} desbloqueado`);
+    showToast?.(`${item.nombre} desbloqueado por ${price} pts`);
     apply(item,true);
   }
 
@@ -8277,11 +8671,11 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:10}}>
       <div style={{minWidth:0}}>
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.34rem",color:T.g800}}>🎁 Camino de recompensas</div>
-        <div style={{fontSize:".76rem",fontWeight:850,color:T.textSub,lineHeight:1.25}}>Sistema por nivel: los puntos de juego funcionan como XP y no se gastan.</div>
+        <div style={{fontSize:".76rem",fontWeight:850,color:T.textSub,lineHeight:1.25}}>Línea de desbloqueos: siluetas, coste en puntos web y objetos equipables. Tycoon aparte.</div>
       </div>
       <div style={{textAlign:"right"}}>
         <Badge col="gold">Nv. {lvl.level}</Badge>
-        <div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:4}}>{lvl.xp} XP</div>
+        <div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:4}}>{user.puntos||0} pts</div>
       </div>
     </div>
 
@@ -8293,7 +8687,7 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
       <div style={{height:12,background:"rgba(110,53,24,.18)",borderRadius:999,overflow:"hidden"}}>
         <div style={{height:"100%",width:`${lvl.progress}%`,background:T.gradGold,borderRadius:999,transition:"width .35s ease"}}/>
       </div>
-      {next&&<div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,marginTop:7}}>Próxima silueta: <b style={{color:T.g800}}>{next.puntos_precio} XP</b></div>}
+      {next&&<div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,marginTop:7}}>Próxima silueta: <b style={{color:T.g800}}>{next.puntos_precio} pts</b></div>}
     </div>
 
     {loading?<Spinner/>:<>
@@ -8323,10 +8717,10 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
             <Badge col={selectedOwned?"green":selectedReached?"gold":"red"}>{selectedOwned?"Desbloqueado":selectedReached?"Listo":"Bloqueado"}</Badge>
           </div>
           <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,margin:"4px 0 8px",lineHeight:1.2}}>
-            Nivel {rewardLevelFor(selectedItem.puntos_precio)} · {selectedItem.puntos_precio} XP
+            {selectedItem.puntos_precio} pts · {rarityLabel(selectedItem.rareza||"comun")}
           </div>
           {selectedOwned?<Btn small full col={selectedActive?"ghost":"gold"} onClick={()=>apply(selectedItem)}>{selectedActive?"Equipado":"Equipar"}</Btn>:
-            <Btn small full col={selectedReached?"gold":"ghost"} disabled={!selectedReached} onClick={()=>reveal(selectedItem)}>{selectedReached?"Revelar recompensa":"Silueta bloqueada"}</Btn>}
+            <Btn small full col={selectedReached?"gold":"ghost"} disabled={!selectedReached} onClick={()=>reveal(selectedItem)}>{selectedReached?"Desbloquear":"Silueta bloqueada"}</Btn>}
         </div>
       </div>}
     </>}
@@ -9763,7 +10157,9 @@ function GestionPedidos({user,showToast}){
     if(pts>0&&pedido.usuario_id){
       const rows=await dbGet("usuarios",`?id=eq.${pedido.usuario_id}&select=id,puntos&limit=1`);
       const actual=Number(rows?.[0]?.puntos||0);
-      await dbPatch("usuarios",`?id=eq.${pedido.usuario_id}`,{puntos:actual+pts});
+      const nuevos=actual+pts;
+      const okRefund=await dbPatch("usuarios",`?id=eq.${pedido.usuario_id}`,{puntos:nuevos});
+      if(okRefund)recordPointMovement(pedido.usuario_id,{amount:pts,type:"refund",reason:`Devolución: ${pedido.item_nombre||"pedido cancelado"}`,source:"devolucion",balance:nuevos,meta:{pedido_id:pedido.id}});
     }
     await setEstado(pedido,"cancelado",{motivo_cancelacion:"Cancelado desde gestión con devolución de puntos"});
   }
@@ -11932,8 +12328,8 @@ const HELP_TIPS = {
   ],
   cartera:[
     "La cartera separa las economías: puntos web para perfil, tienda y comunidad; RC sólo para el Tycoon; dinero real futuro aparte.",
-    "La regla buena es clara: máximo normal de 50 puntos al día si completas todo perfecto. Sin contar gacha.",
-    "Aquí verás puntos disponibles, progreso diario y, más adelante, historial de movimientos.",
+    "La regla buena queda aplicada: máximo normal de 50 puntos al día si completas todo perfecto. Gacha, RC del Tycoon, compras y devoluciones quedan aparte.",
+    "Aquí verás puntos disponibles, progreso diario e historial de movimientos: ganancias, gastos y devoluciones.",
     "Si algún día activas pagos, el saldo real debe vivir aquí, separado de los puntos para no mezclar churras con rastas."
   ],
   carrito:[
@@ -11943,8 +12339,8 @@ const HELP_TIPS = {
     "Buen carrito: claro, sin letra pequeña y con el total siempre visible. Que nadie compre un peine pensando que era una corona."
   ],
   personalizacion:[
-    "La personalización es para avatar, perfil y presencia dentro de la web: marcos, fondos, títulos, colores e insignias.",
-    "Los cosméticos son perfectos para endurecer la economía sin tener que regalar premios reales todo el tiempo.",
+    "La personalización es para avatar, perfil y presencia dentro de la web: marcos, fondos, títulos, colores, auras, siluetas e insignias.",
+    "Los cosméticos tienen precios duros: comunes, raros, épicos y legendarios para que el progreso dure semanas.",
     "Primero se desbloquea el objeto; después se aplica desde el editor de personaje o perfil.",
     "El Tycoon queda fuera de esta tienda por ahora. Sus muebles y mejoras visuales irán con RC cuando toque."
   ],
@@ -12196,7 +12592,7 @@ function rastaElementHelp(target,page){
   if(t.includes("abrir cita"))return "Te lleva a Citas para revisar o gestionar la reserva relacionada.";
   if(t.includes("marcar leída")||t.includes("marcar leidas")||t.includes("marcar leídas"))return "Marca la notificación como leída para que deje de aparecer como nueva.";
   if(t.includes("vaciar"))return "Vacía el carrito. Úsalo sólo si quieres quitar todos los artículos guardados.";
-  if(t.includes("confirmación")||t.includes("confirmar carrito"))return "Confirmará el canje del carrito cuando terminemos la tienda y la personalización.";
+  if(t.includes("confirmación")||t.includes("confirmar carrito")||t==="confirmar")return "Confirma el carrito: descuenta puntos, registra pedidos y desbloquea personalización de avatar/perfil si corresponde.";
   if(t.includes("top 10"))return "Top 10 abre los rankings de minijuegos: semanal e histórico por cada juego.";
   if(t.includes("top general"))return "Top general muestra estadísticas globales de clientes: puntos, juegos, tienda y comunidad.";
   if(t.includes("ver top")||t.includes("abrir top"))return "Este botón abre la página de rankings para ver los mejores jugadores y estadísticas.";
@@ -12211,7 +12607,7 @@ function rastaElementHelp(target,page){
   if(t.includes("publicar"))return "Publica el texto en el tablón, foro o comunidad según la sección donde estés.";
   if(t.includes("responder"))return "Añade una respuesta al tema o conversación actual.";
   if(t.includes("comentar")||t.includes("comentario"))return "Abre o añade comentarios. Participar en comunidad puede servir para puntos y actividad.";
-  if(t.includes("me gusta")||t.includes("like")||t.includes("👍"))return "Marca que te gusta esta publicación o noticia. Sirve para participación y estadísticas.";
+  if(t.includes("me gusta")||t.includes("like")||t.includes("👍"))return "Pulsa una vez para dar like y vuelve a pulsar para quitarlo. Sólo cuenta un like activo por usuario y publicación, tema, respuesta o noticia.";
   if(t.includes("youtube"))return "Abre una búsqueda o enlace de YouTube relacionado, normalmente para música o vídeos oficiales.";
   if(t.includes("fuente")||t.includes("leer fuente"))return "Abre la fuente original de la noticia fuera de la app.";
   if(t.includes("abrir debate"))return "Abre la conversación de esa noticia para poder leer o comentar.";
@@ -12560,13 +12956,24 @@ function HelperInline({page}){
 }
 
 function WalletPanel({show,onClose,user}){
+  const [history,setHistory]=useState(()=>readPointHistory(user?.id));
+  useEffect(()=>{
+    const reload=()=>setHistory(readPointHistory(user?.id));
+    window.addEventListener("rasta-points-history-updated",reload);
+    reload();
+    return()=>window.removeEventListener("rasta-points-history-updated",reload);
+  },[user?.id,show]);
   if(!show)return null;
   const pts=Number(user?.puntos||0);
   const dailyMax=50;
-  const todayEarned=Number(user?.puntos_hoy||user?.daily_points||0);
+  const todayEarned=getWebPointsToday(user?.id);
   const pct=Math.max(0,Math.min(100,Math.round(todayEarned/dailyMax*100)));
+  const fmtDate=v=>{try{return new Date(v).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});}catch{return "";}};
+  const movIcon=m=>m.type==="earn"?"➕":m.type==="spend"?"➖":m.type==="refund"?"↩️":"•";
+  const movColor=m=>m.amount>0?T.g700:m.amount<0?T.red:T.textSub;
+  const clear=()=>{clearPointHistory(user?.id);setHistory([]);};
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
         <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>👛 Cartera</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Puntos web separados del Tycoon y de pagos futuros.</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
@@ -12578,18 +12985,39 @@ function WalletPanel({show,onClose,user}){
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>Límite diario normal</span><span>{todayEarned}/{dailyMax} pts</span></div>
         <div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F)",borderRadius:999}}/></div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 puntos/día completando todo perfecto. El gacha queda aparte y se ajustará en economía.</div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 puntos/día completando todo perfecto. Gacha, RC del Tycoon, compras y devoluciones quedan aparte.</div>
       </Card>
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{fontWeight:950,color:T.g800}}>Economías separadas</div>
         <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:6}}>Puntos web: avatar, perfil, tienda y comunidad. RC: sólo Tycoon. Dinero real futuro: pagos, reservas o saldo, siempre separado.</div>
+      </Card>
+
+      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF8E6,#E9D8B4)",border:`2px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9}}>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>📜 Historial de puntos</div>
+            <div style={{fontSize:".74rem",fontWeight:820,color:T.textSub}}>Últimos movimientos guardados en este navegador.</div>
+          </div>
+          <Btn small col="ghost" onClick={clear} disabled={!history.length}>Limpiar</Btn>
+        </div>
+        {history.length===0?<EmptyState icon="📜" title="Sin historial todavía" sub="A partir de ahora se registrarán ganancias, gastos y devoluciones."/>:
+          <div style={{display:"grid",gap:7,maxHeight:260,overflowY:"auto",paddingRight:2}}>
+            {history.slice(0,30).map(m=><div key={m.id} style={{display:"grid",gridTemplateColumns:"30px 1fr auto",gap:8,alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${T.g200}`}}>
+              <div style={{width:28,height:28,borderRadius:999,background:"rgba(255,244,214,.78)",display:"grid",placeItems:"center",border:`1px solid ${T.g200}`}}>{movIcon(m)}</div>
+              <div style={{minWidth:0}}>
+                <div style={{fontSize:".8rem",fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.reason||"Movimiento"}</div>
+                <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{fmtDate(m.created_at)} · {m.source||m.type}{m.balance!==null&&m.balance!==undefined?` · saldo ${m.balance}`:""}</div>
+              </div>
+              <div style={{fontWeight:950,color:movColor(m),fontSize:".86rem",whiteSpace:"nowrap"}}>{m.amount>0?"+":""}{m.amount} pts</div>
+            </div>)}
+          </div>}
       </Card>
       <div style={{marginTop:10}}><HelperInline page="cartera"/></div>
     </div>
   </div>;
 }
 
-function CartPanel({show,onClose,user,showToast}){
+function CartPanel({show,onClose,user,setUser,showToast}){
   const [items,setItems]=useState(()=>readCart(user));
   useEffect(()=>{
     const reload=()=>setItems(readCart(user));
@@ -12598,9 +13026,65 @@ function CartPanel({show,onClose,user,showToast}){
   },[user?.id]);
   useEffect(()=>{writeCart(user,items);},[items,user?.id]);
   if(!show)return null;
-  const totalPts=items.reduce((sum,it)=>sum+(Number(it.precio_puntos||it.puntos||0)*Number(it.qty||1)),0);
+  const hydratedItems=items.map(hydrateCartItem);
+  const totalPts=hydratedItems.reduce((sum,it)=>sum+(Number(it.precio_puntos||it.puntos||0)*Number(it.qty||1)),0);
   function clearCart(){setItems([]);showToast?.("Carrito vaciado");}
   function removeItem(i){setItems(items.filter((_,idx)=>idx!==i));SFX.tab();}
+  async function confirmCart(){
+    if(!hydratedItems.length)return;
+    if((user.puntos||0)<totalPts){showToast?.(`Te faltan ${totalPts-(user.puntos||0)} puntos`);SFX.error();return;}
+    const nuevos=Math.max(0,(user.puntos||0)-totalPts);
+    const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    const avatarItems=[];
+    for(const raw of hydratedItems){
+      const qty=Math.max(1,Number(raw.qty||1));
+      for(let n=0;n<qty;n++){
+        const isAvatar=isAvatarPersonalizationItem(raw);
+        if(isAvatar){avatarItems.push(raw);await unlockCosmeticForUser(user,raw);}
+        try{
+          await dbPost("canjes",{
+            usuario_id:user.id,
+            premio_id:raw.id||raw.item_key||null,
+            premio_nombre:raw.nombre||"Artículo",
+            puntos_gastados:Number(raw.precio_puntos||raw.puntos||0),
+            item_key:raw.item_key||null,
+            categoria:raw.categoria||"premios",
+            tipo:raw.tipo||"carrito"
+          });
+        }catch{}
+        try{
+          await dbPost("tienda_pedidos",{
+            usuario_id:String(user.id),
+            cliente_nombre:user.nombre||user.email||"Cliente",
+            cliente_email:user.email||null,
+            item_id:String(raw.id||raw.item_key||"cart"),
+            item_nombre:raw.nombre||"Artículo",
+            item_categoria:raw.categoria||"premios",
+            item_tipo:raw.tipo||"carrito",
+            puntos_coste:Number(raw.precio_puntos||raw.puntos||0),
+            precio_euros:0,
+            estado:isAvatar?"entregado":"pendiente",
+            notas_cliente:isAvatar?"Personalización desbloqueada automáticamente.":"Pedido creado desde carrito.",
+            updated_at:new Date().toISOString()
+          });
+        }catch{}
+      }
+    }
+    if(okUser){
+      recordPointMovement(user.id,{amount:-totalPts,type:"spend",reason:`Carrito confirmado (${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"})`,source:"carrito",balance:nuevos,meta:{items:hydratedItems.map(x=>x.item_key||x.id||x.nombre)}});
+      setUser?.(u=>({...u,puntos:nuevos}));
+    }
+    try{
+      if(avatarItems.length){
+        await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"avatar",titulo:"Personalización desbloqueada",mensaje:`Has desbloqueado ${avatarItems.length} artículo${avatarItems.length===1?"":"s"} para tu avatar/perfil. Ve a Perfil > Editor para equiparlo.`,entidad_tipo:"avatar",entidad_id:String(user.id),importante:false});
+      }
+      await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Carrito confirmado",mensaje:`${user.nombre||user.email||"Cliente"} confirmó un carrito de ${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"} por ${totalPts} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:String(user.id),importante:false});
+    }catch{}
+    setItems([]);
+    SFX.coins();
+    showToast?.(avatarItems.length?`Carrito confirmado. Personalización desbloqueada.`:"Carrito confirmado");
+    onClose?.();
+  }
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
     <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
@@ -12612,7 +13096,7 @@ function CartPanel({show,onClose,user,showToast}){
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800}}><span>Total</span><span>{totalPts} pts</span></div>
         <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:6}}>Base preparada para añadir/quitar productos desde Tienda y Personalización en fases siguientes.</div>
       </Card>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}><Btn small col="ghost" onClick={clearCart} disabled={!items.length}>Vaciar</Btn><Btn small col="gold" onClick={()=>showToast?.("Confirmación de carrito pendiente para la siguiente fase")} disabled={!items.length}>Confirmar</Btn></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}><Btn small col="ghost" onClick={clearCart} disabled={!items.length}>Vaciar</Btn><Btn small col="gold" onClick={confirmCart} disabled={!hydratedItems.length}>Confirmar</Btn></div>
       <div style={{marginTop:10}}><HelperInline page="carrito"/></div>
     </div>
   </div>;
@@ -12950,7 +13434,7 @@ export default function App(){
       </div>
       <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead} onMarkOne={markNotificationRead} onOpenCitas={()=>navTo("citas")}/>
       <WalletPanel show={walletOpen} onClose={()=>setWalletOpen(false)} user={currentUser}/>
-      <CartPanel show={cartOpen} onClose={()=>setCartOpen(false)} user={currentUser} showToast={showToast}/>
+      <CartPanel show={cartOpen} onClose={()=>setCartOpen(false)} user={currentUser} setUser={setUser} showToast={showToast}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
   );
