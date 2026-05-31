@@ -3029,6 +3029,108 @@ button:disabled{
   }
 }
 
+
+/* ===== FASE123: navegación inferior REAL fija + helper visible ===== */
+.app-shell{
+  overflow:visible!important;
+  padding-bottom:calc(118px + env(safe-area-inset-bottom,0px))!important;
+}
+.page-content-pro{
+  padding-bottom:calc(138px + env(safe-area-inset-bottom,0px))!important;
+}
+.bottom-nav-pro{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:0!important;
+  top:auto!important;
+  transform:translateX(-50%)!important;
+  width:min(100vw,var(--app-max-width,480px))!important;
+  max-width:var(--app-max-width,480px)!important;
+  min-height:auto!important;
+  height:auto!important;
+  display:flex!important;
+  flex-direction:row!important;
+  justify-content:space-around!important;
+  align-items:center!important;
+  gap:2px!important;
+  padding:8px 4px calc(12px + env(safe-area-inset-bottom,0px))!important;
+  margin:0!important;
+  border-radius:22px 22px 0 0!important;
+  z-index:9990!important;
+  box-shadow:0 -16px 34px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,232,180,.16)!important;
+}
+.bottom-nav-pro .nav-tab-pro{
+  flex:1 1 0!important;
+  min-width:0!important;
+  max-width:128px!important;
+  width:auto!important;
+  padding:6px 2px!important;
+  border-radius:16px!important;
+}
+.bottom-nav-pro .nav-tab-pro:hover{
+  transform:translateY(-3px)!important;
+}
+.bottom-nav-pro .nav-tab-pro:after{
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:-1px!important;
+  width:4px!important;
+  height:4px!important;
+  transform:translateX(-50%)!important;
+}
+.bottom-nav-pro .nav-tab-pro:hover:after{
+  width:18px!important;
+  height:4px!important;
+}
+.bottom-nav-pro .nav-icon-pro{
+  font-size:1.12rem!important;
+  line-height:1!important;
+}
+.bottom-nav-pro span{
+  font-size:.55rem!important;
+  line-height:1.05!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  max-width:100%!important;
+}
+@media (min-width:900px){
+  .app-shell{padding-left:0!important;padding-bottom:calc(118px + env(safe-area-inset-bottom,0px))!important;}
+  .page-content-pro{padding:24px 24px calc(138px + env(safe-area-inset-bottom,0px))!important;}
+  .bottom-nav-pro{
+    left:50%!important;
+    bottom:0!important;
+    top:auto!important;
+    transform:translateX(-50%)!important;
+    width:min(1180px,100vw)!important;
+    max-width:1180px!important;
+    min-height:auto!important;
+    flex-direction:row!important;
+    border-radius:28px 28px 0 0!important;
+    padding:10px 18px calc(14px + env(safe-area-inset-bottom,0px))!important;
+  }
+  .bottom-nav-pro .nav-tab-pro{max-width:160px!important;padding:7px 6px!important;}
+  .bottom-nav-pro .nav-icon-pro{font-size:1.22rem!important;}
+  .bottom-nav-pro span{font-size:.62rem!important;}
+}
+.rasta-helper-fixed-safe{
+  position:fixed!important;
+  right:14px!important;
+  bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;
+  left:auto!important;
+  top:auto!important;
+  z-index:9998!important;
+  pointer-events:none!important;
+}
+@media (min-width:900px){
+  .rasta-helper-fixed-safe{
+    right:calc((100vw - min(1180px,100vw)) / 2 + 22px)!important;
+    bottom:104px!important;
+  }
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -12995,12 +13097,8 @@ function HelperMascot({page}){
   return (
     <div
       data-rasta-helper="1"
+      className="rasta-helper-fixed-safe"
       style={{
-        position:"fixed",
-        left:pos.x,
-        top:pos.y,
-        zIndex:9996,
-        pointerEvents:"none",
         touchAction:"none"
       }}
     >
@@ -13093,7 +13191,7 @@ function HelperMascot({page}){
           onPointerUp={pointerUp}
           onPointerCancel={()=>{dragRef.current.down=false;}}
           aria-label={open?"Ocultar consejos del rasta":"Abrir consejos del rasta"}
-          title="Toca para abrir · mantén y arrastra para mover"
+          title="Toca para abrir la ayuda de Rasta"
           style={{
             border:"none",
             background:"transparent",
@@ -13116,7 +13214,7 @@ function HelperMascot({page}){
               height:24,
               borderRadius:999,
               background:helpMode?"linear-gradient(180deg,#4F602D,#26331D)":open?"linear-gradient(180deg,#E15B44,#A72822)":"linear-gradient(180deg,#F7D76D,#D99E22)",
-              border:`2px solid ${T.paper}`,
+              border:`2px solid ${T.g50}`,
               color:helpMode||open?T.white:T.g800,
               display:"grid",
               placeItems:"center",
