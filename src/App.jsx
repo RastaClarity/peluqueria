@@ -2203,6 +2203,233 @@ body[data-rc-theme="day"]{
   color:#241609!important;
 }
 
+
+/* ===== FASE106: reggae cyber night + burbujas blancas legibles + login cyberpunk ===== */
+/* Modo noche: fondo verde reggae más vivo, tarjetas gris-verde con letra blanca, chips/burbujas blancos. */
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  --rc-bg-a:#030704;
+  --rc-bg-b:#07140A;
+  --rc-bg-c:#12341E;
+
+  --rc-card:rgba(28,52,42,.88);
+  --rc-card-strong:rgba(34,66,52,.96);
+  --rc-card-soft:rgba(48,78,61,.90);
+  --rc-panel-fun:linear-gradient(145deg,rgba(30,58,46,.96),rgba(42,72,56,.91));
+  --rc-frost:linear-gradient(145deg,rgba(255,255,255,.13),rgba(120,200,120,.06));
+
+  --rc-text:#F8FFF5;
+  --rc-text-strong:#FFFFFF;
+  --rc-muted:#D8EBDD;
+  --rc-subtle:#B8D0BD;
+
+  --rc-border:rgba(255,216,102,.32);
+  --rc-border-strong:rgba(255,216,102,.58);
+  --rc-primary:#64D86B;
+  --rc-primary-2:#2AAE65;
+  --rc-accent2:#FFD23F;
+  --rc-accent3:#E53935;
+  --rc-accent-warm:#FFB703;
+  --rc-danger:#FF4D4D;
+
+  --rc-chip-bg:#FFF7E6;
+  --rc-chip-text:#172112;
+  --rc-shadow:0 26px 78px rgba(0,0,0,.54);
+}
+body[data-rc-theme="night"]{
+  background:
+    radial-gradient(circle at 12% -4%,rgba(100,216,107,.30),transparent 31%),
+    radial-gradient(circle at 88% 2%,rgba(255,210,63,.18),transparent 30%),
+    radial-gradient(circle at 50% 110%,rgba(229,57,53,.13),transparent 40%),
+    linear-gradient(135deg,#020403 0%,#07140A 48%,#12341E 100%)!important;
+}
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  background:
+    radial-gradient(circle at 10% 2%,rgba(100,216,107,.24),transparent 31%),
+    radial-gradient(circle at 88% 0%,rgba(255,210,63,.15),transparent 28%),
+    radial-gradient(circle at 50% 112%,rgba(229,57,53,.10),transparent 44%),
+    linear-gradient(135deg,#020403,#07140A 50%,#12341E)!important;
+}
+
+/* Tarjetas principales: gris-verde con texto blanco, NO crema. */
+.app-shell[data-rc-theme="night"] .studio-panel,
+.app-shell[data-rc-theme="night"] .landing-feature-pro,
+.app-shell[data-rc-theme="night"] .landing-nav-card,
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .news-short,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="night"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro{
+  background:linear-gradient(145deg,rgba(30,58,46,.96),rgba(42,72,56,.91))!important;
+  color:var(--rc-text)!important;
+  border:1.5px solid rgba(255,216,102,.36)!important;
+  box-shadow:0 20px 54px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.10)!important;
+  backdrop-filter:blur(22px) saturate(1.14)!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b,p,div,span,label,small){
+  color:var(--rc-text)!important;
+  text-shadow:none!important;
+}
+
+/* Burbujas/chips/badges dentro del contenido: blancas/crema con letra oscura. */
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"],
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"]{
+  background:linear-gradient(180deg,#FFFFFF,#FFF2D6)!important;
+  color:#172112!important;
+  border:1px solid rgba(255,216,102,.50)!important;
+  text-shadow:none!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.9)!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"] *,
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"] *{
+  color:#172112!important;
+  text-shadow:none!important;
+}
+
+/* No tocar los botones/burbujas de cabecera ni nav: esos deben seguir oscuros. */
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="border-radius:999"],
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="border-radius:999"]{
+  background:rgba(255,255,255,.13)!important;
+  color:#FFF7E6!important;
+  border-color:rgba(255,216,102,.26)!important;
+}
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="borderRadius:999"] *{
+  color:#FFF7E6!important;
+}
+
+/* Botones modo noche: reggae amarillo/verde con texto fuerte. */
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:linear-gradient(135deg,#1F7A45,#64D86B 54%,#FFD23F)!important;
+  color:#071108!important;
+  border:1px solid rgba(255,247,230,.48)!important;
+  text-shadow:none!important;
+  font-weight:950!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro) *{
+  color:#071108!important;
+}
+
+/* Inputs noche: blancos para que se lean fácil. */
+.app-shell[data-rc-theme="night"] input,
+.app-shell[data-rc-theme="night"] select,
+.app-shell[data-rc-theme="night"] textarea,
+.rc-standalone-shell[data-rc-theme="night"] input,
+.rc-standalone-shell[data-rc-theme="night"] select,
+.rc-standalone-shell[data-rc-theme="night"] textarea{
+  background:#FFF7E6!important;
+  color:#172112!important;
+  border:1.5px solid rgba(255,216,102,.58)!important;
+}
+
+/* Día: más alegre, menos blanco plano, con pastel reggae suave. */
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#FFF3C9;
+  --rc-bg-b:#FFE1E7;
+  --rc-bg-c:#DDF8EC;
+  --rc-card:rgba(255,248,232,.90);
+  --rc-card-strong:rgba(255,253,244,.98);
+  --rc-card-soft:rgba(255,229,232,.84);
+  --rc-panel-fun:linear-gradient(145deg,rgba(255,253,244,.96),rgba(255,231,218,.86) 46%,rgba(221,248,236,.76));
+  --rc-text:#241609;
+  --rc-text-strong:#120A03;
+  --rc-muted:#5E462B;
+  --rc-primary:#F6B443;
+  --rc-primary-2:#FF7A7A;
+  --rc-accent2:#68C17A;
+  --rc-accent3:#A78BFA;
+}
+body[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 10% -4%,rgba(255,210,63,.34),transparent 31%),
+    radial-gradient(circle at 88% 0%,rgba(255,122,122,.24),transparent 29%),
+    radial-gradient(circle at 45% 110%,rgba(104,193,122,.20),transparent 38%),
+    linear-gradient(135deg,#FFF3C9 0%,#FFE1E7 48%,#DDF8EC 100%)!important;
+}
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  background:
+    radial-gradient(circle at 10% 2%,rgba(255,210,63,.30),transparent 30%),
+    radial-gradient(circle at 88% 0%,rgba(255,122,122,.22),transparent 28%),
+    radial-gradient(circle at 50% 112%,rgba(104,193,122,.17),transparent 44%),
+    linear-gradient(135deg,#FFF3C9,#FFE1E7 48%,#DDF8EC)!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel,
+.app-shell[data-rc-theme="day"] .landing-feature-pro,
+.app-shell[data-rc-theme="day"] .landing-nav-card,
+.app-shell[data-rc-theme="day"] .modal-panel-pro,
+.app-shell[data-rc-theme="day"] .news-short,
+.rc-standalone-shell[data-rc-theme="day"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="day"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="day"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="day"] .modal-panel-pro{
+  background:linear-gradient(145deg,rgba(255,253,244,.97),rgba(255,231,218,.88) 50%,rgba(221,248,236,.78))!important;
+  color:#241609!important;
+  border:1px solid rgba(255,183,77,.40)!important;
+  box-shadow:0 18px 44px rgba(147,92,52,.16),inset 0 1px 0 rgba(255,255,255,.88)!important;
+}
+
+/* Login cyberpunk: fondo neón reggae/rojo/amarillo, form legible. */
+.login-cyber-shell:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    linear-gradient(115deg,transparent 0 22%,rgba(100,216,107,.10) 22.3% 22.8%,transparent 23% 100%),
+    linear-gradient(0deg,rgba(255,210,63,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(100,216,107,.045) 1px,transparent 1px);
+  background-size:100% 100%,38px 38px,38px 38px;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.86),rgba(0,0,0,.24));
+}
+.login-cyber-shell:after{
+  content:"";
+  position:fixed;
+  inset:-25%;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(circle at 18% 18%,rgba(100,216,107,.18),transparent 18%),
+    radial-gradient(circle at 78% 12%,rgba(255,210,63,.14),transparent 18%),
+    radial-gradient(circle at 70% 80%,rgba(229,57,53,.12),transparent 18%);
+  filter:blur(18px);
+  animation:bgDriftPro 11s ease-in-out infinite;
+}
+.login-cyber-shell .studio-panel{
+  background:linear-gradient(145deg,rgba(255,244,214,.96),rgba(232,211,162,.90))!important;
+  border:1.5px solid rgba(255,210,63,.58)!important;
+  box-shadow:0 22px 58px rgba(0,0,0,.46),0 0 22px rgba(100,216,107,.16),inset 0 1px 0 rgba(255,255,255,.78)!important;
+}
+.login-cyber-shell .landing-feature-pro{
+  background:linear-gradient(145deg,rgba(15,31,20,.78),rgba(31,72,45,.62))!important;
+  color:#FFF7E6!important;
+  border:1px solid rgba(255,210,63,.30)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.32),0 0 18px rgba(100,216,107,.10)!important;
+}
+.login-cyber-shell .landing-feature-pro *{color:#FFF7E6!important}
+.login-cyber-shell .bp{
+  background:linear-gradient(135deg,#64D86B,#FFD23F 58%,#E53935)!important;
+  color:#071108!important;
+  border:1px solid rgba(255,247,230,.72)!important;
+  box-shadow:0 12px 26px rgba(0,0,0,.28),0 0 18px rgba(100,216,107,.18)!important;
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -3120,7 +3347,7 @@ function Auth({onLogin,showToast,settings}){
   }
 
   return(
-    <div style={{minHeight:"100vh",background:"radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),linear-gradient(180deg,#050403,#130B06 48%,#080604)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",padding:"18px 14px 28px",overflowX:"hidden"}}>
+    <div className="login-cyber-shell" style={{minHeight:"100vh",background:"radial-gradient(circle at 50% 10%,rgba(102,255,158,.20),transparent 30%),radial-gradient(circle at 10% 78%,rgba(255,214,102,.18),transparent 28%),radial-gradient(circle at 90% 72%,rgba(255,58,140,.16),transparent 28%),linear-gradient(180deg,#020503,#07120B 48%,#020403)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",padding:"18px 14px 28px",overflowX:"hidden",position:"relative"}}>
       <style>{CSS}</style>
       <Particles/>
       <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:480}}>
