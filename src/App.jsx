@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE131G_JUEGOS_HITBOX_FINAS";
-const APP_VERSION_SHORT="F131G";
+const APP_VERSION="FASE132A_EDITOR_ANDROID_REESTRUCTURADO";
+const APP_VERSION_SHORT="F132A";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -3511,6 +3511,203 @@ html,body,#root{
   }
 }
 
+
+
+/* ===== FASE132A: editor de avatar reestructurado para Android ===== */
+@media(max-width:520px){
+  .avatar-travian-editor{
+    width:100%!important;
+    overflow:hidden!important;
+  }
+  .avatar-travian-window{
+    width:100%!important;
+    max-width:100%!important;
+    border-radius:18px!important;
+    border-width:2px!important;
+    margin:0 0 14px!important;
+    overflow:hidden!important;
+  }
+  .avatar-travian-window>div:first-child{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+    padding:10px!important;
+  }
+  .avatar-travian-window>div:first-child>div:first-child{
+    min-width:0!important;
+  }
+  .avatar-travian-window>div:first-child>div:first-child>div:first-child{
+    font-size:1.22rem!important;
+    white-space:normal!important;
+    line-height:1.05!important;
+  }
+  .avatar-travian-window>div:first-child>div:last-child{
+    justify-content:stretch!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+  }
+  .avatar-travian-window>div:first-child>div:last-child button{
+    width:100%!important;
+    min-height:40px!important;
+  }
+
+  .avatar-editor-layout-pro{
+    display:flex!important;
+    flex-direction:column!important;
+    grid-template-columns:1fr!important;
+    background:linear-gradient(180deg,#203019,#162112)!important;
+  }
+  .avatar-preview-panel-pro{
+    order:-1!important;
+    min-height:auto!important;
+    padding:10px!important;
+    border-bottom:3px solid #8E7957!important;
+    background:
+      radial-gradient(circle at 50% 18%,#FFF8E2 0%,#D8C391 48%,#27331E 49%,#11180E 100%)!important;
+  }
+  .avatar-options-panel-pro{
+    border-right:0!important;
+  }
+  .avatar-editor-tabs-pro{
+    display:flex!important;
+    grid-template-columns:none!important;
+    gap:7px!important;
+    padding:8px!important;
+    overflow-x:auto!important;
+    overscroll-behavior-x:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    scrollbar-width:none!important;
+    background:linear-gradient(180deg,#4A3522,#241709)!important;
+  }
+  .avatar-editor-tabs-pro::-webkit-scrollbar{display:none!important}
+  .avatar-travian-tab{
+    flex:0 0 auto!important;
+    min-width:88px!important;
+    min-height:52px!important;
+    border-radius:14px!important;
+    padding:8px 10px!important;
+  }
+  .avatar-travian-tab div:last-child{
+    white-space:nowrap!important;
+    font-size:.70rem!important;
+  }
+  .avatar-editor-options-scroll-pro{
+    max-height:none!important;
+    overflow:visible!important;
+    padding:10px!important;
+  }
+  .avatar-editor-options-scroll-pro [style*="justify-content:space-between"]{
+    align-items:flex-start!important;
+  }
+
+  .avatar-travian-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  .avatar-travian-grid button{
+    min-width:0!important;
+    min-height:116px!important;
+    border-radius:16px!important;
+    padding:8px!important;
+  }
+  .avatar-travian-grid button img,
+  .avatar-travian-grid button svg{
+    max-width:100%!important;
+  }
+
+  .avatar-color-rack{
+    display:grid!important;
+    grid-template-columns:repeat(6,1fr)!important;
+    gap:8px!important;
+    padding:4px 0 8px!important;
+  }
+  .avatar-color-rack button{
+    width:100%!important;
+    aspect-ratio:1/1!important;
+    min-height:34px!important;
+  }
+
+  .avatar-preview-panel-pro>div:first-child{
+    padding:9px!important;
+    border-radius:12px!important;
+  }
+  .avatar-preview-panel-pro>div:first-child>div:first-child{
+    align-items:flex-start!important;
+  }
+  .avatar-preview-panel-pro>div:nth-child(2){
+    padding:10px 0 8px!important;
+  }
+  .avatar-preview-stage-pro{
+    width:min(230px,68vw)!important;
+    height:min(270px,80vw)!important;
+    max-width:100%!important;
+  }
+  .avatar-preview-stage-pro>div,
+  .avatar-preview-stage-pro svg{
+    max-width:100%!important;
+    max-height:100%!important;
+  }
+  .avatar-preview-panel-pro>div:last-child{
+    gap:8px!important;
+  }
+  .avatar-preview-panel-pro>div:last-child>div:first-child{
+    max-height:74px!important;
+    overflow:auto!important;
+    padding-bottom:2px!important;
+  }
+  .avatar-preview-panel-pro .bp{
+    min-height:42px!important;
+  }
+
+  /* Evita que el helper tape el editor mientras se personaliza */
+  .avatar-travian-editor ~ .rasta-helper-fixed-safe{
+    display:none!important;
+  }
+}
+
+@media(min-width:521px) and (max-width:899px){
+  .avatar-editor-layout-pro{
+    grid-template-columns:1fr!important;
+  }
+  .avatar-preview-panel-pro{
+    order:-1!important;
+    min-height:auto!important;
+    border-bottom:3px solid #8E7957!important;
+  }
+  .avatar-options-panel-pro{
+    border-right:0!important;
+  }
+  .avatar-travian-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+
+/* ===== FASE131H: helper visible con mini Rasta del inicio ===== */
+.rasta-helper-fixed-safe .rasta-face-avatar{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+  filter:none!important;
+}
+.rasta-helper-fixed-safe .rasta-face-avatar > div:first-child{
+  display:none!important;
+}
+.rasta-helper-fixed-safe .helper-hero-face-crop{
+  display:block!important;
+  opacity:1!important;
+  visibility:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.rasta-helper-fixed-safe button[aria-label]{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
 @media (min-width:900px){
   .bottom-nav-pro{
     left:50%!important;
@@ -4248,13 +4445,13 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
         </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1.05fr 1fr",gap:0,background:"linear-gradient(90deg,#203019,#304923)"}}>
-        <div style={{borderRight:"3px solid #8E7957"}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:"3px solid #8E7957"}}>
+      <div className="avatar-editor-layout-pro" style={{display:"grid",gridTemplateColumns:"1.05fr 1fr",gap:0,background:"linear-gradient(90deg,#203019,#304923)"}}>
+        <div className="avatar-options-panel-pro" style={{borderRight:"3px solid #8E7957"}}>
+          <div className="avatar-editor-tabs-pro" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:"3px solid #8E7957"}}>
             {panels.map(p=><MenuButton key={p.id} {...p}/>)}
           </div>
 
-          <div style={{padding:12,maxHeight:520,overflowY:"auto",background:"radial-gradient(circle at 50% 0%,rgba(213,178,79,.15),transparent 32%),linear-gradient(180deg,#304923,#162112)"}}>
+          <div className="avatar-editor-options-scroll-pro" style={{padding:12,maxHeight:520,overflowY:"auto",background:"radial-gradient(circle at 50% 0%,rgba(213,178,79,.15),transparent 32%),linear-gradient(180deg,#304923,#162112)"}}>
             {panel==="base"&&<>
               <MiniSectionTitle emoji="⚧" title="Modelo" sub="Cambia el cuerpo completo"/>
               <OptionGrid cols={2}>
@@ -4301,7 +4498,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
           </div>
         </div>
 
-        <div style={{padding:14,background:"radial-gradient(circle at 50% 20%,#FFF8E2 0%,#D8C391 52%,#27331E 53%,#11180E 100%)",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:590}}>
+        <div className="avatar-preview-panel-pro" style={{padding:14,background:"radial-gradient(circle at 50% 20%,#FFF8E2 0%,#D8C391 52%,#27331E 53%,#11180E 100%)",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:590}}>
           <div style={{background:"linear-gradient(180deg,#FFF8E2,#E9D8B4)",border:"2px solid #8E7957",borderRadius:12,padding:10,boxShadow:"0 12px 28px rgba(0,0,0,.24)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
               <div>
@@ -4316,7 +4513,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
             <div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:4}}>Siguiente rango: {editorNext} pts</div>
           </div>
           <div style={{display:"grid",placeItems:"center",padding:"18px 0"}}>
-            <div style={{width:245,height:290,display:"grid",placeItems:"center",background:"linear-gradient(180deg,#F8F1DD,#D7C59D)",border:"3px solid #8E7957",boxShadow:"inset 0 0 0 4px rgba(255,255,255,.34),0 18px 34px rgba(0,0,0,.35)"}}>
+            <div className="avatar-preview-stage-pro" style={{width:245,height:290,display:"grid",placeItems:"center",background:"linear-gradient(180deg,#F8F1DD,#D7C59D)",border:"3px solid #8E7957",boxShadow:"inset 0 0 0 4px rgba(255,255,255,.34),0 18px 34px rgba(0,0,0,.35)"}}>
               <Av av={form.avatar} config={cfg} size={230}/>
             </div>
           </div>
@@ -4511,44 +4708,97 @@ function HeroMascot(){
 }
 
 
-function HelperHeroMascotFaceCrop({size=50}={}){
-  // Usa el mismo HeroMascot del inicio/login, pero recortado a la cabeza.
-  // El recorte está ajustado para que no se vea el cuerpo entero ni desaparezca la cara.
-  const innerW=size*3.9;
-  const innerH=size*2.92;
+function HelperHeroMascotFaceCrop({size=54}={}){
+  // Versión mini del mismo Rasta del inicio/login.
+  // Ya no recorta el HeroMascot grande porque el recorte podía quedar invisible en móvil.
   return (
-    <div
+    <svg
       className="helper-hero-face-crop"
+      viewBox="0 0 120 120"
+      width={size}
+      height={size}
       style={{
         position:"absolute",
         left:"50%",
         top:"50%",
-        width:size,
-        height:size,
         transform:"translate(-50%,-50%)",
-        overflow:"hidden",
-        borderRadius:"50%",
+        display:"block",
+        overflow:"visible",
         background:"transparent",
         pointerEvents:"none",
-        zIndex:2
+        zIndex:2,
+        filter:"drop-shadow(0 4px 6px rgba(0,0,0,.20))"
       }}
+      aria-hidden="true"
     >
-      <div
-        style={{
-          position:"absolute",
-          width:innerW,
-          height:innerH,
-          left:size/2-innerW*0.505,
-          top:size/2-innerH*0.47,
-          background:"transparent"
-        }}
-      >
-        <HeroMascot/>
-      </div>
-    </div>
+      <defs>
+        <linearGradient id="helperHeroSkin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#F0B37E"/>
+          <stop offset="100%" stopColor="#D89461"/>
+        </linearGradient>
+        <linearGradient id="helperHeroDread" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#25140B"/>
+          <stop offset="62%" stopColor="#512D18"/>
+          <stop offset="100%" stopColor="#8C5A31"/>
+        </linearGradient>
+      </defs>
+
+      {/* mini aureola sólo en la cabeza */}
+      <circle cx="60" cy="54" r="31" fill="rgba(255,214,107,.10)" />
+
+      {/* rastas laterales, como el Rasta grande */}
+      <g strokeLinecap="round" fill="none">
+        <path d="M28 38 C14 46,12 64,22 81 C29 92,36 99,45 107" stroke="#25140B" strokeWidth="8"/>
+        <path d="M36 30 C24 41,23 58,31 76 C36 88,41 96,46 104" stroke="#3A2113" strokeWidth="8"/>
+        <path d="M46 25 C38 38,39 55,44 72 C48 84,51 93,54 101" stroke="url(#helperHeroDread)" strokeWidth="7"/>
+
+        <path d="M92 38 C106 46,108 64,98 81 C91 92,84 99,75 107" stroke="#25140B" strokeWidth="8"/>
+        <path d="M84 30 C96 41,97 58,89 76 C84 88,79 96,74 104" stroke="#3A2113" strokeWidth="8"/>
+        <path d="M74 25 C82 38,81 55,76 72 C72 84,69 93,66 101" stroke="url(#helperHeroDread)" strokeWidth="7"/>
+      </g>
+
+      {/* moño/top knot */}
+      <path d="M54 23 C51 14,54 8,61 8 C69 8,74 15,72 24" fill="#2A180D"/>
+      <path d="M57 13 C64 10,72 14,76 21 C79 27,76 34,71 38" fill="none" stroke="#2A180D" strokeWidth="6" strokeLinecap="round"/>
+      <ellipse cx="62" cy="21" rx="12" ry="6" fill="#2A180D"/>
+      <rect x="53" y="30" width="17" height="5" rx="3" fill="#C0392B"/>
+
+      {/* pelo superior + bandana roja */}
+      <path d="M33 45 C38 27,48 20,60 20 C72 20,82 27,87 45 C78 38,70 35,60 35 C50 35,42 38,33 45Z" fill="#24140C"/>
+      <path d="M36 43 C43 36,51 33,60 33 C69 33,77 36,84 43 L82 53 C75 48,68 46,60 46 C52 46,45 48,38 53Z" fill="#A72822"/>
+      <path d="M48 41 C52 38,56 37,60 37 C64 37,68 38,72 41" fill="none" stroke="#F2C27E" strokeWidth="2" strokeLinecap="round" opacity=".8"/>
+
+      {/* cara */}
+      <path d="M36 55 C36 37,46 26,60 26 C74 26,84 37,84 55 C84 80,73 99,60 102 C47 99,36 80,36 55Z" fill="url(#helperHeroSkin)"/>
+      <ellipse cx="36" cy="64" rx="4" ry="8" fill="#E9A578"/>
+      <ellipse cx="84" cy="64" rx="4" ry="8" fill="#E9A578"/>
+      <ellipse cx="45" cy="70" rx="6" ry="4" fill="#E69C7F" opacity=".50"/>
+      <ellipse cx="75" cy="70" rx="6" ry="4" fill="#E69C7F" opacity=".50"/>
+
+      {/* cejas y ojos: un ojo abierto y un guiño como el grande */}
+      <path d="M46 52 C50 48,55 47,58 49" fill="none" stroke="#26160D" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M64 49 C69 47,74 48,78 52" fill="none" stroke="#26160D" strokeWidth="3" strokeLinecap="round"/>
+
+      <ellipse cx="50" cy="62" rx="8" ry="8" fill="#FFF"/>
+      <ellipse cx="50" cy="62" rx="4.3" ry="5" fill="#112435"/>
+      <circle cx="48" cy="60" r="1.4" fill="#fff"/>
+
+      <path d="M68 62 C72 58,78 58,81 62" fill="none" stroke="#17110D" strokeWidth="4" strokeLinecap="round"/>
+
+      {/* nariz, sonrisa y barba ligera */}
+      <path d="M58 68 C60 73,60 77,57 79" fill="none" stroke="#B86F4E" strokeWidth="2.4" strokeLinecap="round"/>
+      <path d="M48 84 C54 91,66 91,72 84" fill="none" stroke="#8B2F1C" strokeWidth="3.6" strokeLinecap="round"/>
+      <path d="M47 79 C53 77,57 78,60 80 C63 78,67 77,73 79" fill="none" stroke="#2A170F" strokeWidth="3.4" strokeLinecap="round"/>
+      <path d="M54 86 C57 91,63 91,66 86" fill="#321D12"/>
+
+      {/* ganchillo pequeño en el hombro para que recuerde al HeroMascot */}
+      <g transform="translate(86 76) rotate(22)">
+        <path d="M0 0 L22 -20" stroke="#8B5529" strokeWidth="4" strokeLinecap="round"/>
+        <path d="M21 -20 C27 -24,32 -20,29 -14 C27 -10,23 -10,21 -13" fill="none" stroke="#E2D6C2" strokeWidth="3" strokeLinecap="round"/>
+      </g>
+    </svg>
   );
 }
-
 
 function privacyStorageKey(user){return `privacy_${String(user?.email||user?.id||"anon").toLowerCase()}`;}
 function localPrivacy(user){
@@ -14133,7 +14383,7 @@ function HelperMascot({page,settings=null}){
           }}
         >
           <div style={{position:"relative"}}>
-            <RastaFaceAvatar size={54} speaking={open} settings={settings} forceInternal/>
+            <RastaFaceAvatar size={52} speaking={open} settings={settings} forceInternal/>
             <div style={{
               position:"absolute",
               right:-2,
