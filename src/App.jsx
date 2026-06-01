@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="RASTACUTS_2_0_3_UI_GLOBAL_RASTA_GAME";
-const APP_VERSION_SHORT="2.0.3";
+const APP_VERSION="RASTACUTS_2_0_4B_MODELOS_COMPLETOS_BASE";
+const APP_VERSION_SHORT="2.0.4B";
 const APP_BUILD_DATE="2026-06-01";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -4518,58 +4518,75 @@ function AvatarMaskLayer({src,color="#fff",opacity=1,z=1,blend="normal",shadow=f
   }}/>;
 }
 
+const AVATAR_MODELS_ROOT="/avatar/rastacuts/models";
+
+function avatarCompleteModelPath(config){
+  const cfg=normalizeAvatarConfig(config);
+  const gender=cfg.gender==="female"?"female":"male";
+  const face=cfg.face||"oval";
+  return `${AVATAR_MODELS_ROOT}/${gender}_${face}.png`;
+}
+
+function avatarCompleteFallbackPath(config){
+  const cfg=normalizeAvatarConfig(config);
+  const gender=cfg.gender==="female"?"female":"male";
+  return `${AVATAR_MODELS_ROOT}/${gender}_oval.png`;
+}
+
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
-  const female=cfg.gender==="female";
-  const skin=AVATAR_OPTIONS.skin[cfg.skin]||"#C98258";
-  const hair=AVATAR_OPTIONS.hairColor[cfg.hairColor]||"#14100C";
-  const eye=AVATAR_OPTIONS.eyeColor[cfg.eyeColor]||"#1A120C";
-  const skinHi=shadeHex(skin,20), skinLo=shadeHex(skin,-28), skinDeep=shadeHex(skin,-44);
-  const hairHi=shadeHex(hair,28), hairLo=shadeHex(hair,-40);
-  const coat=female?"#6F1E2C":"#14110E";
-  const shirt=female?"#D4AF70":"#EFE3CB";
+  const src=avatarCompleteModelPath(cfg);
+  const fallback=avatarCompleteFallbackPath(cfg);
   const frameColor=cfg.frame==="legend"?"#F2CF75":cfg.frame==="neon"?"#55D7FF":cfg.frame==="gold"?"#D4AF37":cfg.frame==="bronze"?"#A87945":"rgba(212,175,55,.42)";
-  const assetBase=`${cfg.gender}_${cfg.face}`;
-  const bodyGender=female?"female":"male";
-  const faceSrc=avatarLayerPath("base",assetBase);
   const bg=bgGradient(cfg.bg);
   const w=size;
   const h=Math.round(size*1.18);
 
-  return <div
-    data-avatar-layer-engine={AVATAR_LAYER_ENGINE_VERSION}
-    aria-label="Avatar por capas PNG"
-    style={{
-      width:w,
-      height:h,
-      position:"relative",
-      overflow:"hidden",
-      borderRadius:"50% 50% 46% 46%",
-      background:bg,
-      border:`${Math.max(1,Math.round(size/42))}px solid ${frameColor}`,
-      boxShadow:`0 12px 26px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,244,214,.12), 0 0 ${cfg.aura!=="none"?24:0}px ${avatarAuraColor(cfg.aura)}`,
-      transform:animated?"translateY(-1px)":"none",
-      transition:"transform .18s ease, box-shadow .18s ease",
-      isolation:"isolate"
-    }}>
-    <span aria-hidden="true" style={{position:"absolute",inset:0,zIndex:0,background:"radial-gradient(circle at 50% 18%,rgba(255,244,214,.25),transparent 34%),linear-gradient(180deg,rgba(255,255,255,.08),rgba(0,0,0,.16))"}}/>
-    <AvatarMaskLayer src={avatarLayerPath("hair_back",cfg.hair)} color={`linear-gradient(180deg,${hairHi},${hair} 52%,${hairLo})`} z={2} shadow/>
-    <AvatarMaskLayer src={avatarLayerPath("body",`${bodyGender}_coat`)} color={`linear-gradient(180deg,${shadeHex(coat,20)},${coat})`} z={3}/>
-    <AvatarMaskLayer src={avatarLayerPath("body",`${bodyGender}_shirt`)} color={shirt} z={4}/>
-    <AvatarMaskLayer src={faceSrc} color={`linear-gradient(180deg,${skinHi},${skin} 54%,${skinLo})`} z={5}/>
-    <AvatarMaskLayer src={avatarLayerPath("tattoo",cfg.tattoo)} color={cfg.tattoo==="wave"?"#246D84":cfg.tattoo==="anchor"?"#1B2830":"#3B2414"} opacity={cfg.tattoo==="none"?0:.55} z={6}/>
-    <AvatarMaskLayer src={avatarLayerPath("eyes",`${cfg.eyes}_white`)} color="#FFF8EA" z={7}/>
-    <AvatarMaskLayer src={avatarLayerPath("eyes",`${cfg.eyes}_iris`)} color={eye} z={8}/>
-    <AvatarMaskLayer src={avatarLayerPath("brows",cfg.brows)} color={hairLo} z={9}/>
-    <AvatarMaskLayer src={avatarLayerPath("nose",cfg.nose)} color={skinDeep} opacity={.58} z={10}/>
-    <AvatarMaskLayer src={avatarLayerPath("mouth",cfg.mouth)} color={cfg.mouth==="open"?"#2A0907":"#8B2F1C"} z={11}/>
-    <AvatarMaskLayer src={avatarLayerPath("facial",cfg.facial)} color={`linear-gradient(180deg,${hair},${hairLo})`} opacity={cfg.facial==="none"?0:.95} z={12}/>
-    <AvatarMaskLayer src={avatarLayerPath("scar",cfg.scar)} color="#6E1F18" opacity={cfg.scar==="none"?0:.74} z={13}/>
-    <AvatarMaskLayer src={avatarLayerPath("accessory",cfg.accessory)} color={avatarColorForAccessory(cfg.accessory)} opacity={cfg.accessory==="none"?0:1} z={14} shadow/>
-    <AvatarMaskLayer src={avatarLayerPath("hair_front",cfg.hair)} color={`linear-gradient(180deg,${hairHi},${hair} 56%,${hairLo})`} z={15} shadow/>
-    <span aria-hidden="true" style={{position:"absolute",inset:0,zIndex:18,pointerEvents:"none",background:"linear-gradient(120deg,rgba(255,255,255,.20),transparent 26%,transparent 72%,rgba(0,0,0,.18))",mixBlendMode:"soft-light"}}/>
-  </div>;
+  return (
+    <div
+      data-avatar-model-engine="RASTACUTS_2_0_4B_COMPLETE_MODELS"
+      aria-label="Avatar Rasta Cuts por modelo completo"
+      style={{
+        width:w,
+        height:h,
+        position:"relative",
+        overflow:"hidden",
+        borderRadius:"50% 50% 46% 46%",
+        background:bg,
+        border:`${Math.max(1,Math.round(size/42))}px solid ${frameColor}`,
+        boxShadow:`0 12px 26px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,244,214,.12), 0 0 ${cfg.aura!=="none"?24:0}px ${avatarAuraColor(cfg.aura)}`,
+        transform:animated?"translateY(-1px)":"none",
+        transition:"transform .18s ease, box-shadow .18s ease",
+        isolation:"isolate"
+      }}
+    >
+      <span aria-hidden="true" style={{position:"absolute",inset:0,zIndex:0,background:"radial-gradient(circle at 50% 18%,rgba(255,244,214,.25),transparent 34%),linear-gradient(180deg,rgba(255,255,255,.08),rgba(0,0,0,.16))"}}/>
+      <img
+        src={src}
+        alt={avatarStyleName(cfg)}
+        draggable={false}
+        onError={(e)=>{
+          if(e.currentTarget.dataset.fallbackDone!=="1"){
+            e.currentTarget.dataset.fallbackDone="1";
+            e.currentTarget.src=fallback;
+          }
+        }}
+        style={{
+          position:"absolute",
+          inset:"-2% -4% -2% -4%",
+          width:"108%",
+          height:"108%",
+          objectFit:"contain",
+          objectPosition:"center",
+          zIndex:2,
+          filter:"drop-shadow(0 10px 12px rgba(0,0,0,.25))"
+        }}
+      />
+      <span aria-hidden="true" style={{position:"absolute",inset:0,zIndex:4,pointerEvents:"none",background:"linear-gradient(120deg,rgba(255,255,255,.18),transparent 26%,transparent 72%,rgba(0,0,0,.16))",mixBlendMode:"soft-light"}}/>
+    </div>
+  );
 }
+
 function Av({av=0,config=null,size=36}){
   const cfg=normalizeAvatarConfig(config,av);
   const frame={none:`2px solid rgba(255,244,214,.9)`,bronze:`3px solid #C97934`,gold:`3px solid #D4AF37`,neon:`3px solid #5FD7FF`,legend:`3px solid #FFF1A8`}[cfg.frame]||`2px solid rgba(255,244,214,.9)`;
