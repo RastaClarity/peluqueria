@@ -101,9 +101,9 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="RASTACUTS_2_0_1_EDITOR_MOTOR_PNG_FIX_PARTICLES";
-const APP_VERSION_SHORT="2.0.1";
-const APP_BUILD_DATE="2026-05-31";
+const APP_VERSION="RASTACUTS_2_0_3_UI_GLOBAL_RASTA_GAME";
+const APP_VERSION_SHORT="2.0.3";
+const APP_BUILD_DATE="2026-06-01";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
@@ -3744,6 +3744,249 @@ html,body,#root{
   .avatar-travian-editor .avatar-travian-window{max-width:980px!important;margin-left:auto!important;margin-right:auto!important}
 }
 
+
+
+/* =====================================================================
+   RASTA CUTS 2.0.3 - UI KIT GLOBAL RASTA GAME
+   Objetivo: que toda la app se vea mas coherente, oscura, premium y
+   tipo juego navegador, sin tocar la logica ni Supabase.
+   ===================================================================== */
+:root{
+  --rc20-ink:#070A06;
+  --rc20-night:#0E160B;
+  --rc20-panel:#F1E0AE;
+  --rc20-panel2:#D8C083;
+  --rc20-card:#19140B;
+  --rc20-card2:#2B2111;
+  --rc20-green:#5F8E22;
+  --rc20-green2:#243D16;
+  --rc20-gold:#D8B449;
+  --rc20-red:#A72F21;
+  --rc20-yellow:#F2C94C;
+  --rc20-cream:#FFF3CE;
+  --rc20-line:rgba(216,180,73,.42);
+  --rc20-shadow:0 18px 48px rgba(0,0,0,.42);
+}
+body{
+  background-color:#071007!important;
+  background-image:
+    radial-gradient(circle at 18% 10%,rgba(95,142,34,.20),transparent 28%),
+    radial-gradient(circle at 82% 18%,rgba(216,180,73,.16),transparent 26%),
+    radial-gradient(circle at 52% 82%,rgba(167,47,33,.11),transparent 32%),
+    linear-gradient(180deg,#060806 0%,#0b1409 52%,#050805 100%)!important;
+  color:var(--rc20-cream)!important;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:34px 34px;
+  opacity:.55;
+}
+.app-shell{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(216,180,73,.13),transparent 28%),
+    linear-gradient(180deg,rgba(8,14,7,.96),rgba(9,15,7,.92))!important;
+  border-left:2px solid rgba(216,180,73,.36)!important;
+  border-right:2px solid rgba(216,180,73,.28)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.04),0 28px 80px rgba(0,0,0,.55)!important;
+}
+.app-shell:before{
+  background:
+    radial-gradient(circle at 25% 8%,rgba(95,142,34,.20),transparent 30%),
+    radial-gradient(circle at 75% 0%,rgba(216,180,73,.13),transparent 26%),
+    linear-gradient(180deg,rgba(255,239,187,.045),transparent 34%)!important;
+}
+.app-shell:after{
+  content:"RASTA"!important;
+  font-family:'Rubik Wet Paint','Bangers',cursive!important;
+  color:rgba(216,180,73,.045)!important;
+  font-size:8.2rem!important;
+  right:calc(50% - 320px)!important;
+  top:104px!important;
+  transform:rotate(-7deg)!important;
+}
+.app-header-pro{
+  background:
+    linear-gradient(180deg,rgba(46,35,17,.96),rgba(24,18,10,.94))!important;
+  border:1px solid rgba(216,180,73,.42)!important;
+  box-shadow:0 14px 36px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.12)!important;
+  color:var(--rc20-cream)!important;
+}
+.app-header-pro:before{
+  content:"";
+  position:absolute;
+  left:18px;right:18px;bottom:-2px;height:2px;
+  background:linear-gradient(90deg,transparent,#2F7D32,#F2C94C,#A72F21,transparent);
+  opacity:.8;
+}
+.app-header-pro b,
+.app-header-pro strong,
+.app-header-pro span,
+.app-header-pro div{
+  color:inherit;
+}
+.bottom-nav-pro{
+  background:linear-gradient(180deg,rgba(58,44,22,.96),rgba(26,19,10,.98))!important;
+  border:1px solid rgba(216,180,73,.40)!important;
+  box-shadow:0 20px 44px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.10)!important;
+}
+.nav-tab-pro{
+  background:linear-gradient(180deg,rgba(255,243,206,.08),rgba(255,243,206,.03))!important;
+  border:1px solid rgba(216,180,73,.14)!important;
+}
+.nav-tab-pro[data-active="true"]{
+  background:linear-gradient(180deg,#6FA321,#4D7D16)!important;
+  border-color:#D8B449!important;
+  box-shadow:0 10px 24px rgba(95,142,34,.38), inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+.nav-tab-pro .nav-icon-pro{
+  background:linear-gradient(180deg,rgba(255,243,206,.14),rgba(0,0,0,.10))!important;
+  border:1px solid rgba(216,180,73,.18)!important;
+}
+.nav-tab-pro[data-active="true"] .nav-icon-pro{
+  background:linear-gradient(180deg,#E6C85B,#C79225)!important;
+  color:#201207!important;
+}
+.page-content-pro{
+  color:var(--rc20-cream)!important;
+}
+.page-content-pro>div:not(.motion-strip),
+.studio-panel,
+.landing-nav-card,
+.landing-feature-pro,
+.news-short,
+.rasta-speech-bubble,
+.tycoon-map-card{
+  border-radius:18px!important;
+  border:1px solid rgba(216,180,73,.38)!important;
+  box-shadow:var(--rc20-shadow)!important;
+}
+.studio-panel,
+.news-short,
+.landing-feature-pro,
+.rasta-speech-bubble,
+.tycoon-map-card{
+  background:
+    linear-gradient(180deg,rgba(255,243,206,.94),rgba(224,197,130,.92))!important;
+  color:#171006!important;
+}
+.landing-nav-card{
+  background:
+    linear-gradient(180deg,rgba(46,35,17,.96),rgba(23,18,10,.96))!important;
+  color:var(--rc20-cream)!important;
+}
+.landing-nav-card span,
+.landing-nav-card div,
+.landing-nav-card p,
+.landing-nav-card b,
+.landing-feature-pro span,
+.landing-feature-pro div,
+.landing-feature-pro p,
+.studio-panel span,
+.studio-panel div,
+.studio-panel p{
+  text-shadow:none!important;
+}
+button,.bp,.header-action-pro,.theme-toggle-pro{
+  border-radius:14px!important;
+  border:1px solid rgba(216,180,73,.42)!important;
+  box-shadow:0 9px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+button:not(.nav-tab-pro):not(.avatar-travian-option):not(.visual-option),
+.bp{
+  font-weight:950!important;
+}
+input,select,textarea{
+  background:linear-gradient(180deg,#FFF7DA,#EBD4A0)!important;
+  border:1px solid rgba(216,180,73,.72)!important;
+  color:#1B1007!important;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.10)!important;
+}
+.motion-strip{
+  background:linear-gradient(90deg,#2F7D32,#F2C94C,#A72F21)!important;
+  opacity:.92!important;
+}
+
+/* Editor de avatar: que se sienta como juego y no como formulario */
+.avatar-travian-editor,
+.avatar-travian-window{
+  background:linear-gradient(180deg,#251A0D,#0F0E07)!important;
+  color:var(--rc20-cream)!important;
+}
+.avatar-travian-window{
+  border:1px solid rgba(216,180,73,.58)!important;
+  box-shadow:0 28px 70px rgba(0,0,0,.58), inset 0 0 0 1px rgba(255,255,255,.06)!important;
+}
+.avatar-travian-window>div:first-child{
+  background:
+    linear-gradient(180deg,rgba(43,32,15,.96),rgba(20,15,8,.98))!important;
+  color:#F4E2AE!important;
+  border-bottom:1px solid rgba(216,180,73,.42)!important;
+}
+.avatar-travian-window>div:first-child div,
+.avatar-travian-window>div:first-child span,
+.avatar-travian-window>div:first-child b{
+  color:#F4E2AE!important;
+}
+.avatar-travian-window>div:nth-child(2){
+  background:linear-gradient(180deg,#EED9A6,#D3B777)!important;
+}
+.avatar-travian-window>div:nth-child(2)>div:first-child{
+  background:
+    radial-gradient(circle at 50% 20%,rgba(216,180,73,.18),transparent 46%),
+    linear-gradient(180deg,#1A160C,#080A05)!important;
+  border-color:rgba(216,180,73,.44)!important;
+}
+.avatar-travian-window>div:nth-child(2)>div:last-child{
+  background:linear-gradient(180deg,#EED9A6,#D3B777)!important;
+}
+.avatar-travian-tab{
+  background:linear-gradient(180deg,#F6E5B4,#CFB36E)!important;
+  border:1px solid rgba(101,72,25,.45)!important;
+  color:#171006!important;
+}
+.avatar-travian-tab[style*="111"]{
+  background:linear-gradient(180deg,#6FA321,#4D7D16)!important;
+  color:#FFF4D6!important;
+}
+.avatar-travian-grid{
+  background:rgba(28,20,10,.08)!important;
+  border-radius:18px!important;
+  padding:12px!important;
+}
+.avatar-travian-option,
+.visual-option{
+  background:linear-gradient(180deg,#FFF2C5,#D8BC74)!important;
+  border:1px solid rgba(117,80,24,.48)!important;
+  color:#170D04!important;
+}
+.avatar-travian-option>div:first-child{
+  background:linear-gradient(180deg,#25381B,#0B1008)!important;
+  border-color:rgba(216,180,73,.38)!important;
+}
+.avatar-color-rack button,
+.avatar-travian-editor [style*="borderRadius:999"]{
+  box-shadow:0 4px 10px rgba(0,0,0,.25)!important;
+}
+.rasta-helper-fixed-safe{
+  filter:drop-shadow(0 16px 28px rgba(0,0,0,.46))!important;
+}
+@media (min-width:900px){
+  .app-shell{width:min(1240px,100vw)!important;max-width:1240px!important}
+  .bottom-nav-pro{left:calc(50% - 620px + 14px)!important}
+  .page-content-pro>div:not(.motion-strip):not([class]){max-width:1040px!important}
+}
+@media (max-width:520px){
+  .app-shell{border-left:0!important;border-right:0!important}
+  .page-content-pro{padding-left:10px!important;padding-right:10px!important}
+  .avatar-travian-window{border-radius:16px!important}
+}
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
