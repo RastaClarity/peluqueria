@@ -4574,6 +4574,21 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
   </div>;
 }
 
+
+function mascotSourcesFromSettings(settings=null){
+  const b=settings?.branding||{};
+  return [
+    b.mascota_rasta_url,
+    b.rasta_mascota_url,
+    b.imagen_mascota_url,
+    b.imagen_rasta_url,
+    b.logo_mascota_url
+  ]
+    .filter(Boolean)
+    .map(v=>String(v).trim())
+    .filter(Boolean);
+}
+
 function RastaMascotImage({settings=null,compact=false}={}){
   const sources=useMemo(()=>mascotSourcesFromSettings(settings),[settings?.branding?.mascota_rasta_url,settings?.branding?.rasta_mascota_url,settings?.branding?.imagen_mascota_url,settings?.branding?.imagen_rasta_url,settings?.branding?.logo_mascota_url]);
   const [imgIndex,setImgIndex]=useState(0);
