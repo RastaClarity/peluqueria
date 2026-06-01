@@ -4347,7 +4347,7 @@ function MiniSectionTitle({emoji,title,sub}){return <div style={{display:"flex",
 function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=null}){
   const [tab,setTab]=useState("base");
   const [slot,setSlot]=useState("face");
-  const [zoom,setZoom]=useState(1.18);
+  const [zoom,setZoom]=useState(1.16);
   const [lastEdit,setLastEdit]=useState("face");
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
   const premiumKeys=new Set(ownedKeys||[]);
@@ -4356,9 +4356,9 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
   const patch=(key,value)=>{
     if(isLocked(key,value)){SFX.error();return;}
     setLastEdit(key);
-    if(["eyes","brows","nose","mouth","face"].includes(key)) setZoom(1.75);
+    if(["eyes","brows","nose","mouth","face"].includes(key)) setZoom(1.78);
     else if(["hair","facial","accessory","scar","tattoo"].includes(key)) setZoom(1.42);
-    else setZoom(1.18);
+    else setZoom(1.16);
     setForm(f=>{
       const current=normalizeAvatarConfig(f.avatarConfig,f.avatar);
       let next={...current,[key]:value};
@@ -4371,7 +4371,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
       return {...f,avatarConfig:normalizeAvatarConfig(next,f.avatar)};
     });
   };
-  const randomize=()=>applyConfig(randomAvatarConfig(cfg.gender));
+  const randomize=()=>{SFX.coins();applyConfig(randomAvatarConfig(cfg.gender));};
   const profilePoints=Number(user?.puntos||0);
   const editorLevel=profilePoints>=1500?"Leyenda":profilePoints>=1000?"VIP":profilePoints>=500?"Oro":profilePoints>=200?"Plata":"Bronce";
   const editorNext=profilePoints<200?200:profilePoints<500?500:profilePoints<1000?1000:profilePoints<1500?1500:2000;
@@ -4379,18 +4379,18 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
   const currentName=avatarStyleName(cfg);
 
   const tabs=[
-    {id:"base",label:"Base",icon:"◎",slots:["gender","face","bg"]},
+    {id:"base",label:"Base",icon:"☀",slots:["gender","face","bg"]},
     {id:"rasgos",label:"Rasgos",icon:"◉",slots:["eyes","brows","nose","mouth"]},
     {id:"pelo",label:"Pelo",icon:"〰",slots:cfg.gender==="male"?["hair","facial"]:["hair"]},
     {id:"marcas",label:"Marcas",icon:"✦",slots:["accessory","scar","tattoo"]},
-    {id:"colores",label:"Color",icon:"▣",slots:["skin","hairColor","eyeColor","frame","aura"]}
+    {id:"color",label:"Color",icon:"▣",slots:["skin","hairColor","eyeColor","frame","aura"]}
   ];
   const slotMeta={
-    gender:{label:"Género",icon:"⚑"},face:{label:"Cara",icon:"◇"},bg:{label:"Fondo",icon:"▤"},
-    eyes:{label:"Ojos",icon:"◉"},brows:{label:"Cejas",icon:"▰"},nose:{label:"Nariz",icon:"⌇"},mouth:{label:"Boca",icon:"⌣"},
-    hair:{label:"Pelo",icon:"〰"},facial:{label:"Barba",icon:"〽"},
-    accessory:{label:"Accesorios",icon:"◆"},scar:{label:"Cicatriz",icon:"╱"},tattoo:{label:"Tatuaje",icon:"✥"},
-    skin:{label:"Piel",icon:"●"},hairColor:{label:"Color pelo",icon:"◍"},eyeColor:{label:"Color ojos",icon:"◉"},frame:{label:"Marco",icon:"▧"},aura:{label:"Aura",icon:"✦"}
+    gender:{label:"Género",icon:"⚥",hint:"Base del personaje"},face:{label:"Cara",icon:"◇",hint:"Silueta del rostro"},bg:{label:"Fondo",icon:"▤",hint:"Fondo del perfil"},
+    eyes:{label:"Ojos",icon:"◉",hint:"Mirada y carácter"},brows:{label:"Cejas",icon:"▰",hint:"Expresión"},nose:{label:"Nariz",icon:"⌇",hint:"Forma central"},mouth:{label:"Boca",icon:"⌣",hint:"Actitud"},
+    hair:{label:"Pelo",icon:"〰",hint:"Rastas, fades y estilos"},facial:{label:"Barba",icon:"〽",hint:"Bigotes y barbas"},
+    accessory:{label:"Accesorios",icon:"◆",hint:"Bandanas, aros y extras"},scar:{label:"Cicatriz",icon:"╱",hint:"Marcas de historia"},tattoo:{label:"Tatuaje",icon:"✥",hint:"Identidad Rasta Cuts"},
+    skin:{label:"Piel",icon:"●",hint:"Tono base"},hairColor:{label:"Color pelo",icon:"◍",hint:"Color de pelo/rastas"},eyeColor:{label:"Color ojos",icon:"◉",hint:"Color de ojos"},frame:{label:"Marco",icon:"▧",hint:"Marco del avatar"},aura:{label:"Aura",icon:"✦",hint:"Efecto especial"}
   };
   const valueLists={
     gender:["male","female"],
@@ -4436,72 +4436,49 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     return normalizeAvatarConfig({...previewBase,[slotName]:value},form.avatar);
   };
   const valueLabel=(slotName,value)=>{
-    if(slotName==="gender") return value==="male"?"Masc.":"Fem.";
+    if(slotName==="gender") return value==="male"?"Masculino":"Femenino";
     if(slotName==="skin") return `Piel ${Number(value)+1}`;
     if(slotName==="hairColor") return `Pelo ${Number(value)+1}`;
     if(slotName==="eyeColor") return `Ojos ${Number(value)+1}`;
     return AVATAR_LABELS[value]||avatarLabel(value,slotName)||String(value);
   };
 
-  const TopTabs=()=> <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:5,marginBottom:8}}>
-    {tabs.map(t=><button key={t.id} type="button" onClick={()=>{setTab(t.id);setSlot(t.slots[0]);SFX.tab();}} style={{
-      border:`2px solid ${tab===t.id?"#D5B24F":"#665237"}`,
-      background:tab===t.id?"linear-gradient(180deg,#D5B24F,#7A5927)":"linear-gradient(180deg,#2A2116,#15100B)",
-      color:tab===t.id?"#1B1008":"#F6E8C8",
-      borderRadius:10,
-      padding:"6px 2px",
-      fontWeight:1000,
-      fontSize:".60rem",
-      cursor:"pointer",
-      boxShadow:tab===t.id?"0 0 0 2px rgba(213,178,79,.16)":"0 4px 12px rgba(0,0,0,.18)"
-    }}><div style={{fontSize:"1rem",lineHeight:1}}>{t.icon}</div><div style={{marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.label}</div></button>)}
-  </div>;
+  const colors={
+    ink:"#080604",panel:"#13100B",panel2:"#1C140B",line:"#6B5635",line2:"rgba(246,232,200,.18)",gold:"#D7B64C",cream:"#F7E7BD",green:"#5F8E22",red:"#A72822"
+  };
+  const activeSlotInfo=slotMeta[slot]||{label:slot,icon:"•",hint:"Elige una pieza"};
 
-  const SlotRail=()=> <div style={{display:"flex",gap:6,overflowX:"auto",padding:"0 0 7px",marginBottom:7,WebkitOverflowScrolling:"touch"}}>
-    {activeTab.slots.map(s=><button key={s} type="button" onClick={()=>{setSlot(s);setLastEdit(s);SFX.click();}} style={{
-      flex:"0 0 auto",
-      border:`1.5px solid ${slot===s?"#F6E8C8":"#665237"}`,
-      background:slot===s?"linear-gradient(180deg,#3E2C18,#24180C)":"rgba(255,248,226,.06)",
-      color:"#F6E8C8",
-      borderRadius:999,
-      padding:"6px 9px",
-      fontSize:".66rem",
-      fontWeight:950,
-      cursor:"pointer"
-    }}>{slotMeta[s]?.icon} {slotMeta[s]?.label||s}</button>)}
-  </div>;
-
-  const Preview=()=> <div style={{
-    position:"sticky",
-    top:4,
-    zIndex:4,
-    background:"linear-gradient(180deg,#171009,#0A0704)",
-    border:"2px solid #8E7957",
-    borderRadius:14,
-    padding:8,
-    boxShadow:"0 14px 34px rgba(0,0,0,.34)",
-    marginBottom:8
+  const PreviewPanel=()=> <section style={{
+    border:"2px solid rgba(215,182,76,.55)",borderRadius:22,overflow:"hidden",background:"radial-gradient(circle at 50% 0%,rgba(215,182,76,.18),transparent 34%),linear-gradient(180deg,#171009,#090604)",boxShadow:"0 22px 50px rgba(0,0,0,.36)",position:"relative"
   }}>
-    <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"center",marginBottom:6}}>
-      <div style={{minWidth:0}}>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.05rem",color:"#F6E8C8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{form.nombre||"Rasta"}</div>
-        <div style={{fontSize:".58rem",fontWeight:850,color:"rgba(246,232,200,.66)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentName}</div>
+    <div style={{position:"absolute",inset:0,pointerEvents:"none",background:"linear-gradient(135deg,rgba(95,142,34,.10),transparent 36%,rgba(167,40,34,.10))"}}/>
+    <div style={{padding:12,position:"relative",zIndex:1}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"start",marginBottom:10}}>
+        <div style={{minWidth:0}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.6rem",lineHeight:1,color:colors.cream,letterSpacing:.5,textShadow:"0 4px 18px rgba(0,0,0,.4)"}}>{form.nombre||"Tu leyenda"}</div>
+          <div style={{fontSize:".70rem",fontWeight:900,color:"rgba(247,231,189,.72)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentName}</div>
+        </div>
+        <div style={{display:"grid",gap:5,justifyItems:"end"}}><Badge col="gold">{editorLevel}</Badge><Badge col="green">{cfg.gender==="female"?"♀ Rasta":"♂ Rasta"}</Badge></div>
       </div>
-      <Badge col="gold">{editorLevel}</Badge>
+      <div style={{height:7,borderRadius:999,background:"rgba(247,231,189,.10)",overflow:"hidden",border:"1px solid rgba(247,231,189,.10)",marginBottom:12}}>
+        <div style={{height:"100%",width:`${editorPct}%`,background:"linear-gradient(90deg,#5F8E22,#D7B64C,#A72822)",boxShadow:"0 0 18px rgba(215,182,76,.45)"}}/>
+      </div>
+      <div style={{height:238,borderRadius:20,display:"grid",placeItems:"center",overflow:"hidden",position:"relative",border:"1px solid rgba(247,231,189,.20)",background:`radial-gradient(circle at 50% 26%,rgba(247,231,189,.34),transparent 31%),${bgGradient(cfg.bg)}`}}>
+        <div style={{position:"absolute",inset:0,background:"repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 20px),linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.22))",pointerEvents:"none"}}/>
+        <div style={{transform:`${zoomFocus[lastEdit]||"translateY(0px)"} scale(${zoom})`,transition:"transform .2s ease",filter:"drop-shadow(0 18px 22px rgba(0,0,0,.36))"}}><Av av={form.avatar} config={cfg} size={168}/></div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginTop:10}}>{zoomLevels.map(z=><button key={z} type="button" onClick={()=>{setZoom(z);SFX.click();}} style={{border:`1px solid ${zoom===z?colors.gold:colors.line}`,background:zoom===z?"linear-gradient(180deg,#F2D66D,#9A6E20)":"rgba(247,231,189,.08)",color:zoom===z?"#140B05":colors.cream,borderRadius:10,padding:"8px 3px",fontSize:".62rem",fontWeight:1000,cursor:"pointer"}}>×{z}</button>)}</div>
     </div>
-    <div style={{height:5,borderRadius:999,background:"rgba(246,232,200,.12)",overflow:"hidden",marginBottom:7}}><div style={{height:"100%",width:`${editorPct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F,#A72822)"}}/></div>
-    <div style={{display:"grid",gridTemplateColumns:"128px 1fr",gap:8,alignItems:"stretch"}}>
-      <div style={{height:128,borderRadius:12,background:"radial-gradient(circle at 50% 24%,#FFF3CA 0%,#B69D62 43%,#2F2011 44%,#0B0704 100%)",border:"2px solid #7C6848",display:"grid",placeItems:"center",overflow:"hidden",boxShadow:"inset 0 0 0 3px rgba(255,255,255,.08)"}}>
-        <div style={{transform:`${zoomFocus[lastEdit]||"translateY(0px)"} scale(${zoom})`,transition:"transform .18s ease"}}><Av av={form.avatar} config={cfg} size={116}/></div>
-      </div>
-      <div style={{display:"grid",gap:6,alignContent:"start"}}>
-        <div style={{fontSize:".58rem",fontWeight:900,color:"rgba(246,232,200,.64)",textTransform:"uppercase",letterSpacing:".05em"}}>Editando</div>
-        <div style={{fontSize:".82rem",fontWeight:1000,color:"#F6E8C8",lineHeight:1.1}}>{slotMeta[slot]?.label||slot}</div>
-        <div style={{fontSize:".68rem",fontWeight:850,color:"rgba(246,232,200,.70)",lineHeight:1.2,minHeight:28}}>{valueLabel(slot,cfg[slot])}</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:4}}>{zoomLevels.map(z=><button key={z} type="button" onClick={()=>setZoom(z)} style={{border:`1px solid ${zoom===z?"#D5B24F":"#7C6848"}`,background:zoom===z?"#D5B24F":"#21170D",color:zoom===z?"#1B1008":"#F6E8C8",borderRadius:7,padding:"5px 2px",fontSize:".56rem",fontWeight:950,cursor:"pointer"}}>{Math.round(z*100)}</button>)}</div>
-      </div>
-    </div>
-  </div>;
+  </section>;
+
+  const TabsPanel=()=> <>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:8}}>{tabs.map(t=><button key={t.id} type="button" onClick={()=>{setTab(t.id);setSlot(t.slots[0]);setLastEdit(t.slots[0]);SFX.tab();}} style={{
+      border:`2px solid ${tab===t.id?colors.gold:"rgba(247,231,189,.16)"}`,background:tab===t.id?"linear-gradient(180deg,#F2D66D,#79511B)":"linear-gradient(180deg,#1B140C,#0E0A06)",color:tab===t.id?"#130B05":colors.cream,borderRadius:14,padding:"8px 3px",fontWeight:1000,fontSize:".60rem",cursor:"pointer",boxShadow:tab===t.id?"0 0 0 2px rgba(215,182,76,.18),0 10px 22px rgba(0,0,0,.25)":"0 5px 12px rgba(0,0,0,.18)"
+    }}><div style={{fontSize:"1rem",lineHeight:1}}>{t.icon}</div><div style={{marginTop:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.label}</div></button>)}</div>
+    <div style={{display:"flex",gap:7,overflowX:"auto",padding:"0 0 8px",WebkitOverflowScrolling:"touch"}}>{activeTab.slots.map(s=><button key={s} type="button" onClick={()=>{setSlot(s);setLastEdit(s);SFX.click();}} style={{
+      flex:"0 0 auto",border:`1.5px solid ${slot===s?colors.cream:"rgba(247,231,189,.18)"}`,background:slot===s?"linear-gradient(180deg,#3E2C18,#1A1007)":"rgba(247,231,189,.06)",color:colors.cream,borderRadius:999,padding:"8px 11px",fontSize:".68rem",fontWeight:950,cursor:"pointer"
+    }}>{slotMeta[s]?.icon} {slotMeta[s]?.label||s}</button>)}</div>
+  </>;
 
   const OptionButton=({slotName,value,color=null})=>{
     const active=cfg[slotName]===value;
@@ -4509,70 +4486,54 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     const label=valueLabel(slotName,value);
     const showAvatar=["hair","facial","accessory","scar","tattoo","face","eyes","brows","nose","mouth"].includes(slotName);
     return <button type="button" onClick={()=>patch(slotName,value)} title={label} style={{
-      minHeight:slotName.includes("Color")||slotName==="skin"?38:50,
-      border:`2px solid ${active?"#D5B24F":"#665237"}`,
-      background:active?"linear-gradient(180deg,#D5B24F,#7A5927)":"linear-gradient(180deg,#241B11,#120D07)",
-      color:active?"#1B1008":"#F6E8C8",
-      borderRadius:10,
-      padding:color?4:"4px 3px",
-      fontWeight:950,
-      fontSize:".56rem",
-      cursor:locked?"not-allowed":"pointer",
-      opacity:locked?.55:1,
-      position:"relative",
-      overflow:"hidden",
-      boxShadow:active?"0 0 0 2px rgba(213,178,79,.16),0 8px 16px rgba(0,0,0,.26)":"0 4px 10px rgba(0,0,0,.18)"
+      minHeight:color?44:72,border:`2px solid ${active?colors.gold:"rgba(247,231,189,.16)"}`,background:active?"linear-gradient(180deg,#F2D66D,#79511B)":"linear-gradient(180deg,#21170D,#100A05)",color:active?"#130B05":colors.cream,borderRadius:14,padding:color?5:6,fontWeight:950,fontSize:".58rem",cursor:locked?"not-allowed":"pointer",opacity:locked?0.52:1,position:"relative",overflow:"hidden",boxShadow:active?"0 0 0 2px rgba(215,182,76,.18),0 10px 20px rgba(0,0,0,.28)":"0 5px 12px rgba(0,0,0,.18)"
     }}>
-      {locked&&<span style={{position:"absolute",right:3,top:2,fontSize:10,zIndex:2}}>🔒</span>}
-      {color? <div style={{height:26,borderRadius:8,background:color,border:"1px solid rgba(255,255,255,.25)"}}/> : showAvatar? <div style={{height:31,display:"grid",placeItems:"center",overflow:"hidden",borderRadius:8,background:active?"rgba(255,248,226,.18)":"rgba(255,248,226,.07)",marginBottom:3}}><Av av={form.avatar} config={miniConfig(slotName,value)} size={34}/></div> : <div style={{height:24,display:"grid",placeItems:"center",fontSize:"1rem"}}>{iconMap[value]||slotMeta[slotName]?.icon||"•"}</div>}
-      {!color&&<div style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",lineHeight:1.02}}>{label}</div>}
+      {locked&&<span style={{position:"absolute",right:4,top:3,fontSize:10,zIndex:2}}>🔒</span>}
+      {color? <div style={{height:30,borderRadius:10,background:color,border:"1px solid rgba(255,255,255,.25)"}}/> : showAvatar? <div style={{height:43,display:"grid",placeItems:"center",overflow:"hidden",borderRadius:10,background:active?"rgba(255,248,226,.20)":"rgba(255,248,226,.07)",marginBottom:4}}><Av av={form.avatar} config={miniConfig(slotName,value)} size={48}/></div> : <div style={{height:30,display:"grid",placeItems:"center",fontSize:"1.12rem"}}>{iconMap[value]||slotMeta[slotName]?.icon||"•"}</div>}
+      {!color&&<div style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",lineHeight:1.05}}>{label}</div>}
     </button>;
   };
 
   const renderOptions=()=>{
     const values=valueLists[slot]||[];
-    if(slot==="gender") return <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:7}}>{values.map(v=><OptionButton key={v} slotName="gender" value={v}/>)}</div>;
-    if(slot==="bg") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(54px,1fr))",gap:6}}>{values.map(v=><button key={v} type="button" onClick={()=>patch("bg",v)} style={{height:42,borderRadius:10,border:`2px solid ${cfg.bg===v?"#F6E8C8":"#7C6848"}`,background:bgGradient(v),cursor:"pointer",boxShadow:cfg.bg===v?"0 0 0 2px #D5B24F":"0 4px 10px rgba(0,0,0,.18)"}} title={AVATAR_LABELS[v]||v}/>)}</div>;
-    if(slot==="skin") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(32px,1fr))",gap:6}}>{values.map(i=><OptionButton key={i} slotName="skin" value={i} color={AVATAR_OPTIONS.skin[i]}/>)}</div>;
-    if(slot==="hairColor") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(32px,1fr))",gap:6}}>{values.map(i=><OptionButton key={i} slotName="hairColor" value={i} color={AVATAR_OPTIONS.hairColor[i]}/>)}</div>;
-    if(slot==="eyeColor") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(32px,1fr))",gap:6}}>{values.map(i=><OptionButton key={i} slotName="eyeColor" value={i} color={AVATAR_OPTIONS.eyeColor[i]}/>)}</div>;
-    return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(50px,1fr))",gap:6}}>{values.map(v=><OptionButton key={v} slotName={slot} value={v}/>)}</div>;
+    if(slot==="gender") return <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>{values.map(v=><OptionButton key={v} slotName="gender" value={v}/>)}</div>;
+    if(slot==="bg") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(68px,1fr))",gap:8}}>{values.map(v=><button key={v} type="button" onClick={()=>patch("bg",v)} style={{height:54,borderRadius:14,border:`2px solid ${cfg.bg===v?colors.cream:"rgba(247,231,189,.16)"}`,background:bgGradient(v),cursor:"pointer",boxShadow:cfg.bg===v?"0 0 0 2px #D7B64C":"0 6px 14px rgba(0,0,0,.18)"}} title={AVATAR_LABELS[v]||v}/>)}</div>;
+    if(slot==="skin") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(42px,1fr))",gap:7}}>{values.map(i=><OptionButton key={i} slotName="skin" value={i} color={AVATAR_OPTIONS.skin[i]}/>)}</div>;
+    if(slot==="hairColor") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(42px,1fr))",gap:7}}>{values.map(i=><OptionButton key={i} slotName="hairColor" value={i} color={AVATAR_OPTIONS.hairColor[i]}/>)}</div>;
+    if(slot==="eyeColor") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(42px,1fr))",gap:7}}>{values.map(i=><OptionButton key={i} slotName="eyeColor" value={i} color={AVATAR_OPTIONS.eyeColor[i]}/>)}</div>;
+    return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(70px,1fr))",gap:8}}>{values.map(v=><OptionButton key={v} slotName={slot} value={v}/>)}</div>;
   };
 
-  return <div className="avatar-travian-editor">
-    <Card className="avatar-travian-window" style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#15100B,#0B0704)",border:"2px solid #8E7957",borderRadius:16,boxShadow:"0 20px 50px rgba(0,0,0,.35)",marginBottom:14}}>
-      <div style={{background:"linear-gradient(180deg,#3A2A18,#171009)",borderBottom:"2px solid #8E7957",color:"#F6E8C8",padding:"7px 9px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-        <div style={{minWidth:0}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",letterSpacing:".5px",lineHeight:1}}>Creador de personaje</div>
-          <div style={{fontSize:".70rem",fontWeight:850,opacity:.76}}>Una sola cuadrícula por pieza · preview fijo · menos scroll</div>
-        </div>
-        <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
-          <Badge col="gold">{cfg.gender==="female"?"♀":"♂"}</Badge>
-          <Badge col="dark">{slotMeta[slot]?.label||slot}</Badge>
+  return <div className="avatar-editor-rastacuts-202">
+    <Card style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#22170B,#090604)",border:"2px solid rgba(215,182,76,.55)",borderRadius:24,boxShadow:"0 28px 70px rgba(0,0,0,.42)",marginBottom:14}}>
+      <div style={{background:"linear-gradient(90deg,#11100C,#2D1C0B 46%,#11100C)",borderBottom:"2px solid rgba(215,182,76,.45)",padding:"12px 14px",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,rgba(95,142,34,.20),transparent 38%,rgba(167,40,34,.18))",pointerEvents:"none"}}/>
+        <div style={{position:"relative",zIndex:1,display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.72rem",lineHeight:1,color:colors.cream,letterSpacing:.6}}>Creador Rasta Cuts</div><div style={{fontSize:".74rem",fontWeight:850,color:"rgba(247,231,189,.72)"}}>Anime barber/rasta · piezas por capas PNG · edición limpia</div></div>
+          <button type="button" onClick={randomize} style={{border:"2px solid rgba(247,231,189,.18)",background:"linear-gradient(180deg,#5F8E22,#284514)",color:"#FFF3CA",borderRadius:999,padding:"9px 12px",fontSize:".72rem",fontWeight:1000,cursor:"pointer",boxShadow:"0 8px 18px rgba(0,0,0,.24)"}}>🎲 Aleatorio</button>
         </div>
       </div>
-      <div style={{padding:8}}>
-        <Preview/>
-        <TopTabs/>
-        <SlotRail/>
-        <div style={{background:"rgba(255,248,226,.055)",border:"1px solid #5A4A31",borderRadius:13,padding:8,boxShadow:"inset 0 1px 0 rgba(255,255,255,.06)"}}>
-          <div style={{display:"flex",alignItems:"end",justifyContent:"space-between",gap:8,marginBottom:7}}>
-            <div>
-              <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.02rem",color:"#F6E8C8",letterSpacing:.35}}>{slotMeta[slot]?.label||slot}</div>
-              <div style={{fontSize:".58rem",fontWeight:850,color:"rgba(246,232,200,.62)"}}>{(valueLists[slot]||[]).length} opciones · toca y mira la lupa</div>
+      <div style={{padding:12,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:12,alignItems:"start"}}>
+        <PreviewPanel/>
+        <section style={{border:"2px solid rgba(247,231,189,.13)",borderRadius:22,background:"linear-gradient(180deg,#16100A,#0B0704)",padding:10,boxShadow:"inset 0 1px 0 rgba(255,255,255,.05),0 16px 38px rgba(0,0,0,.22)"}}>
+          <TabsPanel/>
+          <div style={{border:"1px solid rgba(247,231,189,.14)",borderRadius:18,background:"rgba(247,231,189,.055)",padding:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,marginBottom:10}}>
+              <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.32rem",lineHeight:1,color:colors.cream}}>{activeSlotInfo.icon} {activeSlotInfo.label}</div><div style={{fontSize:".68rem",fontWeight:850,color:"rgba(247,231,189,.62)"}}>{activeSlotInfo.hint} · {(valueLists[slot]||[]).length} opciones</div></div>
+              <Badge col="dark">{valueLabel(slot,cfg[slot])}</Badge>
             </div>
-            <button type="button" onClick={randomize} style={{border:"1px solid #7C6848",background:"#21170D",color:"#F6E8C8",borderRadius:999,padding:"6px 9px",fontSize:".62rem",fontWeight:950,cursor:"pointer"}}>🎲 Random</button>
+            {renderOptions()}
           </div>
-          {renderOptions()}
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:8}}>
-          <Btn full col="ghost" onClick={()=>onReset?.()}>↶ Restaurar</Btn>
-          <Btn full col="green" onClick={()=>onSave?.()}>💾 Guardar</Btn>
-        </div>
+        </section>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,padding:"0 12px 12px"}}>
+        <Btn full col="ghost" onClick={()=>onReset?.()}>↶ Restaurar</Btn>
+        <Btn full col="green" onClick={()=>onSave?.()}>💾 Guardar cambios</Btn>
       </div>
     </Card>
   </div>;
 }
+
 
 
 function mascotSourcesFromSettings(settings=null){
