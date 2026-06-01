@@ -4632,6 +4632,59 @@ function Particles(){
   );
 }
 
+
+function Toast({msg,show}){
+  if(!show)return null;
+  return (
+    <div style={{
+      position:"fixed",
+      bottom:100,
+      left:"50%",
+      transform:"translateX(-50%)",
+      background:T.g800,
+      color:T.white,
+      padding:"12px 22px",
+      borderRadius:50,
+      fontWeight:800,
+      fontSize:"0.88rem",
+      zIndex:2147483002,
+      whiteSpace:"nowrap",
+      maxWidth:"calc(100vw - 28px)",
+      overflow:"hidden",
+      textOverflow:"ellipsis",
+      border:`1px solid ${T.gold}`,
+      boxShadow:"0 10px 28px rgba(0,0,0,.35)",
+      animation:"toastIn 0.3s ease"
+    }}>{msg}</div>
+  );
+}
+
+
+function PtsPopup({pts,show}){
+  if(!show||!pts)return null;
+  return (
+    <div style={{
+      position:"fixed",
+      top:"35%",
+      left:"50%",
+      transform:"translateX(-50%)",
+      zIndex:2147483002,
+      animation:"ptsFloat 1.8s ease forwards",
+      pointerEvents:"none"
+    }}>
+      <div style={{
+        background:T.gradGold,
+        color:T.white,
+        borderRadius:50,
+        padding:"10px 24px",
+        fontWeight:900,
+        fontSize:"1.4rem",
+        boxShadow:"0 6px 24px rgba(255,183,3,0.5)"
+      }}>+{pts} pts</div>
+    </div>
+  );
+}
+
 function HeroMascot(){
   return (
     <div style={{width:"100%",maxWidth:382,margin:"0 auto 10px",position:"relative",animation:"mascotFloat 3.2s ease-in-out infinite"}}>
