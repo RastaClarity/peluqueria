@@ -101,8 +101,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="FASE136A_AVATAR_PNG_ASSETS";
-const APP_VERSION_SHORT="F136A";
+const APP_VERSION="RASTACUTS_2_0_1_EDITOR_MOTOR_PNG_FIX_PARTICLES";
+const APP_VERSION_SHORT="2.0.1";
 const APP_BUILD_DATE="2026-05-31";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -4604,6 +4604,30 @@ function RastaMascotImage({settings=null,compact=false}={}){
         onError={()=>setImgIndex(i=>i+1)}
         style={{position:"relative",zIndex:1,filter:"drop-shadow(0 20px 26px rgba(0,0,0,.32))"}}
       />
+    </div>
+  );
+}
+
+
+function Particles(){
+  const items=["✂","〰","◆","✦","•","⟡"];
+  return (
+    <div style={{position:"fixed",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:0}}>
+      {[...Array(10)].map((_,i)=>(
+        <div
+          key={i}
+          style={{
+            position:"absolute",
+            left:`${6+i*10}%`,
+            bottom:"-10%",
+            fontSize:i%3===0?"1.35rem":"1rem",
+            opacity:0.1,
+            animation:`floatUp ${13+i*2}s linear ${i*1.4}s infinite`
+          }}
+        >
+          {items[i%items.length]}
+        </div>
+      ))}
     </div>
   );
 }
