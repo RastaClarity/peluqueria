@@ -101,9 +101,10 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION="RASTACUTS_2_0_3_UI_GLOBAL_RASTA_GAME";
-const APP_VERSION_SHORT="2.0.6A";
-const APP_BUILD_DATE="2026-06-01";
+// Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
+const APP_VERSION="RASTACUTS_2_0_BASE_AVATAR_LAYER_ENGINE";
+const APP_VERSION_SHORT="2.0";
+const APP_BUILD_DATE="2026-06-02";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
@@ -3744,249 +3745,6 @@ html,body,#root{
   .avatar-travian-editor .avatar-travian-window{max-width:980px!important;margin-left:auto!important;margin-right:auto!important}
 }
 
-
-
-/* =====================================================================
-   RASTA CUTS 2.0.6A - AVATAR MODULAR REAL
-   Objetivo: que toda la app se vea mas coherente, oscura, premium y
-   tipo juego navegador, sin tocar la logica ni Supabase.
-   ===================================================================== */
-:root{
-  --rc20-ink:#070A06;
-  --rc20-night:#0E160B;
-  --rc20-panel:#F1E0AE;
-  --rc20-panel2:#D8C083;
-  --rc20-card:#19140B;
-  --rc20-card2:#2B2111;
-  --rc20-green:#5F8E22;
-  --rc20-green2:#243D16;
-  --rc20-gold:#D8B449;
-  --rc20-red:#A72F21;
-  --rc20-yellow:#F2C94C;
-  --rc20-cream:#FFF3CE;
-  --rc20-line:rgba(216,180,73,.42);
-  --rc20-shadow:0 18px 48px rgba(0,0,0,.42);
-}
-body{
-  background-color:#071007!important;
-  background-image:
-    radial-gradient(circle at 18% 10%,rgba(95,142,34,.20),transparent 28%),
-    radial-gradient(circle at 82% 18%,rgba(216,180,73,.16),transparent 26%),
-    radial-gradient(circle at 52% 82%,rgba(167,47,33,.11),transparent 32%),
-    linear-gradient(180deg,#060806 0%,#0b1409 52%,#050805 100%)!important;
-  color:var(--rc20-cream)!important;
-}
-body:before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:-1;
-  background:
-    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
-  background-size:34px 34px;
-  opacity:.55;
-}
-.app-shell{
-  background:
-    radial-gradient(circle at 50% 0%,rgba(216,180,73,.13),transparent 28%),
-    linear-gradient(180deg,rgba(8,14,7,.96),rgba(9,15,7,.92))!important;
-  border-left:2px solid rgba(216,180,73,.36)!important;
-  border-right:2px solid rgba(216,180,73,.28)!important;
-  box-shadow:0 0 0 1px rgba(255,255,255,.04),0 28px 80px rgba(0,0,0,.55)!important;
-}
-.app-shell:before{
-  background:
-    radial-gradient(circle at 25% 8%,rgba(95,142,34,.20),transparent 30%),
-    radial-gradient(circle at 75% 0%,rgba(216,180,73,.13),transparent 26%),
-    linear-gradient(180deg,rgba(255,239,187,.045),transparent 34%)!important;
-}
-.app-shell:after{
-  content:"RASTA"!important;
-  font-family:'Rubik Wet Paint','Bangers',cursive!important;
-  color:rgba(216,180,73,.045)!important;
-  font-size:8.2rem!important;
-  right:calc(50% - 320px)!important;
-  top:104px!important;
-  transform:rotate(-7deg)!important;
-}
-.app-header-pro{
-  background:
-    linear-gradient(180deg,rgba(46,35,17,.96),rgba(24,18,10,.94))!important;
-  border:1px solid rgba(216,180,73,.42)!important;
-  box-shadow:0 14px 36px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.12)!important;
-  color:var(--rc20-cream)!important;
-}
-.app-header-pro:before{
-  content:"";
-  position:absolute;
-  left:18px;right:18px;bottom:-2px;height:2px;
-  background:linear-gradient(90deg,transparent,#2F7D32,#F2C94C,#A72F21,transparent);
-  opacity:.8;
-}
-.app-header-pro b,
-.app-header-pro strong,
-.app-header-pro span,
-.app-header-pro div{
-  color:inherit;
-}
-.bottom-nav-pro{
-  background:linear-gradient(180deg,rgba(58,44,22,.96),rgba(26,19,10,.98))!important;
-  border:1px solid rgba(216,180,73,.40)!important;
-  box-shadow:0 20px 44px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.10)!important;
-}
-.nav-tab-pro{
-  background:linear-gradient(180deg,rgba(255,243,206,.08),rgba(255,243,206,.03))!important;
-  border:1px solid rgba(216,180,73,.14)!important;
-}
-.nav-tab-pro[data-active="true"]{
-  background:linear-gradient(180deg,#6FA321,#4D7D16)!important;
-  border-color:#D8B449!important;
-  box-shadow:0 10px 24px rgba(95,142,34,.38), inset 0 1px 0 rgba(255,255,255,.22)!important;
-}
-.nav-tab-pro .nav-icon-pro{
-  background:linear-gradient(180deg,rgba(255,243,206,.14),rgba(0,0,0,.10))!important;
-  border:1px solid rgba(216,180,73,.18)!important;
-}
-.nav-tab-pro[data-active="true"] .nav-icon-pro{
-  background:linear-gradient(180deg,#E6C85B,#C79225)!important;
-  color:#201207!important;
-}
-.page-content-pro{
-  color:var(--rc20-cream)!important;
-}
-.page-content-pro>div:not(.motion-strip),
-.studio-panel,
-.landing-nav-card,
-.landing-feature-pro,
-.news-short,
-.rasta-speech-bubble,
-.tycoon-map-card{
-  border-radius:18px!important;
-  border:1px solid rgba(216,180,73,.38)!important;
-  box-shadow:var(--rc20-shadow)!important;
-}
-.studio-panel,
-.news-short,
-.landing-feature-pro,
-.rasta-speech-bubble,
-.tycoon-map-card{
-  background:
-    linear-gradient(180deg,rgba(255,243,206,.94),rgba(224,197,130,.92))!important;
-  color:#171006!important;
-}
-.landing-nav-card{
-  background:
-    linear-gradient(180deg,rgba(46,35,17,.96),rgba(23,18,10,.96))!important;
-  color:var(--rc20-cream)!important;
-}
-.landing-nav-card span,
-.landing-nav-card div,
-.landing-nav-card p,
-.landing-nav-card b,
-.landing-feature-pro span,
-.landing-feature-pro div,
-.landing-feature-pro p,
-.studio-panel span,
-.studio-panel div,
-.studio-panel p{
-  text-shadow:none!important;
-}
-button,.bp,.header-action-pro,.theme-toggle-pro{
-  border-radius:14px!important;
-  border:1px solid rgba(216,180,73,.42)!important;
-  box-shadow:0 9px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.18)!important;
-}
-button:not(.nav-tab-pro):not(.avatar-travian-option):not(.visual-option),
-.bp{
-  font-weight:950!important;
-}
-input,select,textarea{
-  background:linear-gradient(180deg,#FFF7DA,#EBD4A0)!important;
-  border:1px solid rgba(216,180,73,.72)!important;
-  color:#1B1007!important;
-  box-shadow:inset 0 2px 6px rgba(0,0,0,.10)!important;
-}
-.motion-strip{
-  background:linear-gradient(90deg,#2F7D32,#F2C94C,#A72F21)!important;
-  opacity:.92!important;
-}
-
-/* Editor de avatar: que se sienta como juego y no como formulario */
-.avatar-travian-editor,
-.avatar-travian-window{
-  background:linear-gradient(180deg,#251A0D,#0F0E07)!important;
-  color:var(--rc20-cream)!important;
-}
-.avatar-travian-window{
-  border:1px solid rgba(216,180,73,.58)!important;
-  box-shadow:0 28px 70px rgba(0,0,0,.58), inset 0 0 0 1px rgba(255,255,255,.06)!important;
-}
-.avatar-travian-window>div:first-child{
-  background:
-    linear-gradient(180deg,rgba(43,32,15,.96),rgba(20,15,8,.98))!important;
-  color:#F4E2AE!important;
-  border-bottom:1px solid rgba(216,180,73,.42)!important;
-}
-.avatar-travian-window>div:first-child div,
-.avatar-travian-window>div:first-child span,
-.avatar-travian-window>div:first-child b{
-  color:#F4E2AE!important;
-}
-.avatar-travian-window>div:nth-child(2){
-  background:linear-gradient(180deg,#EED9A6,#D3B777)!important;
-}
-.avatar-travian-window>div:nth-child(2)>div:first-child{
-  background:
-    radial-gradient(circle at 50% 20%,rgba(216,180,73,.18),transparent 46%),
-    linear-gradient(180deg,#1A160C,#080A05)!important;
-  border-color:rgba(216,180,73,.44)!important;
-}
-.avatar-travian-window>div:nth-child(2)>div:last-child{
-  background:linear-gradient(180deg,#EED9A6,#D3B777)!important;
-}
-.avatar-travian-tab{
-  background:linear-gradient(180deg,#F6E5B4,#CFB36E)!important;
-  border:1px solid rgba(101,72,25,.45)!important;
-  color:#171006!important;
-}
-.avatar-travian-tab[style*="111"]{
-  background:linear-gradient(180deg,#6FA321,#4D7D16)!important;
-  color:#FFF4D6!important;
-}
-.avatar-travian-grid{
-  background:rgba(28,20,10,.08)!important;
-  border-radius:18px!important;
-  padding:12px!important;
-}
-.avatar-travian-option,
-.visual-option{
-  background:linear-gradient(180deg,#FFF2C5,#D8BC74)!important;
-  border:1px solid rgba(117,80,24,.48)!important;
-  color:#170D04!important;
-}
-.avatar-travian-option>div:first-child{
-  background:linear-gradient(180deg,#25381B,#0B1008)!important;
-  border-color:rgba(216,180,73,.38)!important;
-}
-.avatar-color-rack button,
-.avatar-travian-editor [style*="borderRadius:999"]{
-  box-shadow:0 4px 10px rgba(0,0,0,.25)!important;
-}
-.rasta-helper-fixed-safe{
-  filter:drop-shadow(0 16px 28px rgba(0,0,0,.46))!important;
-}
-@media (min-width:900px){
-  .app-shell{width:min(1240px,100vw)!important;max-width:1240px!important}
-  .bottom-nav-pro{left:calc(50% - 620px + 14px)!important}
-  .page-content-pro>div:not(.motion-strip):not([class]){max-width:1040px!important}
-}
-@media (max-width:520px){
-  .app-shell{border-left:0!important;border-right:0!important}
-  .page-content-pro{padding-left:10px!important;padding-right:10px!important}
-  .avatar-travian-window{border-radius:16px!important}
-}
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -4020,7 +3778,7 @@ function Modal({show,onClose,title,children}){
     </div>
   </div>;
 }
-function Spinner(){return <div style={{width:24,height:24,border:`3px solid ${T.g200}`,borderTop:`3px solid ${T.g600}`,borderRadius:"50%",animation:"spin 0.7s linear infinite",margin:"20px auto"}}/>;}
+function Spinner(){return <div style={{width:28,height:28,border:`3px solid ${T.g200}`,borderTop:`3px solid ${T.g600}`,borderRadius:"50%",animation:"spin 0.7s linear infinite",margin:"20px auto"}}/>;}
 function EmptyState({icon,title,sub}){return <div style={{textAlign:"center",padding:"40px 20px",color:T.textSub}}><div style={{fontSize:"2.8rem",marginBottom:10}}>{icon}</div><div style={{fontWeight:800,fontSize:"1rem",color:T.g700,marginBottom:6}}>{title}</div><div style={{fontSize:"0.83rem"}}>{sub}</div></div>;}
 function PublicProfileModal({profile,onClose}){
   if(!profile)return null;
@@ -4055,9 +3813,9 @@ function PublicProfileModal({profile,onClose}){
       <Card style={{marginTop:10,textAlign:"left",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
         <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🏆 Resumen público</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,textAlign:"center"}}>
-          <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>Puntos</div></div>
-          <div><div style={{fontSize:"1.4rem"}}>🔥</div><b>{profile.visitas||0}</b><div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>Visitas</div></div>
-          <div><div style={{fontSize:"1.4rem"}}>🎮</div><b>{profile.records||0}</b><div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>Récords</div></div>
+          <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Puntos</div></div>
+          <div><div style={{fontSize:"1.4rem"}}>🔥</div><b>{profile.visitas||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Visitas</div></div>
+          <div><div style={{fontSize:"1.4rem"}}>🎮</div><b>{profile.records||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Récords</div></div>
         </div>
       </Card>
     </div>
@@ -4100,10 +3858,6 @@ const AVATAR_OPTIONS={
   hair:[...new Set([...MALE_HAIR,...FEMALE_HAIR])],
   brows:["soft","strong","angry","thin","arched"],
   eyes:["anime","sleepy","sharp","round","smile","glam"],
-  nose:["sharp","soft","long","small","wide","hook"],
-  mouth:["sharp","smile","serious","smirk","soft","open"],
-  scar:["none","cheek","cross","brow","jaw"],
-  tattoo:["none","anchor","wave","temple","neck"],
   facial:["none",...BEARD_VALUES],
   accessory:["none","earring","hoopGold","glasses","glassesGold","bandana","bandanaGreen","cap","capBlack","capGold","piercing","flowers","headphones","crown"],
   bg:["gold","dark","red","blue","paper","studio","street","royal"],
@@ -4111,9 +3865,9 @@ const AVATAR_OPTIONS={
   aura:["none","warm","flame","ocean","vip"]
 };
 
-const DEFAULT_AVATAR_CONFIG={version:"2.0.6A",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",nose:"sharp",mouth:"sharp",scar:"none",tattoo:"none",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
-const DEFAULT_MALE_AVATAR={version:"2.0.6A",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",nose:"sharp",mouth:"sharp",scar:"none",tattoo:"none",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
-const DEFAULT_FEMALE_AVATAR={version:"2.0.6A",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",nose:"soft",mouth:"soft",scar:"none",tattoo:"none",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
+const DEFAULT_AVATAR_CONFIG={version:"2.0",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
+const DEFAULT_MALE_AVATAR={version:"2.0",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
+const DEFAULT_FEMALE_AVATAR={version:"2.0",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
   {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
@@ -4142,7 +3896,7 @@ const AVATAR_LABELS={
   gender:"Sexo",male:"Masculino",female:"Femenino",skin:"Piel",hair:"Peinado",hairColor:"Color pelo",face:"Cara",eyes:"Ojos",eyeColor:"Color ojos",brows:"Cejas",facial:"Barba/bigote",accessory:"Complemento",bg:"Fondo",
   oval:"Ovalada",square:"Cuadrada",heart:"Corazón",long:"Alargada",
   buzzFade:"Rapado fade",texturedCrop:"Crop texturizado",sharpFade:"Degradado limpio",dreadsLong:"Rastas largas",dreadsBun:"Nudo rasta",dreadsTop:"Rastas arriba",afro:"Afro redondo",afroPuff:"Afro puff",braidsLong:"Trenzas largas",curlyBob:"Rizos bob",longWaves:"Melena ondas",highPonytail:"Coleta alta",bob:"Bob liso",pixie:"Pixie corto",mohawk:"Cresta punk",undercut:"Undercut",
-  soft:"Suaves",strong:"Marcadas",angry:"Intensas",thin:"Finas",arched:"Arqueadas",anime:"Anime",sleepy:"Relajados",smile:"Sonrientes",glam:"Glam",sharp:"Afilado",serious:"Seria",smirk:"Pícara",open:"Abierta",small:"Pequeña",wide:"Ancha",hook:"Gancho",cheek:"Mejilla",cross:"Cruz",brow:"Ceja",jaw:"Mandíbula",anchor:"Ancla",wave:"Ola",temple:"Sien",neck:"Cuello",
+  soft:"Suaves",strong:"Marcadas",angry:"Intensas",thin:"Finas",arched:"Arqueadas",anime:"Anime",sleepy:"Relajados",smile:"Sonrientes",glam:"Glam",
   none:"Nada",stubble:"Sombra",moustache:"Bigote",goatee:"Perilla",shortBeard:"Barba corta",beard:"Barba",full:"Barba completa",
   earring:"Pendiente",glasses:"Gafas",bandana:"Bandana",cap:"Gorra",piercing:"Piercing",capBlack:"Gorra negra",capGold:"Gorra dorada",glassesGold:"Gafas doradas",bandanaGreen:"Bandana verde",crown:"Corona barber",hoopGold:"Aros dorados",flowers:"Flores",headphones:"Cascos",
   gold:"Dorado",dark:"Oscuro",red:"Rojo",blue:"Azul",paper:"Papiro",studio:"Estudio",street:"Calle",royal:"VIP",bronze:"Bronce",neon:"Neón",legend:"Leyenda",warm:"Brillo cálido",flame:"Aura fuego",ocean:"Aura mar",vip:"Aura VIP"
@@ -4162,7 +3916,7 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   const fallback=AVATAR_PRESETS[(Number(legacyAvatar)||0)%AVATAR_PRESETS.length]||DEFAULT_AVATAR_CONFIG;
   const cfg={...DEFAULT_AVATAR_CONFIG,...fallback,...(parsed||{})};
   const clamp=(n,max)=>Math.max(0,Math.min(max,Number.isFinite(Number(n))?Number(n):0));
-  cfg.version="2.0.6A";
+  cfg.version="2.0";
   cfg.skin=clamp(cfg.skin,AVATAR_OPTIONS.skin.length-1);
   cfg.hairColor=clamp(cfg.hairColor,AVATAR_OPTIONS.hairColor.length-1);
   cfg.eyeColor=clamp(cfg.eyeColor,AVATAR_OPTIONS.eyeColor.length-1);
@@ -4174,10 +3928,6 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   if(cfg.gender==="male" && !MALE_HAIR.includes(cfg.hair)) cfg.hair="sharpFade";
   if(!AVATAR_OPTIONS.eyes.includes(cfg.eyes)) cfg.eyes=cfg.gender==="female"?"glam":"sharp";
   if(!AVATAR_OPTIONS.brows.includes(cfg.brows)) cfg.brows=cfg.gender==="female"?"arched":"strong";
-  if(!AVATAR_OPTIONS.nose.includes(cfg.nose)) cfg.nose=cfg.gender==="female"?"soft":"sharp";
-  if(!AVATAR_OPTIONS.mouth.includes(cfg.mouth)) cfg.mouth=cfg.gender==="female"?"soft":"sharp";
-  if(!AVATAR_OPTIONS.scar.includes(cfg.scar)) cfg.scar="none";
-  if(!AVATAR_OPTIONS.tattoo.includes(cfg.tattoo)) cfg.tattoo="none";
   if(!AVATAR_OPTIONS.facial.includes(cfg.facial)) cfg.facial="none";
   if(cfg.gender==="female") cfg.facial="none";
   if(!AVATAR_OPTIONS.accessory.includes(cfg.accessory)) cfg.accessory="none";
@@ -4231,7 +3981,7 @@ function randomAvatarConfig(gender=null){
   const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
   const selectedGender=gender&&AVATAR_OPTIONS.gender.includes(gender)?gender:pick(AVATAR_OPTIONS.gender);
   const base=selectedGender==="female"?DEFAULT_FEMALE_AVATAR:DEFAULT_MALE_AVATAR;
-  return normalizeAvatarConfig({...base,skin:Math.floor(Math.random()*AVATAR_OPTIONS.skin.length),hair:pick(selectedGender==="female"?FEMALE_HAIR:MALE_HAIR),hairColor:Math.floor(Math.random()*AVATAR_OPTIONS.hairColor.length),face:pick(AVATAR_OPTIONS.face),eyes:pick(AVATAR_OPTIONS.eyes),eyeColor:Math.floor(Math.random()*AVATAR_OPTIONS.eyeColor.length),brows:pick(AVATAR_OPTIONS.brows),nose:pick(AVATAR_OPTIONS.nose),mouth:pick(AVATAR_OPTIONS.mouth),scar:pick(AVATAR_OPTIONS.scar),tattoo:pick(AVATAR_OPTIONS.tattoo),facial:selectedGender==="female"?"none":pick(AVATAR_OPTIONS.facial),accessory:pick(BASIC_ACCESSORIES),bg:pick(["gold","dark","red","blue","paper","studio","street"])});
+  return normalizeAvatarConfig({...base,skin:Math.floor(Math.random()*AVATAR_OPTIONS.skin.length),hair:pick(selectedGender==="female"?FEMALE_HAIR:MALE_HAIR),hairColor:Math.floor(Math.random()*AVATAR_OPTIONS.hairColor.length),face:pick(AVATAR_OPTIONS.face),eyes:pick(AVATAR_OPTIONS.eyes),eyeColor:Math.floor(Math.random()*AVATAR_OPTIONS.eyeColor.length),brows:pick(AVATAR_OPTIONS.brows),facial:selectedGender==="female"?"none":pick(AVATAR_OPTIONS.facial),accessory:pick(BASIC_ACCESSORIES),bg:pick(["gold","dark","red","blue","paper","studio","street"])});
 }
 function bgGradient(bg){
   const b={gold:"linear-gradient(145deg,#3A1E10,#D4AF37)",dark:"linear-gradient(145deg,#130906,#8B4513)",red:"linear-gradient(145deg,#5C0F0F,#F06A3B)",blue:"linear-gradient(145deg,#1A3A5C,#E1A85D)",paper:"linear-gradient(145deg,#6E3518,#FFF4D6)",studio:"linear-gradient(145deg,#24110A,#9A4F22 58%,#FFF4D6)",street:"linear-gradient(145deg,#120806,#1A3A5C 58%,#C97934)",royal:"linear-gradient(145deg,#150B07,#8B0000 45%,#D4AF37)"};
@@ -4472,32 +4222,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_206A_SVG_ENGINE";
-const AVATAR_ASSET_ROOT="/avatar/rastacuts/layers";
-
-function avatarLayerPath(folder,name){
-  if(!name||name==="none") return null;
-  return `${AVATAR_ASSET_ROOT}/${folder}/${name}.png`;
-}
-function avatarColorForAccessory(accessory){
-  if(accessory==="bandanaGreen") return "#2F6B42";
-  if(accessory==="bandana") return "#A72822";
-  if(accessory==="capGold"||accessory==="crown"||accessory==="hoopGold"||accessory==="glassesGold") return "#D4AF37";
-  if(accessory==="capBlack"||accessory==="glasses") return "#11100D";
-  if(accessory==="flowers") return "#E66A9A";
-  if(accessory==="headphones") return "#263F4D";
-  return "#C89A43";
-}
-function avatarAuraColor(aura){
-  if(aura==="vip") return "rgba(255,241,168,.75)";
-  if(aura==="flame") return "rgba(240,106,59,.68)";
-  if(aura==="ocean") return "rgba(95,215,255,.56)";
-  if(aura==="warm") return "rgba(212,175,55,.48)";
-  return "transparent";
-}
-
-
-function AvatarMaskLayer(){ return null; }
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_LAYER_ENGINE";
 
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
@@ -4505,219 +4230,199 @@ function AvatarFigure({config,size=80,animated=false}){
   const skin=AVATAR_OPTIONS.skin[cfg.skin]||"#C98258";
   const hair=AVATAR_OPTIONS.hairColor[cfg.hairColor]||"#14100C";
   const eye=AVATAR_OPTIONS.eyeColor[cfg.eyeColor]||"#1A120C";
-  const skinHi=shadeHex(skin,18);
-  const skinLo=shadeHex(skin,-20);
-  const skinDeep=shadeHex(skin,-38);
-  const hairHi=shadeHex(hair,30);
-  const hairLo=shadeHex(hair,-45);
-  const w=size;
-  const h=Math.round(size*1.18);
-  const frameColor=cfg.frame==="legend"?"#F2CF75":cfg.frame==="neon"?"#55D7FF":cfg.frame==="gold"?"#D4AF37":cfg.frame==="bronze"?"#A87945":"rgba(212,175,55,.42)";
-  const line="#24150B";
-  const shirt=female?"#6F3D2D":"#F2E4BD";
-  const jacket=female?"#2E4B25":"#15351E";
+  const uid=`av15-${String(size).replace(/\W/g,"")}-${cfg.gender}-${cfg.skin}-${cfg.hair}-${cfg.hairColor}-${cfg.face}-${cfg.eyes}-${cfg.eyeColor}-${cfg.brows}-${cfg.facial}-${cfg.accessory}-${cfg.bg}-${cfg.frame}-${cfg.aura}`;
+  const hairHi=shadeHex(hair,34), hairMid=shadeHex(hair,10), hairLo=shadeHex(hair,-42);
+  const skinHi=shadeHex(skin,22), skinLo=shadeHex(skin,-30), skinDeep=shadeHex(skin,-44);
+  const coatA=female?"#7A1F2E":"#191511";
+  const coatB=female?"#32111A":"#050403";
+  const cloth=female?"#D7B36A":"#EFE3CB";
   const gold="#D4AF37";
-  const red="#A72822";
-  const green="#5F8E22";
-
+  const bandanaColor=cfg.accessory==="bandanaGreen"?"#2F6B42":"#A72822";
+  const capColor=cfg.accessory==="capGold"?"#D4AF37":cfg.accessory==="capBlack"?"#0C0B09":"#263F4D";
+  const auraColor=cfg.aura==="vip"?"rgba(255,241,168,.74)":cfg.aura==="flame"?"rgba(240,106,59,.66)":cfg.aura==="ocean"?"rgba(95,215,255,.56)":"rgba(212,175,55,.46)";
+  const hasCap=["cap","capBlack","capGold"].includes(cfg.accessory);
+  const hasBandana=["bandana","bandanaGreen"].includes(cfg.accessory);
+  const hasHeadwear=hasCap||hasBandana;
+  const noseVariant=cfg.nose||cfg.face||"sharp";
+  const mouthVariant=cfg.mouth||cfg.eyes||"sharp";
   const facePaths={
-    oval:"M110 58 C73 58 53 87 54 126 C55 166 77 190 110 192 C143 190 165 166 166 126 C167 87 147 58 110 58Z",
-    round:"M110 62 C69 62 48 91 50 128 C52 168 78 192 110 193 C142 192 168 168 170 128 C172 91 151 62 110 62Z",
-    square:"M110 61 C72 61 56 84 56 124 L56 154 C56 174 80 193 110 193 C140 193 164 174 164 154 L164 124 C164 84 148 61 110 61Z",
-    sharp:"M110 58 C74 58 55 85 56 126 C57 159 77 179 110 202 C143 179 163 159 164 126 C165 85 146 58 110 58Z",
-    heart:"M110 63 C71 56 51 86 55 123 C59 155 83 179 110 197 C137 179 161 155 165 123 C169 86 149 56 110 63Z",
-    long:"M110 48 C76 48 59 82 60 128 C61 174 82 203 110 207 C138 203 159 174 160 128 C161 82 144 48 110 48Z"
-  };
-  const faceD=facePaths[cfg.face]||facePaths.oval;
-
-  const eyeData={
-    anime:{h:9,w:22,y:119,open:1},
-    round:{h:10,w:18,y:120,open:1},
-    sharp:{h:7,w:23,y:119,open:1},
-    sleepy:{h:3,w:22,y:121,open:.35},
-    smile:{h:4,w:19,y:120,open:.5},
-    glam:{h:10,w:24,y:118,open:1}
-  }[cfg.eyes]||{h:8,w:20,y:119,open:1};
-
-  const mouthData={
-    sharp:"M91 160 C101 166 119 166 129 160",
-    smile:"M88 158 C99 172 123 172 134 158",
-    serious:"M91 163 L129 163",
-    smirk:"M91 162 C103 166 119 164 132 158",
-    soft:"M92 160 C102 165 118 165 128 160",
-    open:"M92 158 C101 176 121 176 130 158 C120 166 102 166 92 158"
-  }[cfg.mouth]||"M91 160 C101 166 119 166 129 160";
-
-  const browData={
-    soft:["M75 104 C86 99 96 99 105 103","M115 103 C124 99 134 99 145 104"],
-    strong:["M74 102 C87 96 99 96 107 101","M113 101 C121 96 134 96 146 102"],
-    angry:["M75 99 L106 107","M114 107 L145 99"],
-    thin:["M76 105 C88 102 98 102 106 104","M114 104 C122 102 133 102 144 105"],
-    arched:["M75 106 C86 96 99 96 107 103","M113 103 C121 96 134 96 145 106"]
-  }[cfg.brows]||["M74 102 C87 96 99 96 107 101","M113 101 C121 96 134 96 146 102"];
-
-  const noseData={
-    sharp:"M110 125 C106 138 103 148 111 151 M104 153 C111 157 119 155 123 151",
-    soft:"M111 126 C108 139 107 147 112 151 M105 153 C112 156 119 155 123 152",
-    long:"M111 123 C107 139 105 153 113 158 M104 160 C113 164 123 161 126 156",
-    small:"M111 133 C109 142 109 147 113 150 M106 151 C112 153 118 153 122 150",
-    wide:"M110 127 C107 142 104 150 110 154 M99 154 C110 162 125 159 130 153",
-    hook:"M112 123 C108 138 109 151 119 154 M106 158 C115 162 125 160 129 155"
-  }[cfg.nose]||"M110 125 C106 138 103 148 111 151 M104 153 C111 157 119 155 123 151";
-
-  const faceScale = female ? 0.96 : 1;
-  const faceTranslate = female ? "translate(4 4) scale(.96 1)" : "";
-
-  const DreadLines=({long=false})=>{
-    const y2=long?210:92;
-    const items=[62,75,88,100,120,132,145,158].map((x,i)=>
-      <g key={x}>
-        <path d={`M${x} 55 C${x-10+(i%3)*6} 90 ${x-16+(i%4)*8} 132 ${x-8+(i%2)*12} ${y2}`} stroke={hairLo} strokeWidth="9" strokeLinecap="round" fill="none"/>
-        <path d={`M${x} 55 C${x-10+(i%3)*6} 90 ${x-16+(i%4)*8} 132 ${x-8+(i%2)*12} ${y2}`} stroke={hairHi} strokeWidth="2" strokeLinecap="round" fill="none" opacity=".35"/>
-      </g>
-    );
-    return <g>{items}</g>;
-  };
-
-  const HairBack=()=>{
-    if(cfg.hair==="dreadsLong"||cfg.hair==="braidsLong") return <DreadLines long/>;
-    if(cfg.hair==="dreadsBun"||cfg.hair==="highPonytail") return <g><circle cx="110" cy="42" r="23" fill={hairLo}/><DreadLines/></g>;
-    if(cfg.hair==="afro"||cfg.hair==="afroPuff") return <g><ellipse cx="110" cy="78" rx="64" ry="48" fill={hairLo}/><ellipse cx="80" cy="64" rx="24" ry="22" fill={hairLo}/><ellipse cx="140" cy="64" rx="24" ry="22" fill={hairLo}/></g>;
-    if(cfg.hair==="longWaves"||cfg.hair==="bob"||cfg.hair==="curlyBob") return <g><path d="M58 74 C42 116 48 175 68 211 C84 204 89 173 84 139 C78 101 88 74 110 65 C132 74 142 101 136 139 C131 173 136 204 152 211 C172 175 178 116 162 74 C148 52 72 52 58 74Z" fill={hairLo}/></g>;
-    return null;
-  };
-
-  const HairFront=()=>{
-    const band=<g><path d="M63 79 C88 61 133 61 158 79" stroke={green} strokeWidth="7" strokeLinecap="round"/><path d="M69 75 C91 64 129 64 151 75" stroke={gold} strokeWidth="4" strokeLinecap="round"/><path d="M76 72 C95 66 124 66 144 72" stroke={red} strokeWidth="3" strokeLinecap="round"/></g>;
-    if(cfg.hair==="buzzFade") return <path d="M64 88 C75 57 145 57 156 88 C133 77 87 77 64 88Z" fill={hairLo}/>;
-    if(cfg.hair==="texturedCrop"||cfg.hair==="sharpFade") return <g><path d="M60 90 C75 54 141 52 161 88 C130 80 91 78 60 90Z" fill={hairLo}/><path d="M75 83 C95 70 125 68 145 82" stroke={hairHi} strokeWidth="4" opacity=".45" strokeLinecap="round"/></g>;
-    if(cfg.hair==="dreadsTop") return <g>{band}{[74,86,98,110,122,134,146].map((x,i)=><path key={x} d={`M${x} 74 C${x-8} 38 ${x+6} 31 ${x+2} 56`} stroke={hairLo} strokeWidth="10" strokeLinecap="round" fill="none"/>)}</g>;
-    if(cfg.hair==="dreadsBun") return <g>{band}<circle cx="110" cy="40" r="22" fill={hairLo}/>{[80,93,107,121,135].map(x=><path key={x} d={`M${x} 76 C${x-6} 44 ${x+7} 35 ${x+2} 61`} stroke={hairLo} strokeWidth="8" strokeLinecap="round" fill="none"/>)}</g>;
-    if(cfg.hair==="dreadsLong"||cfg.hair==="braidsLong") return <g>{band}<path d="M61 84 C78 62 142 62 159 84" fill="none" stroke={hairLo} strokeWidth="12" strokeLinecap="round"/></g>;
-    if(cfg.hair==="afro"||cfg.hair==="afroPuff") return <g><ellipse cx="110" cy="75" rx="61" ry="41" fill={hairLo}/><path d="M61 91 C78 68 142 68 159 91" fill="none" stroke={hairHi} strokeWidth="5" opacity=".25"/></g>;
-    if(cfg.hair==="mohawk") return <path d="M110 35 C91 59 101 82 110 98 C119 82 129 59 110 35Z" fill={hairLo}/>;
-    if(cfg.hair==="undercut") return <path d="M61 86 C85 61 125 57 158 76 C135 73 105 75 75 91Z" fill={hairLo}/>;
-    if(cfg.hair==="longWaves"||cfg.hair==="bob"||cfg.hair==="curlyBob"||cfg.hair==="pixie") return <g><path d="M59 92 C73 55 145 55 160 92 C132 78 88 78 59 92Z" fill={hairLo}/>{female&&<path d="M69 86 C85 69 137 69 151 86" stroke={hairHi} strokeWidth="5" opacity=".35" strokeLinecap="round"/>}</g>;
-    if(cfg.hair==="highPonytail") return <g><circle cx="110" cy="42" r="22" fill={hairLo}/><path d="M59 92 C75 61 145 61 161 92 C131 78 89 78 59 92Z" fill={hairLo}/></g>;
-    return <path d="M64 88 C75 57 145 57 156 88 C133 77 87 77 64 88Z" fill={hairLo}/>;
-  };
-
-  const Facial=()=>{
-    if(female||cfg.facial==="none") return null;
-    if(cfg.facial==="stubble") return <path d="M83 160 C92 194 128 194 137 160 C126 176 94 176 83 160Z" fill={hairLo} opacity=".28"/>;
-    if(cfg.facial==="moustache") return <path d="M90 153 C101 146 108 151 110 156 C112 151 119 146 130 153 C122 158 116 159 110 156 C104 159 98 158 90 153Z" fill={hairLo}/>;
-    if(cfg.facial==="goatee") return <g><path d="M90 153 C101 148 107 152 110 156 C113 152 119 148 130 153 C122 157 116 158 110 156 C104 158 98 157 90 153Z" fill={hairLo}/><path d="M102 172 C107 185 113 185 118 172 C114 176 106 176 102 172Z" fill={hairLo}/></g>;
-    if(cfg.facial==="shortBeard") return <path d="M79 153 C86 194 134 194 141 153 C130 175 90 175 79 153Z" fill={hairLo}/>;
-    if(cfg.facial==="beard") return <path d="M75 151 C79 206 141 206 145 151 C134 180 86 180 75 151Z" fill={hairLo}/>;
-    return <path d="M72 146 C75 215 145 215 148 146 C134 185 86 185 72 146Z" fill={hairLo}/>;
-  };
-
-  const Accessory=()=>{
-    if(cfg.accessory==="none") return null;
-    const acc=avatarColorForAccessory(cfg.accessory);
-    if(cfg.accessory==="glasses"||cfg.accessory==="glassesGold") return <g><circle cx="90" cy={eyeData.y+1} r="15" fill="none" stroke={acc} strokeWidth="4"/><circle cx="130" cy={eyeData.y+1} r="15" fill="none" stroke={acc} strokeWidth="4"/><path d="M105 120 L115 120" stroke={acc} strokeWidth="4"/></g>;
-    if(cfg.accessory==="earring"||cfg.accessory==="hoopGold") return <g><circle cx="49" cy="133" r="5" fill="none" stroke={gold} strokeWidth="3"/><circle cx="171" cy="133" r="5" fill="none" stroke={gold} strokeWidth="3"/></g>;
-    if(cfg.accessory==="bandana"||cfg.accessory==="bandanaGreen") return <g><path d="M61 78 C88 58 132 58 159 78" stroke={acc} strokeWidth="10" strokeLinecap="round"/><path d="M142 76 L171 63 L162 87Z" fill={acc}/></g>;
-    if(cfg.accessory==="cap"||cfg.accessory==="capBlack"||cfg.accessory==="capGold") return <g><path d="M64 75 C77 45 143 45 156 75 L153 89 C128 80 91 80 67 89Z" fill={acc}/><path d="M151 78 C172 77 188 84 194 92 C177 91 161 90 149 86Z" fill={acc}/></g>;
-    if(cfg.accessory==="piercing") return <circle cx="124" cy="146" r="3.2" fill={gold}/>;
-    if(cfg.accessory==="crown") return <path d="M86 53 L98 36 L110 53 L124 36 L136 53 Z" fill={gold} stroke={line} strokeWidth="2"/>;
-    if(cfg.accessory==="headphones") return <g><path d="M62 112 C62 70 158 70 158 112" fill="none" stroke="#263F4D" strokeWidth="6"/><rect x="46" y="107" width="17" height="34" rx="6" fill="#263F4D"/><rect x="157" y="107" width="17" height="34" rx="6" fill="#263F4D"/></g>;
-    if(cfg.accessory==="flowers") return <g><circle cx="151" cy="82" r="6" fill="#E66A9A"/><circle cx="143" cy="84" r="5" fill="#F2CF75"/></g>;
-    return null;
-  };
-
-  const ScarTattoo=()=> <g>
-    {cfg.scar==="cheek"&&<path d="M132 143 L149 136" stroke="#7B1E17" strokeWidth="2.5" strokeLinecap="round" opacity=".8"/>}
-    {cfg.scar==="cross"&&<g opacity=".8"><path d="M142 134 L155 147" stroke="#7B1E17" strokeWidth="2.5"/><path d="M155 134 L142 147" stroke="#7B1E17" strokeWidth="2.5"/></g>}
-    {cfg.scar==="brow"&&<path d="M134 101 L147 93" stroke="#7B1E17" strokeWidth="2.5" opacity=".8"/>}
-    {cfg.scar==="jaw"&&<path d="M80 170 L96 178" stroke="#7B1E17" strokeWidth="2.5" opacity=".8"/>}
-    {cfg.tattoo==="neck"&&<path d="M103 200 C110 194 117 200 110 207 C103 200 117 200 110 207" stroke="#223F36" fill="none" strokeWidth="2" opacity=".7"/>}
-    {cfg.tattoo==="wave"&&<path d="M75 190 C84 181 96 181 102 190 C93 187 86 193 75 190Z" fill="#246D84" opacity=".55"/>}
-    {cfg.tattoo==="anchor"&&<text x="137" y="190" fill="#1B2830" fontSize="15" opacity=".55">⚓</text>}
-    {cfg.tattoo==="temple"&&<path d="M143 98 L153 102 L145 108" fill="none" stroke="#3B2414" strokeWidth="2" opacity=".55"/>}
-  </g>;
-
-  const EyePair=()=>{
-    const y=eyeData.y, ew=eyeData.w, eh=eyeData.h;
-    if(cfg.eyes==="sleepy"||cfg.eyes==="smile"){
-      return <g><path d={`M${86-ew/2} ${y} C86 ${y+eh} ${86+ew/2} ${y}`} stroke={line} strokeWidth="3" fill="none"/><path d={`M${134-ew/2} ${y} C134 ${y+eh} ${134+ew/2} ${y}`} stroke={line} strokeWidth="3" fill="none"/></g>;
+    male:{
+      oval:"M57 105 C57 63 73 36 100 36 C127 36 143 63 143 105 C143 139 126 164 100 176 C74 164 57 139 57 105Z",
+      round:"M53 108 C53 70 72 44 100 44 C128 44 147 70 147 108 C147 139 128 161 100 168 C72 161 53 139 53 108Z",
+      sharp:"M57 103 C57 62 74 35 100 35 C126 35 143 62 143 103 C143 136 126 161 100 181 C74 161 57 136 57 103Z",
+      square:"M53 102 C53 61 72 38 100 38 C128 38 147 61 147 102 L139 153 C128 173 72 173 61 153Z",
+      heart:"M55 103 C55 62 74 38 100 45 C126 38 145 62 145 103 C145 138 125 162 100 176 C75 162 55 138 55 103Z",
+      long:"M64 98 C64 56 77 31 100 31 C123 31 136 56 136 98 C136 140 123 169 100 184 C77 169 64 140 64 98Z"
+    },
+    female:{
+      oval:"M62 105 C62 63 77 36 100 36 C123 36 138 63 138 105 C138 136 124 160 100 173 C76 160 62 136 62 105Z",
+      round:"M57 108 C57 72 74 47 100 47 C126 47 143 72 143 108 C143 137 126 158 100 164 C74 158 57 137 57 108Z",
+      sharp:"M62 101 C62 61 77 35 100 35 C123 35 138 61 138 101 C138 132 124 156 100 181 C76 156 62 132 62 101Z",
+      square:"M60 102 C60 62 76 40 100 40 C124 40 140 62 140 102 L134 148 C123 166 77 166 66 148Z",
+      heart:"M56 103 C56 62 76 36 100 44 C124 36 144 62 144 103 C144 134 123 156 100 176 C77 156 56 134 56 103Z",
+      long:"M66 98 C66 55 79 31 100 31 C121 31 134 55 134 98 C134 139 122 169 100 182 C78 169 66 139 66 98Z"
     }
-    return <g>
-      <ellipse cx="86" cy={y} rx={ew/2} ry={eh} fill="#FFF8EA" stroke={line} strokeWidth="2"/>
-      <ellipse cx="134" cy={y} rx={ew/2} ry={eh} fill="#FFF8EA" stroke={line} strokeWidth="2"/>
-      <circle cx="86" cy={y} r={Math.max(3,eh-1)} fill={eye}/>
-      <circle cx="134" cy={y} r={Math.max(3,eh-1)} fill={eye}/>
-      <circle cx="83" cy={y-3} r="2" fill="#fff" opacity=".85"/>
-      <circle cx="131" cy={y-3} r="2" fill="#fff" opacity=".85"/>
-      {cfg.eyes==="glam"&&<g stroke={line} strokeWidth="1.6"><path d="M70 112 L63 108"/><path d="M150 112 L157 108"/></g>}
-    </g>;
   };
+  const facePath=(female?facePaths.female:facePaths.male)[cfg.face]||(female?facePaths.female.heart:facePaths.male.square);
+  const neckPath=female?"M79 158 C85 170 115 170 121 158 L116 202 C105 211 95 211 84 202Z":"M76 158 C84 171 116 171 124 158 L120 198 C108 207 92 207 80 198Z";
+  const bodyPath=female?"M28 224 C42 184 70 163 100 163 C130 163 158 184 172 224 C138 240 62 240 28 224Z":"M20 224 C36 181 67 162 100 162 C133 162 164 181 180 224 C143 240 57 240 20 224Z";
+  const browStroke=cfg.brows==="thin"?3.6:cfg.brows==="angry"?6.6:5.4;
+  const brows={
+    soft:["M64 86 C73 81 83 81 91 85","M109 85 C117 81 127 81 136 86"],
+    strong:["M62 85 C72 78 84 78 93 84","M107 84 C116 78 128 78 138 85"],
+    angry:["M62 84 L93 91","M107 91 L138 84"],
+    thin:["M64 85 C74 82 84 82 92 85","M108 85 C116 82 126 82 136 85"],
+    arched:["M62 87 C73 75 85 77 94 85","M106 85 C115 77 127 75 138 87"]
+  }[cfg.brows]||["M62 85 C72 78 84 78 93 84","M107 84 C116 78 128 78 138 85"];
+  const eyeSpec={
+    anime:{rx:female?12:10.8,ry:female?9.8:8.4,y:104,tilt:0},
+    sleepy:{rx:12,ry:3.8,y:105,tilt:0},
+    sharp:{rx:12,ry:5.2,y:104,tilt:female?0:0},
+    round:{rx:8.6,ry:8.6,y:104,tilt:0},
+    smile:{rx:11,ry:3.4,y:105,tilt:0},
+    glam:{rx:female?13.2:11.6,ry:female?7.2:5.8,y:104,tilt:0}
+  }[cfg.eyes]||{rx:10,ry:6,y:104,tilt:0};
 
-  return <div
-    data-avatar-layer-engine="RASTACUTS_206A_SVG_ENGINE"
-    aria-label="Avatar Rasta Cuts SVG estable"
-    style={{
-      width:w,
-      height:h,
-      position:"relative",
-      overflow:"hidden",
-      borderRadius:"50% 50% 46% 46%",
-      background:bgGradient(cfg.bg),
-      border:`${Math.max(1,Math.round(size/42))}px solid ${frameColor}`,
-      boxShadow:`0 12px 26px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,244,214,.12), 0 0 ${cfg.aura!=="none"?24:0}px ${avatarAuraColor(cfg.aura)}`,
-      transform:animated?"translateY(-1px)":"none",
-      transition:"transform .18s ease, box-shadow .18s ease",
-      isolation:"isolate"
-    }}>
-    <svg viewBox="0 0 220 260" width="100%" height="100%" role="img" style={{display:"block"}}>
-      <defs>
-        <linearGradient id={`skinG-${size}-${cfg.skin}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={skinHi}/>
-          <stop offset="55%" stopColor={skin}/>
-          <stop offset="100%" stopColor={skinLo}/>
-        </linearGradient>
-        <linearGradient id={`hairG-${size}-${cfg.hairColor}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={hairHi}/>
-          <stop offset="100%" stopColor={hairLo}/>
-        </linearGradient>
-        <filter id={`softShadow-${size}`} x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="#000" floodOpacity=".28"/>
-        </filter>
-      </defs>
+  function line(d,w=5,color=hair,opacity=1,fill="none"){
+    return <path d={d} stroke={color} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" fill={fill} opacity={opacity}/>;
+  }
+  function dread(cx,top,bot,side=1,wide=10){
+    const bend=side*18;
+    return <path d={`M${cx} ${top} C${cx+bend} ${top+38}, ${cx-bend*.55} ${bot-48}, ${cx+side*8} ${bot}`} stroke={hair} strokeWidth={wide} strokeLinecap="round" fill="none"/>;
+  }
+  function bead(cx,cy,c=gold){return <circle cx={cx} cy={cy} r="3.1" fill={c} stroke="#23160B" strokeWidth="1"/>;}
 
-      <rect width="220" height="260" fill="rgba(255,255,255,.04)"/>
-      <HairBack/>
+  function LayerBackHair(){
+    if(hasCap||hasBandana){
+      if(["dreadsLong","dreadsBun","dreadsTop","braidsLong"].includes(cfg.hair)){
+        return <g className="layer hair-back">{[48,61,138,152].map((x,i)=>dread(x,82,205,i<2?-1:1,i%2?9:11))}{[bead(45,184),bead(62,199,"#B56E2C"),bead(141,199),bead(155,184,"#B56E2C")]}</g>;
+      }
+      if(female && ["longWaves","highPonytail","bob"].includes(cfg.hair)) return <path className="layer hair-back" d="M35 101 C31 55 59 27 100 27 C141 27 169 55 165 101 C161 152 139 198 120 216 C116 177 84 177 80 216 C61 198 39 152 35 101Z" fill={hair} opacity=".96"/>;
+      return null;
+    }
+    switch(cfg.hair){
+      case "dreadsLong":return <g className="layer hair-back">{[40,53,67,133,147,160].map((x,i)=>dread(x,72+i%2*8,207,i<3?-1:1,i%2?10:12))}{[bead(45,188),bead(61,202),bead(143,202),bead(157,188)]}</g>;
+      case "dreadsBun":return <g className="layer hair-back"><ellipse cx="100" cy="33" rx="39" ry="24" fill={hair}/>{[48,62,138,152].map((x,i)=>dread(x,76,193,i<2?-1:1,9))}</g>;
+      case "braidsLong":return <g className="layer hair-back"><path d="M39 103 C34 55 61 30 100 29 C139 30 166 55 161 103 C157 154 136 201 120 218 C116 177 84 177 80 218 C64 201 43 154 39 103Z" fill={hair}/>{[52,146].map((x,i)=><path key={i} d={`M${x} 96 C${x+(i?12:-12)} 126 ${x+(i?5:-5)} 166 ${x+(i?2:-2)} 206`} stroke={hairLo} strokeWidth="5" strokeLinecap="round" opacity=".55" fill="none"/> )}</g>;
+      case "longWaves":return <g className="layer hair-back"><path d="M31 106 C27 56 56 25 100 24 C144 25 173 56 169 106 C165 160 143 202 122 221 C119 178 81 178 78 221 C57 202 35 160 31 106Z" fill={hair}/><path d="M48 102 C37 135 49 178 70 209 M152 102 C163 135 151 178 130 209" stroke={hairHi} strokeWidth="5" strokeLinecap="round" opacity=".38" fill="none"/></g>;
+      case "highPonytail":return <g className="layer hair-back"><path d="M62 64 C54 27 146 27 138 64 C155 80 159 112 146 134 C122 113 78 113 54 134 C41 112 45 80 62 64Z" fill={hair}/><path d="M124 38 C180 34 191 93 138 136 C159 82 143 55 124 38Z" fill={hair}/></g>;
+      case "curlyBob":return <g className="layer hair-back" fill={hair}>{[[48,85,24],[66,60,24],[100,48,31],[134,60,24],[152,85,24],[52,115,22],[148,115,22],[77,136,18],[123,136,18]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}</g>;
+      case "afro":return <g className="layer hair-back" fill={hair}>{[[45,83,31],[67,53,32],[100,42,38],[133,53,32],[155,83,31],[45,113,27],[155,113,27]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}</g>;
+      case "afroPuff":return <g className="layer hair-back" fill={hair}><circle cx="55" cy="70" r="35"/><circle cx="145" cy="70" r="35"/><circle cx="100" cy="54" r="31"/></g>;
+      case "bob":return <path className="layer hair-back" d="M38 102 C35 60 59 35 100 34 C141 35 165 60 162 102 C158 145 137 178 118 192 C114 153 86 153 82 192 C63 178 42 145 38 102Z" fill={hair}/>;
+      case "pixie":return <path className="layer hair-back" d="M49 95 C51 57 76 35 100 36 C128 37 149 58 152 95 C132 83 116 80 100 88 C84 80 68 83 49 95Z" fill={hair}/>;
+      default:return null;
+    }
+  }
 
-      <g filter={`url(#softShadow-${size})`}>
-        <path d="M43 260 C50 214 72 198 101 198 L119 198 C148 198 170 214 177 260Z" fill={jacket} stroke={line} strokeWidth="3"/>
-        <path d="M91 199 L129 199 C128 225 123 245 110 258 C97 245 92 225 91 199Z" fill={shirt}/>
-        <path d="M84 191 C91 215 129 215 136 191 C130 205 90 205 84 191Z" fill={skinDeep} opacity=".45"/>
-        <path d="M90 174 L130 174 L130 213 C124 225 96 225 90 213Z" fill={`url(#skinG-${size}-${cfg.skin})`} stroke={line} strokeWidth="2"/>
-        <ellipse cx="53" cy="127" rx="13" ry="23" fill={`url(#skinG-${size}-${cfg.skin})`} stroke={line} strokeWidth="3"/>
-        <ellipse cx="167" cy="127" rx="13" ry="23" fill={`url(#skinG-${size}-${cfg.skin})`} stroke={line} strokeWidth="3"/>
-        <path d={faceD} transform={faceTranslate} fill={`url(#skinG-${size}-${cfg.skin})`} stroke={line} strokeWidth="3" strokeLinejoin="round"/>
-        <path d="M83 174 C94 183 126 183 137 174 C129 192 91 192 83 174Z" fill={skinDeep} opacity=".24"/>
-        <ellipse cx="80" cy="143" rx="13" ry="9" fill="#F1B56F" opacity=".35"/>
-        <ellipse cx="140" cy="143" rx="13" ry="9" fill="#F1B56F" opacity=".35"/>
-      </g>
+  function LayerHairFront(){
+    if(hasCap||hasBandana) return <path className="layer hair-front" d={female?"M53 92 C72 78 128 78 147 92 C121 85 79 85 53 92Z":"M55 92 C75 82 125 82 145 92 C122 87 78 87 55 92Z"} fill={hair}/>;
+    switch(cfg.hair){
+      case "buzzFade":return <path d="M56 91 C63 67 79 53 100 53 C121 53 137 67 144 91 C125 82 75 82 56 91Z" fill={hair}/>;
+      case "texturedCrop":return <g><path d="M50 91 C58 57 77 38 100 38 C123 38 142 57 150 91 C128 77 114 88 100 80 C84 90 70 77 50 91Z" fill={hair}/>{line("M68 77 L80 43 L91 80 M97 76 L109 39 L122 81",5,hairHi,.52)}</g>;
+      case "sharpFade":return <path d="M51 91 C59 59 78 42 100 42 C122 42 141 59 149 91 C126 81 113 83 100 89 C87 83 74 81 51 91Z" fill={hair}/>;
+      case "mohawk":return <g><path d="M53 91 C60 61 78 50 100 50 C122 50 140 61 147 91 C124 82 76 82 53 91Z" fill={hair}/><path d="M77 60 C85 24 95 7 100 4 C109 16 120 39 124 64" stroke={hair} strokeWidth="18" strokeLinecap="round" fill="none"/></g>;
+      case "dreadsLong":return <g><path d="M45 93 C54 55 75 38 100 38 C125 38 146 55 155 93 C130 76 115 84 100 79 C84 87 70 76 45 93Z" fill={hair}/>{line("M69 82 C84 70 116 70 131 82",4,hairHi,.38)}</g>;
+      case "dreadsBun":return <path d="M50 93 C58 57 77 43 100 43 C123 43 142 57 150 93 C128 80 72 80 50 93Z" fill={hair}/>;
+      case "dreadsTop":return <g>{line("M74 49 C57 19 85 9 96 39",13,hair)}{line("M100 39 C110 6 136 18 122 55",13,hair)}{line("M122 58 C146 30 164 56 135 75",13,hair)}<path d="M50 92 C59 60 78 44 100 44 C122 44 141 60 150 92 C126 80 74 80 50 92Z" fill={hair}/></g>;
+      case "afro":return <path d="M47 90 C57 61 75 48 100 46 C125 48 143 61 153 90 C128 76 72 76 47 90Z" fill={hair}/>;
+      case "afroPuff":return <path d="M54 90 C61 64 78 51 100 51 C122 51 139 64 146 90 C125 80 75 80 54 90Z" fill={hair}/>;
+      case "braidsLong":return <g><path d="M45 93 C55 55 75 38 100 38 C125 38 145 55 155 93 C130 72 70 72 45 93Z" fill={hair}/>{line("M69 82 C83 66 94 70 100 82 C107 66 123 70 133 84",4,hairHi,.38)}</g>;
+      case "curlyBob":return <g fill={hair}>{[[57,91,18],[75,72,21],[100,63,23],[125,72,21],[143,91,18]].map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r}/>)}</g>;
+      case "longWaves":return <path d="M39 96 C49 53 73 36 100 36 C127 36 151 53 161 96 C129 71 118 88 100 81 C82 91 68 73 39 96Z" fill={hair}/>;
+      case "highPonytail":return <path d="M51 93 C59 57 78 42 100 42 C122 42 141 57 149 93 C127 79 73 79 51 93Z" fill={hair}/>;
+      case "bob":return <path d="M43 96 C51 59 75 39 100 39 C125 39 149 59 157 96 C130 77 115 85 100 82 C84 87 70 77 43 96Z" fill={hair}/>;
+      case "pixie":return <path d="M48 94 C54 60 77 40 100 40 C126 40 147 60 153 94 C128 78 112 87 99 80 C83 89 68 78 48 94Z" fill={hair}/>;
+      case "undercut":return <path d={female?"M48 96 C53 55 80 28 109 35 C135 42 150 64 152 96 C126 81 91 82 48 96Z":"M50 96 C56 57 76 39 100 39 C127 39 146 60 150 96 C126 81 91 82 50 96Z"} fill={hair}/>;
+      default:return <path d="M52 93 C59 57 77 39 100 39 C123 39 141 57 148 93 C126 80 74 80 52 93Z" fill={hair}/>;
+    }
+  }
 
-      <HairFront/>
-      <g strokeLinecap="round" strokeLinejoin="round">
-        <path d={browData[0]} stroke={hairLo} strokeWidth={cfg.brows==="thin"?3:5} fill="none"/>
-        <path d={browData[1]} stroke={hairLo} strokeWidth={cfg.brows==="thin"?3:5} fill="none"/>
-      </g>
-      <EyePair/>
-      <path d={noseData} stroke={skinDeep} strokeWidth="3.2" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity=".75"/>
-      <path d={mouthData} stroke={cfg.mouth==="open"?"#2A0907":"#7E2B19"} strokeWidth={cfg.mouth==="open"?2.5:3.2} fill={cfg.mouth==="open"?"#2A0907":"none"} strokeLinecap="round" strokeLinejoin="round"/>
-      <Facial/>
-      <ScarTattoo/>
-      <Accessory/>
-      <path d="M72 221 C82 229 96 233 110 233 C124 233 138 229 148 221" stroke={gold} strokeWidth="3" fill="none" opacity=".55"/>
-      <circle cx="101" cy="226" r="2.5" fill={red}/><circle cx="110" cy="229" r="2.5" fill={green}/><circle cx="119" cy="226" r="2.5" fill={gold}/>
-      <path d="M0 0 H220 V260 H0Z" fill="url(#none)" opacity="0"/>
-    </svg>
-    <span aria-hidden="true" style={{position:"absolute",inset:0,zIndex:18,pointerEvents:"none",background:"linear-gradient(120deg,rgba(255,255,255,.18),transparent 27%,transparent 72%,rgba(0,0,0,.16))",mixBlendMode:"soft-light"}}/>
-  </div>;
+  function LayerHeadwear(){
+    if(hasBandana)return <g className="layer accessory bandana"><path d="M46 82 C61 67 139 67 154 82 L151 94 C128 83 72 83 49 94Z" fill={bandanaColor}/><path d="M50 82 C70 75 130 75 150 82" stroke="#F4C981" strokeWidth="4" strokeLinecap="round" opacity=".72"/><path d="M147 84 L173 75 L158 99Z" fill={bandanaColor}/><circle cx="100" cy="80" r="4" fill={gold}/></g>;
+    if(hasCap)return <g className="layer accessory cap"><path d="M42 86 C47 52 72 31 100 31 C128 31 153 52 158 86 C132 75 68 75 42 86Z" fill={capColor}/><path d="M47 84 C72 70 133 70 157 86 L181 95 C186 98 185 104 179 106 L143 97 C122 89 77 89 57 97Z" fill={capColor}/><path d="M65 59 C81 48 119 48 135 59" stroke="rgba(255,255,255,.18)" strokeWidth="5" strokeLinecap="round"/></g>;
+    return null;
+  }
+
+  function LayerEyes(){
+    const y=eyeSpec.y;
+    if(cfg.eyes==="sleepy")return <g className="layer eyes" stroke="#1A0B05" strokeWidth="4.4" strokeLinecap="round" fill="none"><path d={`M67 ${y} C76 ${y-3} 85 ${y-3} 93 ${y}`}/><path d={`M107 ${y} C116 ${y-3} 125 ${y-3} 133 ${y}`}/></g>;
+    if(cfg.eyes==="smile")return <g className="layer eyes" stroke="#1A0B05" strokeWidth="4.4" strokeLinecap="round" fill="none"><path d="M67 104 C76 111 86 111 94 104"/><path d="M106 104 C115 111 125 111 133 104"/></g>;
+    const eyePath=(cx,mirror=1)=>{
+      if(cfg.eyes==="sharp")return `M${cx-15*mirror} ${y+1} C${cx-7*mirror} ${y-9}, ${cx+9*mirror} ${y-7}, ${cx+16*mirror} ${y+1} C${cx+5*mirror} ${y+7}, ${cx-7*mirror} ${y+7}, ${cx-15*mirror} ${y+1}Z`;
+      if(cfg.eyes==="glam")return `M${cx-16*mirror} ${y} C${cx-7*mirror} ${y-10}, ${cx+10*mirror} ${y-9}, ${cx+17*mirror} ${y} C${cx+9*mirror} ${y+8}, ${cx-8*mirror} ${y+8}, ${cx-16*mirror} ${y}Z`;
+      return `M${cx-14*mirror} ${y} C${cx-7*mirror} ${y-8}, ${cx+8*mirror} ${y-8}, ${cx+14*mirror} ${y} C${cx+7*mirror} ${y+8}, ${cx-7*mirror} ${y+8}, ${cx-14*mirror} ${y}Z`;
+    };
+    return <g className="layer eyes"><path d={eyePath(79,1)} fill="#FFF7E8" stroke="#160A05" strokeWidth="2.4"/><path d={eyePath(121,-1)} fill="#FFF7E8" stroke="#160A05" strokeWidth="2.4"/><ellipse cx="79" cy={y+1} rx={eyeSpec.rx*.55} ry={eyeSpec.ry*.82} fill={eye}/><ellipse cx="121" cy={y+1} rx={eyeSpec.rx*.55} ry={eyeSpec.ry*.82} fill={eye}/><ellipse cx="77" cy={y-2} rx="2.6" ry="3" fill="#fff" opacity=".95"/><ellipse cx="119" cy={y-2} rx="2.6" ry="3" fill="#fff" opacity=".95"/><ellipse cx="79" cy={y+2} rx="2.5" ry="3.1" fill="#050302" opacity=".72"/><ellipse cx="121" cy={y+2} rx="2.5" ry="3.1" fill="#050302" opacity=".72"/></g>;
+  }
+  function LayerBrows(){return <g className="layer brows" stroke="#120906" strokeWidth={browStroke} strokeLinecap="round" fill="none"><path d={brows[0]}/><path d={brows[1]}/></g>;}
+  function LayerNose(){
+    const d={oval:"M99 111 C103 121 101 130 94 134",round:"M99 112 C102 120 101 128 96 131",sharp:"M100 110 C104 121 101 132 92 136",square:"M98 111 C103 122 101 130 94 134",heart:"M99 111 C102 121 100 129 95 133",long:"M100 110 C104 124 101 136 93 140"}[noseVariant]||"M100 110 C104 121 101 132 92 136";
+    return <g className="layer nose"><path d={d} stroke={skinDeep} strokeWidth="3.2" strokeLinecap="round" fill="none" opacity=".70"/><path d="M90 136 C96 140 104 140 110 136" stroke={skinLo} strokeWidth="1.8" strokeLinecap="round" fill="none" opacity=".38"/></g>;
+  }
+  function LayerMouth(){
+    if(mouthVariant==="sleepy")return <path className="layer mouth" d="M83 150 C93 154 107 154 117 150" stroke="#5B1F16" strokeWidth="4" strokeLinecap="round" fill="none"/>;
+    if(mouthVariant==="smile"||mouthVariant==="anime")return <g className="layer mouth"><path d="M77 148 C88 162 113 162 124 148" stroke="#7D2417" strokeWidth="5" strokeLinecap="round" fill="none"/><path d="M85 151 C94 158 106 158 115 151" stroke="#FFF3E7" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity=".74"/></g>;
+    if(mouthVariant==="glam")return <path className="layer mouth" d={female?"M80 150 C91 159 109 159 120 150 C108 154 92 154 80 150Z":"M81 151 C91 157 109 157 119 151"} stroke="#6E2116" strokeWidth="4" strokeLinecap="round" fill={female?"#A03B3E":"none"}/>;
+    return <path className="layer mouth" d="M80 150 C91 157 110 157 121 148" stroke="#6E2116" strokeWidth="4.6" strokeLinecap="round" fill="none"/>;
+  }
+  function LayerFacialHair(){
+    if(female||cfg.facial==="none")return null;
+    if(cfg.facial==="stubble")return <path d="M71 133 C83 155 117 155 129 133 C125 164 75 164 71 133Z" fill="#1A0F09" opacity=".18"/>;
+    if(cfg.facial==="moustache")return <g className="layer beard" fill={hairLo}><path d="M76 137 C84 128 96 132 100 139 C91 143 83 144 76 137Z"/><path d="M124 137 C116 128 104 132 100 139 C109 143 117 144 124 137Z"/></g>;
+    if(cfg.facial==="goatee")return <g className="layer beard" fill={hairLo}><path d="M84 139 C92 134 108 134 116 139 C108 143 92 143 84 139Z"/><path d="M93 158 C99 168 101 168 107 158 L104 174 L96 174Z"/></g>;
+    if(cfg.facial==="shortBeard")return <g className="layer beard"><path d="M68 130 C79 158 121 158 132 130 C130 168 70 168 68 130Z" fill={hairLo} opacity=".72"/><path d="M81 140 C91 148 109 148 119 140" stroke={hairHi} strokeWidth="2.2" strokeLinecap="round" opacity=".28" fill="none"/></g>;
+    if(cfg.facial==="beard")return <path className="layer beard" d="M63 126 C76 165 124 165 137 126 C138 160 122 182 100 188 C78 182 62 160 63 126Z" fill={hairLo} opacity=".84"/>;
+    return <g className="layer beard"><path d="M58 122 C72 167 128 167 142 122 C145 166 126 196 100 202 C74 196 55 166 58 122Z" fill={hairLo}/><path d="M75 145 C90 156 110 156 125 145" stroke={hairHi} strokeWidth="2.4" strokeLinecap="round" opacity=".25" fill="none"/></g>;
+  }
+  function LayerScarsAndTattoos(){
+    const showScar=cfg.accessory==="piercing"||cfg.frame==="legend"||cfg.aura==="flame";
+    const showTattoo=cfg.aura==="ocean"||cfg.aura==="vip"||cfg.frame==="neon";
+    return <g className="layer marks" opacity=".82">{showScar&&<path d="M127 111 L141 127 M137 111 L125 126" stroke="#5C241D" strokeWidth="2" strokeLinecap="round"/>}{showTattoo&&<path d="M120 164 C132 172 138 186 132 198 C124 190 117 183 110 172" stroke="#263F4D" strokeWidth="2.6" strokeLinecap="round" fill="none" opacity=".58"/>}</g>;
+  }
+  function LayerAccessories(){
+    return <g className="layer accessories">
+      {cfg.accessory==="earring"&&<g fill={gold} stroke="#23160B" strokeWidth="1"><circle cx="58" cy="117" r="4"/><circle cx="142" cy="117" r="4"/></g>}
+      {cfg.accessory==="hoopGold"&&<g stroke={gold} strokeWidth="3" fill="none"><circle cx="58" cy="117" r="8"/><circle cx="142" cy="117" r="8"/></g>}
+      {(cfg.accessory==="glasses"||cfg.accessory==="glassesGold")&&<g stroke={cfg.accessory==="glassesGold"?gold:"#120906"} strokeWidth="4" fill="rgba(255,255,255,.10)"><circle cx="79" cy="104" r="14"/><circle cx="121" cy="104" r="14"/><path d="M93 104 L107 104"/><path d="M65 101 L56 97 M135 101 L144 97" strokeLinecap="round"/></g>}
+      {cfg.accessory==="piercing"&&<circle cx="112" cy="134" r="3" fill={gold} stroke="#23160B" strokeWidth="1"/>}
+      {cfg.accessory==="headphones"&&<g stroke="#17100A" strokeWidth="7" fill="none" strokeLinecap="round"><path d="M57 105 C57 58 143 58 143 105"/><rect x="40" y="100" width="18" height="34" rx="8" fill="#17100A" stroke="none"/><rect x="142" y="100" width="18" height="34" rx="8" fill="#17100A" stroke="none"/></g>}
+      {cfg.accessory==="flowers"&&female&&<g><circle cx="135" cy="71" r="6" fill="#F06A3B"/><circle cx="143" cy="74" r="5" fill="#D4AF37"/><circle cx="131" cy="78" r="5" fill="#E66A9A"/></g>}
+      {cfg.accessory==="crown"&&<g><path d="M68 58 L79 39 L95 58 L111 39 L124 58 L134 42 L139 72 L61 72Z" fill={gold} stroke="#321B08" strokeWidth="3"/><circle cx="79" cy="52" r="3" fill="#A72822"/><circle cx="111" cy="52" r="3" fill="#2F6B42"/></g>}
+    </g>;
+  }
+  function LayerShirt(){
+    return <g className="layer body"><path d={bodyPath} fill={`url(#${uid}-coat)`}/><path d="M61 179 L99 226 L139 179 C127 168 113 163 100 163 C87 163 73 168 61 179Z" fill={cloth}/><path d={neckPath} fill={`url(#${uid}-skin)`}/><path d="M45 195 C63 180 72 172 88 168 L95 228 L73 214Z" fill={coatA} opacity=".96"/><path d="M155 195 C137 180 128 172 112 168 L105 228 L127 214Z" fill={coatA} opacity=".96"/><path d="M66 189 L91 220 M134 189 L109 220" stroke={gold} strokeWidth="3" strokeLinecap="round" opacity=".55"/><circle cx="72" cy="195" r="3" fill={gold}/><circle cx="128" cy="195" r="3" fill={gold}/></g>;
+  }
+
+  return <svg viewBox="0 0 200 235" width={size} height={size} style={{display:"block",overflow:"visible",filter:"drop-shadow(0 16px 18px rgba(0,0,0,.25))"}} data-avatar-layer-engine={AVATAR_LAYER_ENGINE_VERSION} aria-label="Avatar por capas">
+    <defs>
+      <linearGradient id={`${uid}-skin`} x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor={skinHi}/><stop offset=".55" stopColor={skin}/><stop offset="1" stopColor={skinLo}/></linearGradient>
+      <linearGradient id={`${uid}-coat`} x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor={coatA}/><stop offset=".68" stopColor={coatB}/><stop offset="1" stopColor="#050302"/></linearGradient>
+      <radialGradient id={`${uid}-soft`} cx="50%" cy="35%" r="72%"><stop offset="0" stopColor="rgba(255,241,168,.20)"/><stop offset="72%" stopColor="rgba(255,255,255,.04)"/><stop offset="100%" stopColor="rgba(0,0,0,.18)"/></radialGradient>
+    </defs>
+    <g style={animated?{animation:"avatarIdlePro 3.3s ease-in-out infinite",transformOrigin:"100px 118px"}:null}>
+      <ellipse cx="100" cy="218" rx="67" ry="13" fill="rgba(0,0,0,.25)"/>
+      <circle cx="100" cy="107" r="92" fill={`url(#${uid}-soft)`}/>
+      {cfg.aura!=="none"&&<circle cx="100" cy="108" r="91" fill="none" stroke={auraColor} strokeWidth="5" opacity=".78"/>}
+      <LayerBackHair/>
+      <LayerShirt/>
+      <circle cx="59" cy="111" r={female?7.2:8.3} fill={skin}/><circle cx="141" cy="111" r={female?7.2:8.3} fill={skin}/>
+      <path d={facePath} fill={`url(#${uid}-skin)`} stroke={skinDeep} strokeWidth="1.2" opacity=".98"/>
+      <path d={female?"M75 143 C88 158 112 158 125 143 C118 164 82 164 75 143Z":"M70 142 C83 162 117 162 130 142 C121 170 79 170 70 142Z"} fill="rgba(65,30,18,.10)"/>
+      <LayerHairFront/>
+      <LayerHeadwear/>
+      <LayerBrows/>
+      <LayerEyes/>
+      <LayerNose/>
+      <LayerScarsAndTattoos/>
+      <LayerFacialHair/>
+      {female&&<g fill="#D96583" opacity=".24"><ellipse cx="69" cy="127" rx="9" ry="4"/><ellipse cx="131" cy="127" rx="9" ry="4"/></g>}
+      <LayerMouth/>
+      <LayerAccessories/>
+      <path d={female?"M70 64 C84 45 119 45 132 64":"M69 65 C85 48 118 48 132 65"} stroke="rgba(255,255,255,.17)" strokeWidth="4" strokeLinecap="round" fill="none"/>
+    </g>
+  </svg>;
 }
 function Av({av=0,config=null,size=36}){
   const cfg=normalizeAvatarConfig(config,av);
@@ -4732,198 +4437,178 @@ function CharacterCard({idx,selected,onPick,compact=false}){
 }
 function PickerButton({active,children,onClick,locked=false}){return <button type="button" onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?T.gradGold:locked?"rgba(60,40,25,.18)":"rgba(255,244,214,.72)",color:active?T.g900:locked?T.textSub:T.g700,borderRadius:12,padding:"8px 9px",fontWeight:900,fontSize:".72rem",cursor:locked?"not-allowed":"pointer",boxShadow:active?"0 8px 18px rgba(212,175,55,.25)":"0 5px 12px rgba(20,8,4,.1)"}}>{locked?"🔒 ":""}{children}</button>;}
 function ColorDot({color,active,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:32,height:32,borderRadius:"50%",background:color,border:`3px solid ${active?T.gold:"rgba(255,244,214,.9)"}`,boxShadow:active?"0 0 0 3px rgba(212,175,55,.25)":"0 4px 10px rgba(20,8,4,.18)",cursor:"pointer"}}/>;}
-function EditorTabButton({active,icon,label,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?"linear-gradient(180deg,#FFF8E1,#E6C27A)":"rgba(255,248,225,.9)",color:active?T.g900:T.g700,borderRadius:18,padding:"8px 10px",minWidth:0,cursor:"pointer",boxShadow:active?"0 12px 24px rgba(212,175,55,.26)":"0 6px 14px rgba(20,8,4,.10)",display:"flex",flexDirection:"column",alignItems:"center",gap:3,fontWeight:950}}><div style={{fontSize:"1.08rem",lineHeight:1}}>{icon}</div><div style={{fontSize:".60rem",whiteSpace:"nowrap"}}>{label}</div></button>;}
+function EditorTabButton({active,icon,label,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?"linear-gradient(180deg,#FFF8E1,#E6C27A)":"rgba(255,248,225,.9)",color:active?T.g900:T.g700,borderRadius:18,padding:"8px 10px",minWidth:0,cursor:"pointer",boxShadow:active?"0 12px 24px rgba(212,175,55,.26)":"0 6px 14px rgba(20,8,4,.10)",display:"flex",flexDirection:"column",alignItems:"center",gap:3,fontWeight:950}}><div style={{fontSize:"1.08rem",lineHeight:1}}>{icon}</div><div style={{fontSize:".68rem",whiteSpace:"nowrap"}}>{label}</div></button>;}
 function VisualOption({label,active,onClick,locked=false,children,sub=null}){return <button type="button" onClick={()=>{if(locked){SFX.error();return;}SFX.tab();onClick?.();}} style={{position:"relative",border:`2px solid ${active?T.gold:T.g200}`,background:active?"linear-gradient(180deg,#FFF8E5,#F6E5BE)":"rgba(255,248,225,.88)",borderRadius:18,padding:8,cursor:locked?"not-allowed":"pointer",boxShadow:active?"0 12px 24px rgba(212,175,55,.22)":"0 6px 14px rgba(20,8,4,.10)",textAlign:"center",opacity:locked?0.72:1,minWidth:0}}>{locked&&<div style={{position:"absolute",top:6,right:6,background:"rgba(0,0,0,.62)",color:T.white,borderRadius:999,padding:"2px 6px",fontSize:".62rem",fontWeight:950,zIndex:4}}>🔒</div>}<div style={{height:148,borderRadius:16,display:"grid",placeItems:"center",background:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.22),transparent 35%),linear-gradient(160deg,#1B0D07,#5C3317 60%,#D4AF37)",overflow:"hidden",marginBottom:7}}>{children}</div><div style={{fontSize:".73rem",fontWeight:950,color:active?T.g900:T.g800,lineHeight:1.12,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{label}</div>{sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,marginTop:2,lineHeight:1.05}}>{sub}</div>}</button>;}
 function LargeSwatch({color,active,onClick}){return <button type="button" onClick={()=>{SFX.tab();onClick?.();}} style={{width:46,height:46,borderRadius:"50%",border:`4px solid ${active?T.gold:"rgba(110,53,24,.16)"}`,boxShadow:active?"0 0 0 4px rgba(212,175,55,.18),0 8px 14px rgba(20,8,4,.12)":"0 6px 12px rgba(20,8,4,.1)",background:color,cursor:"pointer"}}/>;}
-function MiniSectionTitle({emoji,title,sub}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,margin:"6px 0 8px"}}><div style={{fontWeight:950,color:T.g800}}>{emoji} {title}</div>{sub&&<div style={{fontSize:".60rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>{sub}</div>}</div>;}
+function MiniSectionTitle({emoji,title,sub}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,margin:"6px 0 8px"}}><div style={{fontWeight:950,color:T.g800}}>{emoji} {title}</div>{sub&&<div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>{sub}</div>}</div>;}
 function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=null}){
-  const [tab,setTab]=useState("base");
-  const [slot,setSlot]=useState("face");
-  const [zoom,setZoom]=useState(1.16);
-  const [lastEdit,setLastEdit]=useState("face");
+  const [panel,setPanel]=useState("base");
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
   const premiumKeys=new Set(ownedKeys||[]);
-  const isLocked=(slotName,value)=>COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slotName&&c.valor===value&&!premiumKeys.has(c.item_key));
+  const isLocked=(slot,value)=>COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slot&&c.valor===value&&!premiumKeys.has(c.item_key));
   const applyConfig=(next)=>setForm(f=>({...f,avatarConfig:normalizeAvatarConfig(next,f.avatar)}));
   const patch=(key,value)=>{
     if(isLocked(key,value)){SFX.error();return;}
-    setLastEdit(key);
-    if(["eyes","brows","nose","mouth","face"].includes(key)) setZoom(1.78);
-    else if(["hair","facial","accessory","scar","tattoo"].includes(key)) setZoom(1.42);
-    else setZoom(1.16);
     setForm(f=>{
       const current=normalizeAvatarConfig(f.avatarConfig,f.avatar);
       let next={...current,[key]:value};
       if(key==="gender"){
         const base=value==="female"?DEFAULT_FEMALE_AVATAR:DEFAULT_MALE_AVATAR;
-        next={...base,skin:current.skin,hairColor:current.hairColor,eyeColor:current.eyeColor,bg:current.bg,frame:current.frame,aura:current.aura,scar:current.scar,tattoo:current.tattoo};
-        if(value==="female") next={...next,facial:"none",hair:"braidsLong",face:"heart",eyes:"glam",brows:"arched",nose:"soft",mouth:"soft",accessory:current.accessory==="crown"?"hoopGold":current.accessory};
-        if(value==="male") next={...next,hair:"dreadsTop",face:"square",eyes:"sharp",brows:"strong",nose:"sharp",mouth:"smirk",facial:current.facial==="none"?"shortBeard":current.facial,accessory:current.accessory==="flowers"?"bandana":current.accessory};
+        next={...base,skin:current.skin,hairColor:current.hairColor,eyeColor:current.eyeColor,bg:current.bg,frame:current.frame,aura:current.aura,accessory:current.accessory};
+        if(value==="female") next={...next,facial:"none",hair:"braidsLong",face:"heart",eyes:"glam",brows:"arched",accessory:current.accessory==="crown"?"hoopGold":current.accessory};
+        if(value==="male") next={...next,hair:"dreadsTop",face:"square",eyes:"sharp",brows:"strong",facial:current.facial==="none"?"shortBeard":current.facial,accessory:current.accessory==="flowers"?"bandana":current.accessory};
       }
       return {...f,avatarConfig:normalizeAvatarConfig(next,f.avatar)};
     });
   };
-  const randomize=()=>{SFX.coins();applyConfig(randomAvatarConfig(cfg.gender));};
+  const randomize=()=>applyConfig(randomAvatarConfig(cfg.gender));
+  const preset=(idx)=>setForm(f=>({...f,avatar:idx,avatarConfig:normalizeAvatarConfig(AVATAR_PRESETS[idx],idx)}));
+  const visibleHair=cfg.gender==="female"?FEMALE_HAIR:MALE_HAIR;
+  const panels=[
+    {id:"base",label:"Inventario",icon:"🎒"},
+    {id:"pelo",label:"Peinado",icon:"💇"},
+    {id:"cara",label:"Rostro",icon:"🙂"},
+    {id:"extras",label:"Apariencia",icon:"✨"}
+  ];
+  const hairPreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none"},form.avatar);
+  const facePreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none",facial:"none"},form.avatar);
+  const currentName=AVATAR_PRESET_NAMES?.[Number(form.avatar)%AVATAR_PRESET_NAMES.length]||avatarStyleName(cfg);
   const profilePoints=Number(user?.puntos||0);
   const editorLevel=profilePoints>=1500?"Leyenda":profilePoints>=1000?"VIP":profilePoints>=500?"Oro":profilePoints>=200?"Plata":"Bronce";
   const editorNext=profilePoints<200?200:profilePoints<500?500:profilePoints<1000?1000:profilePoints<1500?1500:2000;
   const editorPct=Math.max(5,Math.min(100,Math.round(profilePoints/editorNext*100)));
-  const currentName=avatarStyleName(cfg);
-
-  const tabs=[
-    {id:"base",label:"Base",icon:"☀",slots:["gender","face","bg"]},
-    {id:"rasgos",label:"Rasgos",icon:"◉",slots:["eyes","brows","nose","mouth"]},
-    {id:"pelo",label:"Pelo",icon:"〰",slots:cfg.gender==="male"?["hair","facial"]:["hair"]},
-    {id:"marcas",label:"Marcas",icon:"✦",slots:["accessory","scar","tattoo"]},
-    {id:"color",label:"Color",icon:"▣",slots:["skin","hairColor","eyeColor","frame","aura"]}
+  const activeMeta=[
+    avatarLabel(cfg.gender),
+    AVATAR_LABELS[cfg.hair],
+    avatarLabel(cfg.face,"face"),
+    AVATAR_LABELS[cfg.accessory]||cfg.accessory
   ];
-  const slotMeta={
-    gender:{label:"Género",icon:"⚥",hint:"Base del personaje"},face:{label:"Cara",icon:"◇",hint:"Silueta del rostro"},bg:{label:"Fondo",icon:"▤",hint:"Fondo del perfil"},
-    eyes:{label:"Ojos",icon:"◉",hint:"Mirada y carácter"},brows:{label:"Cejas",icon:"▰",hint:"Expresión"},nose:{label:"Nariz",icon:"⌇",hint:"Forma central"},mouth:{label:"Boca",icon:"⌣",hint:"Actitud"},
-    hair:{label:"Pelo",icon:"〰",hint:"Rastas, fades y estilos"},facial:{label:"Barba",icon:"〽",hint:"Bigotes y barbas"},
-    accessory:{label:"Accesorios",icon:"◆",hint:"Bandanas, aros y extras"},scar:{label:"Cicatriz",icon:"╱",hint:"Marcas de historia"},tattoo:{label:"Tatuaje",icon:"✥",hint:"Identidad Rasta Cuts"},
-    skin:{label:"Piel",icon:"●",hint:"Tono base"},hairColor:{label:"Color pelo",icon:"◍",hint:"Color de pelo/rastas"},eyeColor:{label:"Color ojos",icon:"◉",hint:"Color de ojos"},frame:{label:"Marco",icon:"▧",hint:"Marco del avatar"},aura:{label:"Aura",icon:"✦",hint:"Efecto especial"}
-  };
-  const valueLists={
-    gender:["male","female"],
-    face:AVATAR_OPTIONS.face,
-    bg:AVATAR_OPTIONS.bg,
-    eyes:AVATAR_OPTIONS.eyes,
-    brows:AVATAR_OPTIONS.brows,
-    nose:AVATAR_OPTIONS.nose,
-    mouth:AVATAR_OPTIONS.mouth,
-    hair:cfg.gender==="female"?FEMALE_HAIR:MALE_HAIR,
-    facial:AVATAR_OPTIONS.facial,
-    accessory:[...BASIC_ACCESSORIES,"capBlack","capGold","glassesGold","bandanaGreen","crown"],
-    scar:AVATAR_OPTIONS.scar,
-    tattoo:AVATAR_OPTIONS.tattoo,
-    skin:AVATAR_OPTIONS.skin.map((_,i)=>i),
-    hairColor:AVATAR_OPTIONS.hairColor.map((_,i)=>i),
-    eyeColor:AVATAR_OPTIONS.eyeColor.map((_,i)=>i),
-    frame:AVATAR_OPTIONS.frame,
-    aura:AVATAR_OPTIONS.aura
-  };
-  const iconMap={
-    male:"♂",female:"♀",oval:"⬭",round:"●",sharp:"◆",square:"▣",heart:"♥",long:"⬯",
-    anime:"◉",sleepy:"◐",glam:"✦",smile:"⌣",soft:"〜",strong:"▰",angry:"▾",thin:"━",arched:"⌒",
-    none:"—",left:"╱",right:"╲",cheek:"◜",double:"✕",wave:"〰",mark:"✥",anchor:"⚓",tribal:"☷",sun:"☀",
-    shortBeard:"▾",goatee:"♟",mustache:"〜",fullBeard:"▰",pirateBeard:"☠",
-    bandana:"▰",bandanaGreen:"▰",cap:"◠",capBlack:"◠",capGold:"◠",hoopGold:"○",glassesGold:"∞",crown:"♛",flowers:"✿"
-  };
-  const activeTab=tabs.find(t=>t.id===tab)||tabs[0];
-  useEffect(()=>{if(!activeTab.slots.includes(slot))setSlot(activeTab.slots[0]);},[tab,cfg.gender]);
 
-  const zoomLevels=[1,1.25,1.55,1.9];
-  const zoomFocus={
-    face:"translateY(16px)",eyes:"translateY(34px)",brows:"translateY(34px)",nose:"translateY(18px)",mouth:"translateY(2px)",
-    hair:"translateY(24px)",facial:"translateY(0px)",accessory:"translateY(20px)",scar:"translateY(20px)",tattoo:"translateY(-10px)",
-    skin:"translateY(12px)",hairColor:"translateY(24px)",eyeColor:"translateY(34px)",frame:"translateY(0px)",aura:"translateY(0px)",gender:"translateY(0px)",bg:"translateY(0px)"
-  };
-  const previewBase=normalizeAvatarConfig({...cfg,frame:"none",aura:"none"},form.avatar);
-  const hairPreview=normalizeAvatarConfig({...cfg,accessory:"none",frame:"none",aura:"none"},form.avatar);
-  const miniConfig=(slotName,value)=>{
-    if(slotName==="hair") return normalizeAvatarConfig({...hairPreview,hair:value,facial:cfg.gender==="female"?"none":cfg.facial},form.avatar);
-    if(slotName==="facial") return normalizeAvatarConfig({...hairPreview,gender:"male",facial:value},form.avatar);
-    if(["accessory","scar","tattoo","face","eyes","brows","nose","mouth"].includes(slotName)) return normalizeAvatarConfig({...previewBase,[slotName]:value},form.avatar);
-    return normalizeAvatarConfig({...previewBase,[slotName]:value},form.avatar);
-  };
-  const valueLabel=(slotName,value)=>{
-    if(slotName==="gender") return value==="male"?"Masculino":"Femenino";
-    if(slotName==="skin") return `Piel ${Number(value)+1}`;
-    if(slotName==="hairColor") return `Pelo ${Number(value)+1}`;
-    if(slotName==="eyeColor") return `Ojos ${Number(value)+1}`;
-    return AVATAR_LABELS[value]||avatarLabel(value,slotName)||String(value);
-  };
+  const MenuButton=({id,label,icon})=><button type="button" onClick={()=>{SFX.tab();setPanel(id);}} className="avatar-travian-tab" style={{background:panel===id?"linear-gradient(180deg,#8E7957,#5C4A33)":"linear-gradient(180deg,#6B4A34,#3A2A18)",color:"#FFF8E2",border:`2px solid ${panel===id?"#D5B24F":"#8E7957"}`,fontWeight:950,cursor:"pointer",padding:"10px 8px",textAlign:"center",boxShadow:panel===id?"inset 0 2px 0 rgba(255,255,255,.22),0 4px 0 #2A1A0D":"inset 0 1px 0 rgba(255,255,255,.12)",minWidth:0}}><div style={{fontSize:"1.15rem",lineHeight:1}}>{icon}</div><div style={{fontSize:".74rem",marginTop:2,whiteSpace:"nowrap"}}>{label}</div></button>;
 
-  const colors={
-    ink:"#080604",panel:"#13100B",panel2:"#1C140B",line:"#6B5635",line2:"rgba(246,232,200,.18)",gold:"#D7B64C",cream:"#F7E7BD",green:"#5F8E22",red:"#A72822"
-  };
-  const activeSlotInfo=slotMeta[slot]||{label:slot,icon:"•",hint:"Elige una pieza"};
+  const OptionGrid=({children,cols=3})=><div className="avatar-travian-grid" style={{display:"grid",gridTemplateColumns:`repeat(${cols},minmax(0,1fr))`,gap:8}}>{children}</div>;
 
-  const PreviewPanel=()=> <section style={{
-    border:"2px solid rgba(215,182,76,.55)",borderRadius:22,overflow:"hidden",background:"radial-gradient(circle at 50% 0%,rgba(215,182,76,.18),transparent 34%),linear-gradient(180deg,#171009,#090604)",boxShadow:"0 22px 50px rgba(0,0,0,.36)",position:"relative"
-  }}>
-    <div style={{position:"absolute",inset:0,pointerEvents:"none",background:"linear-gradient(135deg,rgba(95,142,34,.10),transparent 36%,rgba(167,40,34,.10))"}}/>
-    <div style={{padding:12,position:"relative",zIndex:1}}>
-      <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"start",marginBottom:10}}>
+  return <div className="avatar-travian-editor">
+    <Card className="avatar-travian-window" style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#F6E8C8,#E9D8B4 60%,#D4BD8F)",border:"3px solid #8E7957",borderRadius:16,boxShadow:"0 20px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.75)",marginBottom:14}}>
+      <div style={{background:"linear-gradient(180deg,#4A3522,#241709)",borderBottom:"3px solid #8E7957",color:"#FFF8E2",padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
         <div style={{minWidth:0}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.6rem",lineHeight:1,color:colors.cream,letterSpacing:.5,textShadow:"0 4px 18px rgba(0,0,0,.4)"}}>{form.nombre||"Tu leyenda"}</div>
-          <div style={{fontSize:".70rem",fontWeight:900,color:"rgba(247,231,189,.72)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentName}</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",letterSpacing:".4px",textShadow:"0 2px 0 rgba(0,0,0,.4)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{form.nombre||"Rasta"} — {editorLevel}</div>
+          <div style={{fontSize:".76rem",fontWeight:850,opacity:.82}}>Editor visual estilo juego de navegador · pirata rasta · {profilePoints} pts</div>
         </div>
-        <div style={{display:"grid",gap:5,justifyItems:"end"}}><Badge col="gold">{editorLevel}</Badge><Badge col="green">{cfg.gender==="female"?"♀ Rasta":"♂ Rasta"}</Badge></div>
-      </div>
-      <div style={{height:7,borderRadius:999,background:"rgba(247,231,189,.10)",overflow:"hidden",border:"1px solid rgba(247,231,189,.10)",marginBottom:12}}>
-        <div style={{height:"100%",width:`${editorPct}%`,background:"linear-gradient(90deg,#5F8E22,#D7B64C,#A72822)",boxShadow:"0 0 18px rgba(215,182,76,.45)"}}/>
-      </div>
-      <div style={{height:238,borderRadius:20,display:"grid",placeItems:"center",overflow:"hidden",position:"relative",border:"1px solid rgba(247,231,189,.20)",background:`radial-gradient(circle at 50% 26%,rgba(247,231,189,.34),transparent 31%),${bgGradient(cfg.bg)}`}}>
-        <div style={{position:"absolute",inset:0,background:"repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 20px),linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.22))",pointerEvents:"none"}}/>
-        <div style={{transform:`${zoomFocus[lastEdit]||"translateY(0px)"} scale(${zoom})`,transition:"transform .2s ease",filter:"drop-shadow(0 18px 22px rgba(0,0,0,.36))"}}><Av av={form.avatar} config={cfg} size={168}/></div>
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginTop:10}}>{zoomLevels.map(z=><button key={z} type="button" onClick={()=>{setZoom(z);SFX.click();}} style={{border:`1px solid ${zoom===z?colors.gold:colors.line}`,background:zoom===z?"linear-gradient(180deg,#F2D66D,#9A6E20)":"rgba(247,231,189,.08)",color:zoom===z?"#140B05":colors.cream,borderRadius:10,padding:"8px 3px",fontSize:".62rem",fontWeight:1000,cursor:"pointer"}}>×{z}</button>)}</div>
-    </div>
-  </section>;
-
-  const TabsPanel=()=> <>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:8}}>{tabs.map(t=><button key={t.id} type="button" onClick={()=>{setTab(t.id);setSlot(t.slots[0]);setLastEdit(t.slots[0]);SFX.tab();}} style={{
-      border:`2px solid ${tab===t.id?colors.gold:"rgba(247,231,189,.16)"}`,background:tab===t.id?"linear-gradient(180deg,#F2D66D,#79511B)":"linear-gradient(180deg,#1B140C,#0E0A06)",color:tab===t.id?"#130B05":colors.cream,borderRadius:14,padding:"8px 3px",fontWeight:1000,fontSize:".60rem",cursor:"pointer",boxShadow:tab===t.id?"0 0 0 2px rgba(215,182,76,.18),0 10px 22px rgba(0,0,0,.25)":"0 5px 12px rgba(0,0,0,.18)"
-    }}><div style={{fontSize:"1rem",lineHeight:1}}>{t.icon}</div><div style={{marginTop:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.label}</div></button>)}</div>
-    <div style={{display:"flex",gap:7,overflowX:"auto",padding:"0 0 8px",WebkitOverflowScrolling:"touch"}}>{activeTab.slots.map(s=><button key={s} type="button" onClick={()=>{setSlot(s);setLastEdit(s);SFX.click();}} style={{
-      flex:"0 0 auto",border:`1.5px solid ${slot===s?colors.cream:"rgba(247,231,189,.18)"}`,background:slot===s?"linear-gradient(180deg,#3E2C18,#1A1007)":"rgba(247,231,189,.06)",color:colors.cream,borderRadius:999,padding:"8px 11px",fontSize:".68rem",fontWeight:950,cursor:"pointer"
-    }}>{slotMeta[s]?.icon} {slotMeta[s]?.label||s}</button>)}</div>
-  </>;
-
-  const OptionButton=({slotName,value,color=null})=>{
-    const active=cfg[slotName]===value;
-    const locked=isLocked(slotName,value);
-    const label=valueLabel(slotName,value);
-    const showAvatar=["hair","facial","accessory","scar","tattoo","face","eyes","brows","nose","mouth"].includes(slotName);
-    return <button type="button" onClick={()=>patch(slotName,value)} title={label} style={{
-      minHeight:color?44:72,border:`2px solid ${active?colors.gold:"rgba(247,231,189,.16)"}`,background:active?"linear-gradient(180deg,#F2D66D,#79511B)":"linear-gradient(180deg,#21170D,#100A05)",color:active?"#130B05":colors.cream,borderRadius:14,padding:color?5:6,fontWeight:950,fontSize:".58rem",cursor:locked?"not-allowed":"pointer",opacity:locked?0.52:1,position:"relative",overflow:"hidden",boxShadow:active?"0 0 0 2px rgba(215,182,76,.18),0 10px 20px rgba(0,0,0,.28)":"0 5px 12px rgba(0,0,0,.18)"
-    }}>
-      {locked&&<span style={{position:"absolute",right:4,top:3,fontSize:10,zIndex:2}}>🔒</span>}
-      {color? <div style={{height:30,borderRadius:10,background:color,border:"1px solid rgba(255,255,255,.25)"}}/> : showAvatar? <div style={{height:43,display:"grid",placeItems:"center",overflow:"hidden",borderRadius:10,background:active?"rgba(255,248,226,.20)":"rgba(255,248,226,.07)",marginBottom:4}}><Av av={form.avatar} config={miniConfig(slotName,value)} size={48}/></div> : <div style={{height:30,display:"grid",placeItems:"center",fontSize:"1.12rem"}}>{iconMap[value]||slotMeta[slotName]?.icon||"•"}</div>}
-      {!color&&<div style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",lineHeight:1.05}}>{label}</div>}
-    </button>;
-  };
-
-  const renderOptions=()=>{
-    const values=valueLists[slot]||[];
-    if(slot==="gender") return <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>{values.map(v=><OptionButton key={v} slotName="gender" value={v}/>)}</div>;
-    if(slot==="bg") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(68px,1fr))",gap:8}}>{values.map(v=><button key={v} type="button" onClick={()=>patch("bg",v)} style={{height:54,borderRadius:14,border:`2px solid ${cfg.bg===v?colors.cream:"rgba(247,231,189,.16)"}`,background:bgGradient(v),cursor:"pointer",boxShadow:cfg.bg===v?"0 0 0 2px #D7B64C":"0 6px 14px rgba(0,0,0,.18)"}} title={AVATAR_LABELS[v]||v}/>)}</div>;
-    if(slot==="skin") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(42px,1fr))",gap:7}}>{values.map(i=><OptionButton key={i} slotName="skin" value={i} color={AVATAR_OPTIONS.skin[i]}/>)}</div>;
-    if(slot==="hairColor") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(42px,1fr))",gap:7}}>{values.map(i=><OptionButton key={i} slotName="hairColor" value={i} color={AVATAR_OPTIONS.hairColor[i]}/>)}</div>;
-    if(slot==="eyeColor") return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(42px,1fr))",gap:7}}>{values.map(i=><OptionButton key={i} slotName="eyeColor" value={i} color={AVATAR_OPTIONS.eyeColor[i]}/>)}</div>;
-    return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(70px,1fr))",gap:8}}>{values.map(v=><OptionButton key={v} slotName={slot} value={v}/>)}</div>;
-  };
-
-  return <div className="avatar-editor-rastacuts-202">
-    <Card style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#22170B,#090604)",border:"2px solid rgba(215,182,76,.55)",borderRadius:24,boxShadow:"0 28px 70px rgba(0,0,0,.42)",marginBottom:14}}>
-      <div style={{background:"linear-gradient(90deg,#11100C,#2D1C0B 46%,#11100C)",borderBottom:"2px solid rgba(215,182,76,.45)",padding:"12px 14px",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,rgba(95,142,34,.20),transparent 38%,rgba(167,40,34,.18))",pointerEvents:"none"}}/>
-        <div style={{position:"relative",zIndex:1,display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-          <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.72rem",lineHeight:1,color:colors.cream,letterSpacing:.6}}>Creador Rasta Cuts</div><div style={{fontSize:".74rem",fontWeight:850,color:"rgba(247,231,189,.72)"}}>Anime barber/rasta · piezas por capas PNG · edición limpia</div></div>
-          <button type="button" onClick={randomize} style={{border:"2px solid rgba(247,231,189,.18)",background:"linear-gradient(180deg,#5F8E22,#284514)",color:"#FFF3CA",borderRadius:999,padding:"9px 12px",fontSize:".72rem",fontWeight:1000,cursor:"pointer",boxShadow:"0 8px 18px rgba(0,0,0,.24)"}}>🎲 Aleatorio</button>
+        <div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>
+          <Btn small col="ghost" onClick={()=>{onReset?.();}}>↶ Reset</Btn>
+          <Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn>
         </div>
       </div>
-      <div style={{padding:12,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:12,alignItems:"start"}}>
-        <PreviewPanel/>
-        <section style={{border:"2px solid rgba(247,231,189,.13)",borderRadius:22,background:"linear-gradient(180deg,#16100A,#0B0704)",padding:10,boxShadow:"inset 0 1px 0 rgba(255,255,255,.05),0 16px 38px rgba(0,0,0,.22)"}}>
-          <TabsPanel/>
-          <div style={{border:"1px solid rgba(247,231,189,.14)",borderRadius:18,background:"rgba(247,231,189,.055)",padding:10}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,marginBottom:10}}>
-              <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.32rem",lineHeight:1,color:colors.cream}}>{activeSlotInfo.icon} {activeSlotInfo.label}</div><div style={{fontSize:".68rem",fontWeight:850,color:"rgba(247,231,189,.62)"}}>{activeSlotInfo.hint} · {(valueLists[slot]||[]).length} opciones</div></div>
-              <Badge col="dark">{valueLabel(slot,cfg[slot])}</Badge>
-            </div>
-            {renderOptions()}
+
+      <div className="avatar-editor-layout-pro" style={{display:"grid",gridTemplateColumns:"1.05fr 1fr",gap:0,background:"linear-gradient(90deg,#203019,#304923)"}}>
+        <div className="avatar-options-panel-pro" style={{borderRight:"3px solid #8E7957"}}>
+          <div className="avatar-editor-tabs-pro" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:"3px solid #8E7957"}}>
+            {panels.map(p=><MenuButton key={p.id} {...p}/>)}
           </div>
-        </section>
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,padding:"0 12px 12px"}}>
-        <Btn full col="ghost" onClick={()=>onReset?.()}>↶ Restaurar</Btn>
-        <Btn full col="green" onClick={()=>onSave?.()}>💾 Guardar cambios</Btn>
+
+          <div className="avatar-editor-options-scroll-pro" style={{padding:12,maxHeight:520,overflowY:"auto",background:"radial-gradient(circle at 50% 0%,rgba(213,178,79,.15),transparent 32%),linear-gradient(180deg,#304923,#162112)"}}>
+            {panel==="base"&&<>
+              <MiniSectionTitle emoji="⚧" title="Modelo" sub="Cambia el cuerpo completo"/>
+              <OptionGrid cols={2}>
+                <VisualOption label="Corsario" active={cfg.gender==="male"} onClick={()=>patch("gender","male")}><Av av={form.avatar} config={{...DEFAULT_MALE_AVATAR,skin:cfg.skin,hairColor:cfg.hairColor,eyeColor:cfg.eyeColor,bg:cfg.bg}} size={108}/></VisualOption>
+                <VisualOption label="Capitana" active={cfg.gender==="female"} onClick={()=>patch("gender","female")}><Av av={form.avatar} config={{...DEFAULT_FEMALE_AVATAR,skin:cfg.skin,hairColor:cfg.hairColor,eyeColor:cfg.eyeColor,bg:cfg.bg}} size={108}/></VisualOption>
+              </OptionGrid>
+
+              <MiniSectionTitle emoji="🧭" title="Tripulación base" sub="Presets pirata rasta"/>
+              <OptionGrid cols={3}>{AVATAR_PRESETS.map((_,i)=><CharacterCard key={i} idx={i} selected={Number(form.avatar)===i} onPick={preset} compact/>)}</OptionGrid>
+
+              <MiniSectionTitle emoji="🖼️" title="Fondos" sub="Escenario"/>
+              <OptionGrid cols={4}>{AVATAR_OPTIONS.bg.map(v=><button key={v} type="button" onClick={()=>patch("bg",v)} style={{height:54,borderRadius:9,border:`2px solid ${cfg.bg===v?T.gold:"#8E7957"}`,background:bgGradient(v),boxShadow:cfg.bg===v?"0 0 0 2px rgba(95,142,34,.35)":"0 5px 12px rgba(0,0,0,.18)",cursor:"pointer",position:"relative"}}>{isLocked("bg",v)&&<span style={{position:"absolute",top:3,right:4}}>🔒</span>}</button>)}</OptionGrid>
+            </>}
+
+            {panel==="pelo"&&<>
+              <MiniSectionTitle emoji="💇" title="Peinado" sub="Vista en tiempo real"/>
+              <OptionGrid cols={3}>{visibleHair.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.hair===v} locked={isLocked("hair",v)} onClick={()=>patch("hair",v)}><Av av={form.avatar} config={{...hairPreviewBase,hair:v,gender:cfg.gender,facial:cfg.gender==="female"?"none":cfg.facial}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="🎨" title="Color de pelo" sub="Paleta"/>
+              <div className="avatar-color-rack">{AVATAR_OPTIONS.hairColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.hairColor===i} onClick={()=>patch("hairColor",i)}/>)}</div>
+              {cfg.gender==="male"&&<><MiniSectionTitle emoji="🧔" title="Barba y bigote" sub="Sólo corsario"/><OptionGrid cols={3}>{AVATAR_OPTIONS.facial.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.facial===v} onClick={()=>patch("facial",v)}><Av av={form.avatar} config={{...hairPreviewBase,gender:"male",facial:v}} size={98}/></VisualOption>)}</OptionGrid></>}
+            </>}
+
+            {panel==="cara"&&<>
+              <MiniSectionTitle emoji="🙂" title="Rostro" sub="Forma y gesto"/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.face.map(v=><VisualOption key={v} label={avatarLabel(v,"face")} active={cfg.face===v} onClick={()=>patch("face",v)}><Av av={form.avatar} config={{...facePreviewBase,face:v,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="🧑" title="Tono de piel"/>
+              <div className="avatar-color-rack">{AVATAR_OPTIONS.skin.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.skin===i} onClick={()=>patch("skin",i)}/>)}</div>
+              <MiniSectionTitle emoji="👀" title="Ojos" sub="Forma"/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.eyes.map(v=><VisualOption key={v} label={avatarLabel(v,"eyes")} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}><Av av={form.avatar} config={{...facePreviewBase,eyes:v,eyeColor:cfg.eyeColor,brows:cfg.brows,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="🌈" title="Color de ojos"/>
+              <div className="avatar-color-rack">{AVATAR_OPTIONS.eyeColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
+            </>}
+
+            {panel==="extras"&&<>
+              <MiniSectionTitle emoji="🎒" title="Complementos" sub="Pirata, rasta y barber"/>
+              <OptionGrid cols={3}>{BASIC_ACCESSORIES.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="🔓" title="Desbloqueables" sub="Comprados en tienda"/>
+              <OptionGrid cols={3}>{["capBlack","capGold","glassesGold","bandanaGreen","crown"].map(v=><VisualOption key={v} label={AVATAR_LABELS[v]} active={cfg.accessory===v} locked={isLocked("accessory",v)} onClick={()=>patch("accessory",v)}><Av av={form.avatar} config={{...cfg,accessory:v,frame:"none",aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="✨" title="Marcos y aura" sub="Efecto de perfil"/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.frame.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.frame===v} locked={isLocked("frame",v)} onClick={()=>patch("frame",v)}><Av av={form.avatar} config={{...cfg,frame:v,aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
+              <div style={{height:10}}/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.aura.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.aura===v} locked={isLocked("aura",v)} onClick={()=>patch("aura",v)}><Av av={form.avatar} config={{...cfg,aura:v}} size={98}/></VisualOption>)}</OptionGrid>
+            </>}
+          </div>
+        </div>
+
+        <div className="avatar-preview-panel-pro" style={{padding:14,background:"radial-gradient(circle at 50% 20%,#FFF8E2 0%,#D8C391 52%,#27331E 53%,#11180E 100%)",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:590}}>
+          <div style={{background:"linear-gradient(180deg,#FFF8E2,#E9D8B4)",border:"2px solid #8E7957",borderRadius:12,padding:10,boxShadow:"0 12px 28px rgba(0,0,0,.24)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+              <div>
+                <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800,lineHeight:1}}>Vista previa</div>
+                <div style={{fontSize:".75rem",fontWeight:850,color:T.textSub}}>Los cambios se ven al instante.</div>
+              </div>
+              <Badge col="gold">Nv. {editorLevel}</Badge>
+            </div>
+            <div style={{height:8,borderRadius:999,background:"rgba(92,74,51,.22)",overflow:"hidden",marginTop:9,border:"1px solid rgba(92,74,51,.22)"}}>
+              <div style={{height:"100%",width:`${editorPct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F,#A72822)",borderRadius:999}}/>
+            </div>
+            <div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:4}}>Siguiente rango: {editorNext} pts</div>
+          </div>
+          <div style={{display:"grid",placeItems:"center",padding:"18px 0"}}>
+            <div className="avatar-preview-stage-pro" style={{width:245,height:290,display:"grid",placeItems:"center",background:"linear-gradient(180deg,#F8F1DD,#D7C59D)",border:"3px solid #8E7957",boxShadow:"inset 0 0 0 4px rgba(255,255,255,.34),0 18px 34px rgba(0,0,0,.35)"}}>
+              <Av av={form.avatar} config={cfg} size={230}/>
+            </div>
+          </div>
+          <div style={{display:"grid",gap:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+              <Badge col="gold">{currentName}</Badge>
+              {activeMeta.map(x=><Badge key={x} col="green">{x}</Badge>)}
+            </div>
+            <Card style={{padding:10,background:"linear-gradient(180deg,#FFF8E2,#E9D8B4)",border:"2px solid #8E7957"}}>
+              <div style={{fontWeight:950,color:T.g800}}>🎯 Estado del look</div>
+              <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>Personalización de avatar/perfil. No afecta al Tycoon ni a los RC. Los objetos bloqueados se desbloquean con puntos web en tienda.</div>
+            </Card>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              <Btn full col="ghost" onClick={()=>onReset?.()}>↶ Restaurar</Btn>
+              <Btn full col="green" onClick={()=>onSave?.()}>💾 Guardar cambios</Btn>
+            </div>
+          </div>
+        </div>
       </div>
     </Card>
   </div>;
+}
+
+function Toast({msg,show}){if(!show)return null;return <div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",background:T.g800,color:T.white,padding:"12px 22px",borderRadius:50,fontWeight:700,fontSize:"0.88rem",zIndex:9999,whiteSpace:"nowrap",boxShadow:"0 6px 24px rgba(27,67,50,0.35)",animation:"toastIn 0.3s ease"}}>{msg}</div>;}
+function PtsPopup({pts,show}){if(!show||!pts)return null;return <div style={{position:"fixed",top:"35%",left:"50%",transform:"translateX(-50%)",zIndex:9999,animation:"ptsFloat 1.8s ease forwards",pointerEvents:"none"}}><div style={{background:T.gradGold,color:T.white,borderRadius:50,padding:"10px 24px",fontWeight:900,fontSize:"1.4rem",boxShadow:"0 6px 24px rgba(255,183,3,0.5)"}}>+{pts} pts</div></div>;}
+function Particles(){
+  const items=["✂","〰","◆","✦","•","⟡"];
+  return <div style={{position:"fixed",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:0}}>{[...Array(10)].map((_,i)=><div key={i} style={{position:"absolute",left:`${6+i*10}%`,bottom:"-10%",fontSize:i%3===0?"1.35rem":"1rem",opacity:0.1,animation:`floatUp ${13+i*2}s linear ${i*1.4}s infinite`}}>{items[i%items.length]}</div>)}</div>;
+}
+function BrandLogo(){
+  return (
+    <div style={{width:94,height:94,margin:"0 auto 14px",position:"relative",animation:"logoPulse 2.4s ease infinite"}}>
+      <div style={{position:"absolute",inset:0,borderRadius:"50%",background:"linear-gradient(135deg,#1F120B,#5C3317 52%,#D4AF37)",boxShadow:"0 10px 30px rgba(0,0,0,0.35)",border:"3px solid rgba(245,230,200,0.7)"}}/>
+      <div style={{position:"absolute",inset:8,borderRadius:"50%",border:"2px solid rgba(212,175,55,0.55)"}}/>
+      {[0,1,2,3,4].map(i=><span key={i} style={{position:"absolute",left:24+i*9,top:16,width:4,height:50,borderRadius:8,background:"linear-gradient(180deg,#F5E6C8,#8B4513)",transform:`rotate(${i%2===0?-12:12}deg)`,boxShadow:"0 2px 6px rgba(0,0,0,0.25)"}}/>)}
+      <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:"2.3rem",filter:"drop-shadow(0 3px 3px rgba(0,0,0,0.45))"}}>✂️</div>
+      <div style={{position:"absolute",left:18,right:18,bottom:15,height:2,background:"rgba(245,230,200,0.8)",animation:"bladeGlint 2.6s ease infinite"}}/>
+    </div>
+  );
 }
 
 
@@ -4935,11 +4620,18 @@ function mascotSourcesFromSettings(settings=null){
     b.rasta_mascota_url,
     b.imagen_mascota_url,
     b.imagen_rasta_url,
-    b.logo_mascota_url
-  ]
-    .filter(Boolean)
-    .map(v=>String(v).trim())
-    .filter(Boolean);
+    b.logo_mascota_url,
+    "/rasta-mascota.png",
+    "/rasta_mascota.png",
+    "/mascota-rasta.png",
+    "/mascota_rasta.png",
+    "/rasta.png",
+    "/mascota.png",
+    "/images/rasta-mascota.png",
+    "/images/rasta.png",
+    "/img/rasta-mascota.png",
+    "/img/rasta.png"
+  ].map(x=>String(x||"").trim()).filter(Boolean);
 }
 
 function RastaMascotImage({settings=null,compact=false}={}){
@@ -4972,83 +4664,6 @@ function RastaMascotImage({settings=null,compact=false}={}){
         onError={()=>setImgIndex(i=>i+1)}
         style={{position:"relative",zIndex:1,filter:"drop-shadow(0 20px 26px rgba(0,0,0,.32))"}}
       />
-    </div>
-  );
-}
-
-
-function Particles(){
-  const items=["✂","〰","◆","✦","•","⟡"];
-  return (
-    <div style={{position:"fixed",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:0}}>
-      {[...Array(10)].map((_,i)=>(
-        <div
-          key={i}
-          style={{
-            position:"absolute",
-            left:`${6+i*10}%`,
-            bottom:"-10%",
-            fontSize:i%3===0?"1.35rem":"1rem",
-            opacity:0.1,
-            animation:`floatUp ${13+i*2}s linear ${i*1.4}s infinite`
-          }}
-        >
-          {items[i%items.length]}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-
-function Toast({msg,show}){
-  if(!show)return null;
-  return (
-    <div style={{
-      position:"fixed",
-      bottom:100,
-      left:"50%",
-      transform:"translateX(-50%)",
-      background:T.g800,
-      color:T.white,
-      padding:"12px 22px",
-      borderRadius:50,
-      fontWeight:800,
-      fontSize:"0.88rem",
-      zIndex:2147483002,
-      whiteSpace:"nowrap",
-      maxWidth:"calc(100vw - 28px)",
-      overflow:"hidden",
-      textOverflow:"ellipsis",
-      border:`1px solid ${T.gold}`,
-      boxShadow:"0 10px 28px rgba(0,0,0,.35)",
-      animation:"toastIn 0.3s ease"
-    }}>{msg}</div>
-  );
-}
-
-
-function PtsPopup({pts,show}){
-  if(!show||!pts)return null;
-  return (
-    <div style={{
-      position:"fixed",
-      top:"35%",
-      left:"50%",
-      transform:"translateX(-50%)",
-      zIndex:2147483002,
-      animation:"ptsFloat 1.8s ease forwards",
-      pointerEvents:"none"
-    }}>
-      <div style={{
-        background:T.gradGold,
-        color:T.white,
-        borderRadius:50,
-        padding:"10px 24px",
-        fontWeight:900,
-        fontSize:"1.4rem",
-        boxShadow:"0 6px 24px rgba(255,183,3,0.5)"
-      }}>+{pts} pts</div>
     </div>
   );
 }
@@ -5579,13 +5194,13 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
         {onNavigate&&(
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
             <button className="landing-nav-card" onClick={()=>onNavigate("citas")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
-              <div style={{fontSize:"1.18rem"}}>📅</div><div style={{fontSize:".72rem"}}>Reserva</div>
+              <div style={{fontSize:"1.45rem"}}>📅</div><div style={{fontSize:".72rem"}}>Reserva</div>
             </button>
             <button className="landing-nav-card" onClick={()=>onNavigate("juegos")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
-              <div style={{fontSize:"1.18rem"}}>🎮</div><div style={{fontSize:".72rem"}}>Juega</div>
+              <div style={{fontSize:"1.45rem"}}>🎮</div><div style={{fontSize:".72rem"}}>Juega</div>
             </button>
             <button className="landing-nav-card" onClick={()=>onNavigate("tienda")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
-              <div style={{fontSize:"1.18rem"}}>🎁</div><div style={{fontSize:".72rem"}}>Premios</div>
+              <div style={{fontSize:"1.45rem"}}>🎁</div><div style={{fontSize:".72rem"}}>Premios</div>
             </button>
           </div>
         )}
@@ -5828,9 +5443,9 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2.25rem"}}>🧭</div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",lineHeight:1}}>Gestión real ordenada</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",lineHeight:1}}>Gestión real ordenada</div>
             <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Lo urgente primero: citas, mensajes, canjes, stock, caja y moderación en una sola vista.</div>
-            {updatedAt&&<div style={{marginTop:6,fontSize:".60rem",fontWeight:850,opacity:.72}}>Actualizado: {updatedAt.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}</div>}
+            {updatedAt&&<div style={{marginTop:6,fontSize:".68rem",fontWeight:850,opacity:.72}}>Actualizado: {updatedAt.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}</div>}
           </div>
           <Badge col={(stats.pendientes||stats.mensajes||stats.pedidos||stats.stockBajo||stats.reportes)?"gold":"green"}>{(stats.pendientes||stats.mensajes||stats.pedidos||stats.stockBajo||stats.reportes)?"revisar":"ok"}</Badge>
         </div>
@@ -5856,7 +5471,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:9}}>
           {urgencias.map(u=><button key={u.id} onClick={()=>jump(u.tab)} style={{border:`1.5px solid ${u.col==="red"?T.red:u.col==="green"?"#4F602D":T.gold}`,background:u.col==="red"?"linear-gradient(180deg,#F0D3BB,#E4B59A)":u.col==="green"?"linear-gradient(180deg,#E8F0CF,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",borderRadius:16,padding:12,textAlign:"left",cursor:"pointer",boxShadow:"0 8px 18px rgba(20,8,4,.10)"}}>
             <div style={{display:"flex",gap:9,alignItems:"flex-start"}}>
-              <div style={{fontSize:"1.18rem",lineHeight:1}}>{u.icon}</div>
+              <div style={{fontSize:"1.45rem",lineHeight:1}}>{u.icon}</div>
               <div style={{minWidth:0}}>
                 <div style={{fontWeight:950,color:T.g800,fontSize:".88rem"}}>{u.title}</div>
                 <div style={{fontSize:".74rem",fontWeight:820,color:T.textSub,lineHeight:1.3,marginTop:3}}>{u.sub}</div>
@@ -5870,7 +5485,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         <div style={{fontWeight:950,color:T.g800,marginBottom:9}}>🚀 Accesos rápidos</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(118px,1fr))",gap:8}}>
           {quick.map(q=><button key={q.id} onClick={()=>jump(q.id)} style={{border:`1.5px solid ${T.g300}`,background:"rgba(255,255,255,.34)",borderRadius:15,padding:"10px 8px",fontWeight:950,color:T.g800,cursor:"pointer",textAlign:"center"}}>
-            <div style={{fontSize:"1.18rem",lineHeight:1}}>{q.icon}</div>
+            <div style={{fontSize:"1.45rem",lineHeight:1}}>{q.icon}</div>
             <div style={{fontSize:".78rem",marginTop:4}}>{q.label}</div>
             <div style={{fontSize:".66rem",fontWeight:800,color:T.textSub,marginTop:2}}>{q.sub}</div>
           </button>)}
@@ -5913,7 +5528,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
             return <div key={c.id} style={{padding:"12px 0",borderBottom:`1px solid ${T.g200}`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap",marginBottom:7}}>
+                  <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap",marginBottom:7}}>
                     <Badge col={badgeCol}>{st==="completada"?"realizada":st}</Badge>
                     <span style={{fontWeight:950,color:T.g800}}>👤 {c.cliente_nombre||"Cliente"}</span>
                   </div>
@@ -5967,7 +5582,7 @@ function ClientDashboard({user,onNavigate,settings}){
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
           <div>
             <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.78rem",fontWeight:800}}>Hola de nuevo</div>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
             <div style={{marginTop:6,display:"flex",gap:6,flexWrap:"wrap"}}><Badge col="gold">{nivel}</Badge><Badge col="green">{user.puntos||0} pts</Badge></div>
           </div>
           <Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={58}/>
@@ -6163,7 +5778,7 @@ function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
     <div style={{height:featured?218:188,position:"relative",overflow:"hidden",borderRadius:"18px 18px 0 0",backgroundImage:`linear-gradient(180deg,rgba(19,11,6,.02) 0%,rgba(19,11,6,.08) 48%,rgba(19,11,6,.62) 100%), url(${item.image})`,backgroundSize:"cover",backgroundPosition:"center",borderBottom:`1px solid ${T.g300}`}}>
       <div style={{position:"absolute",left:12,top:12,display:"flex",gap:6,flexWrap:"wrap"}}>
         <span style={{background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"5px 10px",fontSize:".7rem",fontWeight:950,boxShadow:"0 8px 16px rgba(18,8,4,.24)"}}>{cat.icon} {cat.short}</span>
-        <span style={{background:"rgba(19,11,6,.58)",color:T.white,borderRadius:999,padding:"5px 9px",fontSize:".60rem",fontWeight:950,backdropFilter:"blur(4px)"}}>{formatNewsDate(item?.date)}</span>
+        <span style={{background:"rgba(19,11,6,.58)",color:T.white,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:950,backdropFilter:"blur(4px)"}}>{formatNewsDate(item?.date)}</span>
       </div>
       <div style={{position:"absolute",left:12,right:12,bottom:12,display:"flex",justifyContent:"space-between",alignItems:"flex-end",gap:8}}>
         <div style={{maxWidth:"70%",fontSize:".72rem",fontWeight:950,color:T.white,textShadow:"0 2px 8px rgba(0,0,0,.45)",lineHeight:1.15}}>{item?.source||"Fuente"}</div>
@@ -6177,17 +5792,17 @@ function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
       {!hasImage&&<div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
         <span style={{background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"4px 9px",fontSize:".66rem",fontWeight:950}}>{cat.icon} {cat.short}</span>
         <span style={{background:"rgba(19,11,6,.08)",color:T.g700,border:`1px solid ${T.g200}`,borderRadius:999,padding:"4px 8px",fontSize:".66rem",fontWeight:900}}>{item?.source||"Fuente"}</span>
-        <span style={{fontSize:".60rem",fontWeight:900,color:T.textSub,marginLeft:"auto"}}>{formatNewsDate(item?.date)}</span>
+        <span style={{fontSize:".68rem",fontWeight:900,color:T.textSub,marginLeft:"auto"}}>{formatNewsDate(item?.date)}</span>
       </div>}
       <div style={{fontWeight:950,color:T.g900,fontSize:featured?"1.18rem":"1rem",lineHeight:1.17,letterSpacing:"-.12px",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{title}</div>
       <div style={{fontSize:".84rem",fontWeight:750,color:T.textSub,lineHeight:1.42,marginTop:8,display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{summary}</div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginTop:12,flexWrap:"wrap"}}>
-        <div style={{display:"flex",gap:5,alignItems:"center"}}>
+        <div style={{display:"flex",gap:7,alignItems:"center"}}>
           <button onClick={openNews} style={{border:"none",background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"8px 12px",fontWeight:950,fontSize:".78rem",cursor:"pointer",boxShadow:"0 7px 14px rgba(18,8,4,.18)"}}>Leer</button>
           {showYoutube&&<button onClick={openYoutube} style={{border:`1px solid ${T.g300}`,background:"#7A241B",color:"#FFF8E5",borderRadius:999,padding:"8px 11px",fontWeight:950,fontSize:".78rem",cursor:"pointer"}}>▶ YouTube</button>}
           {item?.url&&<button onClick={openSource} style={{border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.52)",color:T.g800,borderRadius:999,padding:"8px 10px",fontWeight:950,fontSize:".76rem",cursor:"pointer"}}>Fuente ↗</button>}
         </div>
-        <div style={{display:"flex",gap:5,alignItems:"center",marginLeft:"auto"}}>
+        <div style={{display:"flex",gap:7,alignItems:"center",marginLeft:"auto"}}>
           <span style={{fontSize:".72rem",fontWeight:950,color:T.g700}}>👍 {stats?.likes||0}</span>
           <span style={{fontSize:".72rem",fontWeight:950,color:T.g700}}>💬 {stats?.comments||0}</span>
         </div>
@@ -6331,7 +5946,7 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
       </Card>
       <div style={{fontWeight:950,color:T.g800,margin:"4px 0 10px"}}>Comentarios</div>
       {comments.length===0?<EmptyState icon="💬" title="Sin comentarios todavía" sub="Sé el primero en abrir el hilo."/>:comments.map(c=><Card key={c.id} style={{marginBottom:9,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}>
-        <div style={{display:"flex",gap:9,alignItems:"center",marginBottom:7}}><PublicAvatar profile={{...c,nombre:c.usuario_nombre,avatar:c.usuario_avatar,avatar_config:c.usuario_avatar_config,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito}} size={32}/><div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{publicName({nombre:c.usuario_nombre,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito})}</div><div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>{formatNewsDate(c.created_at)}</div></div></div>
+        <div style={{display:"flex",gap:9,alignItems:"center",marginBottom:7}}><PublicAvatar profile={{...c,nombre:c.usuario_nombre,avatar:c.usuario_avatar,avatar_config:c.usuario_avatar_config,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito}} size={32}/><div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{publicName({nombre:c.usuario_nombre,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito})}</div><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{formatNewsDate(c.created_at)}</div></div></div>
         <div style={{fontSize:".88rem",fontWeight:750,color:T.text,lineHeight:1.45,whiteSpace:"pre-wrap"}}>{c.contenido}</div>
       </Card>)}
     </div>
@@ -6366,7 +5981,7 @@ function ActualidadMini({onNavigate}){
     </div>
     <div style={{padding:"12px 14px 6px"}}>
       <div style={{display:"flex",gap:10,alignItems:"flex-start",background:"rgba(255,248,225,.78)",border:`1px dashed ${T.g400}`,borderRadius:18,padding:12,marginBottom:12}}>
-        <div style={{fontSize:"1.18rem",lineHeight:1}}>💡</div>
+        <div style={{fontSize:"1.45rem",lineHeight:1}}>💡</div>
         <div><div style={{fontWeight:950,color:T.g800,fontSize:".9rem"}}>{curiosity.title}</div><div style={{fontSize:".78rem",fontWeight:750,color:T.textSub,lineHeight:1.35,marginTop:3}}>{curiosity.text}</div></div>
       </div>
       {loading?<Spinner/>:<>
@@ -6694,9 +6309,9 @@ function Citas({user,showToast,onNavigate}){
           <Badge col={(counts.pendiente||0)?"gold":"green"}>{counts.pendiente||0} pendientes</Badge>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.pendiente||0}</div><div style={{fontSize:".60rem",fontWeight:900,color:T.textSub}}>Pendientes</div></div>
-          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.propuesta||0}</div><div style={{fontSize:".60rem",fontWeight:900,color:T.textSub}}>Propuestas</div></div>
-          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.confirmada||0}</div><div style={{fontSize:".60rem",fontWeight:900,color:T.textSub}}>Confirmadas</div></div>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.pendiente||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Pendientes</div></div>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.propuesta||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Propuestas</div></div>
+          <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.confirmada||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Confirmadas</div></div>
         </div>
         <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:2}}>
           {statusTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setView(t.id);}} style={{flex:"0 0 auto",border:"none",borderRadius:999,padding:"8px 12px",background:view===t.id?T.gradGold:"rgba(255,244,214,.62)",color:view===t.id?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:view===t.id?"0 8px 18px rgba(18,8,4,.16)":"none"}}>{t.icon} {t.label} <span style={{opacity:.75}}>({counts[t.id]||0})</span></button>)}
@@ -6918,11 +6533,11 @@ function Clientes({user,showToast}){
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(c,user)}</div>
               <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.email}</div>
-              <div style={{fontSize:".60rem",fontWeight:850,color:T.textSub,marginTop:2}}>📅 {c.citas_count||0} cita{(c.citas_count||0)===1?"":"s"}</div>
+              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,marginTop:2}}>📅 {c.citas_count||0} cita{(c.citas_count||0)===1?"":"s"}</div>
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontWeight:950,color:T.g600}}>⭐ {c.puntos||0}</div>
-              <div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>puntos</div>
+              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div>
             </div>
           </div>
         </Card>
@@ -7020,9 +6635,9 @@ function Inventario({showToast}){
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div style={{flex:1}}><div style={{fontWeight:800}}>{item.nombre}</div><div style={{fontSize:"0.75rem",color:T.textSub}}>{item.categoria}</div></div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <button onClick={()=>updateStock(item.id,-1)} style={{width:24,height:24,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.red}}>-</button>
+              <button onClick={()=>updateStock(item.id,-1)} style={{width:28,height:28,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.red}}>-</button>
               <span style={{fontWeight:900,fontSize:"1.1rem",color:item.stock<=item.stock_min?T.red:T.g600,minWidth:28,textAlign:"center"}}>{item.stock}</span>
-              <button onClick={()=>updateStock(item.id,1)} style={{width:24,height:24,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.g600}}>+</button>
+              <button onClick={()=>updateStock(item.id,1)} style={{width:28,height:28,borderRadius:"50%",border:`1.5px solid ${T.g300}`,background:T.white,cursor:"pointer",fontWeight:900,color:T.g600}}>+</button>
               <Badge col={item.stock<=item.stock_min?"red":"green"}>{item.stock<=item.stock_min?"Bajo":"OK"}</Badge>
             </div>
           </div>
@@ -7434,7 +7049,7 @@ function AdminUsuarios({user,showToast}){
             {id:"client",label:"Clientes",n:roleCounts.client||0},
             {id:"staff",label:"Staff",n:roleCounts.staff||0},
             {id:"admin",label:"Admin",n:roleCounts.admin||0},
-          ].map(f=><button key={f.id} onClick={()=>{SFX.tab();setRoleFilter(f.id);}} style={{border:`2px solid ${roleFilter===f.id?T.gold:T.g300}`,background:roleFilter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:roleFilter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".60rem"}}>
+          ].map(f=><button key={f.id} onClick={()=>{SFX.tab();setRoleFilter(f.id);}} style={{border:`2px solid ${roleFilter===f.id?T.gold:T.g300}`,background:roleFilter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:roleFilter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
             {f.label}<br/><span style={{opacity:.75}}>{f.n}</span>
           </button>)}
         </div>
@@ -8848,7 +8463,7 @@ function PlatformJumpGame({onWin,user}){
       <div style={{position:'absolute',top:10,left:12,right:12,display:'flex',justifyContent:'space-between',fontWeight:900,color:T.g800,fontSize:'.8rem'}}><span>Score {score}</span><span>Vel. {speed.toFixed(1)}x</span></div>
       {lanes.map((x,i)=><div key={i} onClick={()=>setLane(i)} style={{position:'absolute',left:`${x}%`,top:0,bottom:0,width:2,background:'rgba(110,53,24,.08)',cursor:'pointer'}}/>)}
       {items.map(it=><div key={it.id} style={{position:'absolute',left:`${lanes[it.lane]}%`,top:`${it.y}%`,transform:'translate(-50%,-50%)',fontSize:'2rem',filter:'drop-shadow(0 6px 8px rgba(0,0,0,.24))'}}>{it.icon}</div>)}
-      <div style={{position:'absolute',left:`${lanes[lane]}%`,bottom:28,transform:'translateX(-50%)'}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={38}/></div>
+      <div style={{position:'absolute',left:`${lanes[lane]}%`,bottom:28,transform:'translateX(-50%)'}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={52}/></div>
       <div style={{position:'absolute',left:0,right:0,bottom:18,height:4,background:'#6E3518'}}/>
       {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.50)',padding:16}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:8}}>Recoge ganchillos, peines y gomas. Evita tijeras.</div><Btn col='gold' onClick={resetAndStart}>▶ Empezar</Btn></div></div>}
       {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.58)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Te cortaron la racha!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Score {score} · récord {pts}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div></div>}
@@ -9037,9 +8652,9 @@ function ArcadeInfoPanel({onOpenGacha}){
       </div>
 
       <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:10}}>
-        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".60rem",fontWeight:900}}>récord semanal</span>
-        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".60rem",fontWeight:900}}>puntos diarios</span>
-        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".60rem",fontWeight:900}}>premios y avatar</span>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>récord semanal</span>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>puntos diarios</span>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>premios y avatar</span>
       </div>
 
       {open&&<div style={{
@@ -9375,7 +8990,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     else if(h.action==="upgrade")startRoomTask(selectedId,"upgrade");
     else SFX.tab();
   }
-  function MiniStat({icon,label,value,sub}){return <div style={{background:"linear-gradient(180deg,rgba(255,244,214,.95),rgba(232,211,162,.87))",border:"1.5px solid rgba(212,175,55,.55)",borderRadius:16,padding:"10px 11px",boxShadow:"0 8px 18px rgba(0,0,0,.16)"}}><div style={{display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:"1.25rem"}}>{icon}</span><b style={{color:T.g800}}>{value}</b></div><div style={{fontSize:".60rem",fontWeight:900,color:T.textSub,marginTop:3}}>{label}</div>{sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,opacity:.82}}>{sub}</div>}</div>;}
+  function MiniStat({icon,label,value,sub}){return <div style={{background:"linear-gradient(180deg,rgba(255,244,214,.95),rgba(232,211,162,.87))",border:"1.5px solid rgba(212,175,55,.55)",borderRadius:16,padding:"10px 11px",boxShadow:"0 8px 18px rgba(0,0,0,.16)"}}><div style={{display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:"1.25rem"}}>{icon}</span><b style={{color:T.g800}}>{value}</b></div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub,marginTop:3}}>{label}</div>{sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,opacity:.82}}>{sub}</div>}</div>;}
   function Bar({label,value}){const v=clampNum(value,0,100);return <div style={{marginBottom:9}}><div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:950,color:T.g800,marginBottom:4}}><span>{label}</span><span>{Math.round(v)}%</span></div><div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.16)",overflow:"hidden"}}><div style={{height:"100%",width:`${v}%`,borderRadius:999,background:v<35?"linear-gradient(90deg,#8F2E24,#E57373)":v<70?"linear-gradient(90deg,#B99A45,#F3D37B)":"linear-gradient(90deg,#315D2D,#7FCB84)",transition:"width .25s ease"}}/></div></div>;}
   function Tab({id,icon,label}){return <button onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:"rgba(255,244,214,.25)"}`,background:tab===id?"linear-gradient(180deg,#D4AF37,#A87945)":"rgba(255,244,214,.12)",color:tab===id?T.g900:"#FFF4D6",borderRadius:16,padding:"10px 8px",fontWeight:950,cursor:"pointer",boxShadow:tab===id?"0 10px 24px rgba(212,175,55,.22)":"0 8px 18px rgba(0,0,0,.15)"}}><div style={{fontSize:"1.25rem"}}>{icon}</div><div style={{fontSize:".72rem"}}>{label}</div></button>;}
   function BuildingBadge({task}){
@@ -9389,7 +9004,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
       <div style={{position:"absolute",inset:0,pointerEvents:"none",background:"radial-gradient(circle at 18% 14%,rgba(255,244,214,.16),transparent 25%),radial-gradient(circle at 82% 8%,rgba(185,154,69,.14),transparent 32%),linear-gradient(30deg,transparent 48%,rgba(255,244,214,.055) 49%,transparent 50%)"}}/>
       <div style={{position:"relative",zIndex:2,display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",marginBottom:12}}>
         <div>
-          <div style={{fontFamily:"var(--ui-display,'Outfit',system-ui)",fontSize:"1.18rem",fontWeight:950,letterSpacing:"-.04em"}}>Mapa del negocio</div>
+          <div style={{fontFamily:"var(--ui-display,'Outfit',system-ui)",fontSize:"1.45rem",fontWeight:950,letterSpacing:"-.04em"}}>Mapa del negocio</div>
           <div style={{fontSize:".82rem",fontWeight:850,opacity:.84,lineHeight:1.35}}>Vista principal estable: entra en salas, revisa requisitos y lanza mejoras sin parpadeos.</div>
         </div>
         <Badge col="gold">{opened}/{roomList.length} zonas</Badge>
@@ -9478,7 +9093,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
 
       {[...(hotspots[roomId]||[]),...common].map((h,i)=><SceneObject key={i} h={h}/>)}
       {selectedTask&&<div style={{position:"absolute",right:14,bottom:14}}><BuildingBadge task={selectedTask}/></div>}
-      <div style={{position:"absolute",left:14,bottom:14,background:"rgba(18,8,6,.68)",border:"1px solid rgba(255,244,214,.24)",borderRadius:16,padding:"7px 10px",fontSize:".60rem",fontWeight:850,color:"rgba(255,244,214,.82)",backdropFilter:"blur(8px)"}}>
+      <div style={{position:"absolute",left:14,bottom:14,background:"rgba(18,8,6,.68)",border:"1px solid rgba(255,244,214,.24)",borderRadius:16,padding:"7px 10px",fontSize:".68rem",fontWeight:850,color:"rgba(255,244,214,.82)",backdropFilter:"blur(8px)"}}>
         Fondo: {roomImg} · si no existe, se usa escena híbrida
       </div>
     </div>;
@@ -9622,18 +9237,18 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#201208,#4F351B 56%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
         <div style={{position:"absolute",right:-18,top:-30,fontSize:"7rem",opacity:.12,transform:"rotate(-10deg)"}}>🏆</div>
         <div style={{position:"relative",zIndex:1}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",lineHeight:1}}>Rankings de clientes</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",lineHeight:1}}>Rankings de clientes</div>
           <div style={{fontSize:".8rem",fontWeight:800,opacity:.82,lineHeight:1.35,marginTop:3}}>Aquí están las estadísticas públicas de la comunidad: récords de juegos, puntos, tienda y participación.</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:12}}>
             <button onClick={()=>onOpenTops?.("games")} style={{border:"2px solid rgba(255,244,214,.42)",borderRadius:18,padding:"13px 10px",background:"rgba(255,244,214,.16)",color:T.white,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
               <div style={{fontSize:"1.75rem",lineHeight:1}}>🏆</div>
               <div style={{fontSize:"1rem",marginTop:5}}>Top 10</div>
-              <div style={{fontSize:".60rem",opacity:.78,lineHeight:1.25}}>Récords por minijuego</div>
+              <div style={{fontSize:".68rem",opacity:.78,lineHeight:1.25}}>Récords por minijuego</div>
             </button>
             <button onClick={()=>onOpenTops?.("general")} style={{border:"2px solid rgba(255,244,214,.42)",borderRadius:18,padding:"13px 10px",background:"rgba(255,244,214,.16)",color:T.white,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
               <div style={{fontSize:"1.75rem",lineHeight:1}}>👑</div>
               <div style={{fontSize:"1rem",marginTop:5}}>Top general</div>
-              <div style={{fontSize:".60rem",opacity:.78,lineHeight:1.25}}>Clientes y actividad</div>
+              <div style={{fontSize:".68rem",opacity:.78,lineHeight:1.25}}>Clientes y actividad</div>
             </button>
           </div>
         </div>
@@ -9829,7 +9444,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
       <PublicAvatar profile={r} currentUser={user} size={40}/>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontWeight:950,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(r,user)}</div>
-        <div style={{fontSize:".60rem",fontWeight:800,opacity:.68}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):section==="general"?generalMeta.sub:"marca guardada"}</div>
+        <div style={{fontSize:".68rem",fontWeight:800,opacity:.68}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):section==="general"?generalMeta.sub:"marca guardada"}</div>
       </div>
       <div style={{textAlign:"right"}}>
         <div style={{color:T.gold,fontWeight:950,fontSize:"1.12rem"}}>{Number(r.score)||0}</div>
@@ -9856,12 +9471,12 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
             <button onClick={()=>{SFX.tab();setSection("games");}} style={{border:`2px solid ${section==="games"?T.gold:"rgba(255,244,214,.28)"}`,borderRadius:18,padding:"13px 10px",background:section==="games"?"rgba(255,244,214,.22)":"rgba(255,244,214,.10)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:section==="games"?"0 10px 24px rgba(185,154,69,.24)":"none"}}>
               <div style={{fontSize:"1.75rem",lineHeight:1}}>🏆</div>
               <div style={{fontSize:"1.05rem",marginTop:5}}>Top 10</div>
-              <div style={{fontSize:".60rem",opacity:.76,lineHeight:1.25}}>récords por juego</div>
+              <div style={{fontSize:".68rem",opacity:.76,lineHeight:1.25}}>récords por juego</div>
             </button>
             <button onClick={()=>{SFX.tab();setSection("general");}} style={{border:`2px solid ${section==="general"?T.gold:"rgba(255,244,214,.28)"}`,borderRadius:18,padding:"13px 10px",background:section==="general"?"rgba(255,244,214,.22)":"rgba(255,244,214,.10)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:section==="general"?"0 10px 24px rgba(185,154,69,.24)":"none"}}>
               <div style={{fontSize:"1.75rem",lineHeight:1}}>👑</div>
               <div style={{fontSize:"1.05rem",marginTop:5}}>Top general</div>
-              <div style={{fontSize:".60rem",opacity:.76,lineHeight:1.25}}>clientes y actividad</div>
+              <div style={{fontSize:".68rem",opacity:.76,lineHeight:1.25}}>clientes y actividad</div>
             </button>
           </div>
           <div style={{fontSize:".76rem",fontWeight:800,opacity:.82,lineHeight:1.35,marginTop:10}}>
@@ -9906,7 +9521,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
             {GENERAL_KINDS.map(k=>{
               const active=generalKind===k.id;
               return <button key={k.id} onClick={()=>{SFX.tab();setGeneralKind(k.id);}} style={{border:`2px solid ${active?T.gold:T.g200}`,borderRadius:16,padding:"10px 8px",background:active?T.gradGold:T.g50,color:active?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:active?"0 10px 20px rgba(185,154,69,.22)":"0 6px 14px rgba(20,8,4,.10)",textAlign:"left"}}>
-                <div style={{fontSize:"1.18rem",lineHeight:1}}>{k.icon}</div>
+                <div style={{fontSize:"1.45rem",lineHeight:1}}>{k.icon}</div>
                 <div style={{fontSize:".86rem",marginTop:5}}>{k.title}</div>
                 <div style={{fontSize:".64rem",opacity:.75,lineHeight:1.25}}>{k.sub}</div>
               </button>;
@@ -10017,7 +9632,7 @@ function Ranking({user}){
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="🏆" title="Rankings" sub="Top 10 estilo liga"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
-        {Object.entries(cfg).map(([id,c])=><button key={id} onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g200}`,background:tab===id?T.gradGold:"rgba(255,244,214,.82)",color:tab===id?T.g900:T.g700,borderRadius:16,padding:"9px 6px",fontWeight:900,cursor:"pointer",boxShadow:tab===id?"0 8px 20px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.12)"}}><div className="icon3d" style={{fontSize:"1.35rem"}}>{c.icon}</div><div style={{fontSize:".60rem"}}>{c.title}</div></button>)}
+        {Object.entries(cfg).map(([id,c])=><button key={id} onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g200}`,background:tab===id?T.gradGold:"rgba(255,244,214,.82)",color:tab===id?T.g900:T.g700,borderRadius:16,padding:"9px 6px",fontWeight:900,cursor:"pointer",boxShadow:tab===id?"0 8px 20px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.12)"}}><div className="icon3d" style={{fontSize:"1.35rem"}}>{c.icon}</div><div style={{fontSize:".68rem"}}>{c.title}</div></button>)}
       </div>
       <Card style={{marginBottom:12,background:"linear-gradient(135deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}><div className="icon3d" style={{fontSize:"2.1rem"}}>{cfg[tab].icon}</div><div><div style={{fontWeight:900}}>{cfg[tab].title}</div><div style={{fontSize:".75rem",opacity:.78,fontWeight:700}}>{cfg[tab].sub}</div></div></div>
@@ -10355,7 +9970,7 @@ function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPo
       <div style={{display:"flex",justifyContent:"space-between",gap:6,alignItems:"center",marginBottom:8}}><Badge col={rarityColor(item.rareza)}>{rarityLabel(item.rareza)}</Badge><b style={{color:T.orange,fontSize:".78rem"}}>{item.puntos_precio} pts</b></div>
       <div style={{display:"flex",justifyContent:"center",margin:"4px 0 8px"}}><Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(item)}} size={92}/></div>
       <div style={{fontWeight:950,color:T.g800,fontSize:".84rem",lineHeight:1.1}}>{item.nombre}</div>
-      <div style={{fontSize:".60rem",fontWeight:800,color:T.textSub,lineHeight:1.25,minHeight:34,marginTop:4}}>{item.descripcion}</div>
+      <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub,lineHeight:1.25,minHeight:34,marginTop:4}}>{item.descripcion}</div>
       <div style={{marginTop:9}}>{has?<Btn full small col={active?"ghost":"gold"} onClick={()=>apply(item)}>{active?"Equipado":"Equipar"}</Btn>:<Btn full small col="gold" onClick={()=>unlock(item)}>Desbloquear</Btn>}</div>
     </div>})}</div>}
   </Card>;
@@ -10414,12 +10029,12 @@ function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}
       <div style={{filter:locked?"grayscale(1) brightness(0)":"none",opacity:locked?0.78:1,transform:"scale(.92)"}}>
         <RewardNodeIcon item={item} user={user} currentConfig={currentConfig} locked={locked}/>
       </div>
-      {owned&&<div style={{position:"absolute",right:8,top:4,background:T.gradGold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".60rem"}}>✓</div>}
-      {locked&&<div style={{position:"absolute",right:8,top:4,background:"rgba(0,0,0,.58)",color:T.white,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontSize:".60rem"}}>🔒</div>}
-      {reached&&!owned&&<div style={{position:"absolute",right:7,top:4,background:T.gold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".60rem"}}>!</div>}
+      {owned&&<div style={{position:"absolute",right:8,top:4,background:T.gradGold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".68rem"}}>✓</div>}
+      {locked&&<div style={{position:"absolute",right:8,top:4,background:"rgba(0,0,0,.58)",color:T.white,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontSize:".68rem"}}>🔒</div>}
+      {reached&&!owned&&<div style={{position:"absolute",right:7,top:4,background:T.gold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".68rem"}}>!</div>}
     </div>
     <div style={{height:18,width:3,background:owned||reached?T.gold:"rgba(255,244,214,.35)",margin:"-1px auto 0"}}/>
-    <div style={{fontSize:".60rem",fontWeight:950,color:owned||reached?T.g800:T.textSub,lineHeight:1.05}}>
+    <div style={{fontSize:".68rem",fontWeight:950,color:owned||reached?T.g800:T.textSub,lineHeight:1.05}}>
       Nv. {rewardLevelFor(item.puntos_precio)}
     </div>
     <div style={{fontSize:".63rem",fontWeight:850,color:T.textSub,lineHeight:1.05,marginTop:2}}>
@@ -10590,7 +10205,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
         <div style={{display:"flex",gap:13,alignItems:"center"}}>
           <Av av={form.avatar} config={cfg} size={86}/>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",color:T.white,lineHeight:1}}>{user.nombre}</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white,lineHeight:1}}>{user.nombre}</div>
             <div style={{fontSize:".74rem",color:"rgba(255,244,214,.82)",fontWeight:800,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.email}</div>
             <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
               <Badge col="gold">{nivel}</Badge>
@@ -10603,17 +10218,17 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
         {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${tab===t.id?T.gold:T.g300}`,background:tab===t.id?T.gradGold:"rgba(255,244,214,.82)",color:tab===t.id?T.g900:T.g700,borderRadius:16,padding:"9px 4px",fontWeight:950,cursor:"pointer",boxShadow:tab===t.id?"0 10px 22px rgba(212,175,55,.24)":"0 5px 12px rgba(20,8,4,.1)"}}>
-          <div style={{fontSize:".96rem",lineHeight:1}}>{t.icon}</div>
-          <div style={{fontSize:".60rem",marginTop:3}}>{t.label}</div>
+          <div style={{fontSize:"1.1rem",lineHeight:1}}>{t.icon}</div>
+          <div style={{fontSize:".68rem",marginTop:3}}>{t.label}</div>
         </button>)}
       </div>
 
       {tab==="resumen"&&<>
         <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
-            <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>{user.puntos||0}</div><div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>puntos</div></div>
-            <div><div style={{fontSize:"1.35rem"}}>🏆</div><div style={{fontWeight:950,color:T.g800}}>{nivel}</div><div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>nivel</div></div>
-            <div><div style={{fontSize:"1.35rem"}}>🎁</div><div style={{fontWeight:950,color:T.g800}}>Camino</div><div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>recompensas</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>{user.puntos||0}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>🏆</div><div style={{fontWeight:950,color:T.g800}}>{nivel}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>nivel</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>🎁</div><div style={{fontWeight:950,color:T.g800}}>Camino</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>recompensas</div></div>
           </div>
         </Card>
         <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${privacy.modo_incognito?T.blue:T.g300}`}}>
@@ -10838,8 +10453,8 @@ function MusicaComunidad({showToast}){
         </div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,padding:"0 12px 14px"}}>
-        {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);setMusicSeed(0);}} style={{border:`1.5px solid ${filter===f.id?T.gold:"rgba(255,244,214,.25)"}`,borderRadius:14,padding:"8px 4px",background:filter===f.id?"rgba(255,214,107,.22)":"rgba(255,244,214,.08)",color:T.white,fontWeight:950,cursor:"pointer",fontSize:".60rem"}}>
-          <div style={{fontSize:".96rem",lineHeight:1}}>{f.icon}</div>
+        {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);setMusicSeed(0);}} style={{border:`1.5px solid ${filter===f.id?T.gold:"rgba(255,244,214,.25)"}`,borderRadius:14,padding:"8px 4px",background:filter===f.id?"rgba(255,214,107,.22)":"rgba(255,244,214,.08)",color:T.white,fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
+          <div style={{fontSize:"1.1rem",lineHeight:1}}>{f.icon}</div>
           <div style={{marginTop:3}}>{f.label}</div>
         </button>)}
       </div>
@@ -11185,7 +10800,7 @@ function DisabledSection({icon="🔒",title="Sección desactivada",sub="Esta sec
     <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{textAlign:"center",padding:"12px 6px"}}>
         <div className="icon3d" style={{fontSize:"3rem",marginBottom:8}}>{icon}</div>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.18rem",color:T.g800}}>{title}</div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.g800}}>{title}</div>
         <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub,lineHeight:1.4,marginTop:6}}>{sub}</div>
       </div>
     </Card>
@@ -11564,7 +11179,7 @@ function GestionMensajes({user,showToast,refreshUnread,unread}){
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontWeight:950,color:T.g800}}>{c.cliente_nombre}</div>
               <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.ultimo?.mensaje}</div>
-              <div style={{fontSize:".60rem",fontWeight:850,color:T.textSub,marginTop:3}}>{when} · {c.total} mensajes · {c.estado==="cerrado"?"cerrada":"abierta"}</div>
+              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,marginTop:3}}>{when} · {c.total} mensajes · {c.estado==="cerrado"?"cerrada":"abierta"}</div>
             </div>
             {c.unread>0&&<Badge col="red">{c.unread}</Badge>}
           </div>
@@ -11948,7 +11563,7 @@ function GestionAgenda({showToast}){
                             </div>
                             <div style={{textAlign:"right",whiteSpace:"nowrap"}}>
                               {!!precio&&<div style={{fontWeight:950,color:T.g600}}>{precio}€</div>}
-                              {!!dur&&<div style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>hasta {endTime(slot.hora,dur)}</div>}
+                              {!!dur&&<div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>hasta {endTime(slot.hora,dur)}</div>}
                             </div>
                           </div>
                           <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:9}}>
@@ -12166,7 +11781,7 @@ function GestionModeracion({user,showToast}){
             <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:5}}><Badge col={col}>{st}</Badge><Badge col="blue">{r.target_tipo}</Badge></div>
             <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{r.target_titulo||"Contenido reportado"}</div>
             <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:3}}>Motivo: {r.motivo||"sin motivo"}</div>
-            <div style={{fontSize:".60rem",fontWeight:800,color:T.textSub,marginTop:3}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES"):""} · Reporta: {r.reportado_por_nombre||"Usuario"}</div>
+            <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub,marginTop:3}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES"):""} · Reporta: {r.reportado_por_nombre||"Usuario"}</div>
           </div>
         </div>
       </Card>;
@@ -12444,7 +12059,7 @@ function GestionSeguridad({user,showToast}){
 
       <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
-          {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);}} style={{border:`2px solid ${filter===f.id?T.gold:T.g300}`,background:filter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:filter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".60rem"}}>
+          {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);}} style={{border:`2px solid ${filter===f.id?T.gold:T.g300}`,background:filter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:filter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
             <div>{f.icon}</div><div>{f.label}</div>
           </button>)}
         </div>
@@ -12457,7 +12072,7 @@ function GestionSeguridad({user,showToast}){
               <Badge col={colTipo(r.tipo)}>{labelTipo(r.tipo)}</Badge>
               {r.entidad&&<Badge col="blue">{r.entidad}</Badge>}
             </div>
-            <div style={{fontSize:".60rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>
+            <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,textAlign:"right"}}>
               {r.created_at?new Date(r.created_at).toLocaleString("es-ES"):""}
             </div>
           </div>
@@ -14824,7 +14439,7 @@ function HelperMascot({page,settings=null}){
           }}
         >
           <div style={{position:"relative"}}>
-            <RastaFaceAvatar size={38} speaking={open} settings={settings} forceInternal/>
+            <RastaFaceAvatar size={52} speaking={open} settings={settings} forceInternal/>
             <div style={{
               position:"absolute",
               right:-2,
@@ -14937,10 +14552,10 @@ function WalletPanel({show,onClose,user}){
         {history.length===0?<EmptyState icon="📜" title="Sin historial todavía" sub="A partir de ahora se registrarán ganancias, gastos y devoluciones."/>:
           <div style={{display:"grid",gap:7,maxHeight:260,overflowY:"auto",paddingRight:2}}>
             {history.slice(0,30).map(m=><div key={m.id} style={{display:"grid",gridTemplateColumns:"30px 1fr auto",gap:8,alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${T.g200}`}}>
-              <div style={{width:24,height:24,borderRadius:999,background:"rgba(255,244,214,.78)",display:"grid",placeItems:"center",border:`1px solid ${T.g200}`}}>{movIcon(m)}</div>
+              <div style={{width:28,height:28,borderRadius:999,background:"rgba(255,244,214,.78)",display:"grid",placeItems:"center",border:`1px solid ${T.g200}`}}>{movIcon(m)}</div>
               <div style={{minWidth:0}}>
                 <div style={{fontSize:".8rem",fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.reason||"Movimiento"}</div>
-                <div style={{fontSize:".60rem",fontWeight:800,color:T.textSub}}>{fmtDate(m.created_at)} · {m.source||m.type}{m.balance!==null&&m.balance!==undefined?` · saldo ${m.balance}`:""}</div>
+                <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{fmtDate(m.created_at)} · {m.source||m.type}{m.balance!==null&&m.balance!==undefined?` · saldo ${m.balance}`:""}</div>
               </div>
               <div style={{fontWeight:950,color:movColor(m),fontSize:".86rem",whiteSpace:"nowrap"}}>{m.amount>0?"+":""}{m.amount} pts</div>
             </div>)}
@@ -15025,7 +14640,7 @@ function CartPanel({show,onClose,user,setUser,showToast}){
         <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🛒 Carrito</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Premios, tienda y personalización del avatar/perfil.</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
       </div>
-      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:5,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(255,244,214,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
+      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:7,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(255,244,214,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800}}><span>Total</span><span>{totalPts} pts</span></div>
         <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:6}}>Base preparada para añadir/quitar productos desde Tienda y Personalización en fases siguientes.</div>
@@ -15088,7 +14703,7 @@ function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefres
             <div style={{flex:1,minWidth:0}}>
               <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
                 {!n.leida&&<Badge col="red">nuevo</Badge>}{n.importante&&<Badge col="gold">importante</Badge>}{cita&&<Badge col="blue">cita</Badge>}
-                <span style={{fontSize:".60rem",fontWeight:850,color:T.textSub}}>{when(n.created_at)}</span>
+                <span style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>{when(n.created_at)}</span>
               </div>
               <div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{n.titulo||"Notificación"}</div>
               {n.mensaje&&<div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4,whiteSpace:"pre-wrap"}}>{opened?n.mensaje:String(n.mensaje).slice(0,120)+(String(n.mensaje).length>120?"...":"")}</div>}
@@ -15188,7 +14803,7 @@ function SafetyVersionPanel({user=null,settings=null,checkingSession=false,sessi
     );
   }
   return (
-    <button onClick={()=>setOpen(true)} title={`Versión ${APP_VERSION_SHORT}`} style={{position:"fixed",left:10,bottom:"calc(84px + env(safe-area-inset-bottom,0px))",zIndex:2400,border:0,borderRadius:999,padding:"6px 9px",background:sessionWarning?"linear-gradient(180deg,#A72822,#672018)":"linear-gradient(180deg,#21140C,#130B06)",color:"#FFF4D6",fontWeight:1000,fontSize:".60rem",boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer",opacity:.88}}>
+    <button onClick={()=>setOpen(true)} title={`Versión ${APP_VERSION_SHORT}`} style={{position:"fixed",left:10,bottom:"calc(84px + env(safe-area-inset-bottom,0px))",zIndex:2400,border:0,borderRadius:999,padding:"6px 9px",background:sessionWarning?"linear-gradient(180deg,#A72822,#672018)":"linear-gradient(180deg,#21140C,#130B06)",color:"#FFF4D6",fontWeight:1000,fontSize:".68rem",boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer",opacity:.88}}>
       {sessionWarning?"⚠️":"🛡️"} {APP_VERSION_SHORT}
     </button>
   );
