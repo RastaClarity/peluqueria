@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_0_5B_AUDIO_PRO_HOTFIX";
-const APP_VERSION_SHORT="2.0.5B";
+const APP_VERSION="RASTACUTS_2_0_5C_AUDIO_START_FIX";
+const APP_VERSION_SHORT="2.0.5C";
 const APP_BUILD_DATE="2026-06-03";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -497,10 +497,39 @@ function startMusic(){
   if(backgroundAudioAvailable){
     const a=getBackgroundAudio();
     if(a){
-      applyBackgroundAudioState();
-      a.play().catch(()=>{
-        // El navegador puede bloquear música hasta que el usuario toque la pantalla.
-        // No rompemos la página. El siguiente toque volverá a intentar reproducir.
+      backgroundDuckedForGame=false;
+      globalMuted=false;
+      a.muted=false;
+      a.volume=backgroundTargetVolume();
+      a.play().then(()=>{
+        applyBackgroundAudioState();
+      }).catch(()=>{
+        // Si el navegador bloquea o el archivo falla, probamos la siguiente fuente/pista.
+        backgroundSourceTry++;
+        const track=getBackgroundTrack();
+        const total=track?.srcs?.length||1;
+        if(backgroundSourceTry<total){
+          resetBackgroundAudio();
+          const retry=getBackgroundAudio();
+          if(retry){
+            retry.muted=false;
+            retry.volume=backgroundTargetVolume();
+            retry.play().catch(()=>{});
+          }
+          return;
+        }
+        backgroundSourceTry=0;
+        backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
+        resetBackgroundAudio();
+        const next=getBackgroundAudio();
+        if(next){
+          next.muted=false;
+          next.volume=backgroundTargetVolume();
+          next.play().catch(()=>{
+            backgroundAudioAvailable=false;
+            if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
+          });
+        }
       });
       return;
     }
@@ -4139,9 +4168,9 @@ const AVATAR_OPTIONS={
   aura:["none","warm","flame","ocean","vip"]
 };
 
-const DEFAULT_AVATAR_CONFIG={version:"2.0.5B",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
-const DEFAULT_MALE_AVATAR={version:"2.0.5B",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
-const DEFAULT_FEMALE_AVATAR={version:"2.0.5B",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
+const DEFAULT_AVATAR_CONFIG={version:"2.0.5C",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
+const DEFAULT_MALE_AVATAR={version:"2.0.5C",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
+const DEFAULT_FEMALE_AVATAR={version:"2.0.5C",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
   {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
@@ -4190,7 +4219,7 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   const fallback=AVATAR_PRESETS[(Number(legacyAvatar)||0)%AVATAR_PRESETS.length]||DEFAULT_AVATAR_CONFIG;
   const cfg={...DEFAULT_AVATAR_CONFIG,...fallback,...(parsed||{})};
   const clamp=(n,max)=>Math.max(0,Math.min(max,Number.isFinite(Number(n))?Number(n):0));
-  cfg.version="2.0.5B";
+  cfg.version="2.0.5C";
   cfg.skin=clamp(cfg.skin,AVATAR_OPTIONS.skin.length-1);
   cfg.hairColor=clamp(cfg.hairColor,AVATAR_OPTIONS.hairColor.length-1);
   cfg.eyeColor=clamp(cfg.eyeColor,AVATAR_OPTIONS.eyeColor.length-1);
@@ -4522,7 +4551,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_5B_LAYER_ENGINE";
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_5C_LAYER_ENGINE";
 
 
 
@@ -15384,13 +15413,37 @@ function AppCore(){
   },[user?.id,refreshUnread,loadNotifications]);
   function toggleMusic(){
     if(appSettings?.secciones?.musica_activa===false){showToast("La música está desactivada desde Ajustes");SFX.error();return;}
+
+    // Si todavía no se ha arrancado la música, el primer toque debe ACTIVARLA.
+    // Antes el primer toque podía caer en "silenciar" porque globalMuted estaba en false.
+    if(!musicPlaying){
+      globalMuted=false;
+      backgroundDuckedForGame=false;
+      setMusicOn(true);
+      try{localStorage.setItem("rasta_cuts_audio_muted","0");}catch{}
+      startMusic();
+      setTimeout(()=>setBackgroundVolume(),120);
+      showToast(`Sonido activado · ${backgroundAudioAvailable?getBackgroundName():"Lofi Rasta"}`);
+      return;
+    }
+
     const nextMuted=!globalMuted;
     muteMusicKeepTime(nextMuted);
     setMusicOn(!nextMuted);
     try{localStorage.setItem("rasta_cuts_audio_muted",nextMuted?"1":"0");}catch{}
     showToast(nextMuted?"Sonido silenciado. La canción sigue avanzando.":"Sonido activado");
   }
-  function changeMusicTrack(){nextMusicTrack(false);SFX.tab();showToast(`Tema: ${backgroundAudioAvailable?getBackgroundName():(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);}
+  function changeMusicTrack(){
+    if(!musicPlaying){
+      globalMuted=false;
+      setMusicOn(true);
+      try{localStorage.setItem("rasta_cuts_audio_muted","0");}catch{}
+      startMusic();
+    }
+    nextMusicTrack(false);
+    SFX.tab();
+    showToast(`Tema: ${backgroundAudioAvailable?getBackgroundName():(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);
+  }
   function toggleUiTheme(){
     setUiTheme(prev=>{
       const next=prev==="night"?"day":"night";
