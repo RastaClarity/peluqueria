@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_0_1_EDITOR_AVATAR_GAME_UI";
-const APP_VERSION_SHORT="2.0.1";
+const APP_VERSION="RASTACUTS_2_0_2_EDITOR_FONDOS_MENU";
+const APP_VERSION_SHORT="2.0.2";
 const APP_BUILD_DATE="2026-06-03";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -3868,6 +3868,32 @@ html,body,#root{
   }
 }
 
+
+/* ===== RASTA CUTS 2.0.2 — Fondos + menú intuitivo ===== */
+.avatar-travian-editor .avatar-editor-tabs-pro{
+  grid-template-columns:none!important;
+  display:flex!important;
+  gap:8px!important;
+  overflow-x:auto!important;
+}
+.avatar-travian-editor .avatar-travian-tab{
+  flex:0 0 auto!important;
+  min-width:76px!important;
+}
+.avatar-travian-editor .visual-option > div:first-child{
+  min-height:72px!important;
+}
+.avatar-travian-editor .avatar-travian-grid[style*="repeat(2"] .visual-option > div:first-child{
+  height:86px!important;
+}
+.avatar-travian-editor [title*="Fondo"]{
+  font-weight:950!important;
+}
+@media (max-width:520px){
+  .avatar-travian-editor .avatar-travian-tab{min-width:70px!important}
+  .avatar-travian-editor .avatar-travian-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -3983,14 +4009,14 @@ const AVATAR_OPTIONS={
   eyes:["anime","sleepy","sharp","round","smile","glam"],
   facial:["none",...BEARD_VALUES],
   accessory:["none","earring","hoopGold","glasses","glassesGold","bandana","bandanaGreen","cap","capBlack","capGold","piercing","flowers","headphones","crown"],
-  bg:["gold","dark","red","blue","paper","studio","street","royal"],
+  bg:["gold","dark","red","blue","paper","studio","street","royal","office","beach","setup","camper","terrace","reggae","barberShop","vipRoom"],
   frame:["none","bronze","gold","neon","legend"],
   aura:["none","warm","flame","ocean","vip"]
 };
 
-const DEFAULT_AVATAR_CONFIG={version:"2.0.1",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
-const DEFAULT_MALE_AVATAR={version:"2.0.1",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
-const DEFAULT_FEMALE_AVATAR={version:"2.0.1",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
+const DEFAULT_AVATAR_CONFIG={version:"2.0.2",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
+const DEFAULT_MALE_AVATAR={version:"2.0.2",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
+const DEFAULT_FEMALE_AVATAR={version:"2.0.2",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
   {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
@@ -4022,7 +4048,7 @@ const AVATAR_LABELS={
   soft:"Suaves",strong:"Marcadas",angry:"Intensas",thin:"Finas",arched:"Arqueadas",anime:"Anime",sleepy:"Relajados",smile:"Sonrientes",glam:"Glam",
   none:"Nada",stubble:"Sombra",moustache:"Bigote",goatee:"Perilla",shortBeard:"Barba corta",beard:"Barba",full:"Barba completa",
   earring:"Pendiente",glasses:"Gafas",bandana:"Bandana",cap:"Gorra",piercing:"Piercing",capBlack:"Gorra negra",capGold:"Gorra dorada",glassesGold:"Gafas doradas",bandanaGreen:"Bandana verde",crown:"Corona barber",hoopGold:"Aros dorados",flowers:"Flores",headphones:"Cascos",
-  gold:"Dorado",dark:"Oscuro",red:"Rojo",blue:"Azul",paper:"Papiro",studio:"Estudio",street:"Calle",royal:"VIP",bronze:"Bronce",neon:"Neón",legend:"Leyenda",warm:"Brillo cálido",flame:"Aura fuego",ocean:"Aura mar",vip:"Aura VIP"
+  office:"Oficina",beach:"Playa",setup:"Setup gamer",camper:"Camper",terrace:"Terraza chill",reggae:"Escenario reggae",barberShop:"Barber studio",vipRoom:"Sala VIP",gold:"Dorado",dark:"Oscuro",red:"Rojo",blue:"Azul",paper:"Papiro",studio:"Estudio",street:"Calle",royal:"VIP",bronze:"Bronce",neon:"Neón",legend:"Leyenda",warm:"Brillo cálido",flame:"Aura fuego",ocean:"Aura mar",vip:"Aura VIP"
 };
 function avatarLabel(value,kind=null){
   if(kind==="face") return {oval:"Ovalada",round:"Redonda",sharp:"Afilada anime",square:"Cuadrada",heart:"Corazón",long:"Alargada"}[value]||AVATAR_LABELS[value]||value;
@@ -4039,7 +4065,7 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   const fallback=AVATAR_PRESETS[(Number(legacyAvatar)||0)%AVATAR_PRESETS.length]||DEFAULT_AVATAR_CONFIG;
   const cfg={...DEFAULT_AVATAR_CONFIG,...fallback,...(parsed||{})};
   const clamp=(n,max)=>Math.max(0,Math.min(max,Number.isFinite(Number(n))?Number(n):0));
-  cfg.version="2.0.1";
+  cfg.version="2.0.2";
   cfg.skin=clamp(cfg.skin,AVATAR_OPTIONS.skin.length-1);
   cfg.hairColor=clamp(cfg.hairColor,AVATAR_OPTIONS.hairColor.length-1);
   cfg.eyeColor=clamp(cfg.eyeColor,AVATAR_OPTIONS.eyeColor.length-1);
@@ -4107,7 +4133,24 @@ function randomAvatarConfig(gender=null){
   return normalizeAvatarConfig({...base,skin:Math.floor(Math.random()*AVATAR_OPTIONS.skin.length),hair:pick(selectedGender==="female"?FEMALE_HAIR:MALE_HAIR),hairColor:Math.floor(Math.random()*AVATAR_OPTIONS.hairColor.length),face:pick(AVATAR_OPTIONS.face),eyes:pick(AVATAR_OPTIONS.eyes),eyeColor:Math.floor(Math.random()*AVATAR_OPTIONS.eyeColor.length),brows:pick(AVATAR_OPTIONS.brows),facial:selectedGender==="female"?"none":pick(AVATAR_OPTIONS.facial),accessory:pick(BASIC_ACCESSORIES),bg:pick(["gold","dark","red","blue","paper","studio","street"])});
 }
 function bgGradient(bg){
-  const b={gold:"linear-gradient(145deg,#3A1E10,#D4AF37)",dark:"linear-gradient(145deg,#130906,#8B4513)",red:"linear-gradient(145deg,#5C0F0F,#F06A3B)",blue:"linear-gradient(145deg,#1A3A5C,#E1A85D)",paper:"linear-gradient(145deg,#6E3518,#FFF4D6)",studio:"linear-gradient(145deg,#24110A,#9A4F22 58%,#FFF4D6)",street:"linear-gradient(145deg,#120806,#1A3A5C 58%,#C97934)",royal:"linear-gradient(145deg,#150B07,#8B0000 45%,#D4AF37)"};
+  const b={
+    gold:"linear-gradient(145deg,#3A1E10,#D4AF37)",
+    dark:"linear-gradient(145deg,#130906,#8B4513)",
+    red:"linear-gradient(145deg,#5C0F0F,#F06A3B)",
+    blue:"linear-gradient(145deg,#1A3A5C,#E1A85D)",
+    paper:"linear-gradient(145deg,#6E3518,#FFF4D6)",
+    studio:"radial-gradient(circle at 72% 22%,#F2CF75 0 8%,transparent 9%),linear-gradient(145deg,#24110A,#9A4F22 58%,#FFF4D6)",
+    street:"linear-gradient(145deg,#120806,#1A3A5C 58%,#C97934)",
+    royal:"linear-gradient(145deg,#150B07,#8B0000 45%,#D4AF37)",
+    office:"radial-gradient(circle at 18% 22%,rgba(255,255,255,.24),transparent 18%),linear-gradient(145deg,#273449,#7B8FA8 50%,#E9D8B4)",
+    beach:"radial-gradient(circle at 18% 20%,#FFE18A 0 10%,transparent 11%),linear-gradient(145deg,#0077A6 0%,#4CC9E8 42%,#F4C97B 43%,#DFA95C 100%)",
+    setup:"radial-gradient(circle at 82% 20%,#7B3FA1 0 9%,transparent 10%),linear-gradient(145deg,#0B1020,#263F8F 48%,#12B5CB)",
+    camper:"radial-gradient(circle at 22% 18%,#FFE18A 0 9%,transparent 10%),linear-gradient(145deg,#4C6B35 0%,#8BA56D 38%,#D7B64C 39%,#9B5A38)",
+    terrace:"linear-gradient(145deg,#244B32 0%,#77A45C 45%,#E7C57A 46%,#7A4A28)",
+    reggae:"linear-gradient(145deg,#1C4D2F 0%,#1C4D2F 32%,#D7B64C 33%,#D7B64C 66%,#A72822 67%)",
+    barberShop:"radial-gradient(circle at 78% 18%,#F7E7BD 0 8%,transparent 9%),linear-gradient(145deg,#1C1711,#4E2B16 45%,#B99A45)",
+    vipRoom:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.42),transparent 24%),linear-gradient(145deg,#090604,#4B1848 52%,#D7B64C)"
+  };
   return b[bg]||b.gold;
 }
 
@@ -4121,6 +4164,15 @@ const COSMETIC_CATALOG_FALLBACK=[
   {item_key:"cap_gold",icono:"🧢",nombre:"Gorra Dorada de Capitán",descripcion:"Gorra premium con brillo dorado.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"accessory",valor:"capGold",puntos_precio:650,rareza:"raro",activo:true},
   {item_key:"frame_gold",icono:"🟡",nombre:"Marco Oro Caribe",descripcion:"Marco dorado para perfiles con progreso real.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"frame",valor:"gold",puntos_precio:760,rareza:"raro",activo:true},
   {item_key:"bg_royal",icono:"👑",nombre:"Fondo Camarote VIP",descripcion:"Fondo de perfil con ambiente de camarote exclusivo.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"royal",puntos_precio:900,rareza:"epico",activo:true},
+
+  {item_key:"bg_office",icono:"🏢",nombre:"Fondo Oficina Creativa",descripcion:"Fondo divertido de oficina para perfil y avatar.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"office",puntos_precio:260,rareza:"comun",activo:true},
+  {item_key:"bg_beach",icono:"🏖️",nombre:"Fondo Playa Chill",descripcion:"Playa cálida para perfiles con vibra verano.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"beach",puntos_precio:360,rareza:"comun",activo:true},
+  {item_key:"bg_setup",icono:"🖥️",nombre:"Fondo Setup Gamer",descripcion:"Setup moderno para perfiles digitales.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"setup",puntos_precio:520,rareza:"raro",activo:true},
+  {item_key:"bg_camper",icono:"🚐",nombre:"Fondo Camper",descripcion:"Ruta, libertad y barbería con ruedas.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"camper",puntos_precio:640,rareza:"raro",activo:true},
+  {item_key:"bg_terrace",icono:"🌿",nombre:"Fondo Terraza Chill",descripcion:"Terraza verde para perfiles tranquilos.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"terrace",puntos_precio:720,rareza:"raro",activo:true},
+  {item_key:"bg_reggae",icono:"🎛️",nombre:"Fondo Escenario Reggae",descripcion:"Fondo musical con colores rasta.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"reggae",puntos_precio:980,rareza:"epico",activo:true},
+  {item_key:"bg_barber_shop",icono:"💈",nombre:"Fondo Barber Studio",descripcion:"Estudio barber premium para avatar.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"barberShop",puntos_precio:1250,rareza:"epico",activo:true},
+  {item_key:"bg_vip_room",icono:"🛋️",nombre:"Fondo Sala VIP",descripcion:"Sala VIP legendaria para perfiles top.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"bg",valor:"vipRoom",puntos_precio:1800,rareza:"legendario",activo:true},
   {item_key:"aura_warm",icono:"🔥",nombre:"Aura Atardecer Caribe",descripcion:"Brillo cálido alrededor del avatar.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"aura",valor:"warm",puntos_precio:1100,rareza:"epico",activo:true},
   {item_key:"frame_neon",icono:"💠",nombre:"Marco Neón Taberna",descripcion:"Marco urbano luminoso para destacar.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"frame",valor:"neon",puntos_precio:1300,rareza:"epico",activo:true},
   {item_key:"aura_flame",icono:"🔥",nombre:"Aura Fuego del Barbero",descripcion:"Aura intensa para perfiles veteranos.",categoria:"avatar",tipo:"cosmetico_avatar",slot:"aura",valor:"flame",puntos_precio:1500,rareza:"epico",activo:true},
@@ -4345,7 +4397,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_1_LAYER_ENGINE";
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_2_LAYER_ENGINE";
 
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
@@ -4588,10 +4640,11 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
   const preset=(idx)=>setForm(f=>({...f,avatar:idx,avatarConfig:normalizeAvatarConfig(AVATAR_PRESETS[idx],idx)}));
   const visibleHair=cfg.gender==="female"?FEMALE_HAIR:MALE_HAIR;
   const panels=[
-    {id:"base",label:"Inventario",icon:"🎒"},
-    {id:"pelo",label:"Peinado",icon:"💇"},
-    {id:"cara",label:"Rostro",icon:"🙂"},
-    {id:"extras",label:"Apariencia",icon:"✨"}
+    {id:"base",label:"Base",icon:"⚧"},
+    {id:"pelo",label:"Pelo",icon:"💇"},
+    {id:"cara",label:"Cara",icon:"🙂"},
+    {id:"extras",label:"Extras",icon:"🧢"},
+    {id:"perfil",label:"Perfil",icon:"🖼️"}
   ];
   const hairPreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none"},form.avatar);
   const facePreviewBase=normalizeAvatarConfig({...cfg,accessory:"none",aura:"none",frame:"none",facial:"none"},form.avatar);
@@ -4641,8 +4694,8 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
               <MiniSectionTitle emoji="🧭" title="Tripulación base" sub="Presets pirata rasta"/>
               <OptionGrid cols={3}>{AVATAR_PRESETS.map((_,i)=><CharacterCard key={i} idx={i} selected={Number(form.avatar)===i} onPick={preset} compact/>)}</OptionGrid>
 
-              <MiniSectionTitle emoji="🖼️" title="Fondos" sub="Escenario"/>
-              <OptionGrid cols={4}>{AVATAR_OPTIONS.bg.map(v=><button key={v} type="button" onClick={()=>patch("bg",v)} style={{height:54,borderRadius:9,border:`2px solid ${cfg.bg===v?T.gold:"#8E7957"}`,background:bgGradient(v),boxShadow:cfg.bg===v?"0 0 0 2px rgba(95,142,34,.35)":"0 5px 12px rgba(0,0,0,.18)",cursor:"pointer",position:"relative"}}>{isLocked("bg",v)&&<span style={{position:"absolute",top:3,right:4}}>🔒</span>}</button>)}</OptionGrid>
+              <MiniSectionTitle emoji="🖼️" title="Fondos favoritos" sub="El resto está en Perfil"/>
+              <OptionGrid cols={2}>{["studio","beach","setup","camper"].map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.bg===v} locked={isLocked("bg",v)} onClick={()=>patch("bg",v)} sub={isLocked("bg",v)?"Tienda":"Listo"}><div style={{width:"100%",height:"100%",borderRadius:13,background:bgGradient(v),display:"grid",placeItems:"center",border:"1px solid rgba(255,244,214,.35)"}}><Av av={form.avatar} config={{...cfg,bg:v,frame:"none",aura:"none"}} size={76}/></div></VisualOption>)}</OptionGrid>
             </>}
 
             {panel==="pelo"&&<>
@@ -4662,6 +4715,15 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
               <OptionGrid cols={3}>{AVATAR_OPTIONS.eyes.map(v=><VisualOption key={v} label={avatarLabel(v,"eyes")} active={cfg.eyes===v} onClick={()=>patch("eyes",v)}><Av av={form.avatar} config={{...facePreviewBase,eyes:v,eyeColor:cfg.eyeColor,brows:cfg.brows,gender:cfg.gender}} size={98}/></VisualOption>)}</OptionGrid>
               <MiniSectionTitle emoji="🌈" title="Color de ojos"/>
               <div className="avatar-color-rack">{AVATAR_OPTIONS.eyeColor.map((c,i)=><LargeSwatch key={`${c}-${i}`} color={c} active={cfg.eyeColor===i} onClick={()=>patch("eyeColor",i)}/>)}</div>
+            </>}
+
+            {panel==="perfil"&&<>
+              <MiniSectionTitle emoji="🖼️" title="Fondos desbloqueables" sub="Oficina, playa, setup, camper y más"/>
+              <OptionGrid cols={2}>{AVATAR_OPTIONS.bg.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.bg===v} locked={isLocked("bg",v)} onClick={()=>patch("bg",v)} sub={isLocked("bg",v)?"Tienda":"Disponible"}><div style={{width:"100%",height:"100%",borderRadius:13,background:bgGradient(v),display:"grid",placeItems:"center",border:"1px solid rgba(255,244,214,.35)",boxShadow:"inset 0 1px 0 rgba(255,255,255,.20)"}}><Av av={form.avatar} config={{...cfg,bg:v,frame:"none",aura:"none"}} size={78}/></div></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="▧" title="Marcos" sub="Borde del avatar"/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.frame.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.frame===v} locked={isLocked("frame",v)} onClick={()=>patch("frame",v)}><Av av={form.avatar} config={{...cfg,frame:v,aura:"none"}} size={98}/></VisualOption>)}</OptionGrid>
+              <MiniSectionTitle emoji="✦" title="Auras" sub="Efecto especial"/>
+              <OptionGrid cols={3}>{AVATAR_OPTIONS.aura.map(v=><VisualOption key={v} label={AVATAR_LABELS[v]||v} active={cfg.aura===v} locked={isLocked("aura",v)} onClick={()=>patch("aura",v)}><Av av={form.avatar} config={{...cfg,aura:v}} size={98}/></VisualOption>)}</OptionGrid>
             </>}
 
             {panel==="extras"&&<>
