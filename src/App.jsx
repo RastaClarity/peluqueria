@@ -102,9 +102,9 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_0_BASE_AVATAR_LAYER_ENGINE";
-const APP_VERSION_SHORT="2.0";
-const APP_BUILD_DATE="2026-06-02";
+const APP_VERSION="RASTACUTS_2_0_1_EDITOR_AVATAR_GAME_UI";
+const APP_VERSION_SHORT="2.0.1";
+const APP_BUILD_DATE="2026-06-03";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
@@ -3745,6 +3745,129 @@ html,body,#root{
   .avatar-travian-editor .avatar-travian-window{max-width:980px!important;margin-left:auto!important;margin-right:auto!important}
 }
 
+
+/* ===== RASTA CUTS 2.0.1 — Editor Avatar Game UI ===== */
+.avatar-travian-editor{
+  --rc201-ink:#080604;
+  --rc201-panel:#171009;
+  --rc201-panel2:#24170B;
+  --rc201-gold:#D7B64C;
+  --rc201-cream:#F7E7BD;
+  --rc201-green:#5F8E22;
+  --rc201-red:#A72822;
+}
+.avatar-travian-window{
+  border-radius:26px!important;
+  overflow:hidden!important;
+  border:1px solid rgba(215,182,76,.55)!important;
+  background:
+    radial-gradient(circle at 50% -20%,rgba(215,182,76,.18),transparent 34%),
+    linear-gradient(180deg,#1A1008,#090604)!important;
+  box-shadow:0 24px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+.avatar-travian-window>div:first-child{
+  background:
+    linear-gradient(135deg,rgba(95,142,34,.28),transparent 38%),
+    linear-gradient(180deg,#2B1B0D,#120905)!important;
+  border-bottom:1px solid rgba(215,182,76,.44)!important;
+}
+.avatar-editor-layout-pro{
+  background:linear-gradient(135deg,#0C0905,#161006 55%,#231207)!important;
+}
+.avatar-options-panel-pro{
+  border-right:1px solid rgba(215,182,76,.45)!important;
+  background:linear-gradient(180deg,#100B06,#080604)!important;
+}
+.avatar-preview-panel-pro{
+  background:
+    radial-gradient(circle at 50% 20%,rgba(215,182,76,.20),transparent 32%),
+    linear-gradient(180deg,#130C06,#070403)!important;
+}
+.avatar-editor-tabs-pro{
+  display:flex!important;
+  gap:8px!important;
+  overflow-x:auto!important;
+  padding:10px!important;
+  border-bottom:1px solid rgba(215,182,76,.40)!important;
+  background:rgba(0,0,0,.22)!important;
+  scrollbar-width:none!important;
+}
+.avatar-editor-tabs-pro::-webkit-scrollbar{display:none!important}
+.avatar-travian-tab{
+  min-width:86px!important;
+  border-radius:16px!important;
+  background:linear-gradient(180deg,#24170B,#0E0804)!important;
+  border:1px solid rgba(247,231,189,.18)!important;
+  color:var(--rc201-cream)!important;
+  box-shadow:0 8px 18px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+.avatar-travian-tab:hover{
+  transform:translateY(-2px)!important;
+  filter:brightness(1.14)!important;
+}
+.avatar-travian-tab[style*="8E7957"],
+.avatar-travian-tab[style*="D5B24F"]{
+  background:linear-gradient(180deg,#F2D66D,#7B551C)!important;
+  color:#130B05!important;
+  border-color:#F7E7BD!important;
+}
+.avatar-editor-options-scroll-pro{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(95,142,34,.18),transparent 30%),
+    linear-gradient(180deg,#151006,#070403)!important;
+  max-height:620px!important;
+}
+.avatar-travian-grid{
+  gap:9px!important;
+}
+.avatar-travian-option,
+.visual-option{
+  border-radius:18px!important;
+  background:linear-gradient(180deg,#F8E9C6,#D8BE87)!important;
+  border:1px solid rgba(78,48,20,.55)!important;
+  box-shadow:0 10px 22px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.35)!important;
+}
+.avatar-travian-option:hover,
+.visual-option:hover{
+  transform:translateY(-3px) scale(1.015)!important;
+  filter:saturate(1.08) brightness(1.03)!important;
+}
+.avatar-color-rack{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:9px!important;
+  padding:10px!important;
+  border-radius:18px!important;
+  background:rgba(0,0,0,.18)!important;
+  border:1px solid rgba(215,182,76,.18)!important;
+}
+.avatar-preview-stage-pro,
+.avatar-preview-panel-pro [style*="place-items:center"]{
+  background:
+    radial-gradient(circle at 50% 24%,rgba(247,231,189,.26),transparent 35%),
+    linear-gradient(180deg,#26170A,#070403)!important;
+}
+@media (max-width:760px){
+  .avatar-editor-layout-pro{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  .avatar-options-panel-pro{
+    order:2!important;
+    border-right:0!important;
+    border-top:1px solid rgba(215,182,76,.40)!important;
+  }
+  .avatar-preview-panel-pro{
+    order:1!important;
+  }
+  .avatar-travian-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .avatar-editor-options-scroll-pro{
+    max-height:none!important;
+  }
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -3865,9 +3988,9 @@ const AVATAR_OPTIONS={
   aura:["none","warm","flame","ocean","vip"]
 };
 
-const DEFAULT_AVATAR_CONFIG={version:"2.0",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
-const DEFAULT_MALE_AVATAR={version:"2.0",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
-const DEFAULT_FEMALE_AVATAR={version:"2.0",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
+const DEFAULT_AVATAR_CONFIG={version:"2.0.1",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
+const DEFAULT_MALE_AVATAR={version:"2.0.1",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
+const DEFAULT_FEMALE_AVATAR={version:"2.0.1",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
   {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
@@ -3916,7 +4039,7 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   const fallback=AVATAR_PRESETS[(Number(legacyAvatar)||0)%AVATAR_PRESETS.length]||DEFAULT_AVATAR_CONFIG;
   const cfg={...DEFAULT_AVATAR_CONFIG,...fallback,...(parsed||{})};
   const clamp=(n,max)=>Math.max(0,Math.min(max,Number.isFinite(Number(n))?Number(n):0));
-  cfg.version="2.0";
+  cfg.version="2.0.1";
   cfg.skin=clamp(cfg.skin,AVATAR_OPTIONS.skin.length-1);
   cfg.hairColor=clamp(cfg.hairColor,AVATAR_OPTIONS.hairColor.length-1);
   cfg.eyeColor=clamp(cfg.eyeColor,AVATAR_OPTIONS.eyeColor.length-1);
@@ -4222,7 +4345,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_LAYER_ENGINE";
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_1_LAYER_ENGINE";
 
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
