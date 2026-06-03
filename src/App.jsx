@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_0_5_AUDIO_PRO";
-const APP_VERSION_SHORT="2.0.5";
+const APP_VERSION="RASTACUTS_2_0_5A_AUDIO_PRO_HOTFIX";
+const APP_VERSION_SHORT="2.0.5A";
 const APP_BUILD_DATE="2026-06-03";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -4139,9 +4139,9 @@ const AVATAR_OPTIONS={
   aura:["none","warm","flame","ocean","vip"]
 };
 
-const DEFAULT_AVATAR_CONFIG={version:"2.0.5",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
-const DEFAULT_MALE_AVATAR={version:"2.0.5",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
-const DEFAULT_FEMALE_AVATAR={version:"2.0.5",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
+const DEFAULT_AVATAR_CONFIG={version:"2.0.5A",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
+const DEFAULT_MALE_AVATAR={version:"2.0.5A",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
+const DEFAULT_FEMALE_AVATAR={version:"2.0.5A",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
   {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
@@ -4190,7 +4190,7 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   const fallback=AVATAR_PRESETS[(Number(legacyAvatar)||0)%AVATAR_PRESETS.length]||DEFAULT_AVATAR_CONFIG;
   const cfg={...DEFAULT_AVATAR_CONFIG,...fallback,...(parsed||{})};
   const clamp=(n,max)=>Math.max(0,Math.min(max,Number.isFinite(Number(n))?Number(n):0));
-  cfg.version="2.0.5";
+  cfg.version="2.0.5A";
   cfg.skin=clamp(cfg.skin,AVATAR_OPTIONS.skin.length-1);
   cfg.hairColor=clamp(cfg.hairColor,AVATAR_OPTIONS.hairColor.length-1);
   cfg.eyeColor=clamp(cfg.eyeColor,AVATAR_OPTIONS.eyeColor.length-1);
@@ -4522,8 +4522,29 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_5_LAYER_ENGINE";
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_5A_LAYER_ENGINE";
 
+
+
+function avatarColorForAccessory(value){
+  const map={
+    none:"transparent",
+    earring:"#D7B64C",
+    hoopGold:"#D7B64C",
+    glasses:"#17110A",
+    glassesGold:"#D7B64C",
+    bandana:"#A72822",
+    bandanaGreen:"#5F8E22",
+    cap:"#17110A",
+    capBlack:"#17110A",
+    capGold:"#D7B64C",
+    crown:"#D7B64C",
+    piercing:"#D7B64C",
+    flowers:"#E66A9A",
+    headphones:"#263F4D"
+  };
+  return map[value]||"#D7B64C";
+}
 
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
