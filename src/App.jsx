@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_0_5C_AUDIO_START_FIX";
-const APP_VERSION_SHORT="2.0.5C";
+const APP_VERSION="RASTACUTS_2_0_6B_AUDIO_RANDOM_VOLUME_FIX";
+const APP_VERSION_SHORT="2.0.6B";
 const APP_BUILD_DATE="2026-06-03";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -112,20 +112,21 @@ let masterVolume=0.72;
 let backgroundAudio=null,backgroundAudioAvailable=true;
 let backgroundTrackIndex=0,backgroundSourceTry=0,backgroundDuckedForGame=false;
 const BACKGROUND_PLAYLIST=[
-  {name:"Glass Lounge Loop",mood:"lounge",srcs:["/audio/Glass%20Lounge%20Loop.mp3","/audio/Glass Lounge Loop.mp3"]},
-  {name:"Quiet Rhodes Loop",mood:"chill",srcs:["/audio/Quiet%20Rhodes%20Loop.mp3","/audio/Quiet Rhodes Loop.mp3"]},
-  {name:"Velvet Reward Room",mood:"reward",srcs:["/audio/Velvet%20Reward%20Room.mp3","/audio/Velvet Reward Room.mp3"]},
-  {name:"Velvet Menu Glow",mood:"menu",srcs:["/audio/Velvet%20Menu%20Glow.mp3","/audio/Velvet Menu Glow.mp3"]},
-  {name:"Velvet Reward Shop",mood:"shop",srcs:["/audio/Velvet%20Reward%20Shop.mp3","/audio/Velvet Reward Shop.mp3"]},
-  {name:"Drift Through Linen",mood:"ambient",srcs:["/audio/Drift%20Through%20Linen.mp3","/audio/Drift Through Linen.mp3"]},
-  {name:"Velvet Menu Drift",mood:"menu",srcs:["/audio/Velvet%20Menu%20Drift.mp3","/audio/Velvet Menu Drift.mp3"]},
-  {name:"Velvet Tab Loop",mood:"tab",srcs:["/audio/Velvet%20Tab%20Loop.mp3","/audio/Velvet Tab Loop.mp3"]},
-  // Pistas antiguas de respaldo por si alguna nueva no está subida todavía.
-  {name:"Barbershop Arcade Dub",mood:"backup",srcs:["/audio/barbershop-arcade-dub.mp3","/audio/barbershop-arcade-dub(1).mp3"]},
-  {name:"Vinyl Arcade Skank",mood:"backup",srcs:["/audio/Vinyl%20Arcade%20Skank.mp3","/audio/vinyl-arcade-skank.mp3"]},
-  {name:"Neon Barbertron",mood:"backup",srcs:["/audio/Neon%20Barbertron.mp3","/audio/neon-barbertron.mp3"]}
+  {name:"Glass Lounge Loop",mood:"lounge",gain:1.00,srcs:["/audio/Glass%20Lounge%20Loop.mp3","/audio/Glass Lounge Loop.mp3"]},
+  {name:"Quiet Rhodes Loop",mood:"chill",gain:1.16,srcs:["/audio/Quiet%20Rhodes%20Loop.mp3","/audio/Quiet Rhodes Loop.mp3"]},
+  {name:"Velvet Reward Room",mood:"reward",gain:0.92,srcs:["/audio/Velvet%20Reward%20Room.mp3","/audio/Velvet Reward Room.mp3"]},
+  {name:"Velvet Menu Glow",mood:"menu",gain:0.94,srcs:["/audio/Velvet%20Menu%20Glow.mp3","/audio/Velvet Menu Glow.mp3"]},
+  {name:"Velvet Reward Shop",mood:"shop",gain:0.90,srcs:["/audio/Velvet%20Reward%20Shop.mp3","/audio/Velvet Reward Shop.mp3"]},
+  {name:"Drift Through Linen",mood:"ambient",gain:1.12,srcs:["/audio/Drift%20Through%20Linen.mp3","/audio/Drift Through Linen.mp3"]},
+  {name:"Velvet Menu Drift",mood:"menu",gain:1.04,srcs:["/audio/Velvet%20Menu%20Drift.mp3","/audio/Velvet Menu Drift.mp3"]},
+  {name:"Velvet Tab Loop",mood:"tab",gain:1.08,srcs:["/audio/Velvet%20Tab%20Loop.mp3","/audio/Velvet Tab Loop.mp3"]},
+  {name:"Barbershop Arcade Dub",mood:"backup",gain:0.95,srcs:["/audio/barbershop-arcade-dub.mp3","/audio/barbershop-arcade-dub(1).mp3"]},
+  {name:"Vinyl Arcade Skank",mood:"backup",gain:0.95,srcs:["/audio/Vinyl%20Arcade%20Skank.mp3","/audio/vinyl-arcade-skank.mp3"]},
+  {name:"Neon Barbertron",mood:"backup",gain:0.95,srcs:["/audio/Neon%20Barbertron.mp3","/audio/neon-barbertron.mp3"]}
 ];
 let currentMusicTrack=0,musicStep=0;
+let backgroundShuffleQueue=[];
+let musicButtonClickTimer=null;
 const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
 const NOTE_FREQ={
   C2:65.41,Cs2:69.30,Db2:69.30,D2:73.42,Ds2:77.78,Eb2:77.78,E2:82.41,F2:87.31,Fs2:92.50,Gb2:92.50,G2:98,Ab2:103.83,Gs2:103.83,A2:110,As2:116.54,Bb2:116.54,B2:123.47,
@@ -420,6 +421,16 @@ function tickLofiTrack(){
 function getBackgroundTrack(){
   return BACKGROUND_PLAYLIST[backgroundTrackIndex%BACKGROUND_PLAYLIST.length]||BACKGROUND_PLAYLIST[0];
 }
+function pickRandomBackgroundIndex(){
+  const len=BACKGROUND_PLAYLIST.length;
+  if(len<=1)return 0;
+  if(!backgroundShuffleQueue.length){
+    backgroundShuffleQueue=Array.from({length:len},(_,i)=>i)
+      .filter(i=>i!==backgroundTrackIndex)
+      .sort(()=>Math.random()-0.5);
+  }
+  return backgroundShuffleQueue.shift()??((backgroundTrackIndex+1)%len);
+}
 function getBackgroundName(){
   return getBackgroundTrack()?.name||"Rasta Cuts Lounge";
 }
@@ -430,7 +441,12 @@ function getBackgroundSrc(){
 }
 function backgroundTargetVolume(){
   if(globalMuted||backgroundDuckedForGame)return 0;
-  return Math.max(0,Math.min(1,masterVolume*0.48));
+  const track=getBackgroundTrack();
+  // Normalización suave por pista. Así no pega saltos raros entre temas.
+  const gain=Number(track?.gain)||1;
+  const base=Number.isFinite(masterVolume)?masterVolume:0.72;
+  // Evita que Ajustes a 0 deje la música "activada" pero inaudible.
+  return Math.max(0.34,Math.min(0.82,base*0.62*gain));
 }
 function applyBackgroundAudioState(){
   try{
@@ -458,6 +474,7 @@ function createBackgroundAudio(){
   a.crossOrigin="anonymous";
   a.volume=backgroundTargetVolume();
   a.muted=Boolean(globalMuted||backgroundDuckedForGame);
+  try{console.info("[RastaCuts audio]",getBackgroundName(),getBackgroundSrc(),"vol",a.volume);}catch{}
   a.addEventListener("ended",()=>nextMusicTrack(true));
   a.addEventListener("error",()=>{
     const track=getBackgroundTrack();
@@ -493,48 +510,44 @@ function startGeneratedMusic(){
 }
 function startMusic(){
   musicPlaying=true;
+  backgroundAudioAvailable=true;
   stopGeneratedMusic();
-  if(backgroundAudioAvailable){
+  backgroundDuckedForGame=false;
+  globalMuted=false;
+
+  const fallbackToSynth=()=>{
+    backgroundAudioAvailable=false;
+    if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
+  };
+
+  const tryPlayCurrent=(attempts=0)=>{
     const a=getBackgroundAudio();
-    if(a){
-      backgroundDuckedForGame=false;
-      globalMuted=false;
-      a.muted=false;
-      a.volume=backgroundTargetVolume();
-      a.play().then(()=>{
-        applyBackgroundAudioState();
-      }).catch(()=>{
-        // Si el navegador bloquea o el archivo falla, probamos la siguiente fuente/pista.
+    if(!a){fallbackToSynth();return;}
+    a.muted=false;
+    a.volume=backgroundTargetVolume();
+    const p=a.play();
+    if(!p||typeof p.then!=="function"){applyBackgroundAudioState();return;}
+    p.then(()=>applyBackgroundAudioState()).catch(()=>{
+      const track=getBackgroundTrack();
+      const total=track?.srcs?.length||1;
+      if(backgroundSourceTry<total-1){
         backgroundSourceTry++;
-        const track=getBackgroundTrack();
-        const total=track?.srcs?.length||1;
-        if(backgroundSourceTry<total){
-          resetBackgroundAudio();
-          const retry=getBackgroundAudio();
-          if(retry){
-            retry.muted=false;
-            retry.volume=backgroundTargetVolume();
-            retry.play().catch(()=>{});
-          }
-          return;
-        }
-        backgroundSourceTry=0;
-        backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
         resetBackgroundAudio();
-        const next=getBackgroundAudio();
-        if(next){
-          next.muted=false;
-          next.volume=backgroundTargetVolume();
-          next.play().catch(()=>{
-            backgroundAudioAvailable=false;
-            if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
-          });
-        }
-      });
-      return;
-    }
-  }
-  if(!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
+        tryPlayCurrent(attempts+1);
+        return;
+      }
+      if(attempts<BACKGROUND_PLAYLIST.length){
+        backgroundSourceTry=0;
+        backgroundTrackIndex=pickRandomBackgroundIndex();
+        resetBackgroundAudio();
+        tryPlayCurrent(attempts+1);
+        return;
+      }
+      fallbackToSynth();
+    });
+  };
+
+  tryPlayCurrent(0);
 }
 function stopMusic(){
   musicPlaying=false;
@@ -556,7 +569,7 @@ function muteMusicKeepTime(muted=true){
 }
 function nextMusicTrack(auto=false){
   if(backgroundAudioAvailable){
-    backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
+    backgroundTrackIndex=pickRandomBackgroundIndex();
     backgroundSourceTry=0;
     const wasPlaying=musicPlaying;
     resetBackgroundAudio();
@@ -564,13 +577,17 @@ function nextMusicTrack(auto=false){
       musicPlaying=true;
       const a=getBackgroundAudio();
       if(a){
-        applyBackgroundAudioState();
-        a.play().catch(()=>{});
+        a.muted=Boolean(globalMuted||backgroundDuckedForGame);
+        a.volume=backgroundTargetVolume();
+        a.play().then(()=>applyBackgroundAudioState()).catch(()=>{
+          backgroundAudioAvailable=false;
+          if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
+        });
       }
     }
     return;
   }
-  currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;
+  currentMusicTrack=Math.floor(Math.random()*REGGAE_LOFI_TRACKS.length);
   musicStep=0;
   if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame){setupMusicInterval();tickLofiTrack();}
 }
@@ -4147,8 +4164,8 @@ const AVATAR_STYLES=[
   {emoji:"👨🏾‍🎤",name:"Rock Fade",tag:"crestón punk",bg:"linear-gradient(145deg,#8B0000,#2C1810)"},
 ];
 
-const MALE_HAIR=["buzzFade","texturedCrop","sharpFade","dreadsLong","dreadsBun","dreadsTop","afro","mohawk","undercut"];
-const FEMALE_HAIR=["longWaves","braidsLong","curlyBob","highPonytail","bob","pixie","afroPuff","dreadsLong","dreadsBun","undercut"];
+const MALE_HAIR=["buzzFade","texturedCrop","sharpFade","dreadsLong","dreadsBun","dreadsTop","afro","mohawk","undercut","shortLocs","twistsTop","locPonytail"];
+const FEMALE_HAIR=["longWaves","braidsLong","curlyBob","highPonytail","bob","pixie","afroPuff","dreadsLong","dreadsBun","undercut","spaceBuns","sideBraids","longStraight"];
 const BEARD_VALUES=["stubble","moustache","goatee","shortBeard","beard","full"];
 const BASIC_ACCESSORIES=["none","earring","hoopGold","glasses","bandana","cap","piercing","flowers","headphones"];
 
@@ -4168,16 +4185,16 @@ const AVATAR_OPTIONS={
   aura:["none","warm","flame","ocean","vip"]
 };
 
-const DEFAULT_AVATAR_CONFIG={version:"2.0.5C",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
-const DEFAULT_MALE_AVATAR={version:"2.0.5C",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
-const DEFAULT_FEMALE_AVATAR={version:"2.0.5C",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
+const DEFAULT_AVATAR_CONFIG={version:"2.0.6B",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
+const DEFAULT_MALE_AVATAR={version:"2.0.6B",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
+const DEFAULT_FEMALE_AVATAR={version:"2.0.6B",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
   {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
-  {gender:"male",skin:4,hair:"dreadsBun",hairColor:0,face:"oval",eyes:"round",eyeColor:2,brows:"strong",facial:"beard",accessory:"earring",bg:"street"},
+  {gender:"male",skin:4,hair:"locPonytail",hairColor:0,face:"oval",eyes:"round",eyeColor:2,brows:"strong",facial:"beard",accessory:"earring",bg:"street"},
   {gender:"female",skin:3,hair:"longWaves",hairColor:4,face:"oval",eyes:"sharp",eyeColor:5,brows:"strong",facial:"none",accessory:"bandana",bg:"red"},
   {gender:"male",skin:2,hair:"mohawk",hairColor:0,face:"sharp",eyes:"sharp",eyeColor:0,brows:"angry",facial:"goatee",accessory:"piercing",bg:"paper"},
-  {gender:"female",skin:5,hair:"afroPuff",hairColor:1,face:"round",eyes:"smile",eyeColor:3,brows:"soft",facial:"none",accessory:"flowers",bg:"studio"},
+  {gender:"female",skin:5,hair:"spaceBuns",hairColor:1,face:"round",eyes:"smile",eyeColor:3,brows:"soft",facial:"none",accessory:"flowers",bg:"studio"},
   {gender:"male",skin:1,hair:"sharpFade",hairColor:3,face:"square",eyes:"glam",eyeColor:4,brows:"thin",facial:"stubble",accessory:"capBlack",bg:"royal"},
   {gender:"female",skin:1,hair:"undercut",hairColor:9,face:"sharp",eyes:"anime",eyeColor:4,brows:"angry",facial:"none",accessory:"glassesGold",bg:"dark"},
   {gender:"male",skin:5,hair:"afro",hairColor:0,face:"long",eyes:"sleepy",eyeColor:1,brows:"soft",facial:"full",accessory:"glasses",bg:"blue"},
@@ -4186,8 +4203,8 @@ const AVATAR_PRESETS=[
   {gender:"female",skin:4,hair:"highPonytail",hairColor:7,face:"long",eyes:"sharp",eyeColor:1,brows:"strong",facial:"none",accessory:"piercing",bg:"blue"},
   {gender:"male",skin:1,hair:"buzzFade",hairColor:0,face:"heart",eyes:"anime",eyeColor:5,brows:"arched",facial:"none",accessory:"crown",bg:"royal"},
   {gender:"female",skin:2,hair:"bob",hairColor:6,face:"square",eyes:"sleepy",eyeColor:2,brows:"thin",facial:"none",accessory:"earring",bg:"paper"},
-  {gender:"male",skin:2,hair:"texturedCrop",hairColor:5,face:"round",eyes:"sharp",eyeColor:3,brows:"angry",facial:"shortBeard",accessory:"headphones",bg:"studio"},
-  {gender:"female",skin:2,hair:"dreadsLong",hairColor:10,face:"oval",eyes:"round",eyeColor:0,brows:"strong",facial:"none",accessory:"bandanaGreen",bg:"street"},
+  {gender:"male",skin:2,hair:"twistsTop",hairColor:5,face:"round",eyes:"sharp",eyeColor:3,brows:"angry",facial:"shortBeard",accessory:"headphones",bg:"setup"},
+  {gender:"female",skin:2,hair:"sideBraids",hairColor:10,face:"oval",eyes:"round",eyeColor:0,brows:"strong",facial:"none",accessory:"bandanaGreen",bg:"terrace"},
 ];
 const AVATAR_PRESET_NAMES=[
   "Capitán Dread","Reina Marea","Corsario Rasta","Sirena Rebelde",
@@ -4198,7 +4215,7 @@ const AVATAR_PRESET_NAMES=[
 const AVATAR_LABELS={
   gender:"Sexo",male:"Masculino",female:"Femenino",skin:"Piel",hair:"Peinado",hairColor:"Color pelo",face:"Cara",eyes:"Ojos",eyeColor:"Color ojos",brows:"Cejas",facial:"Barba/bigote",accessory:"Complemento",bg:"Fondo",
   oval:"Ovalada",square:"Cuadrada",heart:"Corazón",long:"Alargada",
-  buzzFade:"Rapado fade",texturedCrop:"Crop texturizado",sharpFade:"Degradado limpio",dreadsLong:"Rastas largas",dreadsBun:"Nudo rasta",dreadsTop:"Rastas arriba",afro:"Afro redondo",afroPuff:"Afro puff",braidsLong:"Trenzas largas",curlyBob:"Rizos bob",longWaves:"Melena ondas",highPonytail:"Coleta alta",bob:"Bob liso",pixie:"Pixie corto",mohawk:"Cresta punk",undercut:"Undercut",
+  buzzFade:"Rapado fade",texturedCrop:"Crop texturizado",sharpFade:"Degradado limpio",dreadsLong:"Rastas largas",dreadsBun:"Nudo rasta",dreadsTop:"Rastas arriba",afro:"Afro redondo",afroPuff:"Afro puff",braidsLong:"Trenzas largas",curlyBob:"Rizos bob",longWaves:"Melena ondas",highPonytail:"Coleta alta",bob:"Bob liso",pixie:"Pixie corto",mohawk:"Cresta punk",undercut:"Undercut",shortLocs:"Rastas cortas",twistsTop:"Twists altos",locPonytail:"Rastas recogidas",spaceBuns:"Doble moño",sideBraids:"Trenzas laterales",longStraight:"Melena lisa",
   soft:"Suaves",strong:"Marcadas",angry:"Intensas",thin:"Finas",arched:"Arqueadas",anime:"Anime",sleepy:"Relajados",smile:"Sonrientes",glam:"Glam",
   none:"Nada",stubble:"Sombra",moustache:"Bigote",goatee:"Perilla",shortBeard:"Barba corta",beard:"Barba",full:"Barba completa",
   earring:"Pendiente",glasses:"Gafas",bandana:"Bandana",cap:"Gorra",piercing:"Piercing",capBlack:"Gorra negra",capGold:"Gorra dorada",glassesGold:"Gafas doradas",bandanaGreen:"Bandana verde",crown:"Corona barber",hoopGold:"Aros dorados",flowers:"Flores",headphones:"Cascos",
@@ -4219,7 +4236,7 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   const fallback=AVATAR_PRESETS[(Number(legacyAvatar)||0)%AVATAR_PRESETS.length]||DEFAULT_AVATAR_CONFIG;
   const cfg={...DEFAULT_AVATAR_CONFIG,...fallback,...(parsed||{})};
   const clamp=(n,max)=>Math.max(0,Math.min(max,Number.isFinite(Number(n))?Number(n):0));
-  cfg.version="2.0.5C";
+  cfg.version="2.0.6B";
   cfg.skin=clamp(cfg.skin,AVATAR_OPTIONS.skin.length-1);
   cfg.hairColor=clamp(cfg.hairColor,AVATAR_OPTIONS.hairColor.length-1);
   cfg.eyeColor=clamp(cfg.eyeColor,AVATAR_OPTIONS.eyeColor.length-1);
@@ -4288,22 +4305,22 @@ function randomAvatarConfig(gender=null){
 }
 function bgGradient(bg){
   const b={
-    gold:"linear-gradient(145deg,#3A1E10,#D4AF37)",
-    dark:"linear-gradient(145deg,#130906,#8B4513)",
-    red:"linear-gradient(145deg,#5C0F0F,#F06A3B)",
-    blue:"linear-gradient(145deg,#1A3A5C,#E1A85D)",
-    paper:"linear-gradient(145deg,#6E3518,#FFF4D6)",
-    studio:"radial-gradient(circle at 72% 22%,#F2CF75 0 8%,transparent 9%),linear-gradient(145deg,#24110A,#9A4F22 58%,#FFF4D6)",
-    street:"linear-gradient(145deg,#120806,#1A3A5C 58%,#C97934)",
-    royal:"linear-gradient(145deg,#150B07,#8B0000 45%,#D4AF37)",
-    office:"radial-gradient(circle at 18% 22%,rgba(255,255,255,.24),transparent 18%),linear-gradient(145deg,#273449,#7B8FA8 50%,#E9D8B4)",
-    beach:"radial-gradient(circle at 18% 20%,#FFE18A 0 10%,transparent 11%),linear-gradient(145deg,#0077A6 0%,#4CC9E8 42%,#F4C97B 43%,#DFA95C 100%)",
-    setup:"radial-gradient(circle at 82% 20%,#7B3FA1 0 9%,transparent 10%),linear-gradient(145deg,#0B1020,#263F8F 48%,#12B5CB)",
-    camper:"radial-gradient(circle at 22% 18%,#FFE18A 0 9%,transparent 10%),linear-gradient(145deg,#4C6B35 0%,#8BA56D 38%,#D7B64C 39%,#9B5A38)",
-    terrace:"linear-gradient(145deg,#244B32 0%,#77A45C 45%,#E7C57A 46%,#7A4A28)",
-    reggae:"linear-gradient(145deg,#1C4D2F 0%,#1C4D2F 32%,#D7B64C 33%,#D7B64C 66%,#A72822 67%)",
-    barberShop:"radial-gradient(circle at 78% 18%,#F7E7BD 0 8%,transparent 9%),linear-gradient(145deg,#1C1711,#4E2B16 45%,#B99A45)",
-    vipRoom:"radial-gradient(circle at 50% 20%,rgba(255,241,168,.42),transparent 24%),linear-gradient(145deg,#090604,#4B1848 52%,#D7B64C)"
+    gold:"linear-gradient(180deg,#5B2E12 0%,#B7791F 48%,#F2D66D 100%)",
+    dark:"linear-gradient(180deg,#110907 0%,#2A120B 52%,#7A4A28 100%)",
+    red:"linear-gradient(180deg,#3A0909 0%,#8C1C13 48%,#F06A3B 100%)",
+    blue:"linear-gradient(180deg,#13243D 0%,#1A5B8F 48%,#7ED6E8 100%)",
+    paper:"linear-gradient(180deg,#815128 0%,#D7B177 38%,#FFF4D6 100%)",
+    studio:"linear-gradient(180deg,#120A08 0%,#50301C 55%,#F2CF75 100%)",
+    street:"linear-gradient(180deg,#120806 0%,#2B2430 40%,#556B8D 72%,#C97934 100%)",
+    royal:"linear-gradient(180deg,#140806 0%,#3C0E17 38%,#7E0D28 64%,#D4AF37 100%)",
+    office:"linear-gradient(180deg,#3C556F 0%,#94AFC9 56%,#E9D8B4 100%)",
+    beach:"linear-gradient(180deg,#79D7F3 0%,#12B5CB 44%,#0077A6 48%,#F4C97B 49%,#DFA95C 100%)",
+    setup:"linear-gradient(180deg,#090E19 0%,#17274C 44%,#263F8F 70%,#12B5CB 100%)",
+    camper:"linear-gradient(180deg,#A7D6F8 0%,#8BA56D 46%,#D7B64C 47%,#8F5A34 100%)",
+    terrace:"linear-gradient(180deg,#B9E3FF 0%,#77A45C 46%,#E7C57A 47%,#7A4A28 100%)",
+    reggae:"linear-gradient(180deg,#1C4D2F 0%,#1C4D2F 33%,#D7B64C 33%,#D7B64C 66%,#A72822 66%,#A72822 100%)",
+    barberShop:"linear-gradient(180deg,#1B1510 0%,#4E2B16 48%,#B99A45 100%)",
+    vipRoom:"linear-gradient(180deg,#11080E 0%,#4B1848 58%,#D7B64C 100%)"
   };
   return b[bg]||b.gold;
 }
@@ -4551,7 +4568,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_5C_LAYER_ENGINE";
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_6B_LAYER_ENGINE";
 
 
 
@@ -4675,34 +4692,63 @@ function AvatarFigure({config,size=80,animated=false}){
   };
 
   const BackHair=()=>{
-    if(["dreadsLong","braidsLong"].includes(cfg.hair)){
-      return <g>
-        {[55,66,78,90,110,122,134,145].map((x,i)=><path key={x} d={`M${x} 50 C${x-10+(i%3)*6} 84 ${x-18+(i%4)*7} 130 ${x-6+(i%2)*12} 201`} stroke={hairLo} strokeWidth="9" strokeLinecap="round" fill="none"/>)}
-      </g>;
+    if(cfg.hair==="dreadsLong"){
+      return <g>{[52,64,76,88,100,112,124,136,148].map((x,i)=><path key={x} d={`M${x} 54 C${x-10+(i%2)*6} 90 ${x-16+(i%3)*5} 135 ${x-8+(i%2)*10} 206`} stroke={hairLo} strokeWidth="9" strokeLinecap="round" fill="none"/>)} </g>;
+    }
+    if(cfg.hair==="braidsLong"){
+      return <g>{[56,68,80,92,108,120,132,144].map((x,i)=><g key={x}><path d={`M${x} 56 C${x-6} 90 ${x-6+(i%2)*4} 134 ${x-2} 204`} stroke={hairLo} strokeWidth="6.4" strokeLinecap="round" fill="none"/><path d={`M${x-5} 86 L${x+1} 92 M${x-5} 106 L${x+1} 112 M${x-4} 126 L${x+2} 132 M${x-4} 146 L${x+2} 152 M${x-3} 166 L${x+3} 172`} stroke={hairHi} strokeWidth="1.4" opacity=".34"/></g>)}</g>;
+    }
+    if(cfg.hair==="sideBraids"){
+      return <g><path d="M58 66 C42 95 40 153 45 208" stroke={hairLo} strokeWidth="8" strokeLinecap="round" fill="none"/><path d="M142 66 C158 95 160 153 155 208" stroke={hairLo} strokeWidth="8" strokeLinecap="round" fill="none"/></g>;
+    }
+    if(cfg.hair==="longStraight"){
+      return <g><path d="M52 54 C45 96 48 162 59 208 L74 208 C68 164 68 102 74 60" fill={hairLo}/><path d="M126 60 C132 102 132 164 126 208 L141 208 C152 162 155 96 148 54" fill={hairLo}/></g>;
+    }
+    if(cfg.hair==="spaceBuns"){
+      return <g><circle cx="64" cy="39" r="19" fill={hairLo}/><circle cx="136" cy="39" r="19" fill={hairLo}/><path d="M55 64 C38 96 45 160 62 198 C71 174 74 131 72 96" fill={hairLo}/><path d="M145 64 C162 96 155 160 138 198 C129 174 126 131 128 96" fill={hairLo}/></g>;
+    }
+    if(cfg.hair==="locPonytail"){
+      return <g><path d="M118 50 C150 68 160 124 145 205" stroke={hairLo} strokeWidth="11" strokeLinecap="round" fill="none"/>{[122,130,138].map((x,i)=><path key={x} d={`M${x} 64 C${x+18} 90 ${x+14} 142 ${x+5} 202`} stroke={hairLo} strokeWidth="7" strokeLinecap="round" fill="none"/> )}</g>;
     }
     if(["longWaves","bob","curlyBob","highPonytail"].includes(cfg.hair)){
       return <path d="M52 58 C35 96 42 164 60 206 C73 194 78 160 74 126 C70 90 80 60 100 51 C120 60 130 90 126 126 C122 160 127 194 140 206 C158 164 165 96 148 58 C133 37 67 37 52 58Z" fill={hairLo}/>;
     }
-    if(["afro","afroPuff"].includes(cfg.hair)){
+    if(cfg.hair==="afro"){
       return <g fill={hairLo}><ellipse cx="100" cy="61" rx="56" ry="42"/><circle cx="61" cy="66" r="27"/><circle cx="139" cy="66" r="27"/><circle cx="76" cy="43" r="26"/><circle cx="124" cy="43" r="26"/></g>;
     }
-    if(["dreadsBun","dreadsTop"].includes(cfg.hair)){
-      return <g>{cfg.hair==="dreadsBun"&&<circle cx="100" cy="27" r="21" fill={hairLo}/>}</g>;
+    if(cfg.hair==="afroPuff"){
+      return <g><circle cx="63" cy="56" r="28" fill={hairLo}/><circle cx="137" cy="56" r="28" fill={hairLo}/><path d="M56 76 C72 54 128 54 144 76 C126 68 74 68 56 76Z" fill={hairLo}/></g>;
     }
+    if(cfg.hair==="dreadsBun") return <g><circle cx="100" cy="27" r="21" fill={hairLo}/></g>;
+    if(cfg.hair==="highPonytail") return <g><circle cx="102" cy="28" r="21" fill={hairLo}/></g>;
     return null;
   };
 
   const FrontHair=()=>{
     const band=<g><path d="M55 67 C75 51 125 51 145 67" stroke={green} strokeWidth="7" strokeLinecap="round"/><path d="M61 63 C79 55 121 55 139 63" stroke={gold} strokeWidth="4" strokeLinecap="round"/><path d="M68 60 C84 56 116 56 132 60" stroke={red} strokeWidth="3" strokeLinecap="round"/></g>;
     if(cfg.accessory==="bandana"||cfg.accessory==="bandanaGreen") return null;
-    if(cfg.hair==="buzzFade") return <path d="M56 75 C67 43 133 43 144 75 C122 62 78 62 56 75Z" fill={hairLo}/>;
-    if(["sharpFade","texturedCrop","undercut"].includes(cfg.hair)) return <g><path d="M54 77 C67 42 132 40 147 74 C121 66 80 66 54 77Z" fill={hairLo}/><path d="M67 71 C82 59 118 58 134 70" stroke={hairHi} strokeWidth="4" opacity=".42" strokeLinecap="round"/></g>;
+    if(cfg.hair==="buzzFade") return <g><path d="M56 76 C66 48 134 48 144 76 C122 66 78 66 56 76Z" fill={hairLo}/><path d="M70 69 C82 62 118 62 130 69" stroke={hairHi} strokeWidth="3" opacity=".34" fill="none" strokeLinecap="round"/></g>;
+    if(cfg.hair==="texturedCrop") return <g><path d="M54 77 C64 43 136 40 147 73 C130 72 119 73 108 76 C92 81 74 81 54 77Z" fill={hairLo}/>{[68,82,96,110,124].map(x=><path key={x} d={`M${x} 63 L${x+8} 55`} stroke={hairHi} strokeWidth="2.5" opacity=".42" strokeLinecap="round"/> )}</g>;
+    if(cfg.hair==="sharpFade") return <g><path d="M53 78 C60 46 125 35 147 70 C132 69 115 69 98 76 C81 83 66 83 53 78Z" fill={hairLo}/><path d="M67 64 C88 48 118 49 136 61" stroke={hairHi} strokeWidth="4" opacity=".42" strokeLinecap="round" fill="none"/></g>;
+    if(cfg.hair==="undercut") return <g><path d="M53 78 C59 55 97 38 145 66 C126 70 107 76 92 88 C79 80 66 78 53 78Z" fill={hairLo}/><path d="M90 58 C109 55 128 57 143 65" stroke={hairHi} strokeWidth="3.6" opacity=".4" strokeLinecap="round" fill="none"/></g>;
     if(cfg.hair==="mohawk") return <path d="M100 21 C83 48 91 71 100 89 C109 71 117 48 100 21Z" fill={hairLo} stroke={line} strokeWidth="1.4"/>;
+    if(cfg.hair==="shortLocs") return <g>{[62,74,86,98,110,122,134].map((x,i)=><path key={x} d={`M${x} 62 C${x-1} 49 ${x+1} 46 ${x} 70`} stroke={hairLo} strokeWidth="8" strokeLinecap="round" fill="none"/>)}<path d="M58 68 C70 48 130 48 142 68" stroke={hairLo} strokeWidth="10" strokeLinecap="round" fill="none"/></g>;
+    if(cfg.hair==="twistsTop") return <g>{[60,72,84,96,108,120,132].map((x,i)=><path key={x} d={`M${x} 64 C${x-6} 36 ${x+7} 34 ${x+1} 58`} stroke={hairLo} strokeWidth="7" strokeLinecap="round" fill="none"/>)}<path d="M58 69 C74 45 126 45 142 69" stroke={hairLo} strokeWidth="10" strokeLinecap="round" fill="none"/></g>;
+    if(cfg.hair==="locPonytail") return <g>{band}<path d="M55 68 C74 47 118 48 136 60" stroke={hairLo} strokeWidth="11" strokeLinecap="round" fill="none"/>{[118,126,134].map((x,i)=><path key={x} d={`M${x} 58 C${x+16} 68 ${x+17} 84 ${x+8} 101`} stroke={hairLo} strokeWidth="6.8" strokeLinecap="round" fill="none"/> )}</g>;
     if(cfg.hair==="dreadsTop") return <g>{band}{[63,76,89,102,115,128,141].map((x,i)=><path key={x} d={`M${x} 62 C${x-9} 30 ${x+7} 23 ${x+2} 51`} stroke={hairLo} strokeWidth="9" strokeLinecap="round" fill="none"/>)}</g>;
     if(cfg.hair==="dreadsBun") return <g>{band}<circle cx="100" cy="28" r="20" fill={hairLo}/>{[72,86,100,114,128].map(x=><path key={x} d={`M${x} 64 C${x-6} 38 ${x+7} 31 ${x+2} 54`} stroke={hairLo} strokeWidth="8" strokeLinecap="round" fill="none"/>)}</g>;
-    if(["dreadsLong","braidsLong"].includes(cfg.hair)) return <g>{band}<path d="M53 71 C73 48 127 48 147 71" fill="none" stroke={hairLo} strokeWidth="12" strokeLinecap="round"/></g>;
-    if(["afro","afroPuff"].includes(cfg.hair)) return <g><ellipse cx="100" cy="62" rx="58" ry="39" fill={hairLo}/><path d="M53 78 C70 58 130 58 147 78" stroke={hairHi} strokeWidth="5" opacity=".28" fill="none" strokeLinecap="round"/></g>;
-    if(["longWaves","bob","curlyBob","pixie","highPonytail"].includes(cfg.hair)) return <g>{cfg.hair==="highPonytail"&&<circle cx="100" cy="27" r="20" fill={hairLo}/>}<path d="M53 80 C68 46 132 46 147 80 C122 68 78 68 53 80Z" fill={hairLo}/><path d="M64 74 C80 59 120 59 136 74" stroke={hairHi} strokeWidth="5" opacity=".35" strokeLinecap="round" fill="none"/></g>;
+    if(cfg.hair==="dreadsLong") return <g>{band}<path d="M53 71 C73 48 127 48 147 71" fill="none" stroke={hairLo} strokeWidth="12" strokeLinecap="round"/></g>;
+    if(cfg.hair==="braidsLong") return <g><path d="M56 72 C76 50 124 50 144 72" fill="none" stroke={hairLo} strokeWidth="9" strokeLinecap="round"/>{[70,84,98,112,126].map((x,i)=><path key={x} d={`M${x} 72 L${x+3} 84 M${x} 85 L${x+3} 97`} stroke={hairHi} strokeWidth="1.7" opacity=".4"/> )}</g>;
+    if(cfg.hair==="afro") return <g><ellipse cx="100" cy="62" rx="58" ry="39" fill={hairLo}/><path d="M53 78 C70 58 130 58 147 78" stroke={hairHi} strokeWidth="5" opacity=".28" fill="none" strokeLinecap="round"/></g>;
+    if(cfg.hair==="afroPuff") return <g><circle cx="65" cy="58" r="28" fill={hairLo}/><circle cx="135" cy="58" r="28" fill={hairLo}/><path d="M58 80 C75 59 125 59 142 80 C118 72 82 72 58 80Z" fill={hairLo}/><path d="M69 76 C80 67 120 67 131 76" stroke={hairHi} strokeWidth="4" opacity=".28" fill="none" strokeLinecap="round"/></g>;
+    if(cfg.hair==="spaceBuns") return <g><circle cx="64" cy="36" r="18" fill={hairLo}/><circle cx="136" cy="36" r="18" fill={hairLo}/><path d="M56 79 C68 47 132 47 144 79 C120 68 80 68 56 79Z" fill={hairLo}/></g>;
+    if(cfg.hair==="sideBraids") return <g><path d="M55 77 C68 48 132 48 145 77 C122 68 78 68 55 77Z" fill={hairLo}/><path d="M58 76 C53 96 50 122 50 159" stroke={hairLo} strokeWidth="7" strokeLinecap="round" fill="none"/><path d="M142 76 C147 96 150 122 150 159" stroke={hairLo} strokeWidth="7" strokeLinecap="round" fill="none"/></g>;
+    if(cfg.hair==="longStraight") return <g><path d="M53 80 C68 44 132 44 147 80 C122 69 78 69 53 80Z" fill={hairLo}/><path d="M70 79 L70 160 M88 76 L88 164 M112 76 L112 164 M130 79 L130 160" stroke={hairHi} strokeWidth="2" opacity=".23"/></g>;
+    if(cfg.hair==="longWaves") return <g><path d="M53 80 C68 46 132 46 147 80 C122 68 78 68 53 80Z" fill={hairLo}/><path d="M64 74 C80 59 120 59 136 74" stroke={hairHi} strokeWidth="5" opacity=".35" strokeLinecap="round" fill="none"/></g>;
+    if(cfg.hair==="bob") return <g><path d="M53 80 C68 48 132 48 147 80 C122 70 78 70 53 80Z" fill={hairLo}/></g>;
+    if(cfg.hair==="curlyBob") return <g><path d="M53 80 C68 46 132 46 147 80 C122 68 78 68 53 80Z" fill={hairLo}/><path d="M56 82 C62 92 68 95 75 98 M144 82 C138 92 132 95 125 98" stroke={hairHi} strokeWidth="3" opacity=".32" fill="none" strokeLinecap="round"/></g>;
+    if(cfg.hair==="pixie") return <g><path d="M54 79 C65 47 131 45 145 70 C121 69 93 69 54 79Z" fill={hairLo}/><path d="M73 67 C90 58 118 58 134 65" stroke={hairHi} strokeWidth="4" opacity=".32" fill="none" strokeLinecap="round"/></g>;
+    if(cfg.hair==="highPonytail") return <g><circle cx="100" cy="27" r="20" fill={hairLo}/><path d="M53 80 C68 46 132 46 147 80 C122 68 78 68 53 80Z" fill={hairLo}/><path d="M64 74 C80 59 120 59 136 74" stroke={hairHi} strokeWidth="5" opacity=".35" strokeLinecap="round" fill="none"/></g>;
     return <path d="M56 75 C67 43 133 43 144 75 C122 62 78 62 56 75Z" fill={hairLo}/>;
   };
 
@@ -4776,11 +4822,26 @@ function AvatarFigure({config,size=80,animated=false}){
   </svg>;
 }
 
+
+function AvatarBgScene({bg}){
+  const common={position:"absolute",inset:0,pointerEvents:"none",opacity:.96};
+  const style=(s)=>({position:"absolute",...s});
+  if(bg==="office") return <div style={common}><div style={style({left:"10%",top:"10%",width:"80%",height:"40%",border:"2px solid rgba(255,255,255,.35)",borderRadius:10,background:"linear-gradient(180deg,rgba(255,255,255,.24),rgba(173,216,230,.12))"})}/><div style={style({left:"49%",top:"10%",width:2,height:"40%",background:"rgba(255,255,255,.25)"})}/><div style={style({left:"10%",top:"30%",width:"80%",height:2,background:"rgba(255,255,255,.18)"})}/><div style={style({left:"18%",bottom:"18%",width:"64%",height:"10%",borderRadius:999,background:"rgba(41,29,22,.42)"})}/><div style={style({right:"15%",bottom:"22%",width:"10%",height:"18%",background:"rgba(37,88,55,.52)",borderRadius:"6px 6px 10px 10px"})}/></div>;
+  if(bg==="beach") return <div style={common}><div style={style({left:"12%",top:"14%",width:28,height:28,borderRadius:"50%",background:"rgba(255,225,138,.82)"})}/><div style={style({left:0,right:0,bottom:"32%",height:"4%",background:"rgba(255,255,255,.35)"})}/><div style={style({left:"76%",bottom:"28%",width:4,height:"30%",background:"rgba(89,64,39,.62)",transform:"rotate(10deg)",transformOrigin:"bottom center"})}/><div style={style({left:"72%",bottom:"48%",width:"10%",height:"7%",borderRadius:"50% 0 50% 0",background:"rgba(40,92,52,.65)",transform:"rotate(-35deg)"})}/><div style={style({left:"79%",bottom:"51%",width:"10%",height:"7%",borderRadius:"0 50% 0 50%",background:"rgba(40,92,52,.65)",transform:"rotate(35deg)"})}/></div>;
+  if(bg==="setup") return <div style={common}><div style={style({left:"18%",bottom:"24%",width:"64%",height:"9%",background:"rgba(18,22,38,.60)",borderRadius:999})}/><div style={style({left:"24%",top:"22%",width:"52%",height:"28%",border:"2px solid rgba(95,215,255,.42)",borderRadius:10,background:"radial-gradient(circle at 50% 50%,rgba(123,63,161,.35),rgba(18,181,203,.24))"})}/><div style={style({left:"47%",top:"50%",width:"6%",height:"10%",background:"rgba(18,22,38,.55)"})}/><div style={style({left:"38%",top:"58%",width:"24%",height:"4%",background:"rgba(18,22,38,.55)",borderRadius:999})}/></div>;
+  if(bg==="camper") return <div style={common}><div style={style({left:"9%",top:"15%",width:26,height:26,borderRadius:"50%",background:"rgba(255,225,138,.78)"})}/><div style={style({left:"16%",bottom:"25%",width:"68%",height:"16%",background:"rgba(90,64,34,.55)",borderRadius:16})}/><div style={style({left:"28%",bottom:"31%",width:"20%",height:"7%",background:"rgba(215,182,76,.78)",borderRadius:8})}/><div style={style({left:"53%",bottom:"31%",width:"12%",height:"6%",background:"rgba(173,216,230,.45)",borderRadius:6})}/><div style={style({left:"28%",bottom:"20%",width:"11%",height:"11%",borderRadius:"50%",background:"rgba(20,16,12,.70)"})}/><div style={style({left:"61%",bottom:"20%",width:"11%",height:"11%",borderRadius:"50%",background:"rgba(20,16,12,.70)"})}/></div>;
+  if(bg==="terrace") return <div style={common}><div style={style({left:"8%",right:"8%",bottom:"20%",height:"8%",background:"rgba(122,74,40,.60)"})}/><div style={style({left:"18%",bottom:"28%",width:"12%",height:"18%",background:"rgba(44,98,55,.60)",borderRadius:"6px 6px 12px 12px"})}/><div style={style({left:"62%",bottom:"28%",width:"12%",height:"18%",background:"rgba(44,98,55,.60)",borderRadius:"6px 6px 12px 12px"})}/><div style={style({left:"20%",top:"18%",width:"60%",height:"20%",borderRadius:999,border:"2px solid rgba(255,255,255,.18)"})}/></div>;
+  if(bg==="barberShop") return <div style={common}><div style={style({left:"16%",top:"12%",width:"68%",height:"24%",borderRadius:10,border:"2px solid rgba(255,255,255,.28)",background:"rgba(255,255,255,.08)"})}/><div style={style({left:"18%",bottom:"20%",width:"64%",height:"12%",background:"rgba(78,43,22,.55)",borderRadius:999})}/><div style={style({left:"22%",bottom:"34%",width:"8%",height:"14%",background:"rgba(215,182,76,.42)",borderRadius:4})}/><div style={style({left:"34%",bottom:"34%",width:"8%",height:"14%",background:"rgba(215,182,76,.42)",borderRadius:4})}/><div style={style({left:"46%",bottom:"34%",width:"8%",height:"14%",background:"rgba(215,182,76,.42)",borderRadius:4})}/></div>;
+  if(bg==="reggae") return <div style={common}><div style={style({left:0,right:0,top:"22%",height:"10%",background:"rgba(28,77,47,.54)"})}/><div style={style({left:0,right:0,top:"32%",height:"10%",background:"rgba(215,182,76,.42)"})}/><div style={style({left:0,right:0,top:"42%",height:"10%",background:"rgba(167,40,34,.44)"})}/><div style={style({left:"25%",bottom:"23%",width:"6%",height:"22%",background:"rgba(20,16,12,.58)"})}/><div style={style({left:"58%",bottom:"23%",width:"6%",height:"22%",background:"rgba(20,16,12,.58)"})}/><div style={style({left:"18%",bottom:"42%",width:"20%",height:"4%",background:"rgba(20,16,12,.58)",transform:"rotate(-12deg)"})}/><div style={style({left:"56%",bottom:"42%",width:"20%",height:"4%",background:"rgba(20,16,12,.58)",transform:"rotate(12deg)"})}/></div>;
+  if(bg==="vipRoom") return <div style={common}><div style={style({left:"12%",top:"12%",width:"76%",height:"20%",borderRadius:999,background:"rgba(255,241,168,.20)"})}/><div style={style({left:"22%",bottom:"22%",width:"56%",height:"14%",background:"rgba(75,24,72,.55)",borderRadius:18})}/><div style={style({left:"17%",bottom:"28%",width:"10%",height:"10%",background:"rgba(75,24,72,.55)",borderRadius:12})}/><div style={style({right:"17%",bottom:"28%",width:"10%",height:"10%",background:"rgba(75,24,72,.55)",borderRadius:12})}/></div>;
+  return null;
+}
+
 function Av({av=0,config=null,size=36}){
   const cfg=normalizeAvatarConfig(config,av);
   const frame={none:`2px solid rgba(255,244,214,.9)`,bronze:`3px solid #C97934`,gold:`3px solid #D4AF37`,neon:`3px solid #5FD7FF`,legend:`3px solid #FFF1A8`}[cfg.frame]||`2px solid rgba(255,244,214,.9)`;
   const aura={none:"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)",warm:"0 0 22px rgba(212,175,55,.45), 0 8px 18px rgba(20,8,4,.28)",flame:"0 0 26px rgba(240,106,59,.55), 0 8px 18px rgba(20,8,4,.28)",ocean:"0 0 26px rgba(95,215,255,.45), 0 8px 18px rgba(20,8,4,.28)",vip:"0 0 30px rgba(255,241,168,.7), 0 8px 18px rgba(20,8,4,.28)"}[cfg.aura]||"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)";
-  return <div title={avatarStyleName(cfg)} style={{width:size,height:size,borderRadius:"50%",background:bgGradient(cfg.bg),display:"flex",alignItems:"center",justifyContent:"center",border:frame,boxShadow:aura,position:"relative",overflow:"hidden",perspective:500}}>{cfg.aura!=="none"&&<span style={{position:"absolute",inset:3,borderRadius:"50%",background:"radial-gradient(circle at 35% 18%,rgba(255,255,255,.28),transparent 42%)",pointerEvents:"none"}}/>}<span style={{position:"absolute",top:0,bottom:0,width:"38%",left:"-45%",background:"linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent)",animation:size>70?"avatarShinePro 5.2s ease-in-out infinite":"none"}}/><AvatarFigure config={cfg} size={size*1.22} animated={size>=70}/></div>;
+  return <div title={avatarStyleName(cfg)} style={{width:size,height:size,borderRadius:"50%",background:bgGradient(cfg.bg),display:"flex",alignItems:"center",justifyContent:"center",border:frame,boxShadow:aura,position:"relative",overflow:"hidden",perspective:500}}><AvatarBgScene bg={cfg.bg}/>{cfg.aura!=="none"&&<span style={{position:"absolute",inset:3,borderRadius:"50%",background:"radial-gradient(circle at 35% 18%,rgba(255,255,255,.28),transparent 42%)",pointerEvents:"none"}}/>}<span style={{position:"absolute",top:0,bottom:0,width:"38%",left:"-45%",background:"linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent)",animation:size>70?"avatarShinePro 5.2s ease-in-out infinite":"none"}}/><AvatarFigure config={cfg} size={size*1.22} animated={size>=70}/></div>;
 }
 function CharacterCard({idx,selected,onPick,compact=false}){
   const cfg=normalizeAvatarConfig(AVATAR_PRESETS[idx%AVATAR_PRESETS.length],idx);
@@ -4798,7 +4859,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
   const [section,setSection]=useState("base");
   const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
   const premiumKeys=new Set(ownedKeys||[]);
-  const isLocked=(slot,value)=>COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slot&&c.valor===value&&!premiumKeys.has(c.item_key));
+  const isLocked=(slot,value)=> slot==="bg" ? false : COSMETIC_CATALOG_FALLBACK.some(c=>c.slot===slot&&c.valor===value&&!premiumKeys.has(c.item_key));
   const applyConfig=(next)=>setForm(f=>({...f,avatarConfig:normalizeAvatarConfig(next,f.avatar)}));
   const patch=(key,value)=>{
     if(isLocked(key,value)){SFX.error();return;}
@@ -4849,11 +4910,28 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     const common={width:"100%",height:"100%",viewBox:"0 0 120 80",style:{display:"block"}};
     if(type==="hair"){
       const band=<><path d="M24 38 C43 22 77 22 96 38" stroke="#5F8E22" strokeWidth="7" strokeLinecap="round"/><path d="M30 34 C48 26 72 26 90 34" stroke="#D7B64C" strokeWidth="4" strokeLinecap="round"/><path d="M36 31 C50 27 70 27 84 31" stroke="#A72822" strokeWidth="3" strokeLinecap="round"/></>;
-      if(value==="dreadsLong"||value==="braidsLong") return <svg {...common}>{band}{[28,40,52,64,76,88].map((x,i)=><path key={x} d={`M${x} 34 C${x-10+i%2*7} 50 ${x-7+i%3*5} 62 ${x-5+i%2*10} 75`} stroke={c2} strokeWidth="7" strokeLinecap="round" fill="none"/>)}</svg>;
-      if(value==="dreadsTop"||value==="dreadsBun") return <svg {...common}>{band}{[34,44,54,64,74,84].map((x,i)=><path key={x} d={`M${x} 33 C${x-5} 12 ${x+7} 8 ${x+2} 27`} stroke={c2} strokeWidth="8" strokeLinecap="round" fill="none"/>)}{value==="dreadsBun"&&<circle cx="60" cy="18" r="13" fill={c2}/>}</svg>;
-      if(value==="afro"||value==="afroPuff") return <svg {...common}><ellipse cx="60" cy="42" rx="44" ry="28" fill={c2}/><circle cx="36" cy="29" r="17" fill={c2}/><circle cx="84" cy="29" r="17" fill={c2}/><path d="M25 48 C42 34 78 34 95 48" stroke={hairHi} strokeWidth="4" opacity=".45" fill="none"/></svg>;
+      if(value==="dreadsLong") return <svg {...common}>{band}{[26,38,50,62,74,86,98].map((x,i)=><path key={x} d={`M${x} 34 C${x-8+(i%2)*3} 50 ${x-10+(i%3)*4} 63 ${x-7+(i%2)*10} 77`} stroke={c2} strokeWidth="7.5" strokeLinecap="round" fill="none"/>)}<path d="M24 38 C42 28 78 28 96 38" stroke={hairHi} strokeWidth="2.5" opacity=".3" fill="none"/></svg>;
+      if(value==="braidsLong") return <svg {...common}><path d="M22 35 C40 20 80 20 98 35" stroke={c2} strokeWidth="8" strokeLinecap="round" fill="none"/>{[26,38,50,62,74,86,98].map((x,i)=><g key={x}><path d={`M${x} 35 C${x-4} 49 ${x-4+(i%2)*3} 61 ${x-3} 75`} stroke={c2} strokeWidth="5.4" strokeLinecap="round" fill="none"/><path d={`M${x-3} 49 L${x+1} 53 M${x-4} 58 L${x+1} 62 M${x-3} 67 L${x+1} 71`} stroke={hairHi} strokeWidth="1.8" opacity=".45"/></g>)}</svg>;
+      if(value==="dreadsTop") return <svg {...common}>{band}{[34,44,54,64,74,84].map((x,i)=><path key={x} d={`M${x} 34 C${x-5} 11 ${x+7} 8 ${x+2} 27`} stroke={c2} strokeWidth="8" strokeLinecap="round" fill="none"/>)}</svg>;
+      if(value==="dreadsBun") return <svg {...common}>{band}<circle cx="60" cy="18" r="13" fill={c2}/>{[35,47,59,71,83].map((x,i)=><path key={x} d={`M${x} 35 C${x-5} 15 ${x+5} 14 ${x+1} 29`} stroke={c2} strokeWidth="7" strokeLinecap="round" fill="none"/>)}</svg>;
+      if(value==="shortLocs") return <svg {...common}>{[26,38,50,62,74,86,98].map((x,i)=><path key={x} d={`M${x} 35 C${x-2} 27 ${x+2} 27 ${x} 47`} stroke={c2} strokeWidth="8" strokeLinecap="round" fill="none"/>)}<path d="M22 36 C38 22 82 22 98 36" stroke={c2} strokeWidth="10" strokeLinecap="round" fill="none"/></svg>;
+      if(value==="twistsTop") return <svg {...common}>{[30,42,54,66,78,90].map((x,i)=><path key={x} d={`M${x} 36 C${x-4} 18 ${x+6} 17 ${x+1} 35`} stroke={c2} strokeWidth="7" strokeLinecap="round" fill="none"/>)}<path d="M26 40 C40 24 80 24 94 40" stroke={c2} strokeWidth="10" strokeLinecap="round" fill="none"/></svg>;
+      if(value==="locPonytail") return <svg {...common}>{band}<circle cx="84" cy="18" r="10" fill={c2}/><path d="M25 42 C42 21 76 21 92 39" stroke={c2} strokeWidth="10" strokeLinecap="round" fill="none"/>{[78,88,98].map((x,i)=><path key={x} d={`M${x} 32 C${x+9} 36 ${x+11} 48 ${x+7} 64`} stroke={c2} strokeWidth="6" strokeLinecap="round" fill="none"/>)} </svg>;
+      if(value==="afro") return <svg {...common}><ellipse cx="60" cy="42" rx="44" ry="28" fill={c2}/><circle cx="36" cy="29" r="17" fill={c2}/><circle cx="84" cy="29" r="17" fill={c2}/><path d="M25 48 C42 34 78 34 95 48" stroke={hairHi} strokeWidth="4" opacity=".45" fill="none"/></svg>;
+      if(value==="afroPuff") return <svg {...common}><circle cx="38" cy="32" r="16" fill={c2}/><circle cx="82" cy="32" r="16" fill={c2}/><path d="M24 48 C34 26 86 26 96 48 C82 39 38 39 24 48Z" fill={c2}/><path d="M33 44 C46 35 74 35 87 44" stroke={hairHi} strokeWidth="3" opacity=".35" fill="none"/></svg>;
       if(value==="mohawk") return <svg {...common}><path d="M60 12 C40 31 49 51 60 65 C71 51 80 31 60 12Z" fill={c2} stroke={stroke} strokeWidth="2"/></svg>;
-      if(value==="longWaves"||value==="bob"||value==="curlyBob"||value==="pixie"||value==="highPonytail") return <svg {...common}><path d="M24 50 C30 18 90 18 96 50 C78 39 42 39 24 50Z" fill={c2}/><path d="M32 43 C47 31 73 31 88 43" stroke={hairHi} strokeWidth="4" opacity=".45" fill="none"/></svg>;
+      if(value==="buzzFade") return <svg {...common}><path d="M25 48 C36 25 84 25 95 48 C74 39 46 39 25 48Z" fill={c2}/><path d="M33 38 C45 31 75 31 87 38" stroke={hairHi} strokeWidth="2.2" opacity=".35" fill="none"/></svg>;
+      if(value==="texturedCrop") return <svg {...common}><path d="M22 48 C28 24 88 21 98 43 C80 39 70 41 56 45 C45 48 34 49 22 48Z" fill={c2}/>{[30,40,50,60,70,80].map(x=><path key={x} d={`M${x} 34 L${x+6} 26`} stroke={hairHi} strokeWidth="2.2" strokeLinecap="round" opacity=".4"/> )}</svg>;
+      if(value==="sharpFade") return <svg {...common}><path d="M24 49 C28 26 74 18 97 39 C84 39 69 38 57 46 C47 52 36 51 24 49Z" fill={c2}/><path d="M35 40 C53 24 78 24 91 34" stroke={hairHi} strokeWidth="2.8" strokeLinecap="round" opacity=".42" fill="none"/></svg>;
+      if(value==="undercut") return <svg {...common}><path d="M20 50 C25 32 68 22 96 35 C86 39 75 43 68 50 C53 45 39 44 20 50Z" fill={c2}/><path d="M58 30 C72 29 85 31 95 37" stroke={hairHi} strokeWidth="2.4" strokeLinecap="round" opacity=".42" fill="none"/></svg>;
+      if(value==="longWaves") return <svg {...common}><path d="M22 50 C28 18 92 18 98 50 C80 36 40 36 22 50Z" fill={c2}/><path d="M30 43 C44 32 76 32 90 43" stroke={hairHi} strokeWidth="4" opacity=".45" fill="none"/></svg>;
+      if(value==="longStraight") return <svg {...common}><path d="M24 22 L96 22 L96 52 C80 44 40 44 24 52Z" fill={c2}/><path d="M34 22 L34 54 M48 22 L48 52 M72 22 L72 52 M86 22 L86 54" stroke={hairHi} strokeWidth="2" opacity=".26"/></svg>;
+      if(value==="sideBraids") return <svg {...common}><path d="M24 40 C38 21 82 21 96 40" stroke={c2} strokeWidth="9" strokeLinecap="round" fill="none"/><path d="M24 40 C21 50 19 60 18 76" stroke={c2} strokeWidth="6" strokeLinecap="round"/><path d="M96 40 C99 50 101 60 102 76" stroke={c2} strokeWidth="6" strokeLinecap="round"/><path d="M16 52 L22 56 M15 61 L21 65 M100 52 L94 56 M101 61 L95 65" stroke={hairHi} strokeWidth="1.8" opacity=".4"/></svg>;
+      if(value==="spaceBuns") return <svg {...common}><circle cx="34" cy="22" r="12" fill={c2}/><circle cx="86" cy="22" r="12" fill={c2}/><path d="M24 48 C30 24 90 24 96 48 C78 39 42 39 24 48Z" fill={c2}/></svg>;
+      if(value==="curlyBob") return <svg {...common}><path d="M22 50 C28 20 92 20 98 50 C80 39 40 39 22 50Z" fill={c2}/><path d="M26 49 C34 54 40 57 48 58 C44 50 44 43 50 38 M94 49 C86 54 80 57 72 58 C76 50 76 43 70 38" stroke={hairHi} strokeWidth="2.4" opacity=".35" fill="none"/></svg>;
+      if(value==="bob") return <svg {...common}><path d="M24 49 C29 24 91 24 96 49 C80 43 40 43 24 49Z" fill={c2}/></svg>;
+      if(value==="pixie") return <svg {...common}><path d="M26 46 C35 23 83 22 93 40 C74 38 49 40 26 46Z" fill={c2}/><path d="M34 37 C45 31 69 31 83 36" stroke={hairHi} strokeWidth="2.2" opacity=".42" fill="none"/></svg>;
+      if(value==="highPonytail") return <svg {...common}><circle cx="64" cy="16" r="12" fill={c2}/><path d="M24 50 C30 21 90 21 96 50 C80 39 40 39 24 50Z" fill={c2}/><path d="M48 22 C58 15 71 15 80 22" stroke={hairHi} strokeWidth="2.5" opacity=".4" fill="none"/></svg>;
       return <svg {...common}><path d="M25 50 C35 22 85 22 95 50 C72 40 48 40 25 50Z" fill={c2} stroke={stroke} strokeWidth="2"/></svg>;
     }
     if(type==="eyes") return <svg {...common}><ellipse cx="40" cy="40" rx={value==="round"?14:value==="sharp"?18:16} ry={value==="sleepy"?4:value==="smile"?5:10} fill="#FFF8EA" stroke={stroke} strokeWidth="3"/><ellipse cx="80" cy="40" rx={value==="round"?14:value==="sharp"?18:16} ry={value==="sleepy"?4:value==="smile"?5:10} fill="#FFF8EA" stroke={stroke} strokeWidth="3"/><circle cx="40" cy="40" r="5" fill={eyeColor}/><circle cx="80" cy="40" r="5" fill={eyeColor}/>{value==="glam"&&<g stroke={stroke} strokeWidth="2"><path d="M22 34 L14 29"/><path d="M98 34 L106 29"/></g>}</svg>;
@@ -4958,7 +5036,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     </>;
     if(section==="fondo") return <>
       <SectionTitle title="Fondos" sub="Oficina, playa, setup, camper y fondos premium"/>
-      <Grid cols={2}>{AVATAR_OPTIONS.bg.map(v=><OptionCard key={v} slot="bg" value={v} label={AVATAR_LABELS[v]||v} locked={isLocked("bg",v)} sub={isLocked("bg",v)?"Tienda":"Disponible"}><div style={{width:"100%",height:"100%",borderRadius:12,background:bgGradient(v),border:"1px solid rgba(255,244,214,.35)"}}/></OptionCard>)}</Grid>
+      <Grid cols={2}>{AVATAR_OPTIONS.bg.map(v=><OptionCard key={v} slot="bg" value={v} label={AVATAR_LABELS[v]||v} locked={isLocked("bg",v)} sub={isLocked("bg",v)?"Tienda":"Disponible"}><div style={{width:"100%",height:"100%",borderRadius:12,background:bgGradient(v),border:"1px solid rgba(255,244,214,.35)",position:"relative",overflow:"hidden"}}><AvatarBgScene bg={v}/></div></OptionCard>)}</Grid>
       <div style={{height:12}}/>
       <SectionTitle title="Marco y aura"/>
       <Grid cols={3}>{AVATAR_OPTIONS.frame.map(v=><OptionCard key={v} slot="frame" value={v} label={AVATAR_LABELS[v]||v} locked={isLocked("frame",v)}><Av av={form.avatar} config={{...cfg,frame:v,aura:"none"}} size={58}/></OptionCard>)}</Grid>
@@ -15414,8 +15492,6 @@ function AppCore(){
   function toggleMusic(){
     if(appSettings?.secciones?.musica_activa===false){showToast("La música está desactivada desde Ajustes");SFX.error();return;}
 
-    // Si todavía no se ha arrancado la música, el primer toque debe ACTIVARLA.
-    // Antes el primer toque podía caer en "silenciar" porque globalMuted estaba en false.
     if(!musicPlaying){
       globalMuted=false;
       backgroundDuckedForGame=false;
@@ -15434,6 +15510,7 @@ function AppCore(){
     showToast(nextMuted?"Sonido silenciado. La canción sigue avanzando.":"Sonido activado");
   }
   function changeMusicTrack(){
+    if(musicButtonClickTimer){clearTimeout(musicButtonClickTimer);musicButtonClickTimer=null;}
     if(!musicPlaying){
       globalMuted=false;
       setMusicOn(true);
@@ -15442,7 +15519,15 @@ function AppCore(){
     }
     nextMusicTrack(false);
     SFX.tab();
-    showToast(`Tema: ${backgroundAudioAvailable?getBackgroundName():(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);
+    showToast(`Tema aleatorio: ${backgroundAudioAvailable?getBackgroundName():(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);
+  }
+  function handleMusicButtonClick(){
+    if(musicButtonClickTimer)clearTimeout(musicButtonClickTimer);
+    musicButtonClickTimer=setTimeout(()=>{musicButtonClickTimer=null;toggleMusic();},230);
+  }
+  function handleMusicButtonDoubleClick(){
+    if(musicButtonClickTimer){clearTimeout(musicButtonClickTimer);musicButtonClickTimer=null;}
+    changeMusicTrack();
   }
   function toggleUiTheme(){
     setUiTheme(prev=>{
@@ -15531,7 +15616,7 @@ function AppCore(){
           <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones · campana de avisos y citas" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
           <button className="header-action-pro wallet-button-pro" onClick={()=>setWalletOpen(true)} title="Cartera · puntos, saldo y límite diario" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>👛</button>
           <button className="header-action-pro cart-button-pro" onClick={()=>setCartOpen(true)} title="Carrito · compras y personalización" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🛒</button>
-          <button className="header-action-pro" onClick={toggleMusic} onDoubleClick={changeMusicTrack} title={musicOn?`Doble toque: reiniciar tema (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
+          <button className="header-action-pro" onClick={handleMusicButtonClick} onDoubleClick={handleMusicButtonDoubleClick} title={musicOn?`Doble toque: canción aleatoria (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           <button className="header-action-pro theme-toggle-pro" onClick={toggleUiTheme} title={uiTheme==="night"?"Cambiar a modo día":"Cambiar a modo noche"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.72rem",display:"inline-flex",alignItems:"center",gap:4}}>{uiTheme==="night"?"☀️":"🌙"} <span className="theme-word">{uiTheme==="night"?"Día":"Noche"}</span></button>
           {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
           <div className="header-action-pro" onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
