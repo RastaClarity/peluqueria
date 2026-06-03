@@ -102,19 +102,28 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_0_4_AVATAR_RETOQUE_VISUAL";
-const APP_VERSION_SHORT="2.0.4";
+const APP_VERSION="RASTACUTS_2_0_5_AUDIO_PRO";
+const APP_VERSION_SHORT="2.0.5";
 const APP_BUILD_DATE="2026-06-03";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
-let masterVolume=0.7;
+let masterVolume=0.72;
 let backgroundAudio=null,backgroundAudioAvailable=true;
-let backgroundTrackIndex=0,backgroundSourceTry=0;
+let backgroundTrackIndex=0,backgroundSourceTry=0,backgroundDuckedForGame=false;
 const BACKGROUND_PLAYLIST=[
-  {name:"Barbershop Arcade Dub",srcs:["/audio/barbershop-arcade-dub.mp3","/audio/barbershop-arcade-dub(1).mp3"]},
-  {name:"Vinyl Arcade Skank",srcs:["/audio/Vinyl%20Arcade%20Skank.mp3","/audio/vinyl-arcade-skank.mp3"]},
-  {name:"Neon Barbertron",srcs:["/audio/Neon%20Barbertron.mp3","/audio/neon-barbertron.mp3"]}
+  {name:"Glass Lounge Loop",mood:"lounge",srcs:["/audio/Glass%20Lounge%20Loop.mp3","/audio/Glass Lounge Loop.mp3"]},
+  {name:"Quiet Rhodes Loop",mood:"chill",srcs:["/audio/Quiet%20Rhodes%20Loop.mp3","/audio/Quiet Rhodes Loop.mp3"]},
+  {name:"Velvet Reward Room",mood:"reward",srcs:["/audio/Velvet%20Reward%20Room.mp3","/audio/Velvet Reward Room.mp3"]},
+  {name:"Velvet Menu Glow",mood:"menu",srcs:["/audio/Velvet%20Menu%20Glow.mp3","/audio/Velvet Menu Glow.mp3"]},
+  {name:"Velvet Reward Shop",mood:"shop",srcs:["/audio/Velvet%20Reward%20Shop.mp3","/audio/Velvet Reward Shop.mp3"]},
+  {name:"Drift Through Linen",mood:"ambient",srcs:["/audio/Drift%20Through%20Linen.mp3","/audio/Drift Through Linen.mp3"]},
+  {name:"Velvet Menu Drift",mood:"menu",srcs:["/audio/Velvet%20Menu%20Drift.mp3","/audio/Velvet Menu Drift.mp3"]},
+  {name:"Velvet Tab Loop",mood:"tab",srcs:["/audio/Velvet%20Tab%20Loop.mp3","/audio/Velvet Tab Loop.mp3"]},
+  // Pistas antiguas de respaldo por si alguna nueva no está subida todavía.
+  {name:"Barbershop Arcade Dub",mood:"backup",srcs:["/audio/barbershop-arcade-dub.mp3","/audio/barbershop-arcade-dub(1).mp3"]},
+  {name:"Vinyl Arcade Skank",mood:"backup",srcs:["/audio/Vinyl%20Arcade%20Skank.mp3","/audio/vinyl-arcade-skank.mp3"]},
+  {name:"Neon Barbertron",mood:"backup",srcs:["/audio/Neon%20Barbertron.mp3","/audio/neon-barbertron.mp3"]}
 ];
 let currentMusicTrack=0,musicStep=0;
 const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
@@ -295,28 +304,33 @@ function playChord(notes,kind="piano",dur=0.22,vol=0.026,delay=0){
   notes.forEach((n,i)=>playInstrument(n,kind,dur*1.18,vol*.60,delay+i*.032));
 }
 const SFX={
-  nav:()=>{playTone(430,"sine",0.08,0.075);playTone(560,"sine",0.09,0.055,0.055);},
-  navBack:()=>{playTone(360,"sine",0.08,0.06);playTone(300,"sine",0.09,0.045,0.055);},
-  tab:()=>{playTone(520,"sine",0.055,0.06);playTone(660,"sine",0.06,0.045,0.045);},
-  click:()=>{playTone(440,"sine",0.045,0.045);},
-  action:()=>{playTone(520,"sine",0.08,0.07);playTone(690,"sine",0.08,0.05,0.06);},
-  coins:()=>{[659,784,988,1175].forEach((f,i)=>playTone(f,"sine",0.11,0.075,i*0.055));},
-  success:()=>{[523,659,784].forEach((f,i)=>playTone(f,"sine",0.12,0.075,i*0.07));},
-  error:()=>{playTone(246,"sine",0.16,0.055);playTone(220,"sine",0.15,0.04,0.10);},
+  nav:()=>playUiSound("page"),
+  navBack:()=>playUiSound("back"),
+  tab:()=>playUiSound("tab"),
+  click:()=>playUiSound("tap"),
+  action:()=>playUiSound("action"),
+  coins:()=>playUiSound("money"),
+  success:()=>playUiSound("success"),
+  error:()=>playUiSound("error"),
+  notify:()=>playUiSound("notify"),
 };
 function playUiSound(kind="tap"){
   if(globalMuted)return;
   const patterns={
-    tap:[[520,.045,.026,0]],
-    page:[[392,.06,.028,0],[523,.08,.022,.045],[659,.10,.018,.09]],
-    back:[[392,.055,.026,0],[294,.08,.020,.05]],
-    shop:[[659,.07,.024,0],[784,.08,.022,.055],[988,.09,.017,.11]],
-    game:[[330,.055,.025,0],[494,.075,.022,.04],[660,.11,.018,.10]],
-    social:[[440,.06,.024,0],[587,.07,.020,.05]],
-    admin:[[220,.07,.022,0],[330,.08,.018,.06]],
-    profile:[[523,.05,.022,0],[698,.07,.018,.06]],
-    money:[[784,.055,.026,0],[988,.06,.024,.045],[1175,.08,.020,.09]],
-    error:[[246,.12,.026,0],[196,.14,.020,.09]]
+    tap:[[520,.035,.018,0],[720,.026,.012,.025]],
+    tab:[[620,.040,.018,0],[830,.030,.012,.035]],
+    page:[[392,.055,.022,0],[523,.065,.018,.045],[659,.075,.014,.090]],
+    back:[[392,.050,.020,0],[294,.070,.015,.052]],
+    action:[[520,.055,.022,0],[690,.060,.017,.052]],
+    shop:[[660,.050,.020,0],[880,.055,.017,.048],[1175,.065,.013,.096]],
+    game:[[330,.055,.020,0],[494,.070,.017,.045],[660,.090,.013,.105]],
+    social:[[440,.050,.019,0],[587,.060,.015,.045]],
+    admin:[[220,.060,.018,0],[330,.072,.014,.058]],
+    profile:[[523,.050,.018,0],[698,.062,.014,.055]],
+    money:[[784,.052,.021,0],[988,.054,.018,.044],[1175,.065,.014,.088],[1568,.070,.010,.132]],
+    notify:[[880,.050,.019,0],[1175,.060,.014,.06]],
+    success:[[523,.060,.020,0],[659,.068,.017,.060],[784,.076,.014,.120]],
+    error:[[246,.110,.023,0],[196,.125,.018,.085]]
   };
   (patterns[kind]||patterns.tap).forEach(([f,d,v,delay])=>playTone(f,"sine",d,v,delay));
 }
@@ -407,12 +421,24 @@ function getBackgroundTrack(){
   return BACKGROUND_PLAYLIST[backgroundTrackIndex%BACKGROUND_PLAYLIST.length]||BACKGROUND_PLAYLIST[0];
 }
 function getBackgroundName(){
-  return getBackgroundTrack()?.name||"Rasta Cuts Dub";
+  return getBackgroundTrack()?.name||"Rasta Cuts Lounge";
 }
 function getBackgroundSrc(){
   const track=getBackgroundTrack();
   const srcs=track?.srcs||[];
-  return srcs[backgroundSourceTry%Math.max(1,srcs.length)]||"/audio/barbershop-arcade-dub.mp3";
+  return srcs[backgroundSourceTry%Math.max(1,srcs.length)]||"/audio/Glass%20Lounge%20Loop.mp3";
+}
+function backgroundTargetVolume(){
+  if(globalMuted||backgroundDuckedForGame)return 0;
+  return Math.max(0,Math.min(1,masterVolume*0.48));
+}
+function applyBackgroundAudioState(){
+  try{
+    const a=backgroundAudio;
+    if(!a)return;
+    a.muted=Boolean(globalMuted||backgroundDuckedForGame);
+    a.volume=backgroundTargetVolume();
+  }catch(e){}
 }
 function resetBackgroundAudio(){
   try{
@@ -427,9 +453,25 @@ function resetBackgroundAudio(){
 function createBackgroundAudio(){
   if(typeof Audio==="undefined")return null;
   const a=new Audio(getBackgroundSrc());
-  a.loop=true;
+  a.loop=false;
   a.preload="auto";
-  a.volume=Math.max(0,Math.min(1,masterVolume*0.42));
+  a.crossOrigin="anonymous";
+  a.volume=backgroundTargetVolume();
+  a.muted=Boolean(globalMuted||backgroundDuckedForGame);
+  a.addEventListener("ended",()=>nextMusicTrack(true));
+  a.addEventListener("error",()=>{
+    const track=getBackgroundTrack();
+    const total=track?.srcs?.length||1;
+    if(backgroundSourceTry<total-1){
+      backgroundSourceTry++;
+      const wasPlaying=musicPlaying;
+      resetBackgroundAudio();
+      if(wasPlaying)startMusic();
+      return;
+    }
+    backgroundAudioAvailable=false;
+    if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
+  });
   return a;
 }
 function getBackgroundAudio(){
@@ -438,8 +480,7 @@ function getBackgroundAudio(){
   return backgroundAudio;
 }
 function setBackgroundVolume(){
-  const a=getBackgroundAudio();
-  if(a)a.volume=Math.max(0,Math.min(1,masterVolume*0.42));
+  applyBackgroundAudioState();
 }
 function stopGeneratedMusic(){
   if(musicInterval){clearInterval(musicInterval);musicInterval=null;}
@@ -448,26 +489,23 @@ function startGeneratedMusic(){
   stopGeneratedMusic();
   musicStep=0;
   setupMusicInterval();
-  tickLofiTrack();
+  if(!globalMuted&&!backgroundDuckedForGame)tickLofiTrack();
 }
 function startMusic(){
-  if(musicPlaying)return;
   musicPlaying=true;
   stopGeneratedMusic();
   if(backgroundAudioAvailable){
     const a=getBackgroundAudio();
     if(a){
-      setBackgroundVolume();
+      applyBackgroundAudioState();
       a.play().catch(()=>{
-        // Si el MP3 falla o el navegador bloquea algo, no rompemos la página.
-        // Volvemos al sistema antiguo generado por código.
-        backgroundAudioAvailable=false;
-        if(musicPlaying&&!globalMuted)startGeneratedMusic();
+        // El navegador puede bloquear música hasta que el usuario toque la pantalla.
+        // No rompemos la página. El siguiente toque volverá a intentar reproducir.
       });
       return;
     }
   }
-  startGeneratedMusic();
+  if(!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
 }
 function stopMusic(){
   musicPlaying=false;
@@ -477,16 +515,27 @@ function stopMusic(){
     if(a&&!a.paused)a.pause();
   }catch(e){}
 }
-function nextMusicTrack(){
+function muteMusicKeepTime(muted=true){
+  globalMuted=Boolean(muted);
+  stopGeneratedMusic();
+  applyBackgroundAudioState();
+  if(musicPlaying&&backgroundAudioAvailable){
+    const a=getBackgroundAudio();
+    if(a&&a.paused)a.play().catch(()=>{});
+  }
+  if(musicPlaying&&!backgroundAudioAvailable&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
+}
+function nextMusicTrack(auto=false){
   if(backgroundAudioAvailable){
     backgroundTrackIndex=(backgroundTrackIndex+1)%BACKGROUND_PLAYLIST.length;
     backgroundSourceTry=0;
-    const wasPlaying=musicPlaying&&!globalMuted;
+    const wasPlaying=musicPlaying;
     resetBackgroundAudio();
-    if(wasPlaying){
+    if(wasPlaying||auto){
+      musicPlaying=true;
       const a=getBackgroundAudio();
       if(a){
-        setBackgroundVolume();
+        applyBackgroundAudioState();
         a.play().catch(()=>{});
       }
     }
@@ -494,7 +543,7 @@ function nextMusicTrack(){
   }
   currentMusicTrack=(currentMusicTrack+1)%REGGAE_LOFI_TRACKS.length;
   musicStep=0;
-  if(musicPlaying){setupMusicInterval();tickLofiTrack();}
+  if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame){setupMusicInterval();tickLofiTrack();}
 }
 
 let gameMusicInterval=null, resumeMainAfterGame=false;
@@ -511,25 +560,36 @@ function startGameMusic(gameId){
   if(globalMuted)return;
   stopGameMusic(false);
   resumeMainAfterGame=musicPlaying;
-  stopMusic();
+  backgroundDuckedForGame=true;
+  stopGeneratedMusic();
+  applyBackgroundAudioState();
+  if(backgroundAudioAvailable&&musicPlaying){
+    const a=getBackgroundAudio();
+    if(a&&a.paused)a.play().catch(()=>{});
+  }
   const notes=GAME_MUSIC[gameId]||GAME_MUSIC.sopa;
   let i=0;
   gameMusicInterval=setInterval(()=>{
     if(globalMuted){stopGameMusic(false);return;}
-    playTone(notes[i%notes.length],"sine",0.24,0.035,0);
-    playTone(notes[(i+2)%notes.length],"sine",0.32,0.018,0.11);
+    playTone(notes[i%notes.length],"sine",0.22,0.040,0);
+    playTone(notes[(i+2)%notes.length],"triangle",0.30,0.018,0.11);
+    if(i%4===0)playTone(notes[(i+3)%notes.length]/2,"sine",0.18,0.022,0.02);
     i++;
-  },720);
+  },690);
 }
 function stopGameMusic(restoreMain=true){
   if(gameMusicInterval){clearInterval(gameMusicInterval);gameMusicInterval=null;}
-  if(restoreMain && resumeMainAfterGame && !globalMuted && !musicPlaying){
+  backgroundDuckedForGame=false;
+  applyBackgroundAudioState();
+  if(restoreMain && resumeMainAfterGame && !globalMuted){
     resumeMainAfterGame=false;
+    musicPlaying=true;
     startMusic();
   }else if(!restoreMain){
     resumeMainAfterGame=false;
   }
 }
+
 
 const CSS=`
 @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Bangers&family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap');
@@ -4079,9 +4139,9 @@ const AVATAR_OPTIONS={
   aura:["none","warm","flame","ocean","vip"]
 };
 
-const DEFAULT_AVATAR_CONFIG={version:"2.0.4",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
-const DEFAULT_MALE_AVATAR={version:"2.0.4",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
-const DEFAULT_FEMALE_AVATAR={version:"2.0.4",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
+const DEFAULT_AVATAR_CONFIG={version:"2.0.5",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"gold",frame:"none",aura:"none"};
+const DEFAULT_MALE_AVATAR={version:"2.0.5",gender:"male",skin:2,hair:"sharpFade",hairColor:0,face:"square",eyes:"sharp",eyeColor:0,brows:"strong",facial:"shortBeard",accessory:"none",bg:"street",frame:"none",aura:"none"};
+const DEFAULT_FEMALE_AVATAR={version:"2.0.5",gender:"female",skin:1,hair:"longWaves",hairColor:9,face:"heart",eyes:"glam",eyeColor:2,brows:"arched",facial:"none",accessory:"hoopGold",bg:"paper",frame:"none",aura:"none"};
 const AVATAR_PRESETS=[
   {gender:"male",skin:3,hair:"dreadsLong",hairColor:1,face:"square",eyes:"sharp",eyeColor:3,brows:"strong",facial:"shortBeard",accessory:"bandanaGreen",bg:"dark"},
   {gender:"female",skin:2,hair:"braidsLong",hairColor:2,face:"heart",eyes:"glam",eyeColor:3,brows:"arched",facial:"none",accessory:"hoopGold",bg:"gold"},
@@ -4130,7 +4190,7 @@ function normalizeAvatarConfig(value, legacyAvatar=0){
   const fallback=AVATAR_PRESETS[(Number(legacyAvatar)||0)%AVATAR_PRESETS.length]||DEFAULT_AVATAR_CONFIG;
   const cfg={...DEFAULT_AVATAR_CONFIG,...fallback,...(parsed||{})};
   const clamp=(n,max)=>Math.max(0,Math.min(max,Number.isFinite(Number(n))?Number(n):0));
-  cfg.version="2.0.4";
+  cfg.version="2.0.5";
   cfg.skin=clamp(cfg.skin,AVATAR_OPTIONS.skin.length-1);
   cfg.hairColor=clamp(cfg.hairColor,AVATAR_OPTIONS.hairColor.length-1);
   cfg.eyeColor=clamp(cfg.eyeColor,AVATAR_OPTIONS.eyeColor.length-1);
@@ -4462,7 +4522,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_4_LAYER_ENGINE";
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_0_5_LAYER_ENGINE";
 
 
 function AvatarFigure({config,size=80,animated=false}){
@@ -15193,7 +15253,12 @@ function AppCore(){
 
   useEffect(()=>{
     const vol=Number(appSettings?.musica?.volumen_general);
-    masterVolume=Number.isFinite(vol)?Math.max(0,Math.min(1.2,vol)):0.7;
+    masterVolume=Number.isFinite(vol)?Math.max(0,Math.min(1.2,vol)):0.72;
+    try{
+      const savedMuted=localStorage.getItem("rasta_cuts_audio_muted")==="1";
+      globalMuted=savedMuted;
+      setMusicOn(!savedMuted);
+    }catch{}
     setBackgroundVolume();
   },[appSettings?.musica?.volumen_general]);
 
@@ -15282,11 +15347,13 @@ function AppCore(){
   },[user?.id,refreshUnread,loadNotifications]);
   function toggleMusic(){
     if(appSettings?.secciones?.musica_activa===false){showToast("La música está desactivada desde Ajustes");SFX.error();return;}
-    globalMuted=!globalMuted;
-    if(globalMuted){stopMusic();stopGameMusic();setMusicOn(false);}
-    else{startMusic();setMusicOn(true);}
+    const nextMuted=!globalMuted;
+    muteMusicKeepTime(nextMuted);
+    setMusicOn(!nextMuted);
+    try{localStorage.setItem("rasta_cuts_audio_muted",nextMuted?"1":"0");}catch{}
+    showToast(nextMuted?"Sonido silenciado. La canción sigue avanzando.":"Sonido activado");
   }
-  function changeMusicTrack(){nextMusicTrack();SFX.tab();showToast(`Tema: ${backgroundAudioAvailable?getBackgroundName():(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);}
+  function changeMusicTrack(){nextMusicTrack(false);SFX.tab();showToast(`Tema: ${backgroundAudioAvailable?getBackgroundName():(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);}
   function toggleUiTheme(){
     setUiTheme(prev=>{
       const next=prev==="night"?"day":"night";
