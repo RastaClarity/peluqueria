@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_1_7_BARBER_CARTOON_EDITOR";
-const APP_VERSION_SHORT="2.1.7";
+const APP_VERSION="RASTACUTS_2_1_8_BARBER_CARTOON_EDITOR_FIXED";
+const APP_VERSION_SHORT="2.1.8";
 const APP_BUILD_DATE="2026-06-04";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -5135,6 +5135,11 @@ function AvatarV3({config,size=120}){
   const frame={none:"2px solid rgba(255,244,214,.85)",bronze:"4px solid #A87945",gold:"4px solid #D4AF37",neon:"4px solid #55D7FF",legend:"4px solid #F7E7BD"}[cfg.frame]||"2px solid rgba(255,244,214,.85)";
   return <div title="Avatar Rasta Cuts" style={{width:size,height:size,borderRadius:"28%",position:"relative",display:"grid",placeItems:"center",background:v3Bg(cfg.bg),border:frame,boxShadow:`0 14px 34px rgba(0,0,0,.28),0 0 32px ${aura}`,overflow:"hidden"}}><AvatarV3Scene bg={cfg.bg}/><AvatarV3Figure config={cfg} size={size*1.02}/></div>;
 }
+function Av({av=0,config=null,size=36}){
+  const cfg=normalizeAvatarV3(config, Number(av)||0);
+  return <AvatarV3 config={cfg} size={size}/>;
+}
+
 function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=null}){
   const [section,setSection]=useState("hair");
   const cfg=rc217Normalize(form.avatarConfig,form.avatar);
