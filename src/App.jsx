@@ -102,7 +102,7 @@ const BRAND = {
 };
 
 const APP_VERSION="FASE135G_EDITOR_CARTOON_HAIR_FIXED_PARTICLES";
-const APP_VERSION_SHORT="F135G";
+const APP_VERSION_SHORT="F135H";
 const APP_BUILD_DATE="2026-06-04";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -14842,6 +14842,15 @@ function Particles(){
           {items[i%items.length]}
         </div>
       ))}
+    </div>
+  );
+}
+
+function PtsPopup({pts,show}){
+  if(!show||!pts)return null;
+  return (
+    <div style={{position:"fixed",top:"35%",left:"50%",transform:"translateX(-50%)",zIndex:9999,animation:"ptsFloat 1.8s ease forwards",pointerEvents:"none"}}>
+      <div style={{background:T.gradGold,color:T.white,borderRadius:50,padding:"10px 24px",fontWeight:900,fontSize:"1.4rem",boxShadow:"0 6px 24px rgba(255,183,3,0.5)"}}>+{pts} pts</div>
     </div>
   );
 }
