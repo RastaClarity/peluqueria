@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_1_2_DREADS_REWORK";
-const APP_VERSION_SHORT="2.1.2";
+const APP_VERSION="RASTACUTS_2_1_3_AUDIO_PLAYER_FIX";
+const APP_VERSION_SHORT="2.1.3";
 const APP_BUILD_DATE="2026-06-04";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -112,22 +112,23 @@ let masterVolume=0.72;
 let backgroundAudio=null,backgroundAudioAvailable=true;
 let backgroundTrackIndex=0,backgroundSourceTry=0,backgroundDuckedForGame=false;
 const BACKGROUND_PLAYLIST=[
-  {name:"Glass Lounge Loop",mood:"lounge",gain:1.00,srcs:["/audio/Glass%20Lounge%20Loop.mp3","/audio/Glass Lounge Loop.mp3"]},
-  {name:"Quiet Rhodes Loop",mood:"chill",gain:1.16,srcs:["/audio/Quiet%20Rhodes%20Loop.mp3","/audio/Quiet Rhodes Loop.mp3"]},
-  {name:"Velvet Reward Room",mood:"reward",gain:0.92,srcs:["/audio/Velvet%20Reward%20Room.mp3","/audio/Velvet Reward Room.mp3"]},
-  {name:"Velvet Menu Glow",mood:"menu",gain:0.94,srcs:["/audio/Velvet%20Menu%20Glow.mp3","/audio/Velvet Menu Glow.mp3"]},
-  {name:"Velvet Reward Shop",mood:"shop",gain:0.90,srcs:["/audio/Velvet%20Reward%20Shop.mp3","/audio/Velvet Reward Shop.mp3"]},
-  {name:"Drift Through Linen",mood:"ambient",gain:1.12,srcs:["/audio/Drift%20Through%20Linen.mp3","/audio/Drift Through Linen.mp3"]},
-  {name:"Velvet Menu Drift",mood:"menu",gain:1.04,srcs:["/audio/Velvet%20Menu%20Drift.mp3","/audio/Velvet Menu Drift.mp3"]},
-  {name:"Velvet Tab Loop",mood:"tab",gain:1.08,srcs:["/audio/Velvet%20Tab%20Loop.mp3","/audio/Velvet Tab Loop.mp3"]},
-  {name:"Barbershop Arcade Dub",mood:"backup",gain:0.95,srcs:["/audio/barbershop-arcade-dub.mp3","/audio/barbershop-arcade-dub(1).mp3"]},
-  {name:"Vinyl Arcade Skank",mood:"backup",gain:0.95,srcs:["/audio/Vinyl%20Arcade%20Skank.mp3","/audio/vinyl-arcade-skank.mp3"]},
-  {name:"Neon Barbertron",mood:"backup",gain:0.95,srcs:["/audio/Neon%20Barbertron.mp3","/audio/neon-barbertron.mp3"]}
+  {name:"Glass Lounge Loop",gain:1.00,src:"/audio/Glass%20Lounge%20Loop.mp3"},
+  {name:"Quiet Rhodes Loop",gain:1.12,src:"/audio/Quiet%20Rhodes%20Loop.mp3"},
+  {name:"Velvet Reward Room",gain:0.92,src:"/audio/Velvet%20Reward%20Room.mp3"},
+  {name:"Velvet Menu Glow",gain:0.94,src:"/audio/Velvet%20Menu%20Glow.mp3"},
+  {name:"Velvet Reward Shop",gain:0.90,src:"/audio/Velvet%20Reward%20Shop.mp3"},
+  {name:"Drift Through Linen",gain:1.08,src:"/audio/Drift%20Through%20Linen.mp3"},
+  {name:"Velvet Menu Drift",gain:1.00,src:"/audio/Velvet%20Menu%20Drift.mp3"},
+  {name:"Velvet Tab Loop",gain:1.04,src:"/audio/Velvet%20Tab%20Loop.mp3"},
+  {name:"Neon Barbertron",gain:0.82,src:"/audio/Neon%20Barbertron.mp3"},
+  {name:"Vinyl Arcade Skank",gain:0.92,src:"/audio/Vinyl%20Arcade%20Skank.mp3"},
+  {name:"Barbershop Arcade Dub",gain:0.95,src:"/audio/barbershop-arcade-dub.mp3"}
 ];
 let currentMusicTrack=0,musicStep=0;
 let backgroundShuffleQueue=[];
 let musicButtonClickTimer=null;
 let musicButtonLastTap=0;
+let musicChangeLock=false;
 const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
 const NOTE_FREQ={
   C2:65.41,Cs2:69.30,Db2:69.30,D2:73.42,Ds2:77.78,Eb2:77.78,E2:82.41,F2:87.31,Fs2:92.50,Gb2:92.50,G2:98,Ab2:103.83,Gs2:103.83,A2:110,As2:116.54,Bb2:116.54,B2:123.47,
@@ -436,18 +437,13 @@ function getBackgroundName(){
   return getBackgroundTrack()?.name||"Rasta Cuts Lounge";
 }
 function getBackgroundSrc(){
-  const track=getBackgroundTrack();
-  const srcs=track?.srcs||[];
-  return srcs[backgroundSourceTry%Math.max(1,srcs.length)]||"/audio/Glass%20Lounge%20Loop.mp3";
+  return getBackgroundTrack()?.src||"/audio/Glass%20Lounge%20Loop.mp3";
 }
 function backgroundTargetVolume(){
   if(globalMuted||backgroundDuckedForGame)return 0;
-  const track=getBackgroundTrack();
-  // Normalización suave por pista. Así no pega saltos raros entre temas.
-  const gain=Number(track?.gain)||1;
+  const gain=Number(getBackgroundTrack()?.gain)||1;
   const base=Number.isFinite(masterVolume)?masterVolume:0.72;
-  // Evita que Ajustes a 0 deje la música "activada" pero inaudible.
-  return Math.max(0.34,Math.min(0.82,base*0.62*gain));
+  return Math.max(0.30,Math.min(0.76,base*0.58*gain));
 }
 function applyBackgroundAudioState(){
   try{
@@ -461,7 +457,7 @@ function resetBackgroundAudio(){
   try{
     if(backgroundAudio){
       backgroundAudio.pause();
-      backgroundAudio.src="";
+      backgroundAudio.removeAttribute("src");
       backgroundAudio.load?.();
     }
   }catch(e){}
@@ -469,29 +465,20 @@ function resetBackgroundAudio(){
 }
 function createBackgroundAudio(){
   if(typeof Audio==="undefined")return null;
-  const a=new Audio(getBackgroundSrc());
-  // Las pistas subidas son loops. Si al terminar saltaba a otra pista,
-  // algunas transiciones sonaban mal o caían en el generador interno.
-  // Ahora cada tema se repite limpio; doble click cambia a una canción aleatoria.
+  const a=new Audio();
   a.loop=true;
   a.preload="auto";
-  a.crossOrigin="anonymous";
+  a.src=getBackgroundSrc();
   a.volume=backgroundTargetVolume();
   a.muted=Boolean(globalMuted||backgroundDuckedForGame);
-  try{console.info("[RastaCuts audio]",getBackgroundName(),getBackgroundSrc(),"vol",a.volume);}catch{}
   a.addEventListener("error",()=>{
-    const track=getBackgroundTrack();
-    const total=track?.srcs?.length||1;
-    if(backgroundSourceTry<total-1){
-      backgroundSourceTry++;
-      const wasPlaying=musicPlaying;
-      resetBackgroundAudio();
-      if(wasPlaying)startMusic();
-      return;
-    }
-    backgroundAudioAvailable=false;
-    if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
+    // No caemos al generador raro por un fallo de pista. Probamos otra canción real.
+    if(!musicPlaying)return;
+    backgroundTrackIndex=pickRandomBackgroundIndex();
+    resetBackgroundAudio();
+    setTimeout(()=>playCurrentBackgroundTrack(false),80);
   });
+  try{console.info("[RastaCuts audio ready]",getBackgroundName(),getBackgroundSrc());}catch{}
   return a;
 }
 function getBackgroundAudio(){
@@ -506,51 +493,41 @@ function stopGeneratedMusic(){
   if(musicInterval){clearInterval(musicInterval);musicInterval=null;}
 }
 function startGeneratedMusic(){
+  // De momento evitamos el generador interno porque sonaba mal y confundía.
   stopGeneratedMusic();
-  musicStep=0;
-  setupMusicInterval();
-  if(!globalMuted&&!backgroundDuckedForGame)tickLofiTrack();
+}
+async function playCurrentBackgroundTrack(keepTime=false){
+  stopGeneratedMusic();
+  backgroundAudioAvailable=true;
+  const a=getBackgroundAudio();
+  if(!a)return false;
+  const targetSrc=new URL(getBackgroundSrc(), window.location.href).href;
+  if(a.src!==targetSrc){
+    a.src=targetSrc;
+    if(!keepTime) a.currentTime=0;
+    a.load?.();
+  }else if(!keepTime){
+    try{a.currentTime=0;}catch(e){}
+  }
+  a.loop=true;
+  a.muted=Boolean(globalMuted||backgroundDuckedForGame);
+  a.volume=backgroundTargetVolume();
+  try{
+    await a.play();
+    applyBackgroundAudioState();
+    try{console.info("[RastaCuts playing]",getBackgroundName(),a.src,"vol",a.volume);}catch{}
+    return true;
+  }catch(e){
+    try{console.warn("[RastaCuts audio blocked/error]",getBackgroundName(),e?.message||e);}catch{}
+    return false;
+  }
 }
 function startMusic(){
   musicPlaying=true;
-  backgroundAudioAvailable=true;
-  stopGeneratedMusic();
-  backgroundDuckedForGame=false;
   globalMuted=false;
-
-  const fallbackToSynth=()=>{
-    backgroundAudioAvailable=false;
-    if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
-  };
-
-  const tryPlayCurrent=(attempts=0)=>{
-    const a=getBackgroundAudio();
-    if(!a){fallbackToSynth();return;}
-    a.muted=false;
-    a.volume=backgroundTargetVolume();
-    const p=a.play();
-    if(!p||typeof p.then!=="function"){applyBackgroundAudioState();return;}
-    p.then(()=>applyBackgroundAudioState()).catch(()=>{
-      const track=getBackgroundTrack();
-      const total=track?.srcs?.length||1;
-      if(backgroundSourceTry<total-1){
-        backgroundSourceTry++;
-        resetBackgroundAudio();
-        tryPlayCurrent(attempts+1);
-        return;
-      }
-      if(attempts<BACKGROUND_PLAYLIST.length){
-        backgroundSourceTry=0;
-        backgroundTrackIndex=pickRandomBackgroundIndex();
-        resetBackgroundAudio();
-        tryPlayCurrent(attempts+1);
-        return;
-      }
-      fallbackToSynth();
-    });
-  };
-
-  tryPlayCurrent(0);
+  backgroundDuckedForGame=false;
+  backgroundAudioAvailable=true;
+  playCurrentBackgroundTrack(true);
 }
 function stopMusic(){
   musicPlaying=false;
@@ -564,36 +541,28 @@ function muteMusicKeepTime(muted=true){
   globalMuted=Boolean(muted);
   stopGeneratedMusic();
   applyBackgroundAudioState();
-  if(musicPlaying&&backgroundAudioAvailable){
-    const a=getBackgroundAudio();
-    if(a&&a.paused)a.play().catch(()=>{});
+  if(musicPlaying&&!globalMuted){
+    playCurrentBackgroundTrack(true);
   }
-  if(musicPlaying&&!backgroundAudioAvailable&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
 }
 function nextMusicTrack(auto=false){
-  if(backgroundAudioAvailable){
-    backgroundTrackIndex=pickRandomBackgroundIndex();
-    backgroundSourceTry=0;
-    const wasPlaying=musicPlaying;
-    resetBackgroundAudio();
-    if(wasPlaying||auto){
-      musicPlaying=true;
-      const a=getBackgroundAudio();
-      if(a){
-        a.muted=Boolean(globalMuted||backgroundDuckedForGame);
-        a.volume=backgroundTargetVolume();
-        a.play().then(()=>applyBackgroundAudioState()).catch(()=>{
-          backgroundAudioAvailable=false;
-          if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
-        });
-      }
-    }
-    return;
+  if(musicChangeLock)return;
+  musicChangeLock=true;
+  setTimeout(()=>{musicChangeLock=false;},260);
+
+  backgroundAudioAvailable=true;
+  backgroundTrackIndex=pickRandomBackgroundIndex();
+  const wasPlaying=musicPlaying;
+  resetBackgroundAudio();
+
+  if(wasPlaying||auto){
+    musicPlaying=true;
+    globalMuted=false;
+    playCurrentBackgroundTrack(false);
   }
-  currentMusicTrack=Math.floor(Math.random()*REGGAE_LOFI_TRACKS.length);
-  musicStep=0;
-  if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame){setupMusicInterval();tickLofiTrack();}
 }
+
+
 
 let gameMusicInterval=null, resumeMainAfterGame=false;
 const GAME_MUSIC={
@@ -4621,7 +4590,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_1_2_DREADS_REWORK";
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_1_3_AUDIO_FIX";
 
 
 
@@ -4926,11 +4895,11 @@ function defaultAvatarV3(seed=0){
     {model:"female",skin:"light",hair:"ponytail",hairColor:"purple",eyes:"happy",mouth:"smile",beard:"none",glasses:"black",accessory:"flower",bg:"setup",frame:"neon",aura:"vip"},
     {model:"male",skin:"olive",hair:"fade",hairColor:"brown",eyes:"sharp",mouth:"serious",beard:"stubble",glasses:"black",accessory:"piercing",bg:"office",frame:"gold",aura:"none"}
   ];
-  return {mode:"v3",version:"2.1.2",...(presets[seed%presets.length]||presets[0])};
+  return {mode:"v3",version:"2.1.3",...(presets[seed%presets.length]||presets[0])};
 }
 function normalizeAvatarV3(config,seed=0){
   const base=(config&&config.mode==="v3")?config:defaultAvatarV3(Number(seed)||0);
-  const cfg={...defaultAvatarV3(seed),...base,mode:"v3",version:"2.1.2"};
+  const cfg={...defaultAvatarV3(seed),...base,mode:"v3",version:"2.1.3"};
   Object.entries(V3_OPTIONS).forEach(([k,arr])=>{if(!arr.includes(cfg[k])) cfg[k]=defaultAvatarV3(seed)[k];});
   if(cfg.model==="female") cfg.beard="none";
   return cfg;
@@ -5134,7 +5103,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     const r=(arr)=>arr[Math.floor(Math.random()*arr.length)];
     const model=r(V3_OPTIONS.model);
     setForm(f=>({...f,avatarConfig:normalizeAvatarV3({
-      mode:"v3",version:"2.1.2",model,
+      mode:"v3",version:"2.1.3",model,
       skin:r(V3_OPTIONS.skin),hair:r(V3_OPTIONS.hair),hairColor:r(V3_OPTIONS.hairColor),
       eyes:r(V3_OPTIONS.eyes),mouth:r(V3_OPTIONS.mouth),beard:model==="female"?"none":r(V3_OPTIONS.beard),
       glasses:r(V3_OPTIONS.glasses),accessory:r(V3_OPTIONS.accessory),
@@ -15643,33 +15612,39 @@ function AppCore(){
   }
   function changeMusicTrack(){
     if(musicButtonClickTimer){clearTimeout(musicButtonClickTimer);musicButtonClickTimer=null;}
+    musicButtonLastTap=0;
     if(!musicPlaying){
       globalMuted=false;
       setMusicOn(true);
       try{localStorage.setItem("rasta_cuts_audio_muted","0");}catch{}
       startMusic();
+      setTimeout(()=>nextMusicTrack(false),180);
+    }else{
+      globalMuted=false;
+      setMusicOn(true);
+      try{localStorage.setItem("rasta_cuts_audio_muted","0");}catch{}
+      nextMusicTrack(false);
     }
-    nextMusicTrack(false);
     SFX.tab();
-    showToast(`Tema aleatorio: ${backgroundAudioAvailable?getBackgroundName():(REGGAE_LOFI_TRACKS[currentMusicTrack]?.name||"Lofi Rasta")}`);
+    setTimeout(()=>showToast(`Tema aleatorio: ${getBackgroundName()}`),80);
   }
   function handleMusicButtonClick(){
     const now=Date.now();
-    const isDouble=(now-musicButtonLastTap)<320;
-    musicButtonLastTap=now;
-    if(musicButtonClickTimer){clearTimeout(musicButtonClickTimer);musicButtonClickTimer=null;}
-    if(isDouble){
+    if((now-musicButtonLastTap)<360){
       musicButtonLastTap=0;
+      if(musicButtonClickTimer){clearTimeout(musicButtonClickTimer);musicButtonClickTimer=null;}
       changeMusicTrack();
       return;
     }
+    musicButtonLastTap=now;
+    if(musicButtonClickTimer)clearTimeout(musicButtonClickTimer);
     musicButtonClickTimer=setTimeout(()=>{
       musicButtonClickTimer=null;
-      // Si no hubo segundo toque, actúa como mute/sonido.
-      if(Date.now()-musicButtonLastTap>=240){
+      if(Date.now()-musicButtonLastTap>=250){
+        musicButtonLastTap=0;
         toggleMusic();
       }
-    },250);
+    },270);
   }
   function toggleUiTheme(){
     setUiTheme(prev=>{
