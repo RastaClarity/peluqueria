@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_1_5_PROFILE_EDITOR_CLEAN";
-const APP_VERSION_SHORT="2.1.5";
+const APP_VERSION="RASTACUTS_2_1_6_PROFILE_EDITOR_POLISH";
+const APP_VERSION_SHORT="2.1.6";
 const APP_BUILD_DATE="2026-06-04";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -4098,6 +4098,14 @@ html,body,#root{
   .avatar-v3-preview [title]{width:168px!important;height:168px!important}
 }
 
+/* ===== 2.1.6 editor perfil pulido ===== */
+.avatar-color-rack button span{display:block!important}
+.avatar-v3-grid button{min-height:124px!important}
+@media (max-width:820px){
+  .avatar-v3-preview{position:relative!important;top:auto!important}
+  .avatar-v3-preview [title]{width:168px!important;height:168px!important}
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -4605,7 +4613,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_1_5_PROFILE_EDITOR_CLEAN";
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_1_6_PROFILE_EDITOR_POLISH";
 
 
 
@@ -4878,7 +4886,7 @@ function AvatarBgScene({bg}){
 const V3_OPTIONS={
   model:["male","female"],
   skin:["tan","brown","dark","light","olive"],
-  hair:["fade","crop","buzz","dreadsLong","dreadsTop","dreadsBun","shortLocs","braids","afro","mohawk","undercut","longWaves","ponytail","doubleBun","bob","sideBraids"],
+  hair:["fade","crop","buzz","dreadsLong","dreadsTop","dreadsBun","shortLocs","braids","afro","mohawk","undercut","longWaves","ponytail","doubleBun","bob","sideBraids","cap","beanie","bandana","bucket"],
   hairColor:["black","brown","blonde","red","green","blue","purple","pink","grey"],
   eyes:["calm","happy","sharp","sleepy","glam"],
   mouth:["smile","serious","open","smirk","cute"],
@@ -4892,7 +4900,7 @@ const V3_OPTIONS={
 const V3_LABELS={
   male:"Masculino",female:"Femenino",
   tan:"Canela",brown:"Morena",dark:"Oscura",light:"Clara",olive:"Oliva",
-  fade:"Fade limpio",crop:"Crop texturizado",buzz:"Rapado",dreadsLong:"Rastas largas",dreadsTop:"Rastas arriba",dreadsBun:"Moño rasta",shortLocs:"Rastas cortas",braids:"Trenzas",afro:"Afro",mohawk:"Cresta",undercut:"Undercut",longWaves:"Melena ondas",ponytail:"Coleta",doubleBun:"Doble moño",bob:"Bob",sideBraids:"Trenzas laterales",
+  fade:"Fade limpio",crop:"Crop texturizado",buzz:"Rapado",dreadsLong:"Rastas largas",dreadsTop:"Rastas arriba",dreadsBun:"Moño rasta",shortLocs:"Rastas cortas",braids:"Trenzas",afro:"Afro",mohawk:"Cresta",undercut:"Undercut",longWaves:"Melena ondas",ponytail:"Coleta",doubleBun:"Doble moño",bob:"Bob",sideBraids:"Trenzas laterales",cap:"Gorra",beanie:"Gorro",bandana:"Bandana",bucket:"Bucket",
   black:"Negro",brown:"Castaño",blonde:"Rubio",red:"Rojo",green:"Verde",blue:"Azul",purple:"Morado",pink:"Rosa",grey:"Gris",
   calm:"Tranquilos",happy:"Felices",sharp:"Afilados",sleepy:"Dormidos",glam:"Glam",
   smile:"Sonrisa",serious:"Seria",open:"Abierta",smirk:"Pícara",cute:"Cute",
@@ -4910,11 +4918,11 @@ function defaultAvatarV3(seed=0){
     {model:"female",skin:"light",hair:"ponytail",hairColor:"purple",eyes:"happy",mouth:"smile",beard:"none",glasses:"black",accessory:"flower",bg:"setup",frame:"neon",aura:"vip"},
     {model:"male",skin:"olive",hair:"fade",hairColor:"brown",eyes:"sharp",mouth:"serious",beard:"stubble",glasses:"black",accessory:"piercing",bg:"office",frame:"gold",aura:"none"}
   ];
-  return {mode:"v3",version:"2.1.5",...(presets[seed%presets.length]||presets[0])};
+  return {mode:"v3",version:"2.1.6",...(presets[seed%presets.length]||presets[0])};
 }
 function normalizeAvatarV3(config,seed=0){
   const base=(config&&config.mode==="v3")?config:defaultAvatarV3(Number(seed)||0);
-  const cfg={...defaultAvatarV3(seed),...base,mode:"v3",version:"2.1.5"};
+  const cfg={...defaultAvatarV3(seed),...base,mode:"v3",version:"2.1.6"};
   Object.entries(V3_OPTIONS).forEach(([k,arr])=>{if(!arr.includes(cfg[k])) cfg[k]=defaultAvatarV3(seed)[k];});
   if(cfg.model==="female") cfg.beard="none";
   return cfg;
@@ -4946,28 +4954,45 @@ function AvatarV3Figure({config,size=120}){
   const hair=v3Hair(cfg.hairColor), hairHi=v3Light(hair), hairDark=v3Dark(hair);
   const stroke="#211107", gold="#D7B64C", red="#A72822", green="#5F8E22";
   const female=cfg.model==="female";
+  const facePath=female?"M100 44 C72 44 54 69 55 104 C56 144 74 170 100 176 C126 170 144 144 145 104 C146 69 128 44 100 44Z":"M100 43 C69 43 53 67 54 104 L54 131 C54 156 75 176 100 176 C125 176 146 156 146 131 L146 104 C147 67 131 43 100 43Z";
 
-  const Hair=()=>{
-    const band=<g><path d="M54 67 C73 50 127 50 146 67" stroke={green} strokeWidth="7" strokeLinecap="round"/><path d="M62 63 C82 56 118 56 138 63" stroke={gold} strokeWidth="4" strokeLinecap="round"/><path d="M70 60 C86 56 114 56 130 60" stroke={red} strokeWidth="3" strokeLinecap="round"/></g>;
-    const loc=(x,y,len,w=9,s=0)=><path key={x+"-"+y} d={`M${x-w/2} ${y} C${x-w/2+s} ${y+len*.35} ${x-w/3+s} ${y+len*.68} ${x} ${y+len} C${x+w/3+s} ${y+len*.68} ${x+w/2+s} ${y+len*.35} ${x+w/2} ${y} Z`} fill={hair} stroke={hairDark} strokeWidth="1.1"/>;
-    const braid=(x,dir=1)=><g key={x}><path d={`M${x} 75 C${x+dir*10} 100 ${x+dir*10} 135 ${x+dir*5} 175`} stroke={hair} strokeWidth="12" strokeLinecap="round" fill="none"/><path d={`M${x-dir*4} 95 L${x+dir*6} 103 M${x-dir*4} 116 L${x+dir*6} 124 M${x-dir*4} 137 L${x+dir*6} 145 M${x-dir*3} 158 L${x+dir*5} 166`} stroke={hairHi} strokeWidth="1.7" opacity=".35"/></g>;
+  const Loc=({x,y,len=70,w=12,s=0})=><path d={`M${x-w/2} ${y} C${x-w/2+s} ${y+len*.35} ${x-w/3+s} ${y+len*.72} ${x} ${y+len} C${x+w/3+s} ${y+len*.72} ${x+w/2+s} ${y+len*.35} ${x+w/2} ${y} Z`} fill={hair} stroke={hairDark} strokeWidth="1.1"/>;
+  const Braid=({x,dir=1})=><g><path d={`M${x} 76 C${x+dir*8} 102 ${x+dir*8} 140 ${x+dir*4} 178`} stroke={hair} strokeWidth="11" strokeLinecap="round" fill="none"/>{[94,116,138,160].map(y=><path key={y} d={`M${x-dir*5} ${y} L${x+dir*6} ${y+8}`} stroke={hairHi} strokeWidth="1.8" opacity=".35" strokeLinecap="round"/>)}</g>;
+  const Band=()=><g><path d="M54 67 C73 50 127 50 146 67" stroke={green} strokeWidth="7" strokeLinecap="round"/><path d="M62 63 C82 56 118 56 138 63" stroke={gold} strokeWidth="4" strokeLinecap="round"/><path d="M70 60 C86 56 114 56 130 60" stroke={red} strokeWidth="3" strokeLinecap="round"/></g>;
 
+  const HairBack=()=>{
+    if(cfg.hair==="dreadsLong")return <g>{[58,72,86,114,128,142].map((x,i)=><Loc key={x} x={x} y={75} len={108-(i%2)*8} w={13} s={i<3?-3:3}/>)}</g>;
+    if(cfg.hair==="braids")return <g>{[60,75,90,110,125,140].map((x,i)=><Braid key={x} x={x} dir={i<3?-1:1}/>)}</g>;
+    if(cfg.hair==="sideBraids")return <g><Braid x={58} dir={-1}/><Braid x={142} dir={1}/></g>;
+    if(cfg.hair==="longWaves")return <path d="M51 60 C38 98 43 160 62 203 C73 176 74 128 72 94 C82 69 118 69 128 94 C126 128 127 176 138 203 C157 160 162 98 149 60 C134 40 66 40 51 60Z" fill={hair}/>;
+    if(cfg.hair==="ponytail")return <g><circle cx="101" cy="30" r="20" fill={hair}/><path d="M125 55 C154 82 154 145 139 203" stroke={hair} strokeWidth="12" strokeLinecap="round" fill="none"/></g>;
+    if(cfg.hair==="bob")return <path d="M53 62 C39 98 45 155 61 188 C72 160 74 118 73 90 C86 74 114 74 127 90 C126 118 128 160 139 188 C155 155 161 98 147 62 C132 42 68 42 53 62Z" fill={hair}/>;
+    if(cfg.hair==="afro")return <g fill={hair}><ellipse cx="100" cy="62" rx="58" ry="39"/><circle cx="61" cy="69" r="27"/><circle cx="139" cy="69" r="27"/><circle cx="78" cy="43" r="25"/><circle cx="122" cy="43" r="25"/></g>;
+    if(cfg.hair==="dreadsBun")return <g><circle cx="100" cy="29" r="22" fill={hair}/><Loc x={74} y={75} len={45} w={11} s={-3}/><Loc x={126} y={75} len={45} w={11} s={3}/></g>;
+    if(cfg.hair==="doubleBun")return <g><circle cx="64" cy="38" r="19" fill={hair}/><circle cx="136" cy="38" r="19" fill={hair}/></g>;
+    return null;
+  };
+  const HairFront=()=>{
     if(cfg.hair==="fade")return <g><path d="M52 82 C57 53 82 38 101 37 C123 37 143 51 148 76 C128 71 114 70 99 74 C82 79 66 83 52 82Z" fill={hair}/><path d="M68 66 C85 53 116 51 136 63" stroke={hairHi} strokeWidth="4" opacity=".32" fill="none" strokeLinecap="round"/></g>;
     if(cfg.hair==="crop")return <g><path d="M52 80 C58 49 86 37 103 37 C127 37 143 50 148 73 C128 72 115 72 103 76 C87 80 69 82 52 80Z" fill={hair}/>{[65,78,91,104,117,130].map((x,i)=><path key={x} d={`M${x} ${64+i%2} C${x+5} 56 ${x+10} 53 ${x+13} 50`} stroke={hairHi} strokeWidth="2.3" opacity=".38" fill="none" strokeLinecap="round"/>)}</g>;
     if(cfg.hair==="buzz")return <path d="M56 79 C67 52 133 52 144 79 C122 70 78 70 56 79Z" fill={hair}/>;
     if(cfg.hair==="undercut")return <g><path d="M52 82 C58 56 91 38 148 64 C132 70 116 76 101 87 C84 84 66 83 52 82Z" fill={hair}/><path d="M91 59 C110 56 130 58 144 65" stroke={hairHi} strokeWidth="3.8" opacity=".36" fill="none" strokeLinecap="round"/></g>;
     if(cfg.hair==="mohawk")return <path d="M100 23 C82 52 91 76 100 93 C109 76 118 52 100 23Z" fill={hair} stroke={hairDark} strokeWidth="2"/>;
-    if(cfg.hair==="afro")return <g><ellipse cx="100" cy="62" rx="58" ry="39" fill={hair}/><circle cx="61" cy="69" r="27" fill={hair}/><circle cx="139" cy="69" r="27" fill={hair}/><circle cx="78" cy="43" r="25" fill={hair}/><circle cx="122" cy="43" r="25" fill={hair}/></g>;
-    if(cfg.hair==="longWaves")return <g><path d="M51 60 C38 98 43 160 62 203 C73 176 74 128 72 94 C82 69 118 69 128 94 C126 128 127 176 138 203 C157 160 162 98 149 60 C134 40 66 40 51 60Z" fill={hair}/><path d="M56 82 C70 52 130 52 144 82 C122 70 78 70 56 82Z" fill={hair}/></g>;
-    if(cfg.hair==="ponytail")return <g><circle cx="100" cy="29" r="20" fill={hair}/><path d="M125 55 C154 82 154 145 139 203" stroke={hair} strokeWidth="12" strokeLinecap="round" fill="none"/><path d="M55 82 C68 50 132 50 145 82 C122 70 78 70 55 82Z" fill={hair}/></g>;
-    if(cfg.hair==="bob")return <g><path d="M53 62 C39 98 45 155 61 188 C72 160 74 118 73 90 C86 74 114 74 127 90 C126 118 128 160 139 188 C155 155 161 98 147 62 C132 42 68 42 53 62Z" fill={hair}/><path d="M55 82 C69 52 131 52 145 82 C122 72 78 72 55 82Z" fill={hair}/></g>;
-    if(cfg.hair==="doubleBun")return <g><circle cx="64" cy="38" r="19" fill={hair}/><circle cx="136" cy="38" r="19" fill={hair}/><path d="M56 80 C69 50 131 50 144 80 C120 70 80 70 56 80Z" fill={hair}/></g>;
-    if(cfg.hair==="dreadsTop")return <g><path d="M52 80 C58 48 82 36 100 36 C118 36 142 48 148 80 C130 71 116 68 100 68 C84 68 70 71 52 80Z" fill={hair}/>{band}{[72,86,100,114,128].map((x,i)=>loc(x,66,34+(i%2)*7,12,(i-2)*.8))}</g>;
-    if(cfg.hair==="dreadsLong")return <g>{[56,70,84,116,130,144].map((x,i)=>loc(x,76,105-(i%2)*8,13,(i<3?-4:4)))}<path d="M50 81 C56 48 82 36 100 36 C118 36 144 48 150 81 C132 72 118 69 100 69 C82 69 68 72 50 81Z" fill={hair}/>{band}{[86,100,114].map((x,i)=>loc(x,70,58+i*8,13,(i-1)*2))}</g>;
-    if(cfg.hair==="dreadsBun")return <g><circle cx="100" cy="29" r="22" fill={hair}/><path d="M53 79 C59 50 82 39 100 39 C118 39 141 50 147 79 C128 70 116 67 100 67 C84 67 72 70 53 79Z" fill={hair}/>{band}{[82,100,118].map((x,i)=>loc(x,68,32+i*3,11,(i-1)*2))}</g>;
-    if(cfg.hair==="shortLocs")return <g><path d="M55 75 C63 49 83 39 101 39 C120 39 138 49 145 75 C128 67 72 67 55 75Z" fill={hair}/>{[66,79,92,105,118,131].map((x,i)=>loc(x,67,23+(i%2)*5,10,(i%2?1.8:-1.8)))}</g>;
-    if(cfg.hair==="braids")return <g>{[58,72,86,114,128,142].map((x,i)=>braid(x,i<3?-1:1))}<path d="M54 75 C62 50 84 39 102 39 C120 39 139 50 146 75" stroke={hair} strokeWidth="11" fill="none" strokeLinecap="round"/></g>;
-    if(cfg.hair==="sideBraids")return <g>{braid(59,-1)}{braid(141,1)}<path d="M53 80 C62 50 84 39 100 39 C118 39 138 50 147 80 C122 70 78 70 53 80Z" fill={hair}/><path d="M66 72 C82 62 118 62 134 72" stroke={hairHi} strokeWidth="3.5" opacity=".24" fill="none" strokeLinecap="round"/></g>;
+    if(cfg.hair==="afro")return <path d="M53 78 C71 59 129 59 147 78" stroke={hairHi} strokeWidth="5" opacity=".26" fill="none" strokeLinecap="round"/>;
+    if(cfg.hair==="longWaves")return <path d="M56 82 C70 52 130 52 144 82 C122 70 78 70 56 82Z" fill={hair}/>;
+    if(cfg.hair==="ponytail")return <path d="M55 82 C68 50 132 50 145 82 C122 70 78 70 55 82Z" fill={hair}/>;
+    if(cfg.hair==="bob")return <path d="M55 82 C69 52 131 52 145 82 C122 72 78 72 55 82Z" fill={hair}/>;
+    if(cfg.hair==="doubleBun")return <path d="M56 80 C69 50 131 50 144 80 C120 70 80 70 56 80Z" fill={hair}/>;
+    if(cfg.hair==="dreadsTop")return <g><path d="M52 80 C58 48 82 36 100 36 C118 36 142 48 148 80 C130 71 116 68 100 68 C84 68 70 71 52 80Z" fill={hair}/><Band/>{[72,86,100,114,128].map((x,i)=><Loc key={x} x={x} y={66} len={33+(i%2)*7} w={12} s={(i-2)*.8}/>)}</g>;
+    if(cfg.hair==="dreadsLong")return <g><path d="M50 81 C56 48 82 36 100 36 C118 36 144 48 150 81 C132 72 118 69 100 69 C82 69 68 72 50 81Z" fill={hair}/><Band/>{[86,100,114].map((x,i)=><Loc key={x} x={x} y={70} len={58+i*7} w={13} s={(i-1)*2}/>)}</g>;
+    if(cfg.hair==="dreadsBun")return <g><path d="M53 79 C59 50 82 39 100 39 C118 39 141 50 147 79 C128 70 116 67 100 67 C84 67 72 70 53 79Z" fill={hair}/><Band/>{[82,100,118].map((x,i)=><Loc key={x} x={x} y={68} len={31+i*3} w={11} s={(i-1)*2}/>)}</g>;
+    if(cfg.hair==="shortLocs")return <g><path d="M55 75 C63 49 83 39 101 39 C120 39 138 49 145 75 C128 67 72 67 55 75Z" fill={hair}/>{[66,79,92,105,118,131].map((x,i)=><Loc key={x} x={x} y={67} len={22+(i%2)*5} w={10} s={i%2?1.8:-1.8}/>)}</g>;
+    if(cfg.hair==="braids")return <path d="M54 75 C62 50 84 39 102 39 C120 39 139 50 146 75" stroke={hair} strokeWidth="11" fill="none" strokeLinecap="round"/>;
+    if(cfg.hair==="sideBraids")return <g><path d="M53 80 C62 50 84 39 100 39 C118 39 138 50 147 80 C122 70 78 70 53 80Z" fill={hair}/><path d="M66 72 C82 62 118 62 134 72" stroke={hairHi} strokeWidth="3.5" opacity=".24" fill="none" strokeLinecap="round"/></g>;
+    if(cfg.hair==="cap")return <g><path d="M56 74 C68 44 132 44 144 74 C121 65 79 65 56 74Z" fill="#17110A" stroke={stroke} strokeWidth="1.8"/><path d="M137 72 C158 71 174 77 181 84 C160 84 146 80 136 76Z" fill="#17110A"/></g>;
+    if(cfg.hair==="beanie")return <g><path d="M56 75 C61 45 139 45 144 75 C120 66 80 66 56 75Z" fill="#A72822" stroke={stroke} strokeWidth="1.8"/><path d="M58 68 C78 59 122 59 142 68" stroke={gold} strokeWidth="4"/></g>;
+    if(cfg.hair==="bandana")return <g><path d="M54 74 C74 52 126 52 146 74" stroke="#A72822" strokeWidth="12" strokeLinecap="round"/><path d="M132 70 L168 55 L153 90Z" fill="#A72822"/><circle cx="100" cy="67" r="4" fill={gold}/></g>;
+    if(cfg.hair==="bucket")return <g><path d="M58 61 C68 43 132 43 142 61 L136 82 C115 75 85 75 64 82Z" fill="#59633A" stroke={stroke} strokeWidth="1.8"/><path d="M48 79 C78 70 122 70 152 79" stroke="#59633A" strokeWidth="10" strokeLinecap="round"/></g>;
     return null;
   };
 
@@ -5000,27 +5025,25 @@ function AvatarV3Figure({config,size=120}){
   const Extra=()=>{
     if(cfg.accessory==="earring")return <g fill="none" stroke={gold} strokeWidth="4"><circle cx="52" cy="128" r="6"/><circle cx="148" cy="128" r="6"/></g>;
     if(cfg.accessory==="chain")return <path d="M76 184 C88 197 112 197 124 184" stroke={gold} strokeWidth="5" fill="none" strokeLinecap="round"/>;
-    if(cfg.accessory==="headphones")return <g><path d="M53 113 C53 72 147 72 147 113" fill="none" stroke="#263F4D" strokeWidth="7"/><rect x="42" y="108" width="17" height="34" rx="6" fill="#263F4D"/><rect x="141" y="108" width="17" height="34" rx="6" fill="#263F4D"/></g>;
+    if(cfg.accessory==="headphones")return <g><path d="M56 111 C56 74 144 74 144 111" fill="none" stroke="#263F4D" strokeWidth="6"/><rect x="43" y="98" width="15" height="30" rx="6" fill="#263F4D"/><rect x="142" y="98" width="15" height="30" rx="6" fill="#263F4D"/></g>;
     if(cfg.accessory==="piercing")return <circle cx="115" cy="134" r="3.5" fill={gold}/>;
     if(cfg.accessory==="flower")return <g><circle cx="137" cy="74" r="6" fill="#E66A9A"/><circle cx="145" cy="76" r="5" fill="#F2CF75"/><circle cx="141" cy="68" r="4" fill="#fff"/></g>;
     return null;
   };
-
-  const facePath=female?"M100 44 C72 44 54 69 55 104 C56 144 74 170 100 176 C126 170 144 144 145 104 C146 69 128 44 100 44Z":"M100 43 C69 43 53 67 54 104 L54 131 C54 156 75 176 100 176 C125 176 146 156 146 131 L146 104 C147 67 131 43 100 43Z";
 
   return <svg viewBox="0 0 200 230" width={size} height={size} style={{display:"block",overflow:"visible"}} role="img" aria-label="Avatar Barber limpio">
     <g style={{filter:"drop-shadow(0 8px 8px rgba(0,0,0,.22))"}}>
       <ellipse cx="100" cy="214" rx="54" ry="10" fill="rgba(0,0,0,.20)"/>
       <path d="M48 230 C55 190 76 176 94 176 L106 176 C124 176 145 190 152 230Z" fill={female?"#59224B":"#14321E"} stroke={stroke} strokeWidth="2"/>
       <path d="M85 179 L115 179 C113 203 106 218 100 226 C94 218 87 203 85 179Z" fill="#FFF1C5"/>
-      <Hair/>
+      <HairBack/>
       <ellipse cx="52" cy="108" rx="12" ry="20" fill={skin} stroke={skinDark} strokeWidth="2"/>
       <ellipse cx="148" cy="108" rx="12" ry="20" fill={skin} stroke={skinDark} strokeWidth="2"/>
       <path d={facePath} fill={skin} stroke={skinDark} strokeWidth="2.4"/>
       <path d="M75 158 C86 176 114 176 125 158 C117 180 83 180 75 158Z" fill="rgba(65,30,18,.10)"/>
       <ellipse cx="74" cy="128" rx="10" ry="5" fill="#F6B66E" opacity=".36"/>
       <ellipse cx="126" cy="128" rx="10" ry="5" fill="#F6B66E" opacity=".36"/>
-      <Hair/>
+      <HairFront/>
       <Eyes/>
       <path d="M100 119 C97 130 98 137 104 140 M94 141 C102 145 112 143 116 139" fill="none" stroke={skinDark} strokeWidth="3" strokeLinecap="round"/>
       <Beard/>
@@ -5081,7 +5104,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     const r=(arr)=>arr[Math.floor(Math.random()*arr.length)];
     const model=r(V3_OPTIONS.model);
     setForm(f=>({...f,avatarConfig:normalizeAvatarV3({
-      mode:"v3",version:"2.1.5",model,
+      mode:"v3",version:"2.1.6",model,
       skin:r(V3_OPTIONS.skin),hair:r(V3_OPTIONS.hair),hairColor:r(V3_OPTIONS.hairColor),
       eyes:r(V3_OPTIONS.eyes),mouth:r(V3_OPTIONS.mouth),beard:model==="female"?"none":r(V3_OPTIONS.beard),
       glasses:r(V3_OPTIONS.glasses),accessory:r(V3_OPTIONS.accessory),
@@ -5117,21 +5140,21 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
       {grid(V3_OPTIONS.model.map(v=><Option key={v} slot="model" value={v} label={V3_LABELS[v]}>{mini({model:v,beard:v==="female"?"none":cfg.beard},70)}</Option>),2)}
       <div style={{height:14}}/>
       {title("Piel","Tonos visibles y claros")}
-      <div className="avatar-color-rack">{V3_OPTIONS.skin.map(v=><button key={v} type="button" onClick={()=>patch("skin",v)} style={{width:48,height:48,borderRadius:16,border:`3px solid ${cfg.skin===v?T.gold:"rgba(215,182,76,.55)"}`,background:v3Skin(v),boxShadow:cfg.skin===v?"0 0 0 4px rgba(215,182,76,.18)":"0 6px 12px rgba(0,0,0,.18)",cursor:"pointer"}} title={V3_LABELS[v]}/>)}</div>
+      <div className="avatar-color-rack">{V3_OPTIONS.skin.map(v=><button key={v} type="button" onClick={()=>patch("skin",v)} style={{width:52,height:52,borderRadius:16,border:`3px solid ${cfg.skin===v?T.gold:"rgba(215,182,76,.55)"}`,background:"linear-gradient(180deg,#FFF1A8,#B57B22)",boxShadow:cfg.skin===v?"0 0 0 4px rgba(215,182,76,.18)":"0 6px 12px rgba(0,0,0,.18)",cursor:"pointer",padding:4}} title={V3_LABELS[v]}><span style={{display:"block",width:"100%",height:"100%",borderRadius:11,background:v3Skin(v),boxShadow:"inset 0 -10px 14px rgba(0,0,0,.16)"}}/></button>)}</div>
     </>;
     if(section==="hair")return <>
       {title("Peinados y cortes","El corazón del editor de peluquería")}
       {grid(V3_OPTIONS.hair.map(v=><Option key={v} slot="hair" value={v} label={V3_LABELS[v]}>{mini({hair:v,beard:"none",glasses:"none",accessory:"none"},70)}</Option>))}
       <div style={{height:14}}/>
       {title("Color de pelo","Colores de pelo visibles")}
-      <div className="avatar-color-rack">{V3_OPTIONS.hairColor.map(v=><button key={v} type="button" onClick={()=>patch("hairColor",v)} style={{width:48,height:48,borderRadius:16,border:`3px solid ${cfg.hairColor===v?T.gold:"rgba(215,182,76,.55)"}`,background:v3Hair(v),boxShadow:cfg.hairColor===v?"0 0 0 4px rgba(215,182,76,.18)":"0 6px 12px rgba(0,0,0,.18)",cursor:"pointer"}} title={V3_LABELS[v]}/>)}</div>
+      <div className="avatar-color-rack">{V3_OPTIONS.hairColor.map(v=><button key={v} type="button" onClick={()=>patch("hairColor",v)} style={{width:52,height:52,borderRadius:16,border:`3px solid ${cfg.hairColor===v?T.gold:"rgba(215,182,76,.55)"}`,background:"linear-gradient(180deg,#FFF1A8,#B57B22)",boxShadow:cfg.hairColor===v?"0 0 0 4px rgba(215,182,76,.18)":"0 6px 12px rgba(0,0,0,.18)",cursor:"pointer",padding:4}} title={V3_LABELS[v]}><span style={{display:"block",width:"100%",height:"100%",borderRadius:11,background:v3Hair(v),boxShadow:"inset 0 -10px 14px rgba(0,0,0,.16)"}}/></button>)}</div>
     </>;
     if(section==="face")return <>
       {title("Ojos","Miradas simples que no salen vacías")}
-      {grid(V3_OPTIONS.eyes.map(v=><Option key={v} slot="eyes" value={v} label={V3_LABELS[v]}>{mini({eyes:v,glasses:"none"},70)}</Option>))}
+      {grid(V3_OPTIONS.eyes.map(v=><Option key={v} slot="eyes" value={v} label={V3_LABELS[v]}>{mini({eyes:v,glasses:"none",accessory:"none",hair:"fade",beard:"none"},70)}</Option>))}
       <div style={{height:14}}/>
       {title("Boca","Expresión del avatar")}
-      {grid(V3_OPTIONS.mouth.map(v=><Option key={v} slot="mouth" value={v} label={V3_LABELS[v]}>{mini({mouth:v,beard:"none"},70)}</Option>))}
+      {grid(V3_OPTIONS.mouth.map(v=><Option key={v} slot="mouth" value={v} label={V3_LABELS[v]}>{mini({mouth:v,beard:"none",glasses:"none",accessory:"none",hair:"fade"},70)}</Option>))}
     </>;
     if(section==="beard")return <>
       {title("Barba y bigote",cfg.model==="female"?"En femenino queda desactivado por defecto":"Bigote, perilla y barbas visibles")}
@@ -5139,10 +5162,10 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     </>;
     if(section==="extras")return <>
       {title("Gafas","Gafas separadas para que se entiendan")}
-      {grid(V3_OPTIONS.glasses.map(v=><Option key={v} slot="glasses" value={v} label={V3_LABELS[v]}>{mini({glasses:v},70)}</Option>))}
+      {grid(V3_OPTIONS.glasses.map(v=><Option key={v} slot="glasses" value={v} label={V3_LABELS[v]}>{mini({glasses:v,accessory:"none",hair:"fade",beard:"none"},70)}</Option>))}
       <div style={{height:14}}/>
       {title("Accesorios","Cascos, cadena, pendiente y detalles")}
-      {grid(V3_OPTIONS.accessory.map(v=><Option key={v} slot="accessory" value={v} label={V3_LABELS[v]}>{mini({accessory:v},70)}</Option>))}
+      {grid(V3_OPTIONS.accessory.map(v=><Option key={v} slot="accessory" value={v} label={V3_LABELS[v]}>{mini({accessory:v,glasses:"none",hair:"fade",beard:"none"},70)}</Option>))}
     </>;
     if(section==="bg")return <>{title("Fondos","Fondos que cambian de verdad")}
       {grid(V3_OPTIONS.bg.map(v=><Option key={v} slot="bg" value={v} label={V3_LABELS[v]}><div style={{width:"100%",height:"100%",background:v3Bg(v),borderRadius:14,position:"relative",overflow:"hidden",boxShadow:"inset 0 -18px 30px rgba(0,0,0,.16)"}}/></Option>),2)}
