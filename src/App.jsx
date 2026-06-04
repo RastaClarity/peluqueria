@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_1_3_AUDIO_PLAYER_FIX";
-const APP_VERSION_SHORT="2.1.3";
+const APP_VERSION="RASTACUTS_2_1_4_EDITOR_BACKGROUND_CLEANUP";
+const APP_VERSION_SHORT="2.1.4";
 const APP_BUILD_DATE="2026-06-04";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -4083,6 +4083,13 @@ html,body,#root{
   .avatar-v3-tabs button{min-width:86px!important;font-size:.72rem!important}
 }
 
+/* ===== 2.1.4 limpieza de fondos del avatar ===== */
+.avatar-v3-preview{overflow:hidden}
+@media (max-width:820px){
+  .avatar-v3-preview{position:relative!important;top:auto!important}
+  .avatar-v3-preview [title]{width:172px!important;height:172px!important}
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -4590,7 +4597,7 @@ function shadeHex(hex,percent=0){
   return `#${(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
 }
 
-const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_1_3_AUDIO_FIX";
+const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_1_4_EDITOR_BG_CLEAN";
 
 
 
@@ -4895,11 +4902,11 @@ function defaultAvatarV3(seed=0){
     {model:"female",skin:"light",hair:"ponytail",hairColor:"purple",eyes:"happy",mouth:"smile",beard:"none",glasses:"black",accessory:"flower",bg:"setup",frame:"neon",aura:"vip"},
     {model:"male",skin:"olive",hair:"fade",hairColor:"brown",eyes:"sharp",mouth:"serious",beard:"stubble",glasses:"black",accessory:"piercing",bg:"office",frame:"gold",aura:"none"}
   ];
-  return {mode:"v3",version:"2.1.3",...(presets[seed%presets.length]||presets[0])};
+  return {mode:"v3",version:"2.1.4",...(presets[seed%presets.length]||presets[0])};
 }
 function normalizeAvatarV3(config,seed=0){
   const base=(config&&config.mode==="v3")?config:defaultAvatarV3(Number(seed)||0);
-  const cfg={...defaultAvatarV3(seed),...base,mode:"v3",version:"2.1.3"};
+  const cfg={...defaultAvatarV3(seed),...base,mode:"v3",version:"2.1.4"};
   Object.entries(V3_OPTIONS).forEach(([k,arr])=>{if(!arr.includes(cfg[k])) cfg[k]=defaultAvatarV3(seed)[k];});
   if(cfg.model==="female") cfg.beard="none";
   return cfg;
@@ -4910,29 +4917,67 @@ function v3Dark(hex){return shadeHex(hex,-34);}
 function v3Light(hex){return shadeHex(hex,26);}
 function v3Bg(bg){
   return {
-    studio:"linear-gradient(180deg,#22120A 0%,#6D3D18 58%,#F2CF75 100%)",
-    beach:"linear-gradient(180deg,#72D6F4 0%,#1AA6C8 45%,#F4C97B 46%,#D99A4B 100%)",
-    office:"linear-gradient(180deg,#49657F 0%,#AEC5D8 58%,#EAD9B8 100%)",
-    setup:"linear-gradient(180deg,#0B1020 0%,#263F8F 58%,#12B5CB 100%)",
-    camper:"linear-gradient(180deg,#A7D6F8 0%,#8BA56D 45%,#D7B64C 46%,#8F5A34 100%)",
-    terrace:"linear-gradient(180deg,#B9E3FF 0%,#77A45C 46%,#E7C57A 47%,#7A4A28 100%)",
+    studio:"radial-gradient(circle at 50% 18%,rgba(255,230,160,.38),transparent 30%),linear-gradient(180deg,#1F120A 0%,#5A3418 58%,#D8AE5D 100%)",
+    beach:"radial-gradient(circle at 17% 18%,#FFE18A 0 9%,transparent 10%),linear-gradient(180deg,#6FD7F2 0%,#1AA6C8 45%,#F4C97B 46%,#D59B4F 100%)",
+    office:"linear-gradient(180deg,#506B84 0%,#AFC6D8 55%,#E8D9BC 100%)",
+    setup:"radial-gradient(circle at 74% 18%,rgba(123,63,161,.48),transparent 28%),linear-gradient(180deg,#080C18 0%,#172A5F 58%,#12B5CB 100%)",
+    camper:"radial-gradient(circle at 18% 16%,#FFE18A 0 8%,transparent 9%),linear-gradient(180deg,#A8D8F2 0%,#87A96B 45%,#D8B65B 46%,#8D5834 100%)",
+    terrace:"linear-gradient(180deg,#B9E3FF 0%,#78A85F 46%,#E5C378 47%,#7A4A28 100%)",
     reggae:"linear-gradient(180deg,#1C4D2F 0%,#1C4D2F 33%,#D7B64C 33%,#D7B64C 66%,#A72822 66%,#A72822 100%)",
-    vipRoom:"linear-gradient(180deg,#11080E 0%,#4B1848 58%,#D7B64C 100%)"
+    vipRoom:"radial-gradient(circle at 50% 18%,rgba(255,241,168,.35),transparent 32%),linear-gradient(180deg,#11080E 0%,#4B1848 58%,#D7B64C 100%)"
   }[bg]||"linear-gradient(180deg,#22120A,#F2CF75)";
 }
 function AvatarV3Scene({bg}){
-  const s={position:"absolute",inset:0,pointerEvents:"none"};
+  // Fondo limpio: decoración siempre detrás y fuera del centro de la cara.
+  // Nada de objetos grandes cruzando el avatar.
+  const s={position:"absolute",inset:0,pointerEvents:"none",opacity:.62,overflow:"hidden"};
   const a=(x)=>({position:"absolute",...x});
-  if(bg==="studio")return <div style={s}><div style={a({left:"14%",top:"14%",width:"72%",height:"24%",border:"2px solid rgba(255,255,255,.25)",borderRadius:12,background:"rgba(255,255,255,.08)"})}/><div style={a({left:"18%",bottom:"22%",width:"64%",height:"10%",borderRadius:999,background:"rgba(55,28,13,.48)"})}/><div style={a({left:"24%",bottom:"35%",width:"10%",height:"14%",borderRadius:6,background:"rgba(215,182,76,.45)"})}/><div style={a({left:"38%",bottom:"35%",width:"10%",height:"14%",borderRadius:6,background:"rgba(215,182,76,.45)"})}/></div>;
-  if(bg==="beach")return <div style={s}><div style={a({left:"12%",top:"14%",width:26,height:26,borderRadius:"50%",background:"#FFE18A"})}/><div style={a({left:0,right:0,bottom:"33%",height:4,background:"rgba(255,255,255,.45)"})}/><div style={a({right:"14%",bottom:"24%",width:5,height:"31%",background:"rgba(93,58,28,.55)",transform:"rotate(10deg)"})}/></div>;
-  if(bg==="office")return <div style={s}><div style={a({left:"10%",top:"10%",width:"80%",height:"40%",border:"2px solid rgba(255,255,255,.30)",borderRadius:10,background:"rgba(255,255,255,.12)"})}/><div style={a({left:"49%",top:"10%",width:2,height:"40%",background:"rgba(255,255,255,.23)"})}/><div style={a({left:"16%",bottom:"18%",width:"68%",height:"10%",borderRadius:999,background:"rgba(40,30,22,.35)"})}/></div>;
-  if(bg==="setup")return <div style={s}><div style={a({left:"22%",top:"21%",width:"56%",height:"28%",border:"2px solid rgba(95,215,255,.45)",borderRadius:12,background:"radial-gradient(circle,#7B3FA155,#12B5CB33)"})}/><div style={a({left:"25%",bottom:"24%",width:"50%",height:"8%",borderRadius:999,background:"rgba(5,8,18,.55)"})}/></div>;
-  if(bg==="camper")return <div style={s}><div style={a({left:"12%",top:"12%",width:24,height:24,borderRadius:"50%",background:"#FFE18A"})}/><div style={a({left:"17%",bottom:"24%",width:"66%",height:"16%",borderRadius:18,background:"rgba(90,64,34,.58)"})}/><div style={a({left:"29%",bottom:"31%",width:"20%",height:"7%",borderRadius:8,background:"rgba(255,225,138,.65)"})}/><div style={a({left:"30%",bottom:"20%",width:"10%",height:"10%",borderRadius:"50%",background:"rgba(0,0,0,.58)"})}/><div style={a({left:"57%",bottom:"20%",width:"10%",height:"10%",borderRadius:"50%",background:"rgba(0,0,0,.58)"})}/></div>;
-  if(bg==="terrace")return <div style={s}><div style={a({left:"10%",bottom:"22%",width:"80%",height:"8%",background:"rgba(122,74,40,.55)"})}/><div style={a({left:"18%",bottom:"30%",width:"12%",height:"18%",borderRadius:8,background:"rgba(38,98,51,.58)"})}/><div style={a({right:"20%",bottom:"30%",width:"12%",height:"18%",borderRadius:8,background:"rgba(38,98,51,.58)"})}/></div>;
-  if(bg==="reggae")return <div style={s}><div style={a({left:"20%",bottom:"28%",width:"7%",height:"22%",background:"rgba(15,10,7,.55)"})}/><div style={a({right:"20%",bottom:"28%",width:"7%",height:"22%",background:"rgba(15,10,7,.55)"})}/><div style={a({left:"18%",bottom:"49%",width:"20%",height:"4%",background:"rgba(15,10,7,.55)",transform:"rotate(-12deg)"})}/><div style={a({right:"18%",bottom:"49%",width:"20%",height:"4%",background:"rgba(15,10,7,.55)",transform:"rotate(12deg)"})}/></div>;
-  if(bg==="vipRoom")return <div style={s}><div style={a({left:"14%",top:"15%",width:"72%",height:"18%",borderRadius:999,background:"rgba(255,241,168,.20)"})}/><div style={a({left:"21%",bottom:"24%",width:"58%",height:"14%",borderRadius:20,background:"rgba(75,24,72,.55)"})}/></div>;
+  const line=(top,op=.18)=><div style={a({left:"10%",right:"10%",top,borderTop:`2px solid rgba(255,255,255,${op})`})}/>;
+  if(bg==="studio")return <div style={s}>
+    {line("16%",.18)}{line("25%",.10)}
+    <div style={a({left:"8%",bottom:"18%",width:"84%",height:"11%",borderRadius:999,background:"rgba(45,24,12,.38)"})}/>
+    <div style={a({left:"9%",top:"10%",fontSize:18,opacity:.36})}>✂️</div>
+    <div style={a({right:"10%",top:"11%",fontSize:17,opacity:.32})}>💈</div>
+  </div>;
+  if(bg==="beach")return <div style={s}>
+    <div style={a({left:"12%",top:"12%",width:24,height:24,borderRadius:"50%",background:"rgba(255,225,138,.85)"})}/>
+    <div style={a({left:0,right:0,bottom:"32%",height:4,background:"rgba(255,255,255,.36)"})}/>
+    <div style={a({left:0,right:0,bottom:"25%",height:"9%",background:"rgba(244,201,123,.38)"})}/>
+  </div>;
+  if(bg==="office")return <div style={s}>
+    <div style={a({left:"12%",top:"11%",width:"76%",height:"28%",border:"2px solid rgba(255,255,255,.18)",borderRadius:12,background:"rgba(255,255,255,.08)"})}/>
+    <div style={a({left:"12%",top:"25%",width:"76%",height:2,background:"rgba(255,255,255,.12)"})}/>
+    <div style={a({left:"12%",bottom:"18%",width:"76%",height:"9%",borderRadius:999,background:"rgba(40,30,22,.24)"})}/>
+  </div>;
+  if(bg==="setup")return <div style={s}>
+    <div style={a({left:"18%",top:"13%",width:"64%",height:"20%",border:"2px solid rgba(95,215,255,.26)",borderRadius:14,background:"rgba(20,40,90,.20)"})}/>
+    <div style={a({left:"22%",bottom:"20%",width:"56%",height:"8%",borderRadius:999,background:"rgba(5,8,18,.34)"})}/>
+    <div style={a({right:"12%",top:"13%",width:18,height:18,borderRadius:"50%",background:"rgba(123,63,161,.38)"})}/>
+  </div>;
+  if(bg==="camper")return <div style={s}>
+    <div style={a({left:"11%",top:"12%",width:22,height:22,borderRadius:"50%",background:"rgba(255,225,138,.82)"})}/>
+    <div style={a({left:"15%",bottom:"22%",width:"70%",height:"14%",borderRadius:18,background:"rgba(90,64,34,.30)"})}/>
+    <div style={a({left:"28%",bottom:"26%",width:"18%",height:"6%",borderRadius:8,background:"rgba(255,225,138,.32)"})}/>
+    <div style={a({right:"25%",bottom:"26%",width:"12%",height:"6%",borderRadius:8,background:"rgba(255,255,255,.24)"})}/>
+  </div>;
+  if(bg==="terrace")return <div style={s}>
+    <div style={a({left:"8%",right:"8%",bottom:"22%",height:"8%",background:"rgba(122,74,40,.34)"})}/>
+    <div style={a({left:"14%",bottom:"30%",width:"10%",height:"16%",borderRadius:8,background:"rgba(38,98,51,.36)"})}/>
+    <div style={a({right:"16%",bottom:"30%",width:"10%",height:"16%",borderRadius:8,background:"rgba(38,98,51,.36)"})}/>
+  </div>;
+  if(bg==="reggae")return <div style={s}>
+    <div style={a({left:"8%",bottom:"19%",width:"84%",height:"7%",borderRadius:999,background:"rgba(0,0,0,.20)"})}/>
+    <div style={a({left:"12%",top:"12%",fontSize:18,opacity:.34})}>🎶</div>
+    <div style={a({right:"12%",top:"13%",fontSize:18,opacity:.34})}>🎧</div>
+  </div>;
+  if(bg==="vipRoom")return <div style={s}>
+    <div style={a({left:"14%",top:"14%",width:"72%",height:"18%",borderRadius:999,background:"rgba(255,241,168,.16)"})}/>
+    <div style={a({left:"20%",bottom:"22%",width:"60%",height:"13%",borderRadius:18,background:"rgba(75,24,72,.30)"})}/>
+    <div style={a({right:"13%",top:"14%",fontSize:18,opacity:.36})}>✨</div>
+  </div>;
   return null;
 }
+
 function AvatarV3Figure({config,size=120}){
   const cfg=normalizeAvatarV3(config);
   const skin=v3Skin(cfg.skin), skinDark=v3Dark(skin), skinLight=v3Light(skin);
@@ -5058,7 +5103,9 @@ function AvatarV3({config,size=120}){
   const aura={none:"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.28)",warm:"0 0 24px rgba(212,175,55,.45),0 8px 18px rgba(20,8,4,.28)",flame:"0 0 28px rgba(240,106,59,.58),0 8px 18px rgba(20,8,4,.28)",ocean:"0 0 28px rgba(95,215,255,.52),0 8px 18px rgba(20,8,4,.28)",vip:"0 0 34px rgba(255,241,168,.75),0 8px 18px rgba(20,8,4,.28)"}[cfg.aura]||"0 8px 18px rgba(20,8,4,.28)";
   return <div title={`${V3_LABELS[cfg.model]} · ${V3_LABELS[cfg.hair]} · ${V3_LABELS[cfg.bg]}`} style={{width:size,height:size,borderRadius:"50%",background:v3Bg(cfg.bg),display:"grid",placeItems:"center",border:frame,boxShadow:aura,position:"relative",overflow:"hidden"}}>
     <AvatarV3Scene bg={cfg.bg}/>
-    <AvatarV3Figure config={cfg} size={size*1.06}/>
+    <div style={{position:"relative",zIndex:2,display:"grid",placeItems:"center"}}>
+      <AvatarV3Figure config={cfg} size={size*1.06}/>
+    </div>
   </div>;
 }
 
@@ -5103,7 +5150,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     const r=(arr)=>arr[Math.floor(Math.random()*arr.length)];
     const model=r(V3_OPTIONS.model);
     setForm(f=>({...f,avatarConfig:normalizeAvatarV3({
-      mode:"v3",version:"2.1.3",model,
+      mode:"v3",version:"2.1.4",model,
       skin:r(V3_OPTIONS.skin),hair:r(V3_OPTIONS.hair),hairColor:r(V3_OPTIONS.hairColor),
       eyes:r(V3_OPTIONS.eyes),mouth:r(V3_OPTIONS.mouth),beard:model==="female"?"none":r(V3_OPTIONS.beard),
       glasses:r(V3_OPTIONS.glasses),accessory:r(V3_OPTIONS.accessory),
@@ -5167,7 +5214,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
       {grid(V3_OPTIONS.accessory.map(v=><Option key={v} slot="accessory" value={v} label={V3_LABELS[v]}>{mini({accessory:v},70)}</Option>))}
     </>;
     if(section==="bg")return <>{title("Fondos","Fondos que cambian de verdad")}
-      {grid(V3_OPTIONS.bg.map(v=><Option key={v} slot="bg" value={v} label={V3_LABELS[v]}><div style={{width:"100%",height:"100%",background:v3Bg(v),borderRadius:14,position:"relative",overflow:"hidden"}}><AvatarV3Scene bg={v}/></div></Option>),2)}
+      {grid(V3_OPTIONS.bg.map(v=><Option key={v} slot="bg" value={v} label={V3_LABELS[v]}><div style={{width:"100%",height:"100%",background:v3Bg(v),borderRadius:14,position:"relative",overflow:"hidden",boxShadow:"inset 0 -18px 30px rgba(0,0,0,.16)"}}/></Option>),2)}
     </>;
     if(section==="frame")return <>{title("Marcos","Bordes visibles en avatar y perfil")}
       {grid(V3_OPTIONS.frame.map(v=><Option key={v} slot="frame" value={v} label={V3_LABELS[v]}><AvatarV3 config={{...cfg,frame:v,aura:"none"}} size={58}/></Option>))}
