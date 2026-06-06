@@ -5089,107 +5089,277 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
   const showFaceFeatures=focus!=="bg";
   const showBeard=focus==="full"||focus==="beard";
   const showExtras=focus==="full"||focus==="extras";
-  const dreadDots=(long=3)=>{
-    // Crown puffs — these sit on top of the head, not in front of the face
-    const crown=[
-      [83,65,12],[104,55,13],[126,54,13],[148,64,12],
-      [75,84,11],[96,75,12],[118,72,13],[140,75,12],[162,84,11]
-    ];
-    // Strands — ONLY outside face zone. Face spans roughly x=64..176.
-    // Left side: x=62..72, Right side: x=168..178
-    const mul=long===1?0.52:long===2?0.74:1.0;
-    const sideStrands=[
-      // [startX, startY, ctrl1X, ctrl1Y, endX, endY]
-      [64,  92,  58, 128, 62, 148],
-      [70,  90,  64, 130, 68, 158],
-      [168, 92, 174, 128,170, 148],
-      [174, 90, 180, 130,172, 158],
-    ];
-    const scaledEnd=(y0,y1)=>Math.round(y0+(y1-y0)*mul);
-    return <g>
-      {/* Crown blob */}
-      {crown.map((p,i)=><circle key={`dc${i}`} cx={p[0]} cy={p[1]} r={p[2]} fill={i%2?hair:hairLight} stroke={line} strokeWidth="4"/>)}
-      {/* Side strands only — never cross the face */}
-      {sideStrands.map((s,i)=>{
-        const ey=scaledEnd(s[1],s[5]);
-        const cy2=scaledEnd(s[1],(s[3]+s[5])/2);
-        return <path key={`ds${i}`}
-          d={`M${s[0]} ${s[1]} C${s[2]} ${cy2}, ${s[4]} ${ey-20}, ${s[4]} ${ey}`}
-          fill="none" stroke={i%2?hair:hairDark} strokeWidth="15" strokeLinecap="round"/>;
-      })}
-      {/* Highlight on side strands */}
-      {sideStrands.map((s,i)=>{
-        const ey=scaledEnd(s[1],s[5]);
-        const cy2=scaledEnd(s[1],(s[3]+s[5])/2);
-        return <path key={`dsh${i}`}
-          d={`M${s[0]+2} ${s[1]+4} C${s[2]+2} ${cy2-8}, ${s[4]+2} ${ey-24}, ${s[4]+2} ${ey-4}`}
-          fill="none" stroke={hairLight} strokeWidth="4" strokeLinecap="round" opacity=".55"/>;
-      })}
-      {/* Hairline cap covering crown strands start */}
-      <path d="M72 84 C89 76 150 76 168 84" stroke={hair} strokeWidth="16" strokeLinecap="round"/>
-    </g>
+  // ─── HAIR LAYER ──────────────────────────────────────────────────────────────
+  // Key principles from illustration technique:
+  // 1. Dreads = thick S-curve cylinders, parallel, each with highlight stripe
+  // 2. Fades = gradient silhouette with temple taper, strong hairline
+  // 3. Braids = alternating cross-segments showing the weave
+  // 4. Afros = overlapping curly circles with volume
+  const HL=hairLight, HD=hairDark;
+  const sw=stroke;
+
+  // Single dread cylinder — S-curve from y1 to y2, with volume highlight
+  const Loc=({x,y1,y2,w=14,flip=false,op=1,bend=8})=>{
+    const my=(y1+y2)/2;
+    const cx1=x+(flip?bend:-bend), cx2=x+(flip?-bend/2:bend/2);
+    const path=`M${x} ${y1} C${cx1} ${my-12},${cx2} ${my+12},${x+(flip?bend/3:-bend/3)} ${y2}`;
+    const hpath=`M${x-2} ${y1+4} C${cx1-2} ${my-10},${cx2-2} ${my+10},${x-2+(flip?bend/3:-bend/3)} ${y2-6}`;
+    return <g opacity={op}>
+      <path d={path} fill="none" stroke={flip?HL:HD} strokeWidth={w+2} strokeLinecap="round"/>
+      <path d={path} fill="none" stroke={flip?hair:hair} strokeWidth={w} strokeLinecap="round"/>
+      <path d={hpath} fill="none" stroke={HL} strokeWidth={Math.max(2,w*0.22)} strokeLinecap="round" opacity=".62"/>
+    </g>;
   };
+
+  // Braid weave segment pair
+  const Weave=({x,y,w=8,tight=false})=>{
+    const g=tight?9:12;
+    return <g>
+      <path d={`M${x-4} ${y} C${x+5} ${y+g*.4},${x-5} ${y+g*.8},${x+4} ${y+g*1.2}`} fill="none" stroke={HD} strokeWidth={w} strokeLinecap="round"/>
+      <path d={`M${x+4} ${y} C${x-5} ${y+g*.4},${x+5} ${y+g*.8},${x-4} ${y+g*1.2}`} fill="none" stroke={HL} strokeWidth={w*.7} strokeLinecap="round" opacity=".75"/>
+    </g>;
+  };
+
+  // Crown cap shared by dread styles
+  const DreadCrown=({isTie=false,isFade=false})=><g>
+    <path d="M66 80 C78 47 98 33 122 33 C149 33 168 49 175 80 C148 70 93 70 66 80Z" fill={hair} stroke={line} strokeWidth={sw} strokeLinejoin="round"/>
+    <path d="M84 58 C106 43 140 45 160 60" stroke={HL} strokeWidth="10" strokeLinecap="round" opacity=".58"/>
+    {isFade&&<>
+      <path d="M68 84 L88 76 L82 88 L66 94Z" fill={HD} opacity=".48"/>
+      <path d="M172 84 L152 76 L158 88 L174 94Z" fill={HD} opacity=".48"/>
+    </>}
+    {isTie&&<g>
+      <ellipse cx="120" cy="32" rx="31" ry="22" fill={hair} stroke={line} strokeWidth={sw}/>
+      <ellipse cx="118" cy="26" rx="19" ry="13" fill={HL} opacity=".35"/>
+      <rect x="94" y="50" width="52" height="9" rx="4" fill="#C0392B" stroke={line} strokeWidth="2"/>
+    </g>}
+    <path d="M72 78 C92 68 148 68 168 78" stroke={hair} strokeWidth="18" strokeLinecap="round"/>
+  </g>;
+
   const hairLayer=()=>{
     if(!showHair)return null;
-    if(cfg.hair==="buzz") return <path d="M70 76 C80 52 99 41 120 41 C141 41 160 52 170 76 C148 68 92 68 70 76Z" fill={hair} stroke={line} strokeWidth={stroke} strokeLinejoin="round"/>;
-    if(cfg.hair==="fadeLow") return <g><path d="M66 82 C81 50 99 39 121 39 C145 39 162 51 174 82 C148 73 91 74 66 82Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M76 84 C91 75 149 74 164 84" stroke={hairLight} strokeWidth="8" strokeLinecap="round" opacity=".7"/><path d="M68 101 C75 94 80 91 86 88 L83 140 L69 145Z" fill={skinDark} opacity=".38"/><path d="M172 101 C165 94 160 91 154 88 L157 140 L171 145Z" fill={skinDark} opacity=".38"/></g>;
-    if(cfg.hair==="fadeMid") return <g><path d="M64 79 C75 46 96 33 124 32 C153 32 172 49 178 79 C150 70 90 71 64 79Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M83 65 C106 50 144 51 162 66" stroke={hairLight} strokeWidth="10" strokeLinecap="round" opacity=".65"/><path d="M68 88 L87 79 L82 142 L67 147Z" fill={skinDark} opacity=".50"/><path d="M172 88 L153 79 L158 142 L173 147Z" fill={skinDark} opacity=".50"/></g>;
-    if(cfg.hair==="fadeHigh") return <g><path d="M69 73 C79 41 102 29 128 31 C154 33 171 50 174 74 C149 64 95 65 69 73Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M88 55 C109 40 143 42 159 58" stroke={hairLight} strokeWidth="11" strokeLinecap="round" opacity=".62"/><path d="M72 76 L91 70 L83 145 L67 150Z" fill={skinDark} opacity=".62"/><path d="M168 76 L149 70 L157 145 L173 150Z" fill={skinDark} opacity=".62"/></g>;
-    if(cfg.hair==="crop") return <g><path d="M64 80 C72 49 96 34 124 34 C152 34 171 52 177 81 C151 77 91 77 64 80Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M75 82 C102 91 132 89 164 80" stroke={hairLight} strokeWidth="9" strokeLinecap="round" opacity=".6"/><path d="M78 83 L91 87 L89 98 L76 94Z" fill={hairDark}/></g>;
-    if(cfg.hair==="quiff") return <g><path d="M61 82 C68 49 93 37 119 29 C153 17 183 44 177 80 C149 69 91 72 61 82Z" fill={hair} stroke={line} strokeWidth={stroke} strokeLinejoin="round"/><path d="M90 56 C115 32 146 35 162 58" stroke={hairLight} strokeWidth="12" strokeLinecap="round" opacity=".65"/><path d="M118 32 C111 44 111 56 119 68" stroke={hairDark} strokeWidth="6" strokeLinecap="round" opacity=".55"/></g>;
-    if(cfg.hair==="pompadour") return <g><path d="M62 83 C64 51 91 37 112 24 C143 8 179 30 181 76 C150 65 92 70 62 83Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M86 61 C110 34 148 29 166 56" stroke={hairLight} strokeWidth="13" strokeLinecap="round" opacity=".68"/><path d="M125 26 C119 43 123 58 136 70" stroke={hairDark} strokeWidth="6" strokeLinecap="round" opacity=".55"/></g>;
-    if(cfg.hair==="mohawk") return <g><path d="M109 33 C111 21 124 17 133 28 C139 44 138 68 132 88 L108 88 C102 68 103 48 109 33Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M119 29 C124 46 124 65 119 83" stroke={hairLight} strokeWidth="7" strokeLinecap="round" opacity=".7"/><path d="M74 81 C89 72 99 71 108 82" stroke={skinDark} strokeWidth="10" strokeLinecap="round" opacity=".45"/><path d="M132 82 C144 71 158 72 169 81" stroke={skinDark} strokeWidth="10" strokeLinecap="round" opacity=".45"/></g>;
-    if(cfg.hair==="afroSmall"||cfg.hair==="afroBig"||cfg.hair==="curls"){
-      const big=cfg.hair==="afroBig";
-      const curls=cfg.hair==="curls";
-      const pts=big?[[61,79,22],[75,57,23],[98,41,22],[122,34,24],[146,43,23],[168,59,23],[181,82,21],[82,89,19],[105,78,20],[129,75,20],[152,82,19]]:curls?[[74,70,16],[93,56,16],[113,49,17],[134,51,16],[153,62,16],[167,79,15],[93,80,14],[118,73,15],[143,80,14]]:[[75,72,17],[94,58,18],[118,51,19],[143,59,18],[163,75,17],[96,80,15],[121,75,16],[146,81,15]];
-      return <g>{pts.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r={p[2]} fill={i%3===0?hairDark:i%2?hair:hairLight} stroke={line} strokeWidth="4"/>)}<path d="M69 89 C88 78 154 78 172 89" stroke={hair} strokeWidth="15" strokeLinecap="round"/></g>
-    }
-    if(cfg.hair==="dreadsShort") return dreadDots(1);
-    if(cfg.hair==="dreadsMed") return dreadDots(2);
-    if(cfg.hair==="dreadsLong") return dreadDots(3);
-    if(cfg.hair==="dreadsTie") return <g>
-      {dreadDots(1)}
-      {/* Bun on top */}
-      <ellipse cx="120" cy="36" rx="28" ry="20" fill={hair} stroke={line} strokeWidth="5"/>
-      <ellipse cx="118" cy="30" rx="18" ry="11" fill={hairLight} opacity=".38"/>
-      <rect x="96" y="52" width="48" height="9" rx="4.5" fill="#C0392B" stroke={line} strokeWidth="2"/>
+
+    // ── BUZZ ─────────────────────────────────────────────────────────────────
+    if(cfg.hair==="buzz") return <g>
+      <path d="M70 78 C80 54 99 43 120 43 C141 43 160 54 170 78 C148 70 92 70 70 78Z" fill={hair} stroke={line} strokeWidth={sw} strokeLinejoin="round"/>
+      <path d="M80 68 C100 56 140 56 160 68" stroke={HL} strokeWidth="8" strokeLinecap="round" opacity=".55"/>
+      <path d="M78 76 C96 70 144 70 162 76" stroke={HL} strokeWidth="4" strokeLinecap="round" opacity=".3"/>
     </g>;
-    if(cfg.hair==="twists") return <g><path d="M66 78 C80 48 100 36 123 36 C150 36 168 52 175 78 C147 69 92 69 66 78Z" fill={hair} stroke={line} strokeWidth={stroke}/>{[82,98,114,130,146,162].map((x,i)=><path key={x} d={`M${x} 72 C${x-7} 92 ${x+8} 105 ${x} 124`} fill="none" stroke={i%2?hairDark:hairLight} strokeWidth="9" strokeLinecap="round"/> )}</g>;
-    if(cfg.hair==="braids") return <g>
-      {/* Crown cap */}
-      <path d="M67 76 C80 46 100 35 123 35 C149 35 167 50 175 77 C148 69 92 69 67 76Z" fill={hair} stroke={line} strokeWidth={stroke}/>
-      <path d="M84 62 C104 50 138 52 158 64" stroke={hairLight} strokeWidth="8" strokeLinecap="round" opacity=".6"/>
-      {/* Lateral strands only — beside ears */}
-      {[68,76,164,172].map((x,i)=><g key={i}>
-        <path d={`M${x} 78 C${x+(i>1?6:-6)} 112,${x+(i>1?4:-4)} 142,${x+(i>1?2:-2)} 168`}
-          fill="none" stroke={i%2?hair:hairDark} strokeWidth="11" strokeLinecap="round"/>
-        <path d={`M${x+(i>1?2:-2)} 84 C${x+(i>1?5:-5)} 116,${x+(i>1?3:-3)} 144,${x+(i>1?1:-1)} 164`}
-          fill="none" stroke={hairLight} strokeWidth="3.5" strokeLinecap="round" opacity=".55"/>
-        {/* braid crosshatch marks */}
-        {[96,114,132,150].map(y=><path key={y}
-          d={`M${x+(i>1?-3:3)} ${y} L${x+(i>1?6:-6)} ${y+8}`}
-          stroke={hairLight} strokeWidth="2.5" strokeLinecap="round" opacity=".7"/>)}
+
+    // ── FADES ────────────────────────────────────────────────────────────────
+    if(["fadeLow","fadeMid","fadeHigh"].includes(cfg.hair)){
+      const topY={fadeLow:60,fadeMid:46,fadeHigh:32}[cfg.hair];
+      const fadeH={fadeLow:.32,fadeMid:.48,fadeHigh:.64}[cfg.hair];
+      return <g>
+        {/* Main hair mass */}
+        <path d={`M66 84 C78 ${topY+14} 100 ${topY} 124 ${topY} C150 ${topY} 168 ${topY+16} 174 84 C148 76 93 76 66 84Z`}
+          fill={hair} stroke={line} strokeWidth={sw} strokeLinejoin="round"/>
+        {/* Top shine */}
+        <path d={`M84 ${topY+14} C104 ${topY+2} 142 ${topY+4} 162 ${topY+16}`} stroke={HL} strokeWidth="10" strokeLinecap="round" opacity=".58"/>
+        <path d={`M92 ${topY+22} C108 ${topY+14} 132 ${topY+16} 148 ${topY+24}`} stroke={HL} strokeWidth="6" strokeLinecap="round" opacity=".32"/>
+        {/* Temple fade wedge */}
+        <path d={`M66 84 L84 76 L80 88 L66 94Z`} fill={HD} opacity={fadeH}/>
+        <path d={`M174 84 L156 76 L160 88 L174 94Z`} fill={HD} opacity={fadeH}/>
+        {/* Fade line — the visible skin-to-hair gradient edge */}
+        <path d={`M68 88 C76 84 84 82 90 80`} stroke={line} strokeWidth="2.5" strokeLinecap="round" opacity=".4"/>
+        <path d={`M172 88 C164 84 156 82 150 80`} stroke={line} strokeWidth="2.5" strokeLinecap="round" opacity=".4"/>
+      </g>;
+    }
+
+    // ── CROP ─────────────────────────────────────────────────────────────────
+    if(cfg.hair==="crop") return <g>
+      <path d="M64 82 C72 51 96 36 124 36 C152 36 170 53 177 83 C150 78 92 78 64 82Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      <path d="M76 80 C100 90 134 88 164 80" stroke={HL} strokeWidth="9" strokeLinecap="round" opacity=".6"/>
+      {/* French crop texture lines */}
+      <path d="M80 82 L86 90 M104 80 L110 88 M130 80 L136 88" stroke={HD} strokeWidth="3.5" strokeLinecap="round" opacity=".55"/>
+      <path d="M80 72 C94 66 130 66 150 72" stroke={HL} strokeWidth="5" strokeLinecap="round" opacity=".35"/>
+    </g>;
+
+    // ── QUIFF ────────────────────────────────────────────────────────────────
+    if(cfg.hair==="quiff") return <g>
+      <path d="M62 84 C68 51 92 38 119 30 C153 18 183 45 177 82 C148 70 92 72 62 84Z" fill={hair} stroke={line} strokeWidth={sw} strokeLinejoin="round"/>
+      <path d="M90 57 C115 33 146 36 162 60" stroke={HL} strokeWidth="12" strokeLinecap="round" opacity=".65"/>
+      {/* Quiff volume strokes */}
+      <path d="M116 33 C110 46 112 60 120 70" stroke={HD} strokeWidth="5" strokeLinecap="round" opacity=".5"/>
+      <path d="M126 31 C122 44 124 58 130 68" stroke={HL} strokeWidth="4" strokeLinecap="round" opacity=".4"/>
+    </g>;
+
+    // ── POMPADOUR ────────────────────────────────────────────────────────────
+    if(cfg.hair==="pompadour") return <g>
+      <path d="M62 85 C64 52 91 38 112 25 C143 9 179 31 181 78 C150 66 92 71 62 85Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      <path d="M87 62 C112 35 148 30 166 58" stroke={HL} strokeWidth="13" strokeLinecap="round" opacity=".68"/>
+      <path d="M124 27 C118 44 122 60 136 72" stroke={HD} strokeWidth="5" strokeLinecap="round" opacity=".5"/>
+      <path d="M134 26 C130 42 132 56 140 68" stroke={HL} strokeWidth="4" strokeLinecap="round" opacity=".38"/>
+      {/* Pompadour comb lines */}
+      <path d="M100 54 C108 46 120 44 130 50" stroke={HL} strokeWidth="3" strokeLinecap="round" opacity=".5"/>
+      <path d="M98 64 C108 56 124 54 136 60" stroke={HL} strokeWidth="2.5" strokeLinecap="round" opacity=".4"/>
+    </g>;
+
+    // ── MOHAWK ───────────────────────────────────────────────────────────────
+    if(cfg.hair==="mohawk") return <g>
+      <path d="M109 34 C111 22 124 18 133 29 C139 45 138 70 132 90 L108 90 C102 70 103 50 109 34Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      <path d="M118 30 C122 47 122 67 118 85" stroke={HL} strokeWidth="7" strokeLinecap="round" opacity=".7"/>
+      <path d="M126 30 C128 46 128 65 126 84" stroke={HL} strokeWidth="4" strokeLinecap="round" opacity=".4"/>
+      {/* Shaved sides */}
+      <path d="M74 83 C88 74 100 72 108 82" stroke={HD} strokeWidth="10" strokeLinecap="round" opacity=".45"/>
+      <path d="M132 82 C143 72 158 74 168 83" stroke={HD} strokeWidth="10" strokeLinecap="round" opacity=".45"/>
+    </g>;
+
+    // ── AFRO ─────────────────────────────────────────────────────────────────
+    if(["afroSmall","afroBig","curls"].includes(cfg.hair)){
+      const big=cfg.hair==="afroBig", curl=cfg.hair==="curls";
+      const pts=big
+        ?[[58,82,24],[73,58,25],[97,42,24],[122,35,26],[148,43,25],[170,60,25],[184,84,23],[80,90,21],[106,78,22],[130,76,22],[154,84,21]]
+        :curl
+        ?[[72,73,17],[91,58,17],[112,51,18],[134,53,17],[154,64,17],[168,81,16],[90,83,15],[116,76,16],[144,82,15]]
+        :[[75,74,18],[93,60,19],[118,53,20],[144,61,19],[164,77,18],[95,82,16],[120,77,17],[147,82,16]];
+      return <g>
+        {pts.map(([cx,cy,r],i)=><g key={i}>
+          <circle cx={cx} cy={cy} r={r} fill={i%3===0?HD:i%2?hair:HL} stroke={line} strokeWidth="3.5"/>
+          {/* Curl highlight crescent */}
+          <ellipse cx={cx-r*.32} cy={cy-r*.38} rx={r*.42} ry={r*.28}
+            fill={HL} opacity=".44" transform={`rotate(-28,${cx-r*.32},${cy-r*.38})`}/>
+        </g>)}
+        <path d="M66 92 C84 80 156 80 174 92" stroke={hair} strokeWidth="16" strokeLinecap="round"/>
+      </g>;
+    }
+
+    // ── DREADS — proper S-curve cylinders beside face only ────────────────────
+    if(["dreadsShort","dreadsMed","dreadsLong","dreadsTie","dreadHighFade"].includes(cfg.hair)){
+      const isTie=cfg.hair==="dreadsTie", isFade=cfg.hair==="dreadHighFade";
+      const bot={dreadsShort:152,dreadsMed:178,dreadsLong:210,dreadsTie:162,dreadHighFade:154}[cfg.hair];
+      // Left column: x=58,66,74 beside left ear. Right column: x=166,174,182 beside right ear.
+      // Stagger lengths for natural look
+      const cols=[
+        {x:58, bot:bot-14, flip:false, w:15, bend:9},
+        {x:66, bot:bot,    flip:true,  w:14, bend:7},
+        {x:74, bot:bot-24, flip:false, w:13, bend:6},
+        {x:166,bot:bot-18, flip:true,  w:15, bend:9},
+        {x:174,bot:bot,    flip:false, w:14, bend:7},
+        {x:182,bot:bot-10, flip:true,  w:13, bend:6},
+      ];
+      return <g>
+        {/* Back mass behind face */}
+        <path d="M58 88 C50 110 46 148 52 180 L62 180 C58 152 60 116 66 94Z" fill={HD} opacity=".88"/>
+        <path d="M182 88 C190 110 194 148 188 180 L178 180 C182 152 180 116 174 94Z" fill={HD} opacity=".88"/>
+        <DreadCrown isTie={isTie} isFade={isFade}/>
+        {/* Individual locs as S-curve cylinders */}
+        {cols.map((c,i)=><Loc key={i} x={c.x} y1={86} y2={c.bot} w={c.w} flip={c.flip} bend={c.bend}/>)}
+        {/* Texture cross-lines on each loc */}
+        {cols.map((c,i)=>[108,130,152,172,192].filter(y=>y<c.bot).map((y,j)=>(
+          <path key={`t${i}${j}`}
+            d={`M${c.x-4} ${y} C${c.x} ${y+4},${c.x} ${y+6},${c.x+4} ${y+10}`}
+            fill="none" stroke={HL} strokeWidth="1.8" strokeLinecap="round" opacity=".5"/>
+        )))}
+      </g>;
+    }
+
+    // ── TWISTS ───────────────────────────────────────────────────────────────
+    if(cfg.hair==="twists") return <g>
+      <path d="M66 80 C79 50 100 38 123 38 C149 38 168 53 175 80 C148 71 93 71 66 80Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      <path d="M84 62 C104 50 138 52 158 64" stroke={HL} strokeWidth="8" strokeLinecap="round" opacity=".55"/>
+      {/* Twist strands — beside ears only, S-shaped */}
+      {[[74,80,88,104,72,124],[168,80,178,104,170,124]].map((s,i)=><g key={i}>
+        <path d={`M${s[0]} ${s[1]} C${s[2]} ${s[3]}, ${s[4]} ${s[5]-16}, ${s[4]} ${s[5]}`}
+          fill="none" stroke={hair} strokeWidth="14" strokeLinecap="round"/>
+        <path d={`M${s[0]-2} ${s[1]+4} C${s[2]-2} ${s[3]}, ${s[4]-2} ${s[5]-18}, ${s[4]-2} ${s[5]-4}`}
+          fill="none" stroke={HL} strokeWidth="4" strokeLinecap="round" opacity=".6"/>
       </g>)}
     </g>;
-    if(cfg.hair==="cornrows") return <g>
-      <path d="M69 78 C81 49 101 37 123 37 C148 37 166 51 172 78 C148 70 94 70 69 78Z" fill={hair} stroke={line} strokeWidth={stroke}/>
-      {/* Cornrow lines across the scalp — these sit ON the crown, not falling over face */}
-      {[82,92,102,112,122,132,142,152].map((x,i)=><path key={x}
-        d={`M${x} 42 C${x-4} 58 ${x-3} 72 ${x-2} 80`}
-        fill="none" stroke={i%2?hairLight:hairDark} strokeWidth="4.5" strokeLinecap="round" opacity=".85"/>)}
-      {/* Side drops beside ears */}
-      {[68,172].map((x,i)=><path key={x}
-        d={`M${x} 80 C${x+(i?6:-6)} 110,${x+(i?4:-4)} 135,${x+(i?2:-2)} 155`}
-        fill="none" stroke={hair} strokeWidth="8" strokeLinecap="round"/>)}
+
+    // ── BRAIDS ───────────────────────────────────────────────────────────────
+    if(cfg.hair==="braids") return <g>
+      <path d="M67 78 C79 48 100 36 123 36 C149 36 167 51 175 79 C148 70 93 70 67 78Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      <path d="M84 63 C104 51 138 53 158 65" stroke={HL} strokeWidth="8" strokeLinecap="round" opacity=".55"/>
+      {/* Braids only beside ears — 3 left, 3 right */}
+      {[
+        {x:68, bot:170, flip:false},
+        {x:76, bot:158, flip:true},
+        {x:162,bot:170, flip:true},
+        {x:170,bot:158, flip:false},
+      ].map((b,i)=><g key={i}>
+        <path d={`M${b.x} 82 C${b.x+(b.flip?7:-7)} 110,${b.x+(b.flip?-5:5)} 136,${b.x} ${b.bot}`}
+          fill="none" stroke={hair} strokeWidth="11" strokeLinecap="round"/>
+        {[96,114,132,150].filter(y=>y<b.bot).map((y,j)=><Weave key={j} x={b.x} y={y} w={7}/>)}
+        <path d={`M${b.x-2} 86 C${b.x+(b.flip?6:-6)} 112,${b.x+(b.flip?-4:4)} 136,${b.x-1} ${b.bot-6}`}
+          fill="none" stroke={HL} strokeWidth="2.5" strokeLinecap="round" opacity=".55"/>
+      </g>)}
+      <path d="M72 78 C90 70 150 70 168 78" stroke={hair} strokeWidth="16" strokeLinecap="round"/>
     </g>;
-    if(cfg.hair==="pixie") return <g><path d="M67 80 C76 48 101 34 125 36 C151 38 171 54 176 89 C154 78 97 77 67 80Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M89 61 C107 48 134 49 155 65" stroke={hairLight} strokeWidth="9" strokeLinecap="round" opacity=".62"/></g>;
-    if(cfg.hair==="bob") return <g><path d="M65 78 C76 48 99 35 121 35 C151 35 173 55 179 83 C184 112 176 154 163 171 C158 128 158 102 151 86 C133 95 102 95 85 86 C80 103 80 130 77 170 C63 151 57 114 65 78Z" fill={hair} stroke={line} strokeWidth={stroke} strokeLinejoin="round"/><path d="M91 61 C112 49 140 52 158 70" stroke={hairLight} strokeWidth="8" strokeLinecap="round" opacity=".6"/></g>;
-    if(cfg.hair==="waves") return <g><path d="M63 82 C72 48 98 34 123 35 C154 36 175 57 181 92 C187 127 176 162 160 178 C158 135 153 103 143 82 C121 96 95 93 76 83 C78 114 78 144 72 176 C55 154 54 113 63 82Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M83 77 C102 59 126 70 143 58 C154 52 163 60 168 73" stroke={hairLight} strokeWidth="7" strokeLinecap="round" fill="none" opacity=".66"/></g>;
-    if(cfg.hair==="ponytail") return <g><path d="M66 79 C78 47 100 34 124 34 C151 34 169 51 176 80 C149 70 92 70 66 79Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M167 81 C197 84 204 115 181 132 C170 113 166 99 167 81Z" fill={hair} stroke={line} strokeWidth="5"/><path d="M173 91 C188 95 191 111 181 122" stroke={hairLight} strokeWidth="5" strokeLinecap="round" opacity=".65"/></g>;
-    if(cfg.hair==="bun") return <g><path d="M67 78 C80 46 102 35 124 35 C150 35 168 50 176 79 C149 70 92 70 67 78Z" fill={hair} stroke={line} strokeWidth={stroke}/><circle cx="121" cy="32" r="21" fill={hair} stroke={line} strokeWidth="5"/><path d="M110 28 C122 19 139 27 142 40" stroke={hairLight} strokeWidth="5" strokeLinecap="round" opacity=".65"/></g>;
-    if(cfg.hair==="long") return <g><path d="M64 80 C73 48 98 34 123 35 C154 36 176 56 181 90 C189 135 178 184 163 202 C151 160 153 113 143 82 C123 94 96 94 77 83 C78 118 77 159 66 202 C51 177 53 116 64 80Z" fill={hair} stroke={line} strokeWidth={stroke}/><path d="M84 75 C105 57 130 66 154 70" stroke={hairLight} strokeWidth="8" strokeLinecap="round" opacity=".6"/></g>;
-    return null
+
+    // ── CORNROWS ─────────────────────────────────────────────────────────────
+    if(cfg.hair==="cornrows") return <g>
+      <path d="M69 80 C80 51 100 39 123 39 C148 39 166 53 172 80 C148 72 93 72 69 80Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      {/* Row lines across scalp */}
+      {[82,93,104,115,126,137,148,159].map((x,i)=><g key={x}>
+        <path d={`M${x} 44 C${x-3} 60 ${x-2} 72 ${x-1} 80`}
+          fill="none" stroke={i%2?HL:HD} strokeWidth="4.5" strokeLinecap="round" opacity=".82"/>
+      </g>)}
+      {/* Side drops beside ears */}
+      {[{x:68,flip:false},{x:172,flip:true}].map((b,i)=><g key={i}>
+        <path d={`M${b.x} 82 C${b.x+(b.flip?8:-8)} 108,${b.x+(b.flip?6:-6)} 132,${b.x+(b.flip?4:-4)} 154`}
+          fill="none" stroke={hair} strokeWidth="9" strokeLinecap="round"/>
+        {[96,112,128,144].map((y,j)=><Weave key={j} x={b.x+(b.flip?3:-3)} y={y} w={6} tight/>)}
+      </g>)}
+    </g>;
+
+    // ── FEMALE STYLES ─────────────────────────────────────────────────────────
+    if(cfg.hair==="pixie") return <g>
+      <path d="M67 82 C76 50 100 36 125 37 C152 39 171 56 176 91 C152 79 96 78 67 82Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      <path d="M88 63 C106 50 136 51 156 67" stroke={HL} strokeWidth="10" strokeLinecap="round" opacity=".62"/>
+      <path d="M90 72 C108 64 132 65 152 73" stroke={HL} strokeWidth="6" strokeLinecap="round" opacity=".38"/>
+      <path d="M80 78 C86 70 94 66 102 64" stroke={HL} strokeWidth="4" strokeLinecap="round" opacity=".4"/>
+    </g>;
+
+    if(cfg.hair==="bob") return <g>
+      <path d="M65 80 C76 50 99 37 121 37 C151 37 173 57 179 85 C184 114 176 156 163 173 C158 130 158 104 151 88 C132 96 102 96 85 88 C80 105 80 132 77 172 C63 153 57 116 65 80Z" fill={hair} stroke={line} strokeWidth={sw} strokeLinejoin="round"/>
+      <path d="M90 63 C112 51 140 54 158 72" stroke={HL} strokeWidth="8" strokeLinecap="round" opacity=".58"/>
+      {/* Bob shine line at jaw level */}
+      <path d="M78 148 C100 154 140 154 162 148" stroke={HL} strokeWidth="5" strokeLinecap="round" opacity=".35"/>
+    </g>;
+
+    if(cfg.hair==="waves") return <g>
+      <path d="M63 84 C72 50 98 36 123 37 C154 38 175 59 181 94 C187 129 176 164 160 180 C158 137 153 105 143 84 C121 98 95 95 76 85 C78 116 78 146 72 178 C55 156 54 115 63 84Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      {/* Wave lines — S-curves showing the wave texture */}
+      <path d="M82 79 C100 61 122 78 142 62 C154 54 164 65 170 77" stroke={HL} strokeWidth="7" strokeLinecap="round" fill="none" opacity=".65"/>
+      <path d="M78 108 C96 92 118 108 138 94 C152 84 164 96 172 108" stroke={HL} strokeWidth="5" strokeLinecap="round" fill="none" opacity=".45"/>
+      <path d="M75 136 C92 122 114 136 134 122 C148 112 162 124 170 136" stroke={HL} strokeWidth="4" strokeLinecap="round" fill="none" opacity=".32"/>
+    </g>;
+
+    if(cfg.hair==="ponytail") return <g>
+      <path d="M66 81 C78 49 100 36 124 36 C151 36 169 53 176 82 C148 72 93 72 66 81Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      <path d="M86 60 C106 47 136 49 156 63" stroke={HL} strokeWidth="9" strokeLinecap="round" opacity=".58"/>
+      {/* Ponytail body */}
+      <path d="M167 83 C200 87 207 122 182 140 C170 120 166 104 167 83Z" fill={hair} stroke={line} strokeWidth="5"/>
+      <path d="M172 94 C194 98 196 118 182 128" stroke={HL} strokeWidth="5" strokeLinecap="round" opacity=".6"/>
+      {/* Elastic band */}
+      <path d="M166 82 C168 88 170 91 167 95" fill="none" stroke={line} strokeWidth="4" strokeLinecap="round"/>
+      <ellipse cx="167" cy="88" rx="5" ry="3" fill={HD} stroke={line} strokeWidth="2"/>
+    </g>;
+
+    if(cfg.hair==="bun") return <g>
+      <path d="M67 80 C80 48 102 37 124 37 C150 37 168 52 176 81 C148 72 93 72 67 80Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      <path d="M84 60 C104 47 136 49 156 63" stroke={HL} strokeWidth="8" strokeLinecap="round" opacity=".55"/>
+      {/* Bun */}
+      <circle cx="120" cy="33" r="22" fill={hair} stroke={line} strokeWidth="5"/>
+      <ellipse cx="116" cy="27" rx="14" ry="10" fill={HL} opacity=".42"/>
+      <circle cx="120" cy="33" r="7" fill={HD} stroke={line} strokeWidth="2"/>
+      <circle cx="120" cy="33" r="3" fill={HL} opacity=".6"/>
+    </g>;
+
+    if(cfg.hair==="long") return <g>
+      <path d="M64 82 C73 50 98 36 123 37 C154 38 176 58 181 92 C189 137 178 186 163 204 C151 162 153 115 143 84 C123 96 96 96 77 85 C78 120 77 161 66 204 C51 179 53 118 64 82Z" fill={hair} stroke={line} strokeWidth={sw}/>
+      <path d="M82 77 C104 59 130 68 154 72" stroke={HL} strokeWidth="9" strokeLinecap="round" opacity=".6"/>
+      {/* Long hair texture stripes */}
+      <path d="M70 116 C78 108 78 130 72 140" stroke={HL} strokeWidth="4" strokeLinecap="round" opacity=".38"/>
+      <path d="M170 116 C162 108 162 130 168 140" stroke={HL} strokeWidth="4" strokeLinecap="round" opacity=".38"/>
+      <path d="M68 156 C74 146 76 166 70 178" stroke={HL} strokeWidth="3.5" strokeLinecap="round" opacity=".3"/>
+      <path d="M172 156 C166 146 164 166 170 178" stroke={HL} strokeWidth="3.5" strokeLinecap="round" opacity=".3"/>
+    </g>;
+
+    return null;
+  };
+
   };
   const eyesLayer=()=>{
     const y=112;
