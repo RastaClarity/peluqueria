@@ -103,7 +103,7 @@ const BRAND = {
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
 const APP_VERSION="RASTACUTS_2_4_1_EDITOR_FASE115_STYLE";
-const APP_VERSION_SHORT="2.5.0";
+const APP_VERSION_SHORT="2.5.1";
 const APP_BUILD_DATE="2026-06-06";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -15356,6 +15356,33 @@ function SafetyVersionPanel({user=null,settings=null,checkingSession=false,sessi
       {sessionWarning?"⚠️":"🛡️"} {APP_VERSION_SHORT}
     </button>
   );
+}
+
+
+/* ===== Compatibilidad UI básica 2.5.1 =====
+   Mantiene vivos los componentes globales usados por pantallas antiguas.
+   Evita errores como: Particles is not defined, Toast is not defined, Av is not defined.
+*/
+function Av({av=0,config=null,size=36}){
+  const cfg=normalizeAvatarConfig(config,av);
+  const frame={none:`2px solid rgba(255,244,214,.9)`,bronze:`3px solid #C97934`,gold:`3px solid #D4AF37`,neon:`3px solid #5FD7FF`,legend:`3px solid #FFF1A8`}[cfg.frame]||`2px solid rgba(255,244,214,.9)`;
+  const aura={none:"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)",warm:"0 0 22px rgba(212,175,55,.45), 0 8px 18px rgba(20,8,4,.28)",flame:"0 0 26px rgba(240,106,59,.55), 0 8px 18px rgba(20,8,4,.28)",ocean:"0 0 26px rgba(95,215,255,.45), 0 8px 18px rgba(20,8,4,.28)",vip:"0 0 30px rgba(255,241,168,.7), 0 8px 18px rgba(20,8,4,.28)"}[cfg.aura]||"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)";
+  return <div title={avatarStyleName(cfg)} style={{width:size,height:size,borderRadius:"28%",background:bgGradient(cfg.bg),display:"flex",alignItems:"center",justifyContent:"center",border:frame,boxShadow:aura,position:"relative",overflow:"hidden",perspective:500}}>
+    {cfg.aura!=="none"&&<span style={{position:"absolute",inset:3,borderRadius:"28%",background:"radial-gradient(circle at 35% 18%,rgba(255,255,255,.28),transparent 42%)",pointerEvents:"none"}}/>}
+    <AvatarFigure config={cfg} size={size*1.18} animated={size>=70}/>
+  </div>;
+}
+function Toast({msg,show}){
+  if(!show)return null;
+  return <div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",background:T.g800,color:T.white,padding:"12px 22px",borderRadius:50,fontWeight:900,fontSize:"0.88rem",zIndex:9999,whiteSpace:"nowrap",boxShadow:"0 6px 24px rgba(27,67,50,0.35)",animation:"toastIn 0.3s ease"}}>{msg}</div>;
+}
+function PtsPopup({pts,show}){
+  if(!show||!pts)return null;
+  return <div style={{position:"fixed",top:"35%",left:"50%",transform:"translateX(-50%)",zIndex:9999,animation:"ptsFloat 1.8s ease forwards",pointerEvents:"none"}}><div style={{background:T.gradGold,color:T.white,borderRadius:50,padding:"10px 24px",fontWeight:900,fontSize:"1.4rem",boxShadow:"0 6px 24px rgba(255,183,3,0.5)"}}>+{pts} pts</div></div>;
+}
+function Particles(){
+  const items=["✂","〰","◆","✦","•","⟡"];
+  return <div aria-hidden="true" style={{position:"fixed",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:0}}>{[...Array(10)].map((_,i)=><div key={i} style={{position:"absolute",left:`${6+i*10}%`,bottom:"-10%",fontSize:i%3===0?"1.35rem":"1rem",opacity:.09,animation:`floatUp ${13+i*2}s linear ${i*1.4}s infinite`}}>{items[i%items.length]}</div>)}</div>;
 }
 
 function AppCore(){
