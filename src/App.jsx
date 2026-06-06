@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_3_0_BARBER_AVATAR_REBUILT";
-const APP_VERSION_SHORT="2.3.0";
+const APP_VERSION="RASTACUTS_2_3_1_BARBER_EDITOR_STATIC_PREVIEWS";
+const APP_VERSION_SHORT="2.3.1";
 const APP_BUILD_DATE="2026-06-06";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -5295,6 +5295,22 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
   const filters=[{id:"all",label:"Todo"},{id:"barber",label:"Barber"},{id:"rastas",label:"Rastas"},{id:"trenzas",label:"Trenzas"},{id:"rizo",label:"Rizo"},{id:"mujer",label:"Mujer"}];
   const visibleHair=HAIR_STYLES.filter(h=>hairFilter==="all"||h.group===hairFilter);
   const sectionTitle={hair:"Peinados",color:"Color de pelo",base:"Base del avatar",face:"Cara",beard:"Barba",extras:"Accesorios",style:"Fondo"}[section]||"Editor";
+  const neutralPreview={model:"male",face:"oval",skin:"warm",hair:"fadeMid",hairColor:"black",eyes:"soft",mouth:"smile",beard:"none",glasses:"none",accessory:"none",bg:"plain"};
+  const cleanMini=(overrides={})=>normalizeAvatarV3({...neutralPreview,...overrides});
+  const hairMini=(hairId)=>{
+    const style=HAIR_STYLES.find(h=>h.id===hairId);
+    const femaleHair=style?.group==="mujer";
+    return cleanMini({model:femaleHair?"female":"male",face:femaleHair?"oval":"round",hair:hairId,hairColor:"black",beard:"none",glasses:"none",accessory:"none",bg:"plain"});
+  };
+  const modelMini=(modelId)=>cleanMini({model:modelId,face:modelId==="female"?"heart":"square",hair:modelId==="female"?"waves":"fadeMid",beard:"none"});
+  const faceMini=(faceId)=>cleanMini({face:faceId,hair:"buzz",eyes:"soft",mouth:"smile"});
+  const eyeMini=(eyeId)=>cleanMini({hair:"buzz",eyes:eyeId,mouth:"neutral"});
+  const mouthMini=(mouthId)=>cleanMini({hair:"buzz",eyes:"soft",mouth:mouthId});
+  const beardMini=(beardId)=>cleanMini({model:"male",face:"square",hair:"fadeLow",beard:beardId});
+  const glassesMini=(glassesId)=>cleanMini({hair:"buzz",glasses:glassesId,accessory:"none"});
+  const accessoryMini=(accessoryId)=>cleanMini({hair:"buzz",glasses:"none",accessory:accessoryId});
+  const bgSwatch={plain:"linear-gradient(160deg,#F4E5BD,#C79A48)",barber:"linear-gradient(160deg,#19100B,#4B301B)",warm:"linear-gradient(160deg,#40210F,#E0AD4D)",neon:"linear-gradient(160deg,#111D2D,#2D7DAA)"};
+  const BgPreview=({id})=><div style={{width:68,height:68,borderRadius:20,background:bgSwatch[id]||bgSwatch.plain,border:"3px solid rgba(255,255,255,.26)",boxShadow:"0 8px 18px rgba(0,0,0,.22)",display:"grid",placeItems:"center",color:"rgba(255,255,255,.82)",fontWeight:950,fontSize:"1.15rem"}}>💈</div>;
   const OptionGrid=({children})=><div className="avatar-clean-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:9}}>{children}</div>;
   return <div className="avatar-clean-editor" style={{marginTop:12}}>
     <style>{`
@@ -5310,7 +5326,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
     `}</style>
     <Card style={{background:"linear-gradient(180deg,#21140C,#130B06)",border:"1px solid rgba(216,190,135,.22)"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10,flexWrap:"wrap"}}>
-        <div><h3 style={{margin:0,fontSize:"1.05rem",color:T.white}}>Editor barber cartoon</h3><p style={{margin:"4px 0 0",fontSize:".78rem",color:"rgba(245,230,200,.72)"}}>Capas limpias: cada pestaña cambia solo lo que toca. Sin gafas mezcladas ni marcas raras detrás.</p></div>
+        <div><h3 style={{margin:0,fontSize:"1.05rem",color:T.white}}>Editor barber cartoon</h3><p style={{margin:"4px 0 0",fontSize:".78rem",color:"rgba(245,230,200,.72)"}}>Miniaturas limpias: solo muestran la opción. El avatar grande enseña la combinación final.</p></div>
         <div style={{display:"flex",gap:8}}><Btn small col="ghost" onClick={reset}>Reset</Btn><Btn small col="gold" onClick={randomize}>Random</Btn></div>
       </div>
       <div className="avatar-clean-layout" style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 270px",gap:14,alignItems:"start"}}>
@@ -5319,17 +5335,17 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
           <h4 style={{margin:"12px 0 4px",fontSize:"1rem",color:T.gold}}>{sectionTitle}</h4>
           {section==="hair"&&<div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:6,marginBottom:8}}>{filters.map(f=><button key={f.id} onClick={()=>setHairFilter(f.id)} style={{whiteSpace:"nowrap",border:hairFilter===f.id?"2px solid #55D7FF":"1px solid rgba(216,190,135,.25)",borderRadius:999,padding:"7px 11px",background:hairFilter===f.id?"rgba(85,215,255,.18)":"rgba(255,244,214,.06)",color:T.white,fontWeight:800}}>{f.label}</button>)}</div>}
           <OptionGrid>
-            {section==="hair"&&visibleHair.map(o=><CleanOption key={o.id} active={cfg.hair===o.id} label={o.label} onClick={()=>patch("hair",o.id)}><CleanAvatar config={{...cfg,hair:o.id,glasses:"none",accessory:"none"}} size={76} mini/></CleanOption>)}
+            {section==="hair"&&visibleHair.map(o=><CleanOption key={o.id} active={cfg.hair===o.id} label={o.label} onClick={()=>patch("hair",o.id)}><CleanAvatar config={hairMini(o.id)} size={76} mini/></CleanOption>)}
             {section==="color"&&CLEAN_AVATAR_OPTIONS.hairColor.map(o=><CleanOption key={o.id} active={cfg.hairColor===o.id} label={o.label} onClick={()=>patch("hairColor",o.id)}><div style={{width:58,height:58,borderRadius:20,background:o.color,border:"3px solid rgba(255,255,255,.34)",boxShadow:"0 8px 18px rgba(0,0,0,.22)"}}/></CleanOption>)}
-            {section==="base"&&CLEAN_AVATAR_OPTIONS.model.map(o=><CleanOption key={o.id} active={cfg.model===o.id} label={o.label} onClick={()=>patchMany({model:o.id,beard:o.id==="female"?"none":cfg.beard})}><CleanAvatar config={{...cfg,model:o.id,beard:o.id==="female"?"none":cfg.beard,glasses:"none",accessory:"none"}} size={76} mini/></CleanOption>)}
+            {section==="base"&&CLEAN_AVATAR_OPTIONS.model.map(o=><CleanOption key={o.id} active={cfg.model===o.id} label={o.label} onClick={()=>patchMany({model:o.id,beard:o.id==="female"?"none":cfg.beard})}><CleanAvatar config={modelMini(o.id)} size={76} mini/></CleanOption>)}
             {section==="base"&&CLEAN_AVATAR_OPTIONS.skin.map(o=><CleanOption key={o.id} active={cfg.skin===o.id} label={o.label} onClick={()=>patch("skin",o.id)}><div style={{width:58,height:58,borderRadius:"50%",background:o.color,border:"3px solid rgba(255,255,255,.34)",boxShadow:"0 8px 18px rgba(0,0,0,.22)"}}/></CleanOption>)}
-            {section==="face"&&CLEAN_AVATAR_OPTIONS.face.map(o=><CleanOption key={o.id} active={cfg.face===o.id} label={o.label} onClick={()=>patch("face",o.id)}><CleanAvatar config={{...cfg,face:o.id,glasses:"none",accessory:"none"}} size={76} mini/></CleanOption>)}
-            {section==="face"&&CLEAN_AVATAR_OPTIONS.eyes.map(o=><CleanOption key={o.id} active={cfg.eyes===o.id} label={o.label} onClick={()=>patch("eyes",o.id)}><CleanAvatar config={{...cfg,eyes:o.id,glasses:"none",accessory:"none"}} size={76} mini/></CleanOption>)}
-            {section==="face"&&CLEAN_AVATAR_OPTIONS.mouth.map(o=><CleanOption key={o.id} active={cfg.mouth===o.id} label={o.label} onClick={()=>patch("mouth",o.id)}><CleanAvatar config={{...cfg,mouth:o.id,glasses:"none",accessory:"none"}} size={76} mini/></CleanOption>)}
-            {section==="beard"&&CLEAN_AVATAR_OPTIONS.beard.map(o=><CleanOption key={o.id} active={cfg.beard===o.id} label={cfg.model==="female"&&o.id!=="none"?`${o.label} bloqueado`:o.label} onClick={()=>cfg.model==="female"?patch("beard","none"):patch("beard",o.id)}><CleanAvatar config={{...cfg,beard:cfg.model==="female"?"none":o.id,glasses:"none",accessory:"none"}} size={76} mini/></CleanOption>)}
-            {section==="extras"&&CLEAN_AVATAR_OPTIONS.glasses.map(o=><CleanOption key={`g-${o.id}`} active={cfg.glasses===o.id} label={`Gafas: ${o.label}`} onClick={()=>patch("glasses",o.id)}><CleanAvatar config={{...cfg,glasses:o.id,accessory:"none"}} size={76} mini/></CleanOption>)}
-            {section==="extras"&&CLEAN_AVATAR_OPTIONS.accessory.map(o=><CleanOption key={`a-${o.id}`} active={cfg.accessory===o.id} label={o.label} onClick={()=>patch("accessory",o.id)}><CleanAvatar config={{...cfg,glasses:"none",accessory:o.id}} size={76} mini/></CleanOption>)}
-            {section==="style"&&CLEAN_AVATAR_OPTIONS.bg.map(o=><CleanOption key={o.id} active={cfg.bg===o.id} label={o.label} onClick={()=>patch("bg",o.id)}><CleanAvatar config={{...cfg,bg:o.id,glasses:"none",accessory:"none"}} size={76} mini/></CleanOption>)}
+            {section==="face"&&CLEAN_AVATAR_OPTIONS.face.map(o=><CleanOption key={o.id} active={cfg.face===o.id} label={o.label} onClick={()=>patch("face",o.id)}><CleanAvatar config={faceMini(o.id)} size={76} mini/></CleanOption>)}
+            {section==="face"&&CLEAN_AVATAR_OPTIONS.eyes.map(o=><CleanOption key={o.id} active={cfg.eyes===o.id} label={o.label} onClick={()=>patch("eyes",o.id)}><CleanAvatar config={eyeMini(o.id)} size={76} mini/></CleanOption>)}
+            {section==="face"&&CLEAN_AVATAR_OPTIONS.mouth.map(o=><CleanOption key={o.id} active={cfg.mouth===o.id} label={o.label} onClick={()=>patch("mouth",o.id)}><CleanAvatar config={mouthMini(o.id)} size={76} mini/></CleanOption>)}
+            {section==="beard"&&CLEAN_AVATAR_OPTIONS.beard.map(o=><CleanOption key={o.id} active={cfg.beard===o.id} label={cfg.model==="female"&&o.id!=="none"?`${o.label} bloqueado`:o.label} onClick={()=>cfg.model==="female"?patch("beard","none"):patch("beard",o.id)}><CleanAvatar config={beardMini(cfg.model==="female"?"none":o.id)} size={76} mini/></CleanOption>)}
+            {section==="extras"&&CLEAN_AVATAR_OPTIONS.glasses.map(o=><CleanOption key={`g-${o.id}`} active={cfg.glasses===o.id} label={`Gafas: ${o.label}`} onClick={()=>patch("glasses",o.id)}><CleanAvatar config={glassesMini(o.id)} size={76} mini/></CleanOption>)}
+            {section==="extras"&&CLEAN_AVATAR_OPTIONS.accessory.map(o=><CleanOption key={`a-${o.id}`} active={cfg.accessory===o.id} label={o.label} onClick={()=>patch("accessory",o.id)}><CleanAvatar config={accessoryMini(o.id)} size={76} mini/></CleanOption>)}
+            {section==="style"&&CLEAN_AVATAR_OPTIONS.bg.map(o=><CleanOption key={o.id} active={cfg.bg===o.id} label={o.label} onClick={()=>patch("bg",o.id)}><BgPreview id={o.id}/></CleanOption>)}
           </OptionGrid>
         </div>
         <div className="avatar-clean-preview" style={{position:"sticky",top:12,borderLeft:"1px solid rgba(216,190,135,.18)",paddingLeft:14,display:"grid",gap:10,justifyItems:"center"}}>
