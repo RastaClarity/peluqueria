@@ -5086,9 +5086,7 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
     heart:"M67 96 C68 59 93 39 120 42 C147 39 172 59 173 96 C174 134 151 169 120 182 C89 169 66 134 67 96Z"
   }[cfg.face]||"M70 97 C70 58 92 38 120 38 C148 38 170 58 170 97 C170 142 152 174 120 181 C88 174 70 142 70 97Z";
   const showHair=focus!=="bg";
-  const showFace=focus!=="bg";
-  const showFaceFeatures=focus==="full"||focus==="face"||focus==="beard"||focus==="extras";
-  const showFacePlate=focus!=="hair"&&focus!=="bg";  // don't draw face over hair in hair previews
+  const showFaceFeatures=focus!=="bg";
   const showBeard=focus==="full"||focus==="beard";
   const showExtras=focus==="full"||focus==="extras";
   const dreadDots=(long=3)=>{
@@ -5307,26 +5305,23 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
     <rect x="6" y="6" width="228" height="248" rx="42" fill={`url(#${uid}_bg)`} stroke="rgba(32,16,8,.9)" strokeWidth={mini?3:5}/>
     {!mini&&<g opacity=".18"><path d="M34 210 C76 184 164 184 206 210" stroke="#fff" strokeWidth="8" fill="none"/><path d="M32 36 L208 224" stroke="#fff" strokeWidth="3"/><path d="M208 36 L32 224" stroke="#fff" strokeWidth="3"/></g>}
     {focus!=="bg"&&<g>
+      {/* Shirt/body */}
       <path d="M78 213 C85 189 97 175 120 175 C143 175 155 189 162 213 C140 225 99 225 78 213Z" fill="#23344F" stroke={line} strokeWidth={stroke}/>
+      {/* Neck */}
       <rect x="93" y="160" width="54" height="42" rx="18" fill={`url(#${uid}_skin)`} stroke={line} strokeWidth={stroke}/>
+      {/* Face plate — always drawn BEFORE hair so hair sits on top */}
+      <path d={facePath} fill={`url(#${uid}_skin)`} stroke={line} strokeWidth={stroke} strokeLinejoin="round"/>
+      {/* Ears */}
+      <path d="M78 112 C63 115 61 139 78 146" fill={skin} stroke={line} strokeWidth="5"/>
+      <path d="M162 112 C177 115 179 139 162 146" fill={skin} stroke={line} strokeWidth="5"/>
+      {/* Face features — only when not hair-only focus */}
+      {showFaceFeatures&&<g>
+        {eyesLayer()}
+        <path d="M120 123 C116 133 117 139 126 140" fill="none" stroke={shade(skin,-62)} strokeWidth="4" strokeLinecap="round" opacity=".55"/>
+        {mouthLayer()}
+      </g>}
+      {/* HAIR — painted last so it always sits on top of the face */}
       {hairLayer()}
-      {/* Only draw full face when not in hair-focus mode */}
-      {showFacePlate
-        ?<>
-          <path d={facePath} fill={`url(#${uid}_skin)`} stroke={line} strokeWidth={stroke} strokeLinejoin="round"/>
-          <path d="M78 112 C63 115 61 139 78 146" fill={skin} stroke={line} strokeWidth="5"/>
-          <path d="M162 112 C177 115 179 139 162 146" fill={skin} stroke={line} strokeWidth="5"/>
-          {showFaceFeatures&&<g>{eyesLayer()}<path d="M120 123 C116 133 117 139 126 140" fill="none" stroke={shade(skin,-62)} strokeWidth="4" strokeLinecap="round" opacity=".55"/>{mouthLayer()}</g>}
-        </>
-        :<>
-          {/* Hair-focus mode: just ears + minimal face outline so hair has context */}
-          <path d="M78 112 C63 115 61 139 78 146" fill={skin} stroke={line} strokeWidth="5"/>
-          <path d="M162 112 C177 115 179 139 162 146" fill={skin} stroke={line} strokeWidth="5"/>
-          <path d={facePath} fill={`url(#${uid}_skin)`} stroke={line} strokeWidth={stroke} strokeLinejoin="round" opacity=".55"/>
-          {eyesLayer()}
-          {mouthLayer()}
-        </>
-      }
       {beardLayer()}
       {extrasLayer()}
       {!mini&&<path d="M88 78 C101 52 139 50 154 76" fill="none" stroke="rgba(255,255,255,.28)" strokeWidth="8" strokeLinecap="round"/>}
