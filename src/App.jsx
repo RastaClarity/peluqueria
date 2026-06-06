@@ -103,7 +103,7 @@ const BRAND = {
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
 const APP_VERSION="RASTACUTS_2_4_1_EDITOR_FASE115_STYLE";
-const APP_VERSION_SHORT="2.5.1";
+const APP_VERSION_SHORT="2.5.2";
 const APP_BUILD_DATE="2026-06-06";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -423,7 +423,7 @@ function tickLofiTrack(){
 /* ===== Audio limpio 2.1.4 =====
    - 1 toque: activar / silenciar sin reiniciar.
    - doble toque: saltar a una canción aleatoria.
-   - al acabar: la misma pista hace loop, no salta sola.
+   - al acabar: avanza automáticamente a la siguiente pista.
    - al entrar en juegos: música principal muteada, audio de juego encima.
 */
 function getBackgroundTrack(){
@@ -457,7 +457,7 @@ function backgroundTargetVolume(){
 function applyBackgroundAudioState(){
   try{
     if(!backgroundAudio)return;
-    backgroundAudio.loop=true;
+    backgroundAudio.loop=false;
     backgroundAudio.muted=Boolean(globalMuted||backgroundDuckedForGame);
     backgroundAudio.volume=backgroundTargetVolume();
   }catch(e){}
@@ -477,12 +477,17 @@ function createBackgroundAudio(){
   if(typeof Audio==="undefined")return null;
   const a=new Audio();
   a.src=getBackgroundSrc();
-  a.loop=true;
+  a.loop=false;
   a.preload="auto";
   a.crossOrigin="anonymous";
   a.volume=backgroundTargetVolume();
   a.muted=Boolean(globalMuted||backgroundDuckedForGame);
   a.dataset.trackName=getBackgroundName();
+  a.addEventListener("ended",()=>{
+    if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame){
+      nextMusicTrack(true);
+    }
+  });
   a.addEventListener("error",()=>{
     const track=getBackgroundTrack();
     const srcCount=track?.srcs?.length||1;
@@ -577,7 +582,7 @@ function muteMusicKeepTime(muted=true){
   if(musicPlaying&&!backgroundAudioAvailable&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
 }
 function nextMusicTrack(auto=false){
-  // Auto queda reservado, pero no se usa al acabar pista porque son loops.
+  // Auto se usa cuando termina una pista para pasar a la siguiente.
   backgroundTrackIndex=pickRandomBackgroundIndex();
   backgroundSourceTry=0;
   const shouldPlay=musicPlaying||auto;
