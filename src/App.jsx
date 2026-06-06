@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_4_0_BARBER_ART_REBUILT";
-const APP_VERSION_SHORT="2.4.0";
+const APP_VERSION="RASTACUTS_2_4_1_EDITOR_FASE115_STYLE";
+const APP_VERSION_SHORT="2.4.1";
 const APP_BUILD_DATE="2026-06-06";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -5107,37 +5107,75 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
   const cfg=normalizeAvatarV3(form?.avatarConfig,form?.avatar);
   const patch=(key,value)=>setForm(f=>({...(f||{}),avatarConfig:normalizeAvatarV3({...cfg,[key]:value},f?.avatar||0)}));
   const patchMany=(obj)=>setForm(f=>({...(f||{}),avatarConfig:normalizeAvatarV3({...cfg,...obj},f?.avatar||0)}));
-  const sections=[{id:"hair",label:"Pelo",icon:"✂️"},{id:"color",label:"Color",icon:"🎨"},{id:"base",label:"Base",icon:"👤"},{id:"face",label:"Cara",icon:"🙂"},{id:"beard",label:"Barba",icon:"🧔"},{id:"extras",label:"Extras",icon:"🕶️"},{id:"style",label:"Fondo",icon:"✨"}];
-  const randomize=()=>{const model=cleanPick(CLEAN_AVATAR_OPTIONS.model)||"male";patchMany({model,face:cleanPick(CLEAN_AVATAR_OPTIONS.face),skin:cleanPick(CLEAN_AVATAR_OPTIONS.skin),hair:cleanPick(HAIR_STYLES),hairColor:cleanPick(CLEAN_AVATAR_OPTIONS.hairColor),eyes:cleanPick(CLEAN_AVATAR_OPTIONS.eyes),mouth:cleanPick(CLEAN_AVATAR_OPTIONS.mouth),beard:model==="female"?"none":cleanPick(CLEAN_AVATAR_OPTIONS.beard),glasses:"none",accessory:cleanPick(CLEAN_AVATAR_OPTIONS.accessory),bg:cleanPick(CLEAN_AVATAR_OPTIONS.bg)});};
   const reset=()=>{if(onReset)return onReset();patchMany(cleanAvatarDefaults(Number(form?.avatar)||0));};
+  const randomize=()=>{
+    const model=cleanPick(CLEAN_AVATAR_OPTIONS.model)||"male";
+    const hairPool=HAIR_STYLES.filter(h=>model==="female"?h.group==="mujer":h.group!=="mujer");
+    patchMany({model,face:cleanPick(CLEAN_AVATAR_OPTIONS.face),skin:cleanPick(CLEAN_AVATAR_OPTIONS.skin),hair:(cleanPick(hairPool)||HAIR_STYLES[0])?.id||"buzz",hairColor:cleanPick(CLEAN_AVATAR_OPTIONS.hairColor),eyes:cleanPick(CLEAN_AVATAR_OPTIONS.eyes),mouth:cleanPick(CLEAN_AVATAR_OPTIONS.mouth),beard:model==="female"?"none":cleanPick(CLEAN_AVATAR_OPTIONS.beard),glasses:cleanPick(CLEAN_AVATAR_OPTIONS.glasses),accessory:cleanPick(CLEAN_AVATAR_OPTIONS.accessory),bg:cleanPick(CLEAN_AVATAR_OPTIONS.bg)});
+  };
+  const sections=[
+    {id:"hair",label:"Pelo",icon:"💇",sub:"cortes"},
+    {id:"color",label:"Color",icon:"🎨",sub:"pelo"},
+    {id:"base",label:"Base",icon:"👤",sub:"modelo"},
+    {id:"face",label:"Cara",icon:"🙂",sub:"ojos"},
+    {id:"beard",label:"Barba",icon:"🧔",sub:"barber"},
+    {id:"extras",label:"Extras",icon:"🕶️",sub:"acces."},
+    {id:"style",label:"Fondo",icon:"✨",sub:"escena"}
+  ];
   const filters=[{id:"all",label:"Todo"},{id:"barber",label:"Barber"},{id:"rastas",label:"Rastas"},{id:"trenzas",label:"Trenzas"},{id:"rizo",label:"Rizo"},{id:"mujer",label:"Mujer"}];
   const visibleHair=HAIR_STYLES.filter(h=>hairFilter==="all"||h.group===hairFilter);
+  const currentHair=HAIR_STYLES.find(h=>h.id===cfg.hair);
   const sectionTitle={hair:"Peinados",color:"Color de pelo",base:"Base del avatar",face:"Cara",beard:"Barba",extras:"Accesorios",style:"Fondo"}[section]||"Editor";
+  const sectionSub={hair:"Cortes claros, separados por categoría y sin mezclar gafas ni fondos.",color:"Muestras limpias. El color final solo se comprueba en el avatar grande.",base:"Sexo, forma y tono sin alterar pelo ni accesorios por error.",face:"Ojos, boca y forma de la cara con previews neutras.",beard:"Barbas separadas de pelo y extras.",extras:"Gafas y complementos sin colarse en otras pestañas.",style:"Fondo del avatar, solo fondo."}[section]||"";
   const neutralPreview={model:"male",face:"oval",skin:"warm",hair:"buzz",hairColor:"black",eyes:"soft",mouth:"smile",beard:"none",glasses:"none",accessory:"none",bg:"plain"};
   const cleanMini=(overrides={})=>normalizeAvatarV3({...neutralPreview,...overrides});
   const hairMini=(hairId)=>{const style=HAIR_STYLES.find(h=>h.id===hairId);const femaleHair=style?.group==="mujer";return cleanMini({model:femaleHair?"female":"male",face:femaleHair?"heart":"oval",hair:hairId,hairColor:"black",beard:"none",glasses:"none",accessory:"none",bg:"plain"});};
-  const BgPreview=({id})=>{const map={plain:"linear-gradient(160deg,#F4E5BD,#D7B66A)",barber:"linear-gradient(160deg,#1B100B,#5B3419)",warm:"linear-gradient(160deg,#4B2310,#E1AF4E)",neon:"linear-gradient(160deg,#101A28,#1D6B8B)"};return <div style={{width:74,height:74,borderRadius:22,background:map[id],border:"3px solid rgba(255,255,255,.35)",display:"grid",placeItems:"center",fontSize:"1.5rem"}}>💈</div>};
-  const OptionGrid=({children})=><div className="avatar-clean-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:9}}>{children}</div>;
-  return <div className="avatar-clean-editor" style={{marginTop:12}}>
-    <style>{`@media(max-width:620px){.avatar-clean-layout{display:flex!important;flex-direction:column-reverse!important;gap:10px!important}.avatar-clean-preview{position:sticky!important;top:0!important;z-index:9!important;border-left:0!important;padding-left:0!important;background:linear-gradient(180deg,rgba(20,10,6,.96),rgba(20,10,6,.84))!important;border:1px solid rgba(216,190,135,.25)!important;border-radius:20px!important;padding:10px!important}.avatar-clean-preview svg{width:184px!important;height:184px!important}.avatar-clean-tabs{grid-template-columns:repeat(4,minmax(0,1fr))!important}.avatar-clean-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.avatar-clean-option{min-height:112px!important}.avatar-clean-option svg{width:82px!important;height:82px!important}}`}</style>
-    <Card style={{background:"linear-gradient(180deg,#FFF1C6,#E7C982)",border:"2px solid rgba(120,86,36,.36)",color:"#1D130A"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10,flexWrap:"wrap"}}><div><h3 style={{margin:0,fontSize:"1.1rem",color:"#1D130A"}}>Editor barber cartoon</h3><p style={{margin:"4px 0 0",fontSize:".78rem",color:"rgba(29,19,10,.72)"}}>Miniaturas neutras. El avatar grande enseña la mezcla final.</p></div><div style={{display:"flex",gap:8}}><Btn small col="ghost" onClick={reset}>Reset</Btn><Btn small col="gold" onClick={randomize}>Random</Btn></div></div>
-      <div className="avatar-clean-layout" style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 300px",gap:14,alignItems:"start"}}>
-        <div className="avatar-clean-controls" style={{minWidth:0}}>
-          <div className="avatar-clean-tabs" style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:7,background:"rgba(120,86,36,.10)",padding:8,borderRadius:18,border:"1px solid rgba(120,86,36,.22)"}}>{sections.map(s=><button key={s.id} type="button" onClick={()=>setSection(s.id)} style={{border:section===s.id?"2px solid #AA8A18":"1px solid rgba(120,86,36,.28)",borderRadius:14,padding:"8px 4px",background:section===s.id?"linear-gradient(180deg,#FFE684,#D0A72E)":"#F6DE9D",color:"#13264A",fontWeight:900,cursor:"pointer"}}><div style={{fontSize:"1.05rem"}}>{s.icon}</div><div style={{fontSize:".66rem"}}>{s.label}</div></button>)}</div>
-          <h4 style={{margin:"12px 0 8px",fontSize:"1rem",color:"#3E2814"}}>{sectionTitle}</h4>
-          {section==="hair"&&<div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:8}}>{filters.map(f=><button key={f.id} onClick={()=>setHairFilter(f.id)} type="button" style={{border:hairFilter===f.id?"2px solid #13264A":"1px solid rgba(120,86,36,.30)",background:hairFilter===f.id?"#FFE684":"#F6DE9D",color:"#13264A",borderRadius:12,padding:"7px 12px",fontWeight:900,cursor:"pointer"}}>{f.label}</button>)}</div>}
-          <OptionGrid>
-            {section==="hair"&&visibleHair.map(h=><CleanOption key={h.id} active={cfg.hair===h.id} label={h.label} onClick={()=>patch("hair",h.id)}><CleanAvatar config={hairMini(h.id)} size={86} mini/></CleanOption>)}
-            {section==="color"&&CLEAN_AVATAR_OPTIONS.hairColor.map(o=><CleanOption key={o.id} active={cfg.hairColor===o.id} label={o.label} onClick={()=>patch("hairColor",o.id)}><div style={{width:70,height:70,borderRadius:20,background:o.color,border:"4px solid rgba(19,10,6,.22)",boxShadow:"inset 0 10px 20px rgba(255,255,255,.18),0 8px 15px rgba(0,0,0,.16)"}}/></CleanOption>)}
-            {section==="base"&&<>{CLEAN_AVATAR_OPTIONS.model.map(o=><CleanOption key={o.id} active={cfg.model===o.id} label={o.label} onClick={()=>patchMany({model:o.id,beard:o.id==="female"?"none":cfg.beard,hair:o.id==="female"&&HAIR_STYLES.find(h=>h.id===cfg.hair)?.group!=="mujer"?"waves":cfg.hair})}><CleanAvatar config={cleanMini({model:o.id,face:o.id==="female"?"heart":"square",hair:o.id==="female"?"waves":"fadeMid"})} size={86} mini/></CleanOption>)}{CLEAN_AVATAR_OPTIONS.skin.map(o=><CleanOption key={o.id} active={cfg.skin===o.id} label={o.label} onClick={()=>patch("skin",o.id)}><div style={{width:70,height:70,borderRadius:24,background:o.color,border:"4px solid rgba(19,10,6,.22)"}}/></CleanOption>)}</>}
-            {section==="face"&&<>{CLEAN_AVATAR_OPTIONS.face.map(o=><CleanOption key={o.id} active={cfg.face===o.id} label={o.label} onClick={()=>patch("face",o.id)}><CleanAvatar config={cleanMini({face:o.id,hair:"buzz"})} size={86} mini/></CleanOption>)}{CLEAN_AVATAR_OPTIONS.eyes.map(o=><CleanOption key={`e-${o.id}`} active={cfg.eyes===o.id} label={o.label} onClick={()=>patch("eyes",o.id)}><CleanAvatar config={cleanMini({eyes:o.id,hair:"buzz"})} size={86} mini/></CleanOption>)}{CLEAN_AVATAR_OPTIONS.mouth.map(o=><CleanOption key={`m-${o.id}`} active={cfg.mouth===o.id} label={o.label} onClick={()=>patch("mouth",o.id)}><CleanAvatar config={cleanMini({mouth:o.id,hair:"buzz"})} size={86} mini/></CleanOption>)}</>}
-            {section==="beard"&&CLEAN_AVATAR_OPTIONS.beard.map(o=><CleanOption key={o.id} active={cfg.beard===o.id} label={o.label} onClick={()=>patch("beard",o.id)}><CleanAvatar config={cleanMini({model:"male",face:"square",hair:"fadeLow",beard:o.id})} size={86} mini/></CleanOption>)}
-            {section==="extras"&&<>{CLEAN_AVATAR_OPTIONS.glasses.map(o=><CleanOption key={`g-${o.id}`} active={cfg.glasses===o.id} label={`Gafas ${o.label}`} onClick={()=>patch("glasses",o.id)}><CleanAvatar config={cleanMini({hair:"buzz",glasses:o.id,accessory:"none"})} size={86} mini/></CleanOption>)}{CLEAN_AVATAR_OPTIONS.accessory.map(o=><CleanOption key={`a-${o.id}`} active={cfg.accessory===o.id} label={o.label} onClick={()=>patch("accessory",o.id)}><CleanAvatar config={cleanMini({hair:"buzz",glasses:"none",accessory:o.id})} size={86} mini/></CleanOption>)}</>}
-            {section==="style"&&CLEAN_AVATAR_OPTIONS.bg.map(o=><CleanOption key={o.id} active={cfg.bg===o.id} label={o.label} onClick={()=>patch("bg",o.id)}><BgPreview id={o.id}/></CleanOption>)}
-          </OptionGrid>
+  const Tile=({active,label,onClick,children})=><button type="button" onClick={onClick} className="avatar-classic-tile" style={{border:active?"3px solid #55D7FF":"2px solid #D0A72E",background:active?"linear-gradient(135deg,#FFF1A8,#BFFFEA 72%,#9AE8FF)":"linear-gradient(180deg,#FFF7DC,#E4C274)",color:"#11233A",borderRadius:18,padding:9,minHeight:116,display:"grid",placeItems:"center",gap:5,cursor:"pointer",boxShadow:active?"0 0 0 4px rgba(85,215,255,.18),0 14px 25px rgba(0,0,0,.20)":"0 8px 15px rgba(0,0,0,.12)",fontWeight:950,overflow:"hidden"}}>{children}<b style={{fontSize:".74rem",lineHeight:1.05,textAlign:"center",maxWidth:"100%",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{label}</b></button>;
+  const Grid=({children})=><div className="avatar-classic-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>{children}</div>;
+  const Tab=({s})=><button key={s.id} type="button" onClick={()=>setSection(s.id)} style={{border:section===s.id?"2px solid #55D7FF":"1px solid rgba(120,86,36,.30)",borderRadius:16,padding:"8px 6px",background:section===s.id?"linear-gradient(180deg,#FFF1A8,#D0A72E)":"linear-gradient(180deg,#F6DE9D,#D9B96D)",color:"#13264A",fontWeight:950,cursor:"pointer",boxShadow:section===s.id?"0 0 0 3px rgba(85,215,255,.15)":"none",minHeight:58}}><div style={{fontSize:"1.05rem",lineHeight:1}}>{s.icon}</div><div style={{fontSize:".68rem",lineHeight:1.1}}>{s.label}</div><div style={{fontSize:".52rem",opacity:.78,lineHeight:1.1}}>{s.sub}</div></button>;
+  const BgPreview=({id})=>{const map={plain:"linear-gradient(160deg,#F4E5BD,#D7B66A)",barber:"linear-gradient(160deg,#1B100B,#5B3419)",warm:"linear-gradient(160deg,#4B2310,#E1AF4E)",neon:"linear-gradient(160deg,#101A28,#1D6B8B)"};return <div style={{width:78,height:78,borderRadius:24,background:map[id]||map.plain,border:"4px solid rgba(255,255,255,.55)",display:"grid",placeItems:"center",fontSize:"1.55rem",boxShadow:"0 8px 16px rgba(0,0,0,.20)"}}>💈</div>};
+  return <div className="avatar-classic-editor" style={{marginTop:12}}>
+    <style>{`@media(max-width:620px){.avatar-classic-layout{display:flex!important;flex-direction:column!important}.avatar-classic-hero{grid-template-columns:1fr!important;text-align:center}.avatar-classic-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.avatar-classic-tabs{grid-template-columns:repeat(4,minmax(0,1fr))!important}.avatar-classic-sticky-preview{position:sticky!important;top:0!important;z-index:10!important}.avatar-classic-tile{min-height:108px!important}.avatar-classic-tile svg{width:84px!important;height:84px!important}}`}</style>
+    <Card style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF8E8,#F5E1B6)",border:"2px solid #B99A45",marginBottom:14,color:"#1D130A"}}>
+      <div style={{padding:12,background:"radial-gradient(circle at 50% 12%,rgba(255,241,168,.30),transparent 36%),linear-gradient(160deg,#160B07,#3A1E10 55%,#D4AF37)",color:T.white}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:10,flexWrap:"wrap"}}>
+          <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",letterSpacing:".4px"}}>Creador de personaje</div><div style={{fontSize:".73rem",fontWeight:850,opacity:.84}}>Estilo FASE115: cabecera visual, pestañas grandes y opciones limpias por capa.</div></div>
+          <div style={{display:"flex",gap:8}}><Btn small col="ghost" onClick={reset}>↩ Reset</Btn><Btn small col="gold" onClick={randomize}>🎲 Aleatorio</Btn></div>
         </div>
-        <div className="avatar-clean-preview" style={{position:"sticky",top:12,borderLeft:"1px solid rgba(120,86,36,.20)",paddingLeft:14,display:"grid",gap:10,justifyItems:"center"}}><CleanAvatar config={cfg} size={250}/><div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"center"}}><span style={{background:"#E8D3A2",color:T.g900,borderRadius:999,padding:"5px 10px",fontWeight:900,fontSize:".72rem"}}>{cfg.model==="female"?"Femenino":"Masculino"}</span><span style={{background:"#E8D3A2",color:T.g900,borderRadius:999,padding:"5px 10px",fontWeight:900,fontSize:".72rem"}}>{HAIR_STYLES.find(h=>h.id===cfg.hair)?.label||"Peinado"}</span></div><Btn col="green" full onClick={()=>onSave?.()}>💾 Guardar avatar</Btn></div>
+        <div className="avatar-classic-hero" style={{display:"grid",gridTemplateColumns:"190px 1fr",gap:14,alignItems:"center"}}>
+          <div className="avatar-classic-sticky-preview" style={{display:"flex",justifyContent:"center"}}><CleanAvatar config={cfg} size={178}/></div>
+          <div>
+            <div style={{fontWeight:950,fontSize:"1.05rem",lineHeight:1.08,marginBottom:4}}>{cfg.model==="female"?"Avatar femenino":"Avatar masculino"} · {currentHair?.label||"Peinado"}</div>
+            <div style={{fontSize:".74rem",fontWeight:800,opacity:.86,marginBottom:8}}>Las miniaturas no copian tu look completo. Solo enseñan la pieza que vas a elegir.</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              <span style={{background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.20)",padding:"5px 9px",borderRadius:999,fontSize:".65rem",fontWeight:900}}>{cfg.model==="female"?"Femenino":"Masculino"}</span>
+              <span style={{background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.20)",padding:"5px 9px",borderRadius:999,fontSize:".65rem",fontWeight:900}}>{currentHair?.label||"Pelo"}</span>
+              <span style={{background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.20)",padding:"5px 9px",borderRadius:999,fontSize:".65rem",fontWeight:900}}>Capas separadas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{padding:12}}>
+        <div className="avatar-classic-tabs" style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:8,marginBottom:14}}>{sections.map(s=><Tab key={s.id} s={s}/>)}</div>
+        <div className="avatar-classic-layout" style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 230px",gap:14,alignItems:"start"}}>
+          <div style={{minWidth:0}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:8,marginBottom:10}}><div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1,color:"#4B301B"}}>{sectionTitle}</div><div style={{fontSize:".74rem",fontWeight:850,color:"rgba(29,19,10,.70)"}}>{sectionSub}</div></div><span style={{background:"#E8D3A2",border:"1px solid #B99A45",color:"#1D130A",borderRadius:999,padding:"5px 10px",fontWeight:950,fontSize:".68rem"}}>2.4.1</span></div>
+            {section==="hair"&&<div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:10}}>{filters.map(f=><button key={f.id} onClick={()=>setHairFilter(f.id)} type="button" style={{border:hairFilter===f.id?"2px solid #13264A":"1px solid rgba(120,86,36,.32)",background:hairFilter===f.id?"#FFE684":"#F6DE9D",color:"#13264A",borderRadius:12,padding:"7px 11px",fontWeight:950,cursor:"pointer"}}>{f.label}</button>)}</div>}
+            <Grid>
+              {section==="hair"&&visibleHair.map(h=><Tile key={h.id} active={cfg.hair===h.id} label={h.label} onClick={()=>patch("hair",h.id)}><CleanAvatar config={hairMini(h.id)} size={92} mini/></Tile>)}
+              {section==="color"&&CLEAN_AVATAR_OPTIONS.hairColor.map(o=><Tile key={o.id} active={cfg.hairColor===o.id} label={o.label} onClick={()=>patch("hairColor",o.id)}><div style={{width:74,height:74,borderRadius:22,background:o.color,border:"4px solid rgba(19,10,6,.22)",boxShadow:"inset 0 10px 20px rgba(255,255,255,.18),0 8px 15px rgba(0,0,0,.16)"}}/></Tile>)}
+              {section==="base"&&<>{CLEAN_AVATAR_OPTIONS.model.map(o=><Tile key={o.id} active={cfg.model===o.id} label={o.label} onClick={()=>patchMany({model:o.id,beard:o.id==="female"?"none":cfg.beard,hair:o.id==="female"&&HAIR_STYLES.find(h=>h.id===cfg.hair)?.group!=="mujer"?"waves":cfg.hair})}><CleanAvatar config={cleanMini({model:o.id,face:o.id==="female"?"heart":"square",hair:o.id==="female"?"waves":"fadeMid"})} size={92} mini/></Tile>)}{CLEAN_AVATAR_OPTIONS.skin.map(o=><Tile key={o.id} active={cfg.skin===o.id} label={o.label} onClick={()=>patch("skin",o.id)}><div style={{width:74,height:74,borderRadius:24,background:o.color,border:"4px solid rgba(19,10,6,.22)"}}/></Tile>)}</>}
+              {section==="face"&&<>{CLEAN_AVATAR_OPTIONS.face.map(o=><Tile key={o.id} active={cfg.face===o.id} label={o.label} onClick={()=>patch("face",o.id)}><CleanAvatar config={cleanMini({face:o.id,hair:"buzz"})} size={92} mini/></Tile>)}{CLEAN_AVATAR_OPTIONS.eyes.map(o=><Tile key={`e-${o.id}`} active={cfg.eyes===o.id} label={o.label} onClick={()=>patch("eyes",o.id)}><CleanAvatar config={cleanMini({eyes:o.id,hair:"buzz"})} size={92} mini/></Tile>)}{CLEAN_AVATAR_OPTIONS.mouth.map(o=><Tile key={`m-${o.id}`} active={cfg.mouth===o.id} label={o.label} onClick={()=>patch("mouth",o.id)}><CleanAvatar config={cleanMini({mouth:o.id,hair:"buzz"})} size={92} mini/></Tile>)}</>}
+              {section==="beard"&&CLEAN_AVATAR_OPTIONS.beard.map(o=><Tile key={o.id} active={cfg.beard===o.id} label={o.label} onClick={()=>patch("beard",o.id)}><CleanAvatar config={cleanMini({model:"male",face:"square",hair:"fadeLow",beard:o.id})} size={92} mini/></Tile>)}
+              {section==="extras"&&<>{CLEAN_AVATAR_OPTIONS.glasses.map(o=><Tile key={`g-${o.id}`} active={cfg.glasses===o.id} label={`Gafas ${o.label}`} onClick={()=>patch("glasses",o.id)}><CleanAvatar config={cleanMini({hair:"buzz",glasses:o.id,accessory:"none"})} size={92} mini/></Tile>)}{CLEAN_AVATAR_OPTIONS.accessory.map(o=><Tile key={`a-${o.id}`} active={cfg.accessory===o.id} label={o.label} onClick={()=>patch("accessory",o.id)}><CleanAvatar config={cleanMini({hair:"buzz",glasses:"none",accessory:o.id})} size={92} mini/></Tile>)}</>}
+              {section==="style"&&CLEAN_AVATAR_OPTIONS.bg.map(o=><Tile key={o.id} active={cfg.bg===o.id} label={o.label} onClick={()=>patch("bg",o.id)}><BgPreview id={o.id}/></Tile>)}
+            </Grid>
+          </div>
+          <div style={{display:"grid",gap:10,alignContent:"start",position:"sticky",top:12}}>
+            <div style={{background:"linear-gradient(180deg,#2A170C,#120806)",border:"2px solid #B99A45",borderRadius:24,padding:12,display:"grid",placeItems:"center",boxShadow:"0 14px 28px rgba(0,0,0,.25)"}}><CleanAvatar config={cfg} size={190}/></div>
+            <Btn col="green" full onClick={()=>onSave?.()}>💾 Guardar avatar</Btn>
+          </div>
+        </div>
       </div>
     </Card>
   </div>;
