@@ -49,8 +49,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_9_3E_FIX_SUPA_URL";
-const APP_VERSION_SHORT="2.9.3e-fix";
+const APP_VERSION="RASTACUTS_2_9_3F_SAFE_SUPA_URL";
+const APP_VERSION_SHORT="2.9.3f";
 const APP_BUILD_DATE="2026-06-07";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -11721,7 +11721,7 @@ function makeDebugInfo({user=null,settings=null,checkingSession=false,sessionWar
     online,
     checkingSession:Boolean(checkingSession),
     sessionWarning:Boolean(sessionWarning),
-    supabaseUrl:SUPA_URL,
+    supabaseUrl:typeof SUPA_URL!=="undefined"?SUPA_URL:"no disponible",
     theme:typeof document!=="undefined"?document.body?.dataset?.rcTheme||"":"",
     settingsLoaded:Boolean(settings),
     userAgent:ua.slice(0,220)
