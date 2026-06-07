@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import { createClient } from "@supabase/supabase-js";
 import "./styles/rastacuts.css";
 import { HELP_TEXTS, HELP_TIPS } from "./data/rastaHelpData.js";
 import {
@@ -22,66 +21,10 @@ import {
   startMusic,
   stopGameMusic
 } from "./audio/audioEngine.js";
-
-// Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
-// La anon key es pública en apps frontend; lo que nunca debe ponerse aquí es la service_role/secret key.
-const FALLBACK_SUPA_URL = "https://uetuoxtfccrbymwlsssx.supabase.co";
-const FALLBACK_SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVldHVveHRmY2NyYnltd2xzc3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MjExMDIsImV4cCI6MjA5NTE5NzEwMn0.-A_cY0w1_V4UPeMXmFWStJ52xhWvHL5ecGtEEcBd1XA";
-
-const SUPA_URL = (import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPA_URL).trim();
-const SUPA_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY || FALLBACK_SUPA_KEY).trim();
-const supabase = createClient(SUPA_URL, SUPA_KEY);
-
-async function db(table, method="GET", body=null, query="") {
-  const url = `${SUPA_URL}/rest/v1/${table}${query}`;
-  let token = SUPA_KEY;
-  try {
-    const { data } = await supabase.auth.getSession();
-    token = data?.session?.access_token || SUPA_KEY;
-  } catch {}
-
-  const res = await fetch(url, {
-    method,
-    headers: {
-      apikey: SUPA_KEY,
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      Prefer: method==="POST" ? "return=representation" : "return=minimal",
-    },
-    body: body ? JSON.stringify(body) : null,
-  });
-
-  if (method==="GET" || (method==="POST" && res.ok)) {
-    try { return await res.json(); } catch { return []; }
-  }
-
-  return res.ok;
-}
-const dbGet   = (t,q="") => db(t,"GET",null,q);
-const dbPost  = (t,b)    => db(t,"POST",b,"");
-const dbPatch = (t,q,b)  => db(t,"PATCH",b,q);
-const dbDelete = (t,q="") => db(t,"DELETE",null,q);
-
-async function createNotification(payload={}){
-  try{
-    if(!payload?.titulo)return null;
-    return await dbPost("notificaciones",{
-      usuario_id:payload.usuario_id?String(payload.usuario_id):null,
-      rol_destino:payload.rol_destino||"admin",
-      tipo:payload.tipo||"general",
-      titulo:payload.titulo,
-      mensaje:payload.mensaje||null,
-      entidad_tipo:payload.entidad_tipo||null,
-      entidad_id:payload.entidad_id?String(payload.entidad_id):null,
-      leida:false,
-      importante:Boolean(payload.importante)
-    });
-  }catch(e){console.warn("No se pudo crear notificación",e);return null;}
-}
-function notificationIcon(tipo="general"){
-  const map={cita:"📅",cita_nueva:"📅",cita_cancelada:"❌",cita_propuesta:"🔁",cita_propuesta_aceptada:"✅",cita_propuesta_rechazada:"⚠️",mensaje:"📩",canje:"🎁",pedido:"🛍️",cobro:"💰",reporte:"🚩",moderacion:"🛡️",general:"🔔"};
-  return map[tipo]||"🔔";
-}
+import { supabase } from "./lib/supabaseClient.js";
+import { dbGet, dbPost, dbPatch, dbDelete } from "./lib/db.js";
+import { createNotification, notificationIcon } from "./lib/notifications.js";
+import { ROLES, normalizeRole, isAdminUser, isStaffUser, isInternalUser, normalizeText } from "./lib/users.js";
 
 const T = {
   // Paleta mate pirata/rasta: menos brillo, más lectura y contraste cálido.
@@ -98,24 +41,6 @@ const T = {
   gradPink:"linear-gradient(135deg,#42130F,#7A241B 62%,#A24A2D)",
 };
 
-const ROLES = { ADMIN:"admin", STAFF:"staff", CLIENT:"client" };
-
-function normalizeRole(value){
-  const role = String(value || "").trim().toLowerCase();
-  if(["admin","administrador","administrator"].includes(role)) return ROLES.ADMIN;
-  if(["staff","empleado","trabajador","worker"].includes(role)) return ROLES.STAFF;
-  return ROLES.CLIENT;
-}
-function isAdminUser(user){return normalizeRole(user?.rol||user?.role)===ROLES.ADMIN;}
-function isStaffUser(user){return normalizeRole(user?.rol||user?.role)===ROLES.STAFF;}
-function isInternalUser(user){const r=normalizeRole(user?.rol||user?.role);return r===ROLES.ADMIN||r===ROLES.STAFF;}
-function normalizeText(text=""){
-  return String(text||"")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g,"")
-    .toLowerCase()
-    .trim();
-}
 
 const BRAND = {
   name:"Rasta Cuts",
@@ -124,8 +49,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_9_3C_FIX_AUDIO_IMPORT";
-const APP_VERSION_SHORT="2.9.3c-fix";
+const APP_VERSION="RASTACUTS_2_9_3D_CLEAN_DB";
+const APP_VERSION_SHORT="2.9.3d";
 const APP_BUILD_DATE="2026-06-07";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
