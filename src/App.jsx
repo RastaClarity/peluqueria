@@ -102,9 +102,9 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_4_1_EDITOR_FASE115_STYLE";
-const APP_VERSION_SHORT="2.9.2";
-const APP_BUILD_DATE="2026-06-06";
+const APP_VERSION="RASTACUTS_2_9_2A_UI_READABLE_2026";
+const APP_VERSION_SHORT="2.9.2a";
+const APP_BUILD_DATE="2026-06-07";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
@@ -681,7 +681,7 @@ function stopGameMusic(restoreMain=true){
 
 
 const CSS=`
-@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Bangers&family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Bangers&family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#8A5A2E;border-radius:4px}
 body{margin:0;background-color:#160B07;background-image:repeating-linear-gradient(0deg,rgba(232,211,162,.035) 0 1px,transparent 1px 6px),linear-gradient(160deg,#120806 0%,#21140C 48%,#2E1C10 100%)}
@@ -4418,89 +4418,323 @@ body[data-rc-theme="day"]{
 }
 
 
-/* ===== FASE107: corrección legibilidad modo noche ===== */
-/* El fondo ya está bien oscuro. Ahora forzamos textos claros en todos los paneles oscuros. */
-body[data-rc-theme="night"],
+
+/* ===== FASE123: lectura real 2026 + modo noche oscuro legible ===== */
+:root{
+  --rc-font-app:'Inter','Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --rc-font-display:'Plus Jakarta Sans','Space Grotesk','Inter','Outfit',system-ui,sans-serif;
+}
+body,
+.app-shell,
+.rc-standalone-shell,
+input,select,button,textarea{
+  font-family:var(--rc-font-app)!important;
+  text-rendering:optimizeLegibility!important;
+  -webkit-font-smoothing:antialiased!important;
+  -moz-osx-font-smoothing:grayscale!important;
+}
+.app-shell :where(h1,h2,h3,h4,h5,.brand-home-button),
+.rc-standalone-shell :where(h1,h2,h3,h4,h5){
+  font-family:var(--rc-font-display)!important;
+  letter-spacing:-.025em!important;
+}
+.app-shell .brand-home-button{
+  font-family:var(--rc-font-display)!important;
+  font-weight:900!important;
+}
+
+/* NOCHE: verde oscuro moderno, tarjetas oscuras y texto claro en toda la interfaz. */
+body[data-rc-theme="night"]{
+  color-scheme:dark!important;
+  background:
+    radial-gradient(circle at 10% -4%,rgba(87,190,108,.24),transparent 31%),
+    radial-gradient(circle at 88% 0%,rgba(218,184,91,.15),transparent 30%),
+    radial-gradient(circle at 52% 110%,rgba(148,48,37,.12),transparent 40%),
+    linear-gradient(135deg,#020403 0%,#061108 48%,#102318 100%)!important;
+}
 .app-shell[data-rc-theme="night"],
 .rc-standalone-shell[data-rc-theme="night"]{
-  color:#F3E7C7!important;
+  --rc-bg-a:#020403;
+  --rc-bg-b:#061108;
+  --rc-bg-c:#102318;
+  --rc-card:rgba(13,27,19,.95);
+  --rc-card-strong:rgba(18,36,26,.98);
+  --rc-card-soft:rgba(28,52,38,.92);
+  --rc-panel-fun:linear-gradient(145deg,rgba(18,36,26,.98),rgba(28,52,38,.93));
+  --rc-text:#F8F2DE;
+  --rc-text-strong:#FFFFFF;
+  --rc-muted:#D9CBA6;
+  --rc-subtle:#BFAE85;
+  --rc-border:rgba(222,190,104,.38);
+  --rc-border-strong:rgba(222,190,104,.64);
+  --rc-primary:#62C96D;
+  --rc-primary-2:#2E8B57;
+  --rc-accent2:#DDBA63;
+  --rc-accent3:#B74A36;
+  --rc-shadow:0 24px 70px rgba(0,0,0,.54);
+  color:var(--rc-text)!important;
+  background:
+    radial-gradient(circle at 10% 2%,rgba(87,190,108,.20),transparent 31%),
+    radial-gradient(circle at 88% 0%,rgba(218,184,91,.14),transparent 28%),
+    radial-gradient(circle at 50% 112%,rgba(148,48,37,.10),transparent 44%),
+    linear-gradient(135deg,#020403,#061108 50%,#102318)!important;
+}
+.app-shell[data-rc-theme="night"]:before,
+.rc-standalone-shell[data-rc-theme="night"]:before{
+  background:
+    linear-gradient(0deg,rgba(255,244,214,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,244,214,.018) 1px,transparent 1px),
+    radial-gradient(circle at 50% 24%,rgba(222,190,104,.10),transparent 42%)!important;
+  background-size:38px 38px,38px 38px,100% 100%!important;
+  opacity:.82!important;
 }
 
+/* Paneles y menús oscuros, con suficiente contraste. */
+.app-shell[data-rc-theme="night"] .studio-panel,
+.app-shell[data-rc-theme="night"] .landing-feature-pro,
+.app-shell[data-rc-theme="night"] .landing-nav-card,
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .news-short,
+.app-shell[data-rc-theme="night"] .avatar-travian-window,
+.app-shell[data-rc-theme="night"] .shop-reward-card,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="night"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card,
+.rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board{
+  background:
+    linear-gradient(145deg,rgba(255,244,214,.065),rgba(255,244,214,.018)),
+    linear-gradient(145deg,rgba(18,36,26,.98),rgba(28,52,38,.92))!important;
+  border:1.5px solid rgba(222,190,104,.42)!important;
+  color:#F8F2DE!important;
+  box-shadow:0 20px 54px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,244,214,.10)!important;
+  backdrop-filter:blur(18px) saturate(1.14)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.14)!important;
+}
+
+/* Fuerza texto claro incluso cuando viene con style inline oscuro. */
 .app-shell[data-rc-theme="night"] .page-content-pro,
-.app-shell[data-rc-theme="night"] .page-content-pro *,
+.app-shell[data-rc-theme="night"] .page-content-pro :where(h1,h2,h3,h4,h5,h6,p,div,span,label,small,strong,b,em,i,li,td,th,a),
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(h1,h2,h3,h4,h5,h6,p,div,span,label,small,strong,b,em,i,li,td,th,a),
 .rc-standalone-shell[data-rc-theme="night"],
-.rc-standalone-shell[data-rc-theme="night"] *{
-  color:#F3E7C7!important;
+.rc-standalone-shell[data-rc-theme="night"] :where(h1,h2,h3,h4,h5,h6,p,div,span,label,small,strong,b,em,i,li,td,th,a){
+  color:#F8F2DE!important;
+  -webkit-text-fill-color:currentColor!important;
+  text-shadow:none!important;
+  opacity:1!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro :where(h1,h2,h3,h4,h5,h6,strong,b),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(h1,h2,h3,h4,h5,h6,strong,b),
+.rc-standalone-shell[data-rc-theme="night"] :where(h1,h2,h3,h4,h5,h6,strong,b){
+  color:#FFFFFF!important;
+  -webkit-text-fill-color:#FFFFFF!important;
+  font-weight:900!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro :where(small,.muted,.subtle),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(small,.muted,.subtle),
+.rc-standalone-shell[data-rc-theme="night"] :where(small,.muted,.subtle){
+  color:#D9CBA6!important;
+  -webkit-text-fill-color:#D9CBA6!important;
 }
 
-/* Títulos y números importantes */
-.app-shell[data-rc-theme="night"] .page-content-pro :where(h1,h2,h3,h4,h5,strong,b),
-.rc-standalone-shell[data-rc-theme="night"] :where(h1,h2,h3,h4,h5,strong,b){
-  color:#FFF4D6!important;
+/* Botones y tarjetas pulsables: texto blanco y fondo visible. */
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.app-shell[data-rc-theme="night"] .modal-panel-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:
+    linear-gradient(145deg,rgba(98,201,109,.20),rgba(221,186,99,.12)),
+    rgba(12,27,18,.92)!important;
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+  border:1.5px solid rgba(222,190,104,.50)!important;
+  text-shadow:none!important;
+  font-weight:850!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,244,214,.10)!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.app-shell[data-rc-theme="night"] .modal-panel-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro) *{
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro):hover,
+.app-shell[data-rc-theme="night"] .modal-panel-pro button:not(.nav-tab-pro):not(.header-action-pro):hover,
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro):hover{
+  background:
+    linear-gradient(145deg,rgba(98,201,109,.30),rgba(221,186,99,.20)),
+    rgba(18,40,27,.96)!important;
+  filter:saturate(1.08) brightness(1.04)!important;
 }
 
-/* Subtextos y descripciones, antes quedaban azul oscuro */
-.app-shell[data-rc-theme="night"] .page-content-pro :where(p,span,small,label,div),
-.rc-standalone-shell[data-rc-theme="night"] :where(p,span,small,label,div){
-  color:#E6D6AE!important;
+/* Header y navegación lateral/inferior: oscuro pero perfectamente legible. */
+.app-shell[data-rc-theme="night"] .app-header-pro,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro{
+  background:
+    linear-gradient(145deg,rgba(255,244,214,.10),rgba(255,244,214,.025)),
+    rgba(6,17,10,.92)!important;
+  border-color:rgba(222,190,104,.40)!important;
+  color:#FFF8E8!important;
+  box-shadow:0 18px 48px rgba(0,0,0,.50),inset 0 1px 0 rgba(255,244,214,.12)!important;
+  backdrop-filter:blur(20px) saturate(1.16)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(1.16)!important;
 }
-
-/* Botones y tarjetas rápidas */
-.app-shell[data-rc-theme="night"] button,
-.app-shell[data-rc-theme="night"] button *,
-.rc-standalone-shell[data-rc-theme="night"] button,
-.rc-standalone-shell[data-rc-theme="night"] button *{
-  color:#FFF4D6!important;
-}
-
-/* Inputs */
-.app-shell[data-rc-theme="night"] input,
-.app-shell[data-rc-theme="night"] select,
-.app-shell[data-rc-theme="night"] textarea{
-  color:#FFF4D6!important;
-}
-
-/* Badges/chips sobre fondo oscuro */
-.app-shell[data-rc-theme="night"] .page-content-pro [style*="color"],
-.rc-standalone-shell[data-rc-theme="night"] [style*="color"]{
-  color:#F3E7C7!important;
-}
-
-/* Excepción: botones dorados/verdes pueden mantener texto crema fuerte */
-.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"],
-.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] *,
+.app-shell[data-rc-theme="night"] .app-header-pro *,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro *,
 .app-shell[data-rc-theme="night"] .header-action-pro,
 .app-shell[data-rc-theme="night"] .header-action-pro *,
 .app-shell[data-rc-theme="night"] .theme-toggle-pro,
-.app-shell[data-rc-theme="night"] .theme-toggle-pro *{
-  color:#FFF4D6!important;
+.app-shell[data-rc-theme="night"] .theme-toggle-pro *,
+.app-shell[data-rc-theme="night"] .nav-tab-pro,
+.app-shell[data-rc-theme="night"] .nav-tab-pro *{
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro{
+  background:rgba(255,244,214,.06)!important;
+  border:1px solid rgba(222,190,104,.20)!important;
+  border-radius:16px!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"]{
+  background:linear-gradient(145deg,rgba(98,201,109,.34),rgba(221,186,99,.22))!important;
+  border-color:rgba(222,190,104,.58)!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,244,214,.14)!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] .nav-icon-pro{
+  background:linear-gradient(145deg,#DDBA63,#62C96D)!important;
+  color:#071108!important;
+  -webkit-text-fill-color:#071108!important;
 }
 
-/* Tarjetas de gestión con borde legible */
-.app-shell[data-rc-theme="night"] .studio-panel,
-.rc-standalone-shell[data-rc-theme="night"] .studio-panel{
-  background:linear-gradient(145deg,rgba(43,58,48,.97),rgba(18,31,24,.95))!important;
-  border-color:rgba(173,148,82,.42)!important;
+/* Chips, badges y burbujas pequeñas: fondo crema y letra oscura para que no se pierdan. */
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius: 999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"],
+.app-shell[data-rc-theme="night"] .page-content-pro .shop-avatar-tag,
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius: 999"],
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"]{
+  background:linear-gradient(180deg,#FFF8E8,#EAD9AE)!important;
+  color:#171F12!important;
+  -webkit-text-fill-color:#171F12!important;
+  border:1px solid rgba(222,190,104,.56)!important;
+  text-shadow:none!important;
+  box-shadow:0 6px 16px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.85)!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius: 999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro .shop-avatar-tag *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius: 999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"] *{
+  color:#171F12!important;
+  -webkit-text-fill-color:#171F12!important;
+}
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="border-radius:999"],
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="border-radius: 999"],
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="border-radius:999"],
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="border-radius: 999"]{
+  background:rgba(255,244,214,.13)!important;
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+  border-color:rgba(222,190,104,.28)!important;
+}
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="border-radius:999"] *,
+.app-shell[data-rc-theme="night"] .app-header-pro [style*="border-radius: 999"] *,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="border-radius:999"] *,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro [style*="border-radius: 999"] *{
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
 }
 
-/* En el modo día no usamos blanco nuclear, pero sí texto oscuro legible */
-body[data-rc-theme="day"],
+/* Inputs noche: fondo oscuro suave, texto blanco. */
+.app-shell[data-rc-theme="night"] input,
+.app-shell[data-rc-theme="night"] select,
+.app-shell[data-rc-theme="night"] textarea,
+.rc-standalone-shell[data-rc-theme="night"] input,
+.rc-standalone-shell[data-rc-theme="night"] select,
+.rc-standalone-shell[data-rc-theme="night"] textarea{
+  background:rgba(4,11,7,.76)!important;
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+  border:1.5px solid rgba(222,190,104,.46)!important;
+  box-shadow:inset 0 1px 0 rgba(255,244,214,.08)!important;
+}
+.app-shell[data-rc-theme="night"] input::placeholder,
+.app-shell[data-rc-theme="night"] textarea::placeholder{
+  color:#BFAE85!important;
+  -webkit-text-fill-color:#BFAE85!important;
+}
+
+/* MODO DÍA: no blanco nuclear, tono crema suave y texto oscuro. */
+body[data-rc-theme="day"]{
+  color-scheme:light!important;
+  background:
+    radial-gradient(circle at 12% -4%,rgba(221,186,99,.28),transparent 31%),
+    radial-gradient(circle at 88% 0%,rgba(98,201,109,.16),transparent 30%),
+    radial-gradient(circle at 50% 110%,rgba(183,74,54,.10),transparent 40%),
+    linear-gradient(135deg,#F3E7C9 0%,#EFE1BE 48%,#DCEBD0 100%)!important;
+}
 .app-shell[data-rc-theme="day"],
-.app-shell[data-rc-theme="day"] .page-content-pro,
-.app-shell[data-rc-theme="day"] .page-content-pro *,
-.rc-standalone-shell[data-rc-theme="day"],
-.rc-standalone-shell[data-rc-theme="day"] *{
-  color:#1E150C!important;
-}
-.app-shell[data-rc-theme="day"] button,
-.app-shell[data-rc-theme="day"] button *,
-.rc-standalone-shell[data-rc-theme="day"] button,
-.rc-standalone-shell[data-rc-theme="day"] button *{
-  color:#FFF4D6!important;
+.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#F3E7C9;
+  --rc-bg-b:#EFE1BE;
+  --rc-bg-c:#DCEBD0;
+  --rc-text:#1E160C;
+  --rc-text-strong:#100A04;
+  --rc-muted:#5D4A31;
+  --rc-border:rgba(116,92,50,.28);
+  --rc-border-strong:rgba(116,92,50,.48);
+  color:#1E160C!important;
+  background:
+    radial-gradient(circle at 12% 2%,rgba(221,186,99,.24),transparent 30%),
+    radial-gradient(circle at 88% 0%,rgba(98,201,109,.14),transparent 28%),
+    linear-gradient(135deg,#F3E7C9,#EFE1BE 50%,#DCEBD0)!important;
 }
 .app-shell[data-rc-theme="day"] .studio-panel,
-.rc-standalone-shell[data-rc-theme="day"] .studio-panel{
-  background:linear-gradient(145deg,rgba(220,211,185,.94),rgba(194,202,180,.84))!important;
+.app-shell[data-rc-theme="day"] .landing-feature-pro,
+.app-shell[data-rc-theme="day"] .landing-nav-card,
+.app-shell[data-rc-theme="day"] .modal-panel-pro,
+.app-shell[data-rc-theme="day"] .news-short,
+.rc-standalone-shell[data-rc-theme="day"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="day"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="day"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="day"] .modal-panel-pro{
+  background:linear-gradient(145deg,rgba(255,248,228,.96),rgba(236,222,187,.88) 58%,rgba(220,235,208,.78))!important;
+  color:#1E160C!important;
+  border:1.5px solid rgba(116,92,50,.36)!important;
+  box-shadow:0 16px 40px rgba(80,62,36,.16),inset 0 1px 0 rgba(255,255,255,.78)!important;
+}
+.app-shell[data-rc-theme="day"] .page-content-pro :where(h1,h2,h3,h4,h5,h6,p,div,span,label,small,strong,b,em,i,li,td,th,a),
+.app-shell[data-rc-theme="day"] .modal-panel-pro :where(h1,h2,h3,h4,h5,h6,p,div,span,label,small,strong,b,em,i,li,td,th,a),
+.rc-standalone-shell[data-rc-theme="day"] :where(h1,h2,h3,h4,h5,h6,p,div,span,label,small,strong,b,em,i,li,td,th,a){
+  color:#1E160C!important;
+  -webkit-text-fill-color:currentColor!important;
+  text-shadow:none!important;
+}
+.app-shell[data-rc-theme="day"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.app-shell[data-rc-theme="day"] .modal-panel-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:linear-gradient(145deg,#315F31,#5F8E22 58%,#DDBA63)!important;
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+  border:1.5px solid rgba(116,92,50,.36)!important;
+}
+.app-shell[data-rc-theme="day"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.app-shell[data-rc-theme="day"] .modal-panel-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.rc-standalone-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro) *{
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
 }
 `;
 
