@@ -110,7 +110,7 @@ const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
 let masterVolume=0.72;
 let backgroundAudio=null,backgroundAudioAvailable=true;
-let backgroundTrackIndex=Math.floor(Math.random()*Math.max(1,BACKGROUND_PLAYLIST.length)),backgroundSourceTry=0,backgroundDuckedForGame=false; let backgroundFirstStartDone=false;
+let backgroundTrackIndex=0,backgroundSourceTry=0,backgroundDuckedForGame=false; let backgroundFirstStartDone=false;
 const BACKGROUND_PLAYLIST=[
   {name:"Glass Lounge Loop",mood:"lounge",gain:1.00,srcs:["/audio/Glass%20Lounge%20Loop.mp3","/audio/Glass Lounge Loop.mp3"]},
   {name:"Quiet Rhodes Loop",mood:"chill",gain:1.16,srcs:["/audio/Quiet%20Rhodes%20Loop.mp3","/audio/Quiet Rhodes Loop.mp3"]},
