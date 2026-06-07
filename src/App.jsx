@@ -21,7 +21,7 @@ import {
   startMusic,
   stopGameMusic
 } from "./audio/audioEngine.js";
-import { supabase } from "./lib/supabaseClient.js";
+import { supabase, SUPA_URL } from "./lib/supabaseClient.js";
 import { dbGet, dbPost, dbPatch, dbDelete } from "./lib/db.js";
 import { createNotification, notificationIcon } from "./lib/notifications.js";
 import { ROLES, normalizeRole, isAdminUser, isStaffUser, isInternalUser, normalizeText } from "./lib/users.js";
@@ -49,8 +49,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_9_3E_CHECKPOINT_IMPORTS";
-const APP_VERSION_SHORT="2.9.3e";
+const APP_VERSION="RASTACUTS_2_9_3E_FIX_SUPA_URL";
+const APP_VERSION_SHORT="2.9.3e-fix";
 const APP_BUILD_DATE="2026-06-07";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
