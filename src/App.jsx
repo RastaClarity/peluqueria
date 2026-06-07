@@ -49,8 +49,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_9_3D_CLEAN_DB";
-const APP_VERSION_SHORT="2.9.3d";
+const APP_VERSION="RASTACUTS_2_9_3E_CHECKPOINT_IMPORTS";
+const APP_VERSION_SHORT="2.9.3e";
 const APP_BUILD_DATE="2026-06-07";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
