@@ -110,7 +110,7 @@ const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
 let masterVolume=0.72;
 let backgroundAudio=null,backgroundAudioAvailable=true;
-let backgroundTrackIndex=0,backgroundSourceTry=0,backgroundDuckedForGame=false;
+let backgroundTrackIndex=Math.floor(Math.random()*Math.max(1,BACKGROUND_PLAYLIST.length)),backgroundSourceTry=0,backgroundDuckedForGame=false; let backgroundFirstStartDone=false;
 const BACKGROUND_PLAYLIST=[
   {name:"Glass Lounge Loop",mood:"lounge",gain:1.00,srcs:["/audio/Glass%20Lounge%20Loop.mp3","/audio/Glass Lounge Loop.mp3"]},
   {name:"Quiet Rhodes Loop",mood:"chill",gain:1.16,srcs:["/audio/Quiet%20Rhodes%20Loop.mp3","/audio/Quiet Rhodes Loop.mp3"]},
@@ -484,7 +484,7 @@ function createBackgroundAudio(){
   a.muted=Boolean(globalMuted||backgroundDuckedForGame);
   a.dataset.trackName=getBackgroundName();
   a.addEventListener("ended",()=>{
-    if(musicPlaying&&!globalMuted&&!backgroundDuckedForGame){
+    if(musicPlaying){
       nextMusicTrack(true);
     }
   });
@@ -539,6 +539,13 @@ function startMusic(){
   backgroundAudioAvailable=true;
   stopGeneratedMusic();
 
+  if(!backgroundFirstStartDone){
+    backgroundTrackIndex=pickRandomBackgroundIndex();
+    backgroundSourceTry=0;
+    backgroundFirstStartDone=true;
+    resetBackgroundAudio(true);
+  }
+
   const tryPlay=(attempt=0)=>{
     playCurrentBackgroundTrack({forceRestart:false}).catch(()=>{
       const track=getBackgroundTrack();
@@ -582,16 +589,16 @@ function muteMusicKeepTime(muted=true){
   if(musicPlaying&&!backgroundAudioAvailable&&!globalMuted&&!backgroundDuckedForGame)startGeneratedMusic();
 }
 function nextMusicTrack(auto=false){
-  // Auto se usa cuando termina una pista para pasar a la siguiente.
   backgroundTrackIndex=pickRandomBackgroundIndex();
   backgroundSourceTry=0;
   const shouldPlay=musicPlaying||auto;
+  const wasDucked=backgroundDuckedForGame;
   resetBackgroundAudio(true);
 
   if(shouldPlay){
     musicPlaying=true;
-    globalMuted=false;
-    backgroundDuckedForGame=false;
+    if(!wasDucked)globalMuted=false;
+    backgroundDuckedForGame=wasDucked;
     playCurrentBackgroundTrack({forceRestart:true}).catch(()=>{
       backgroundAudioAvailable=false;
       resetBackgroundAudio(false);
@@ -5101,7 +5108,8 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
     square:"M67 91 C67 58 91 37 120 37 C149 37 173 58 173 91 L168 144 C158 172 139 183 120 183 C101 183 82 172 72 144Z",
     heart:"M67 96 C68 59 93 39 120 42 C147 39 172 59 173 96 C174 134 151 169 120 182 C89 169 66 134 67 96Z"
   }[cfg.face]||"M70 97 C70 58 92 38 120 38 C148 38 170 58 170 97 C170 142 152 174 120 181 C88 174 70 142 70 97Z";
-  const showHair=focus!=="bg";
+  const hasHat=cfg.hat&&cfg.hat!=="none";
+  const showHair=focus!=="bg"&&!hasHat;
   const showFaceFeatures=focus!=="bg";
   const showBeard=focus==="full"||focus==="beard";
   const showExtras=focus==="full"||focus==="extras";
@@ -5426,36 +5434,71 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
   };
   const beardLayer=()=>{
     if(!showBeard||female||cfg.beard==="none")return null;
-    if(cfg.beard==="stubble") return <path d="M88 143 C99 174 140 174 152 143 C147 176 130 186 120 187 C110 186 93 176 88 143Z" fill={hairDark} opacity=".28"/>;
-    if(cfg.beard==="moustache") return <g><path d="M101 139 C110 133 116 137 120 142 C112 148 104 147 96 142Z" fill={hair} stroke={line} strokeWidth="3"/><path d="M139 139 C130 133 124 137 120 142 C128 148 136 147 144 142Z" fill={hair} stroke={line} strokeWidth="3"/></g>;
-    if(cfg.beard==="goatee") return <g><path d="M101 139 C110 133 116 137 120 142 C112 148 104 147 96 142Z" fill={hair} stroke={line} strokeWidth="3"/><path d="M139 139 C130 133 124 137 120 142 C128 148 136 147 144 142Z" fill={hair} stroke={line} strokeWidth="3"/><path d="M109 157 C115 170 125 170 131 157 C129 181 111 181 109 157Z" fill={hair} stroke={line} strokeWidth="3"/></g>;
-    if(cfg.beard==="short") return <path d="M86 141 C91 172 105 187 120 188 C135 187 149 172 154 141 C150 180 136 196 120 197 C104 196 90 180 86 141Z" fill={hair} stroke={line} strokeWidth="4" opacity=".9"/>;
-    if(cfg.beard==="full") return <path d="M83 136 C84 175 101 202 120 203 C139 202 156 175 157 136 C152 184 136 211 120 213 C104 211 88 184 83 136Z" fill={hair} stroke={line} strokeWidth="5"/>;
+    if(cfg.beard==="stubble") return <path d="M91 146 C100 165 140 165 149 146 C145 171 132 181 120 182 C108 181 95 171 91 146Z" fill={hairDark} opacity=".32"/>;
+    if(cfg.beard==="moustache") return <g>
+      <path d="M99 138 C108 132 116 136 120 141 C112 147 104 146 96 141Z" fill={hair} stroke={line} strokeWidth="3"/>
+      <path d="M141 138 C132 132 124 136 120 141 C128 147 136 146 144 141Z" fill={hair} stroke={line} strokeWidth="3"/>
+    </g>;
+    if(cfg.beard==="goatee") return <g>
+      <path d="M101 139 C110 134 116 137 120 142 C112 147 104 147 97 142Z" fill={hair} stroke={line} strokeWidth="3"/>
+      <path d="M139 139 C130 134 124 137 120 142 C128 147 136 147 143 142Z" fill={hair} stroke={line} strokeWidth="3"/>
+      <path d="M111 158 C116 168 124 168 129 158 C128 174 112 174 111 158Z" fill={hair} stroke={line} strokeWidth="3"/>
+    </g>;
+    if(cfg.beard==="short") return <g>
+      <path d="M88 143 C92 166 105 180 120 181 C135 180 148 166 152 143 C148 174 134 189 120 190 C106 189 92 174 88 143Z" fill={hair} stroke={line} strokeWidth="4"/>
+      <path d="M99 151 C108 160 132 160 141 151" fill="none" stroke={shade(hair,36)} strokeWidth="4" strokeLinecap="round" opacity=".42"/>
+    </g>;
+    if(cfg.beard==="full") return <g>
+      <path d="M84 136 C86 170 102 194 120 196 C138 194 154 170 156 136 C151 179 137 204 120 205 C103 204 89 179 84 136Z" fill={hair} stroke={line} strokeWidth="5"/>
+      <path d="M98 157 C108 170 132 170 143 157" fill="none" stroke={shade(hair,38)} strokeWidth="5" strokeLinecap="round" opacity=".38"/>
+    </g>;
     return null
   };
   const extrasLayer=()=>{
     if(!showExtras)return null;
     const items=[];
 
-    // Tattoos / marcas pequeñas
-    if(cfg.tattoo==="neckStar") items.push(<path key="ts" d="M120 169 L123 176 L131 176 L125 181 L127 189 L120 184 L113 189 L115 181 L109 176 L117 176Z" fill="#24324A" opacity=".75"/>);
-    if(cfg.tattoo==="neckWave") items.push(<path key="tw" d="M104 174 C112 166 120 182 128 174 C134 168 139 170 144 176" fill="none" stroke="#24324A" strokeWidth="4" strokeLinecap="round" opacity=".7"/>);
-    if(cfg.tattoo==="cheekBolt") items.push(<path key="tb" d="M91 132 L101 116 L98 129 L108 129 L95 146 L99 132Z" fill="#24324A" opacity=".72"/>);
-    if(cfg.tattoo==="templeDots") items.push(<g key="td" fill="#24324A" opacity=".72"><circle cx="82" cy="104" r="2.8"/><circle cx="76" cy="113" r="2.4"/><circle cx="158" cy="104" r="2.8"/><circle cx="164" cy="113" r="2.4"/></g>);
+    // Tattoos / marcas pequeñas, colocados lejos de barba y accesorios.
+    if(cfg.tattoo==="neckStar") items.push(<path key="ts" d="M120 191 L123 198 L131 198 L125 203 L127 211 L120 206 L113 211 L115 203 L109 198 L117 198Z" fill="#24324A" opacity=".82"/>);
+    if(cfg.tattoo==="neckWave") items.push(<path key="tw" d="M101 194 C110 186 119 202 128 194 C135 188 140 190 146 197" fill="none" stroke="#24324A" strokeWidth="4" strokeLinecap="round" opacity=".78"/>);
+    if(cfg.tattoo==="cheekBolt") items.push(<path key="tb" d="M86 128 L94 116 L92 127 L101 127 L90 143 L94 131Z" fill="#24324A" opacity=".72"/>);
+    if(cfg.tattoo==="templeDots") items.push(<g key="td" fill="#24324A" opacity=".72"><circle cx="83" cy="105" r="2.6"/><circle cx="78" cy="113" r="2.2"/><circle cx="157" cy="105" r="2.6"/><circle cx="162" cy="113" r="2.2"/></g>);
 
     // Pendientes y piercings
     if(cfg.accessory==="earringSmall") items.push(<g key="es"><circle cx="67" cy="134" r="5" fill="#F5CF66" stroke={line} strokeWidth="2"/><circle cx="173" cy="134" r="5" fill="#F5CF66" stroke={line} strokeWidth="2"/></g>);
     if(cfg.accessory==="earringBig") items.push(<g key="eb" fill="none" stroke="#F5CF66" strokeWidth="4"><circle cx="66" cy="137" r="8"/><circle cx="174" cy="137" r="8"/></g>);
     if(cfg.accessory==="piercingNose") items.push(<circle key="pn" cx="128" cy="132" r="3.8" fill="#F5CF66" stroke={line} strokeWidth="1.5"/>);
     if(cfg.accessory==="piercingBrow") items.push(<path key="pb" d="M136 95 L148 91" stroke="#F5CF66" strokeWidth="4" strokeLinecap="round"/>);
-    if(cfg.accessory==="lipRing") items.push(<circle key="pl" cx="133" cy="153" r="3.6" fill="#F5CF66" stroke={line} strokeWidth="1.5"/>);
+    if(cfg.accessory==="lipRing") items.push(<circle key="pl" cx="132" cy="154" r="3.3" fill="#F5CF66" stroke={line} strokeWidth="1.4"/>);
 
-    // Gorras / sombreros
-    if(cfg.hat==="cap") items.push(<g key="cap"><path d="M65 78 C78 45 102 33 126 33 C153 33 174 52 179 83 C149 73 91 73 65 78Z" fill="#1F2D47" stroke={line} strokeWidth="6"/><path d="M112 76 C141 66 178 76 196 90 C171 93 144 91 122 82Z" fill="#2F4468" stroke={line} strokeWidth="5"/><path d="M83 68 C106 56 137 56 160 68" stroke="#57739E" strokeWidth="6" strokeLinecap="round"/></g>);
-    if(cfg.hat==="beanie") items.push(<g key="bean"><path d="M67 78 C75 46 99 31 124 32 C151 33 172 52 177 82 C148 74 91 74 67 78Z" fill="#7A241B" stroke={line} strokeWidth="6"/><path d="M70 81 C94 92 146 92 174 81" stroke="#B54531" strokeWidth="9" strokeLinecap="round"/></g>);
-    if(cfg.hat==="bucket") items.push(<g key="buck"><path d="M61 75 C74 46 98 34 123 34 C151 34 173 50 181 79 C149 72 92 72 61 75Z" fill="#DAB458" stroke={line} strokeWidth="6"/><path d="M53 82 C83 95 157 96 188 82" fill="none" stroke={line} strokeWidth="8" strokeLinecap="round"/><path d="M68 78 C95 86 149 86 173 78" stroke="#F2D779" strokeWidth="5" strokeLinecap="round"/></g>);
-    if(cfg.hat==="bandana") items.push(<g key="band"><path d="M64 82 C86 72 153 72 176 82 L171 94 C149 88 91 88 69 94Z" fill="#27773A" stroke={line} strokeWidth="5"/><circle cx="121" cy="83" r="4" fill="#F3DE87"/><path d="M171 86 C183 88 190 93 195 104" stroke="#27773A" strokeWidth="9" strokeLinecap="round"/></g>);
-    if(cfg.hat==="visor") items.push(<g key="visor"><path d="M68 72 C92 58 147 58 173 74" fill="none" stroke="#1E4F78" strokeWidth="14" strokeLinecap="round"/><path d="M120 73 C150 65 183 74 199 86 C176 90 148 88 125 80Z" fill="#2B6FA3" stroke={line} strokeWidth="5"/></g>);
+    // Gorras / sombreros. Son opacos y tapan el pelo cuando están activos.
+    if(cfg.hat==="cap") items.push(<g key="cap">
+      <path d="M63 82 C74 47 100 30 127 31 C155 32 176 51 182 84 C153 75 92 75 63 82Z" fill="#102137" stroke={line} strokeWidth="7" strokeLinejoin="round"/>
+      <path d="M81 70 C104 55 141 56 164 72" stroke="#365C91" strokeWidth="9" strokeLinecap="round" opacity=".82"/>
+      <path d="M112 79 C146 68 184 79 201 94 C174 99 145 95 122 84Z" fill="#1E4F78" stroke={line} strokeWidth="6" strokeLinejoin="round"/>
+      <path d="M129 80 C150 77 174 83 190 91" stroke="#5B89C0" strokeWidth="4" strokeLinecap="round" opacity=".72"/>
+    </g>);
+    if(cfg.hat==="beanie") items.push(<g key="bean">
+      <path d="M66 82 C73 46 99 29 126 30 C153 31 175 53 179 84 C150 76 91 76 66 82Z" fill="#7A241B" stroke={line} strokeWidth="7"/>
+      <path d="M70 84 C94 94 147 94 175 84" stroke="#B54531" strokeWidth="11" strokeLinecap="round"/>
+      <path d="M84 58 C104 47 139 48 159 61" stroke="#D06A55" strokeWidth="6" strokeLinecap="round" opacity=".62"/>
+    </g>);
+    if(cfg.hat==="bucket") items.push(<g key="buck">
+      <path d="M60 77 C73 45 98 31 124 31 C153 31 175 49 184 80 C151 73 91 73 60 77Z" fill="#DAB458" stroke={line} strokeWidth="7"/>
+      <path d="M50 82 C80 100 161 101 191 82" fill="#B58D37" stroke={line} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M67 78 C95 87 151 87 175 78" stroke="#F2D779" strokeWidth="6" strokeLinecap="round" opacity=".78"/>
+    </g>);
+    if(cfg.hat==="bandana") items.push(<g key="band">
+      <path d="M62 80 C85 68 154 68 178 80 L173 95 C150 88 90 88 67 95Z" fill="#27773A" stroke={line} strokeWidth="6"/>
+      <path d="M76 79 C102 72 140 72 165 80" stroke="#6CC778" strokeWidth="5" strokeLinecap="round" opacity=".7"/>
+      <circle cx="121" cy="83" r="4" fill="#F3DE87"/>
+      <path d="M171 86 C184 89 192 96 197 108" stroke="#27773A" strokeWidth="10" strokeLinecap="round"/>
+    </g>);
+    if(cfg.hat==="visor") items.push(<g key="visor">
+      <path d="M67 73 C92 57 149 57 174 74" fill="none" stroke="#14365E" strokeWidth="16" strokeLinecap="round"/>
+      <path d="M120 74 C151 65 185 74 201 87 C177 92 148 89 125 81Z" fill="#2B6FA3" stroke={line} strokeWidth="6" strokeLinejoin="round"/>
+      <path d="M84 68 C106 59 139 60 160 70" stroke="#67A3D5" strokeWidth="5" strokeLinecap="round" opacity=".7"/>
+    </g>);
 
     if(cfg.glasses!=="none"){
       const col=cfg.glasses==="sun"?"#111":cfg.glasses==="round"?"#D7B24A":"#24180F";
@@ -5471,10 +5514,57 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
       <linearGradient id={`${uid}_skin`} x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor={skinLight}/><stop offset=".42" stopColor={skin}/><stop offset="1" stopColor={skinDark}/></linearGradient>
     </defs>
     <rect x="6" y="6" width="228" height="248" rx="42" fill={`url(#${uid}_bg)`} stroke="rgba(32,16,8,.9)" strokeWidth={mini?3:5}/>
-    {!mini&&cfg.bg==="beach"&&<g opacity=".35"><path d="M20 178 C62 160 101 164 135 176 C166 187 198 184 224 170 L224 254 L20 254Z" fill="#F5D483"/><path d="M24 168 C62 156 94 160 126 170 C160 181 194 176 222 160" fill="none" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round"/><circle cx="184" cy="54" r="22" fill="#FFE27A"/></g>}
-    {!mini&&cfg.bg==="studio"&&<g opacity=".28"><rect x="25" y="48" width="190" height="128" rx="18" fill="#2A140A"/><path d="M48 78 H192 M48 112 H192 M48 146 H192" stroke="#F5D483" strokeWidth="4"/><circle cx="60" cy="202" r="18" fill="#F5D483"/></g>}
-    {!mini&&cfg.bg==="workshop"&&<g opacity=".30"><path d="M34 200 H206" stroke="#E7C777" strokeWidth="9"/><path d="M54 58 L186 190 M186 58 L54 190" stroke="#FFFFFF" strokeWidth="4"/><rect x="44" y="174" width="152" height="16" rx="6" fill="#3B2A1D"/></g>}
-    {!mini&&cfg.bg!=="beach"&&cfg.bg!=="studio"&&cfg.bg!=="workshop"&&<g opacity=".18"><path d="M34 210 C76 184 164 184 206 210" stroke="#fff" strokeWidth="8" fill="none"/><path d="M32 36 L208 224" stroke="#fff" strokeWidth="3"/><path d="M208 36 L32 224" stroke="#fff" strokeWidth="3"/></g>}
+
+    {/* Fondo visible en toda la tarjeta. Los detalles van a los bordes para que el avatar no los tape. */}
+    {!mini&&cfg.bg==="beach"&&<g>
+      <circle cx="196" cy="48" r="25" fill="#FFE27A" opacity=".95"/>
+      <path d="M6 164 C42 145 78 148 110 160 C145 174 178 171 234 145 L234 254 L6 254Z" fill="#F6D78A" opacity=".82"/>
+      <path d="M8 154 C46 139 78 143 111 156 C146 169 180 164 232 142" fill="none" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" opacity=".8"/>
+      <path d="M22 96 C44 87 68 87 89 99" fill="none" stroke="#EFFFFF" strokeWidth="5" strokeLinecap="round" opacity=".75"/>
+      <path d="M33 236 C55 216 71 185 67 145" fill="none" stroke="#6B441F" strokeWidth="8" strokeLinecap="round" opacity=".75"/>
+      <path d="M68 145 C48 132 33 128 17 132 M69 145 C87 129 104 124 121 128 M67 145 C72 122 84 107 101 99" fill="none" stroke="#236B3C" strokeWidth="7" strokeLinecap="round" opacity=".82"/>
+    </g>}
+
+    {!mini&&cfg.bg==="barber"&&<g>
+      <rect x="22" y="36" width="196" height="178" rx="22" fill="#2A1208" opacity=".48"/>
+      <path d="M30 66 H210 M30 104 H210 M30 142 H210" stroke="#F6D878" strokeWidth="5" opacity=".55"/>
+      <rect x="24" y="184" width="192" height="26" rx="10" fill="#E5BC63" opacity=".45"/>
+      <circle cx="54" cy="226" r="15" fill="#F6D878" opacity=".7"/>
+      <circle cx="186" cy="226" r="15" fill="#F6D878" opacity=".7"/>
+      <path d="M35 42 L65 72 M205 42 L175 72" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" opacity=".55"/>
+    </g>}
+
+    {!mini&&cfg.bg==="studio"&&<g>
+      <rect x="18" y="32" width="204" height="144" rx="22" fill="#2A140A" opacity=".55"/>
+      <path d="M45 62 H195 M45 96 H195 M45 130 H195" stroke="#F5D483" strokeWidth="5" opacity=".7"/>
+      <rect x="34" y="178" width="172" height="35" rx="13" fill="#E0B75D" opacity=".45"/>
+      <circle cx="54" cy="216" r="19" fill="#F5D483" opacity=".82"/>
+      <circle cx="186" cy="216" r="19" fill="#F5D483" opacity=".82"/>
+      <path d="M58 214 H182" stroke="#4B230E" strokeWidth="7" opacity=".45"/>
+    </g>}
+
+    {!mini&&cfg.bg==="workshop"&&<g>
+      <rect x="26" y="185" width="188" height="29" rx="8" fill="#3B2A1D" opacity=".72"/>
+      <path d="M34 206 H206" stroke="#E7C777" strokeWidth="10" opacity=".75"/>
+      <path d="M45 50 L111 116 M195 50 L129 116" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" opacity=".55"/>
+      <path d="M47 50 L37 72 M193 50 L203 72" stroke="#E7C777" strokeWidth="6" strokeLinecap="round" opacity=".65"/>
+      <rect x="38" y="222" width="164" height="15" rx="6" fill="#7A5631" opacity=".75"/>
+      <circle cx="42" cy="172" r="13" fill="#E7C777" opacity=".7"/>
+      <circle cx="198" cy="172" r="13" fill="#E7C777" opacity=".7"/>
+    </g>}
+
+    {!mini&&cfg.bg==="neon"&&<g>
+      <path d="M24 52 H216 V210 H24Z" fill="none" stroke="#5FD7FF" strokeWidth="6" opacity=".45"/>
+      <path d="M48 72 H192 M48 190 H192" stroke="#FF5FD7" strokeWidth="5" opacity=".45"/>
+      <circle cx="48" cy="216" r="18" fill="#5FD7FF" opacity=".38"/>
+      <circle cx="192" cy="216" r="18" fill="#FF5FD7" opacity=".32"/>
+    </g>}
+
+    {!mini&&["plain","warm"].includes(cfg.bg)&&<g opacity=".25">
+      <path d="M34 210 C76 184 164 184 206 210" stroke="#fff" strokeWidth="8" fill="none"/>
+      <path d="M32 36 L208 224" stroke="#fff" strokeWidth="3"/>
+      <path d="M208 36 L32 224" stroke="#fff" strokeWidth="3"/>
+    </g>}
     {focus!=="bg"&&<g>
       {/* Shirt/body */}
       <path d="M78 213 C85 189 97 175 120 175 C143 175 155 189 162 213 C140 225 99 225 78 213Z" fill="#23344F" stroke={line} strokeWidth={stroke}/>
@@ -9070,8 +9160,8 @@ const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gac
 const ARCADE_GAMES=[
   {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda en tiempo real con moneda RC propia",pts:0},
   {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de premios: 50 tiradas al día",pts:GAME_DAILY_REWARDS.gacha},
-  {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Rondas de 100 puntos",pts:GAME_DAILY_REWARDS.stitch},
-  {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Salta tijeras hasta chocar",pts:GAME_DAILY_REWARDS.runner},
+  {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Llega a 100 puntos y termina",pts:GAME_DAILY_REWARDS.stitch},
+  {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Peine protector, bloques y agujeros",pts:GAME_DAILY_REWARDS.runner},
   {id:"jump",icon:"🌤️",title:"Rasta Jump",desc:"Recoge utensilios y evita tijeras",pts:GAME_DAILY_REWARDS.jump},
   {id:"memoria",icon:"🧠",title:"Memoria Pro",desc:"12 parejas de peluquería",pts:GAME_DAILY_REWARDS.memoria},
   {id:"sopa",icon:"🔤",title:"Sopa diaria",desc:"Sopa 14x14 que cambia cada día",pts:GAME_DAILY_REWARDS.sopa},
@@ -9431,15 +9521,15 @@ function RastaRunnerGame({onWin,user}){
   const [y,setY]=useState(0);
   const [jumpsLeft,setJumpsLeft]=useState(2);
   const [holding,setHolding]=useState(false);
-  const yRef=useRef(0),vyRef=useRef(0),jumpRef=useRef(2),holdRef=useRef(false),holdMsRef=useRef(0),runningRef=useRef(false);
+  const [powered,setPowered]=useState(false);
+  const yRef=useRef(0),vyRef=useRef(0),jumpRef=useRef(2),holdRef=useRef(false),holdMsRef=useRef(0),runningRef=useRef(false),poweredRef=useRef(false);
   const runnerBoardRef=useRef(null);
-  const RUNNER_PLAYER_BOX={left:22,right:50};
-  const RUNNER_SCISSOR_BOX={leftPad:6,rightPad:22};
-  const RUNNER_GROUND_HIT_Y=15;
+  const RUNNER_PLAYER_BOX={left:22,right:54};
+  const RUNNER_HIT_Y=20;
 
   function resetAndStart(){
-    yRef.current=0;vyRef.current=0;jumpRef.current=2;holdRef.current=false;holdMsRef.current=0;runningRef.current=true;
-    setY(0);setJumpsLeft(2);setHolding(false);setScore(0);setObstacles([{x:115,id:Date.now(),type:'scissor'}]);setGameOver(false);setRunning(true);
+    yRef.current=0;vyRef.current=0;jumpRef.current=2;holdRef.current=false;holdMsRef.current=0;runningRef.current=true;poweredRef.current=false;
+    setY(0);setJumpsLeft(2);setHolding(false);setPowered(false);setScore(0);setObstacles([{x:116,id:Date.now(),type:'scissor'}]);setGameOver(false);setRunning(true);
   }
   function pressJump(){
     if(!runningRef.current||gameOver) return;
@@ -9452,8 +9542,15 @@ function RastaRunnerGame({onWin,user}){
     setHolding(true);setJumpsLeft(jumpRef.current);
   }
   function releaseJump(){holdRef.current=false;holdMsRef.current=0;setHolding(false);}
+  function endGame(){
+    setRunning(false);runningRef.current=false;setGameOver(true);SFX.error();
+  }
+  function consumePower(){
+    poweredRef.current=false;setPowered(false);SFX.success();
+  }
 
   useEffect(()=>{runningRef.current=running;},[running]);
+  useEffect(()=>{poweredRef.current=powered;},[powered]);
   useEffect(()=>{
     if(!running) return;
     const down=e=>{if(e.code==='Space'||e.key==='ArrowUp'){e.preventDefault();pressJump();}};
@@ -9461,64 +9558,90 @@ function RastaRunnerGame({onWin,user}){
     window.addEventListener('keydown',down);window.addEventListener('keyup',up);
     return()=>{window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);};
   },[running,gameOver]);
+
   useEffect(()=>{
     if(!running) return;
     const timer=setInterval(()=>{
       setScore(s=>s+1);
       let vy=vyRef.current;
       let yy=yRef.current;
-      if(holdRef.current && holdMsRef.current<860 && vy>0){vy+=0.42;holdMsRef.current+=45;}
+      if(holdRef.current && holdMsRef.current<820 && vy>0){vy+=0.40;holdMsRef.current+=45;}
       vy-=1.05;
       yy+=vy;
       if(yy<=0){yy=0;vy=0;jumpRef.current=2;setJumpsLeft(2);}
       yRef.current=yy;vyRef.current=vy;setY(yy);
+
       setObstacles(prev=>{
-        const dynamicSpeed=Math.min(2.95,1.45+score/210);
-        let next=prev.map(o=>({...o,x:o.x-dynamicSpeed})).filter(o=>o.x>-18);
+        const dynamicSpeed=Math.min(3.35,1.55+score/190);
+        let next=prev.map(o=>({...o,x:o.x-dynamicSpeed})).filter(o=>o.x>-22);
         const last=next[next.length-1];
-        if(!last || last.x<55+Math.random()*22){
-          next=[...next,{x:112+Math.random()*28,id:Date.now()+Math.random(),type:Math.random()<.82?'scissor':'comb'}];
+        if(!last || last.x<50+Math.random()*24){
+          const r=Math.random();
+          let type='scissor';
+          if(r<.16) type='comb';
+          else if(r<.28) type='block';
+          else if(r<.34) type='pit';
+          next=[...next,{x:112+Math.random()*24,id:Date.now()+Math.random(),type}];
         }
+
         const boardW=runnerBoardRef.current?.clientWidth||360;
-        const hit=next.some(o=>{
-          if(o.type!=='scissor')return false;
+        next.forEach(o=>{
+          if(o.done)return;
           const ox=(o.x/100)*boardW;
-          const scissorLeft=ox+RUNNER_SCISSOR_BOX.leftPad;
-          const scissorRight=ox+RUNNER_SCISSOR_BOX.rightPad;
-          const horizontal=scissorRight>=RUNNER_PLAYER_BOX.left && scissorLeft<=RUNNER_PLAYER_BOX.right;
-          const vertical=yRef.current<RUNNER_GROUND_HIT_Y;
-          return horizontal && vertical;
+          const left=ox+4;
+          const right=ox+(o.type==='pit'?38:28);
+          const horizontal=right>=RUNNER_PLAYER_BOX.left && left<=RUNNER_PLAYER_BOX.right;
+          if(!horizontal)return;
+
+          if(o.type==='comb'){
+            o.done=true;
+            poweredRef.current=true;setPowered(true);
+            setScore(s=>s+12);
+            SFX.coins();
+            return;
+          }
+
+          const needsJump=o.type==='block'||o.type==='pit';
+          const verticalHit=needsJump ? yRef.current<RUNNER_HIT_Y+10 : yRef.current<RUNNER_HIT_Y;
+          if(verticalHit){
+            o.done=true;
+            if(poweredRef.current){consumePower();return;}
+            endGame();
+          }
         });
-        if(hit){setRunning(false);runningRef.current=false;setGameOver(true);SFX.error();}
-        return next;
+        return next.filter(o=>!o.done);
       });
     },45);
     return()=>clearInterval(timer);
   },[running,score,gameOver]);
+
   const pts=Math.max(1,Math.min(12,Math.floor(score/30)));
-  const jumpTxt=running?`Saltos: ${jumpsLeft} · ${holding?'manteniendo':'toca para saltar'}`:'Doble salto y salto sostenido';
+  const jumpTxt=running?`Saltos: ${jumpsLeft} · ${powered?'peine activo':'sin poder'}`:'Peine = modo grande, una protección';
   return <Card style={{background:'linear-gradient(180deg,#F4E5BE,#E7CA8A)',border:`2px solid ${T.g300}`}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8,gap:8}}><div style={{fontWeight:900,color:T.g800}}>🦖✂️ Rasta Runner</div><Badge col='gold'>Hitbox fina</Badge></div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8,gap:8}}><div style={{fontWeight:900,color:T.g800}}>🦖✂️ Rasta Runner</div><Badge col={powered?'green':'gold'}>{powered?'Peine activo':'Runner'}</Badge></div>
     <div
       ref={runnerBoardRef}
       onPointerDown={e=>{e.currentTarget.setPointerCapture?.(e.pointerId);pressJump();}}
       onPointerUp={releaseJump}
       onPointerCancel={releaseJump}
       onPointerLeave={releaseJump}
-      style={{position:'relative',height:205,borderRadius:20,overflow:'hidden',background:'linear-gradient(180deg,#DDEBFF,#FFF0C9 72%,#C7A25C 72%)',border:'2px solid rgba(62,35,18,.15)',touchAction:'none',cursor:running?'pointer':'default'}}
+      style={{position:'relative',height:218,borderRadius:20,overflow:'hidden',background:'linear-gradient(180deg,#DDEBFF,#FFF0C9 72%,#C7A25C 72%)',border:'2px solid rgba(62,35,18,.15)',touchAction:'none',cursor:running?'pointer':'default'}}
     >
       <div style={{position:'absolute',left:0,right:0,bottom:28,height:4,background:'#6E3518'}}/>
-      <div style={{position:'absolute',left:14,bottom:32+y,transition:'none'}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={44}/></div>
+      <div style={{position:'absolute',left:14,bottom:32+y,transition:'none',transform:powered?'scale(1.22)':'scale(1)',transformOrigin:'bottom center'}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={powered?52:44}/></div>
       <div style={{position:'absolute',left:10,bottom:8,fontSize:'.76rem',fontWeight:900,color:T.g700}}>Distancia: {score}</div>
       <div style={{position:'absolute',right:10,bottom:8,fontSize:'.72rem',fontWeight:900,color:T.g700}}>{jumpTxt}</div>
-      {obstacles.map((o,i)=><div key={o.id||i} style={{position:'absolute',left:`${o.x}%`,bottom:22,fontSize:o.type==='comb'?'1.35rem':'1.55rem',filter:'drop-shadow(0 3px 4px rgba(0,0,0,.22))'}}>{o.type==='comb'?'🪮':'✂️'}</div>)}
-      {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.42)',padding:18}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:10}}>Más rápido, salto largo y doble salto.</div><Btn col='gold' onClick={resetAndStart}>▶ Empezar</Btn></div></div>}
-      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.56)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>¡Tijera esquivada hasta {score}!</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Récord de ronda: {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div></div>}
+      {obstacles.map((o,i)=>{
+        const icon=o.type==='comb'?'🪮':o.type==='block'?'🧱':o.type==='pit'?'🕳️':'✂️';
+        const bottom=o.type==='pit'?8:22;
+        return <div key={o.id||i} style={{position:'absolute',left:`${o.x}%`,bottom,fontSize:o.type==='pit'?'2rem':o.type==='comb'?'1.55rem':'1.65rem',filter:'drop-shadow(0 3px 4px rgba(0,0,0,.22))'}}>{icon}</div>
+      })}
+      {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.42)',padding:18}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:10}}>Salta tijeras, bloques y agujeros. El peine te da una protección.</div><Btn col='gold' onClick={resetAndStart}>▶ Empezar</Btn></div></div>}
+      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.56)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>Runner terminado en {score}</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Récord de ronda: {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div></div>}
     </div>
-    <div style={{marginTop:10,fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45}}>Controles: toca y mantén para saltar más tiempo, suelta para caer antes. Hitbox reducida: las tijeras sólo cuentan cerca del cuerpo, no desde lejos. Teclado: espacio/flecha arriba.</div>
+    <div style={{marginTop:10,fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45}}>Toca y mantén para saltar más. El peine te hace grande y aguanta un golpe, pero no se acumula. Si chocas protegido, vuelves a normal.</div>
   </Card>;
 }
-
 
 function PlatformJumpGame({onWin,user}){
   const [running,setRunning]=useState(false);
@@ -9586,31 +9709,40 @@ function DreadStitchGame({onWin,user}){
   const [running,setRunning]=useState(false);
   const [finished,setFinished]=useState(false);
   const [items,setItems]=useState([]);
-  const [round,setRound]=useState(1);
-  const [completed,setCompleted]=useState(0);
   const [hits,setHits]=useState(0);
   const [scissors,setScissors]=useState(0);
   const [roundPoints,setRoundPoints]=useState(0);
   const [bonusHits,setBonusHits]=useState(0);
-  const [message,setMessage]=useState('Llega a 100 puntos con 81 o más aciertos. Si tocas 20 tijeras, pierdes.');
+  const [message,setMessage]=useState('Llega a 100 puntos. Al llegar a 100 termina la partida y cobras el récord.');
   const [lastAccuracy,setLastAccuracy]=useState(100);
-  const areaRef=useRef(null);
+  const [won,setWon]=useState(false);
   const accuracy=Math.round((hits/Math.max(1,hits+scissors))*100);
-  const spawnMs=Math.max(330,760-round*38);
-  const lifeMs=Math.max(780,1750-round*55);
-  const scissorChance=Math.min(.42,.13+round*.025);
-  function resetRound(){setItems([]);setHits(0);setScissors(0);setRoundPoints(0);setBonusHits(0);}
-  function start(){resetRound();setRound(1);setCompleted(0);setLastAccuracy(100);setMessage('Ronda 1: llega a 100 puntos. El dorado vale +5 y sale muy poco.');setFinished(false);setRunning(true);}
-  function finish(done=false){setRunning(false);setFinished(true);setItems([]);setLastAccuracy(accuracy);setMessage(done?`Has cerrado ${completed} ronda${completed===1?'':'s'}.`:`Ronda perdida: ${hits} aciertos y ${scissors} tijeras.`);}
-  function passRound(){const next=completed+1;setCompleted(next);setRound(r=>r+1);setLastAccuracy(accuracy);setMessage(`Ronda ${round} superada con ${accuracy}%. Ahora irá más rápido y habrá más tijeras.`);SFX.success();resetRound();}
+  const spawnMs=430;
+  const lifeMs=1500;
+  const scissorChance=.18;
+
+  function resetRound(){setItems([]);setHits(0);setScissors(0);setRoundPoints(0);setBonusHits(0);setWon(false);}
+  function start(){resetRound();setLastAccuracy(100);setMessage('Llega a 100 puntos. Dorado +5, ganchillo +3, normal +1. Si tocas 20 tijeras pierdes.');setFinished(false);setRunning(true);}
+  function finishWin(){
+    setRunning(false);setFinished(true);setWon(true);setItems([]);setLastAccuracy(accuracy);
+    setMessage(`Partida completada con ${accuracy}% de precisión. Puedes guardar el récord y cobrar puntos si no los cobraste hoy.`);
+    SFX.success();
+  }
+  function finishLose(){
+    setRunning(false);setFinished(true);setWon(false);setItems([]);setLastAccuracy(accuracy);
+    setMessage(`Partida perdida: ${hits} aciertos y ${scissors} tijeras.`);
+    SFX.error();
+  }
+
   useEffect(()=>{
     if(!running)return;
-    if(scissors>=20){finish(false);SFX.error();return;}
+    if(scissors>=20){finishLose();return;}
     if(roundPoints>=100){
-      if(hits>=81 && scissors<20) passRound();
-      else {finish(false);SFX.error();}
+      if(accuracy>=70) finishWin();
+      else finishLose();
     }
-  },[running,roundPoints,hits,scissors]);
+  },[running,roundPoints,hits,scissors,accuracy]);
+
   useEffect(()=>{
     if(!running)return;
     const timer=setInterval(()=>{
@@ -9618,42 +9750,44 @@ function DreadStitchGame({onWin,user}){
         const now=Date.now();
         let next=prev.filter(it=>now-it.created<lifeMs);
         const r=Math.random();
-        const kind=r<0.026?'bonus':r<0.026+scissorChance?'scissor':'good';
-        const icon=kind==='bonus'?'🎟️':kind==='scissor'?'✂️':(['🪝','〰️','🧵'][Math.floor(Math.random()*3)]);
-        next=[...next,{id:now+Math.random(),kind,icon,x:9+Math.random()*82,y:16+Math.random()*66,created:now}];
-        return next.slice(-Math.min(8,3+round));
+        const kind=r<0.045?'bonus':r<0.16?'hook3':r<0.16+scissorChance?'scissor':'good';
+        const icon=kind==='bonus'?'🎟️':kind==='hook3'?'🪝':kind==='scissor'?'✂️':(['〰️','🧵','💈'][Math.floor(Math.random()*3)]);
+        next=[...next,{id:now+Math.random(),kind,icon,x:10+Math.random()*80,y:16+Math.random()*66,created:now}];
+        return next.slice(-7);
       });
     },spawnMs);
     return()=>clearInterval(timer);
-  },[running,round,spawnMs,lifeMs,scissorChance]);
+  },[running]);
+
   function tapItem(item){
     if(!running)return;
     setItems(prev=>prev.filter(i=>i.id!==item.id));
     if(item.kind==='scissor'){setScissors(s=>s+1);SFX.error();return;}
-    if(item.kind==='bonus'){setBonusHits(b=>b+1);setHits(h=>h+5);setRoundPoints(p=>Math.min(105,p+5));SFX.coins();return;}
-    setHits(h=>h+1);setRoundPoints(p=>Math.min(105,p+1));SFX.click();
+    if(item.kind==='bonus'){setBonusHits(b=>b+1);setHits(h=>h+5);setRoundPoints(p=>Math.min(100,p+5));SFX.coins();return;}
+    if(item.kind==='hook3'){setHits(h=>h+3);setRoundPoints(p=>Math.min(100,p+3));SFX.action();return;}
+    setHits(h=>h+1);setRoundPoints(p=>Math.min(100,p+1));SFX.click();
   }
-  const finalPts=Math.min(15,Math.max(0,completed*5+Math.floor(lastAccuracy/20)));
+
+  const finalPts=won?Math.max(1,Math.min(10,Math.floor(lastAccuracy/18)+bonusHits)):0;
   return <Card style={{background:'linear-gradient(180deg,#F5E6C8,#E6C27A)',border:`2px solid ${T.gold}`}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:10}}><div style={{display:'flex',alignItems:'center',gap:8,fontWeight:900,color:T.g800}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={36}/> Gancho Ninja</div><Badge col={accuracy>=81?'green':'gold'}>{accuracy}%</Badge></div>
-    <div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45,marginBottom:10}}>Objetivo: <b>100 puntos</b>. Con <b>20 tijeras</b> pierdes. Para pasar necesitas <b>81 aciertos o más</b>. El ticket dorado vale <b>+5</b> y sale muy poco.</div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:10}}><div style={{display:'flex',alignItems:'center',gap:8,fontWeight:900,color:T.g800}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={36}/> Gancho Ninja</div><Badge col={accuracy>=70?'green':'gold'}>{accuracy}%</Badge></div>
+    <div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45,marginBottom:10}}>Objetivo: <b>100 puntos y termina</b>. Ganchillo <b>+3</b>, ticket dorado <b>+5</b>, normales <b>+1</b>. Con <b>20 tijeras</b> pierdes.</div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:10,textAlign:'center'}}>
-      <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Ronda</div>{round}</div>
+      <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Objetivo</div>100</div>
       <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Puntos</div>{roundPoints}/100</div>
       <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Tijeras</div>{scissors}/20</div>
       <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Dorados</div>{bonusHits}</div>
     </div>
-    <div ref={areaRef} style={{height:280,position:'relative',overflow:'hidden',borderRadius:20,border:'2px solid rgba(62,35,18,.18)',background:'radial-gradient(circle at 25% 18%,rgba(255,214,107,.34),transparent 28%),linear-gradient(160deg,#24110A,#6E3518)',touchAction:'none',cursor:running?'crosshair':'default'}}>
+    <div style={{height:280,position:'relative',overflow:'hidden',borderRadius:20,border:'2px solid rgba(62,35,18,.18)',background:'radial-gradient(circle at 25% 18%,rgba(255,214,107,.34),transparent 28%),linear-gradient(160deg,#24110A,#6E3518)',touchAction:'none',cursor:running?'crosshair':'default'}}>
       <div style={{position:'absolute',top:12,left:12,right:12,zIndex:2,height:9,borderRadius:999,background:'rgba(255,244,214,.18)',overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(100,roundPoints)}%`,background:roundPoints>=100?'linear-gradient(90deg,#2F6B42,#9BE7B0)':'linear-gradient(90deg,#D4AF37,#FFF1A8)',transition:'width .2s ease'}}/></div>
-      {items.map(it=><button key={it.id} onClick={()=>tapItem(it)} style={{position:'absolute',left:`${it.x}%`,top:`${it.y}%`,transform:'translate(-50%,-50%)',width:it.kind==='bonus'?62:54,height:it.kind==='bonus'?62:54,borderRadius:'50%',border:'2px solid rgba(255,244,214,.82)',background:it.kind==='bonus'?'linear-gradient(180deg,#FFF8C8,#D4AF37)':it.kind==='scissor'?'linear-gradient(180deg,#FFEBEE,#C0392B)':'linear-gradient(180deg,#FFF4D6,#D4AF37)',boxShadow:'0 10px 20px rgba(0,0,0,.28)',fontSize:it.kind==='bonus'?'1.8rem':'1.6rem',display:'grid',placeItems:'center',cursor:'pointer',animation:it.kind==='bonus'?'rewardPulsePro 1.2s infinite':'none'}}>{it.icon}</button>)}
-      {!running && !finished && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,244,214,.16)',padding:16}}><div style={{textAlign:'center',color:T.white,maxWidth:300}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.55rem',marginBottom:8}}>100 puntos para cerrar la rasta</div><div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,marginBottom:12}}>{message}</div><Btn col='gold' onClick={start}>▶ Empezar</Btn></div></div>}
-      {finished && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(20,8,4,.72)',padding:16}}><div style={{textAlign:'center',color:T.white,maxWidth:300}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.55rem'}}>{completed>0?'Partida terminada':'Ronda perdida'}</div><div style={{fontWeight:900,margin:'8px 0'}}>Rondas {completed} · precisión {lastAccuracy}%</div><div style={{fontSize:'.82rem',fontWeight:800,opacity:.85,marginBottom:12}}>{message}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}>{finalPts>0&&<Btn col='gold' onClick={()=>onWin(finalPts)}>Guardar récord · {finalPts}</Btn>}<Btn col='ghost' onClick={start}>🔁 Reintentar</Btn></div></div></div>}
+      {items.map(it=><button key={it.id} onPointerDown={(e)=>{e.preventDefault();tapItem(it)}} onClick={(e)=>e.preventDefault()} style={{position:'absolute',left:`${it.x}%`,top:`${it.y}%`,transform:'translate(-50%,-50%)',width:it.kind==='bonus'?70:it.kind==='hook3'?64:60,height:it.kind==='bonus'?70:it.kind==='hook3'?64:60,borderRadius:'50%',border:'2px solid rgba(255,244,214,.82)',background:it.kind==='bonus'?'linear-gradient(180deg,#FFF8C8,#D4AF37)':it.kind==='hook3'?'linear-gradient(180deg,#DFFFE9,#3DAE5D)':it.kind==='scissor'?'linear-gradient(180deg,#FFEBEE,#C0392B)':'linear-gradient(180deg,#FFF4D6,#D4AF37)',boxShadow:'0 10px 20px rgba(0,0,0,.28)',fontSize:it.kind==='bonus'?'2rem':'1.8rem',display:'grid',placeItems:'center',cursor:'pointer',touchAction:'none',animation:it.kind==='bonus'?'rewardPulsePro 1.2s infinite':'none'}}>{it.icon}</button>)}
+      {!running && !finished && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,244,214,.16)',padding:16}}><div style={{textAlign:'center',color:T.white,maxWidth:300}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.55rem',marginBottom:8}}>100 puntos y partida cerrada</div><div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,marginBottom:12}}>{message}</div><Btn col='gold' onClick={start}>▶ Empezar</Btn></div></div>}
+      {finished && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(20,8,4,.72)',padding:16}}><div style={{textAlign:'center',color:T.white,maxWidth:320}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.55rem'}}>{won?'Partida completada':'Partida perdida'}</div><div style={{fontWeight:900,margin:'8px 0'}}>Puntos {roundPoints} · precisión {lastAccuracy}%</div><div style={{fontSize:'.82rem',fontWeight:800,opacity:.85,marginBottom:12}}>{message}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}>{won&&<Btn col='gold' onClick={()=>onWin(finalPts)}>Guardar récord · {finalPts}</Btn>}<Btn col='ghost' onClick={start}>🔁 Jugar otra vez</Btn></div></div></div>}
     </div>
   </Card>;
 }
 
-
-function GachaSlotsGame({user,onWin,settings}){
+function GachaSlotsGame({user,onWin,settings,onBuyPulls}){ 
   const uid=user?.id||"anon";
   const SYMBOLS={scissors:{icon:'✂️',name:'Tijeras'},comb:{icon:'🪮',name:'Peines'},hook:{icon:'🪝',name:'Ganchillos'},band:{icon:'🧵',name:'Gomas'},ticket:{icon:'🎟️',name:'Ticket dorado'},gem:{icon:'💎',name:'Cristal'},coin:{icon:'🪙',name:'Moneda'}};
   const normal=['scissors','comb','hook','band','coin'];
@@ -9661,6 +9795,7 @@ function GachaSlotsGame({user,onWin,settings}){
   const [spinning,setSpinning]=useState(false);
   const [result,setResult]=useState(null);
   const [pulls,setPulls]=useState(()=>getGachaPullsToday(uid));
+  const [claimed,setClaimed]=useState(false);
   const dailyLimit=Math.max(1,parseInt(settings?.puntos?.gacha_tiradas_dia??GACHA_DAILY_PULL_LIMIT,10)||GACHA_DAILY_PULL_LIMIT);
   const pullsLeft=Math.max(0,dailyLimit-pulls);
   function pickPrize(){
@@ -9676,55 +9811,56 @@ function GachaSlotsGame({user,onWin,settings}){
   function randomReels(){return [0,1,2].map(()=>normal[Math.floor(Math.random()*normal.length)]);}
   function spin(){
     if(spinning)return;
-    if(pullsLeft<=0){
-      SFX.error();
-      setResult({pts:0,key:null,label:'Límite diario alcanzado'});
-      return;
-    }
-    const nextPulls=pulls+1;
-    setPulls(nextPulls);
-    setGachaPullsToday(uid,nextPulls);
-    setSpinning(true);setResult(null);
-    let ticks=0;
-    const final=pickPrize();
+    if(pullsLeft<=0){SFX.error();setResult({pts:0,key:null,label:'Límite diario alcanzado'});return;}
+    const nextPulls=pulls+1;setPulls(nextPulls);setGachaPullsToday(uid,nextPulls);
+    setSpinning(true);setResult(null);setClaimed(false);
+    let ticks=0;const final=pickPrize();
     const spinTimer=setInterval(()=>{
-      ticks++;
-      setReels(randomReels());
-      playTone(220+ticks*16,'square',0.045,0.035);
+      ticks++;setReels(randomReels());playTone(220+ticks*16,'triangle',0.045,0.035);
       if(ticks>=18){
         clearInterval(spinTimer);
         let out;
         if(final.pts>0) out=[final.key,final.key,final.key];
-        else{
-          out=randomReels();
-          if(out[0]===out[1]&&out[1]===out[2]) out[2]=normal[(normal.indexOf(out[2])+1)%normal.length];
-        }
+        else{out=randomReels();if(out[0]===out[1]&&out[1]===out[2]) out[2]=normal[(normal.indexOf(out[2])+1)%normal.length];}
         setReels(out);setResult(final);setSpinning(false);
-        final.pts>0?SFX.coins():SFX.error();
+        final.pts>0?SFX.success():SFX.error();
       }
     },90);
   }
+  async function claim(){
+    if(!result?.pts||claimed)return;
+    setClaimed(true);
+    SFX.success();
+    await onWin(result.pts);
+  }
+  async function buyPulls(){
+    if(!onBuyPulls)return;
+    const ok=await onBuyPulls(5,10);
+    if(ok){
+      const next=Math.max(0,pulls-10);
+      setPulls(next);setGachaPullsToday(uid,next);
+      setResult({pts:0,key:null,label:'Has comprado 10 tiradas extra por 5 puntos'});
+      SFX.coins();
+    }
+  }
   return <Card style={{background:'linear-gradient(180deg,#271006,#5C3317 55%,#D4AF37)',border:`2px solid ${T.gold}`,color:T.white}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:12}}>
-      <div>
-        <div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div>
-        <div style={{fontSize:'.7rem',fontWeight:850,opacity:.78,marginTop:2}}>Máximo {GACHA_DAILY_PULL_LIMIT} tiradas al día</div>
-      </div>
-      <Badge col={pullsLeft>0?'gold':'red'}>{pullsLeft}/{GACHA_DAILY_PULL_LIMIT}</Badge>
+      <div><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><div style={{fontSize:'.7rem',fontWeight:850,opacity:.78,marginTop:2}}>Máximo {dailyLimit} tiradas al día</div></div>
+      <Badge col={pullsLeft>0?'gold':'red'}>{pullsLeft}/{dailyLimit}</Badge>
     </div>
-    <div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,lineHeight:1.45,marginBottom:12}}>Junta 3 símbolos iguales. Puedes tirar varias veces, pero el contador diario evita que se abuse de la máquina.</div>
-    <div style={{height:8,background:'rgba(255,244,214,.22)',borderRadius:999,overflow:'hidden',marginBottom:14}}>
-      <div style={{height:'100%',width:`${Math.min(100,(pulls/GACHA_DAILY_PULL_LIMIT)*100)}%`,background:T.gradGold,borderRadius:999,transition:'width .25s ease'}}/>
-    </div>
+    <div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,lineHeight:1.45,marginBottom:12}}>Junta 3 símbolos iguales. Si ganas, cobras sin salir del juego y puedes seguir tirando.</div>
+    <div style={{height:8,background:'rgba(255,244,214,.22)',borderRadius:999,overflow:'hidden',marginBottom:14}}><div style={{height:'100%',width:`${Math.min(100,(pulls/dailyLimit)*100)}%`,background:T.gradGold,borderRadius:999,transition:'width .25s ease'}}/></div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
       {reels.map((key,i)=><div key={i} style={{height:106,borderRadius:22,display:'grid',placeItems:'center',background:'linear-gradient(180deg,#FFF8E6,#E8C477)',border:'3px solid rgba(255,244,214,.75)',boxShadow:'inset 0 8px 18px rgba(0,0,0,.16),0 10px 20px rgba(0,0,0,.22)',fontSize:'2.6rem',animation:spinning?'rewardPulsePro .38s infinite':'none'}}>{SYMBOLS[key]?.icon}</div>)}
     </div>
-    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{pullsLeft<=0&&result.label==='Límite diario alcanzado'?'Vuelve mañana para tirar otra vez.':result.pts>0?`Premio: ${result.pts} puntos reales si lo cobras hoy.`:'Lo normal es que salga 0. Puedes volver a tirar mientras te queden tiradas.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col='gold' onClick={()=>onWin(result.pts)}>Cobrar {result.pts} puntos</Btn></div>}</Card>}
-    <Btn full col={pullsLeft>0?'gold':'ghost'} disabled={spinning||pullsLeft<=0} onClick={spin}>{spinning?'Girando...':pullsLeft>0?'🎰 Tirar':'Límite diario alcanzado'}</Btn>
-    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{dailyLimit}. Probabilidades: 50 pts 1/5000 · 20 pts 1/500 · 10 pts 1/200 · 5 pts 1/100 · 2 pts 1/30 · 1 pt 1/10.</div>
+    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{result.pts>0?`Premio: ${result.pts} puntos reales. Puedes cobrar y seguir jugando.`:pullsLeft<=0?'Sin tiradas. Puedes comprar 10 por 5 puntos.':'Puedes volver a tirar mientras te queden tiradas.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar '+result.pts+' puntos'}</Btn></div>}</Card>}
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+      <Btn full col={pullsLeft>0?'gold':'ghost'} disabled={spinning||pullsLeft<=0} onClick={spin}>{spinning?'Girando...':pullsLeft>0?'🎰 Tirar':'Sin tiradas'}</Btn>
+      <Btn full col='ghost' disabled={spinning||Number(user?.puntos||0)<5} onClick={buyPulls}>🛒 10 tiradas · 5 pts</Btn>
+    </div>
+    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{dailyLimit}. Comprar tiradas resta 5 puntos y libera 10 tiradas hoy.</div>
   </Card>;
 }
-
 
 function ArcadeInfoPanel({onOpenGacha}){
   const [open,setOpen]=useState(false);
@@ -10300,19 +10436,32 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     if(alreadyPlayed){
       SFX.success();
       showToast(`Récord guardado. Los puntos de ${gameMeta(gameId).short} ya estaban cobrados hoy.`);
-      setActiveGame(null);
+      if(gameId!=="gacha")setActiveGame(null);
       return;
     }
     markPlayedToday(gameId,user.id);
     if(reward<=0){
       SFX.success();
       showToast(`Récord guardado. Límite diario de ${gameDailyCap} pts alcanzado.`);
-      setActiveGame(null);
+      if(gameId!=="gacha")setActiveGame(null);
       return;
     }
     const awarded=await awardWebPoints({user,setUser,showToast,showPoints,points:reward,reason:"Arcade"});
     if(awarded>0)addDailyGamePointsTotal(user.id,awarded);
-    setActiveGame(null);
+    if(gameId!=="gacha")setActiveGame(null);
+  }
+
+
+  async function buyGachaPulls(cost=5,amount=10){
+    if(!user?.id)return false;
+    const actual=Number(user.puntos||0);
+    if(actual<cost){showToast(`Necesitas ${cost} puntos para comprar ${amount} tiradas`);SFX.error();return false;}
+    const nuevos=Math.max(0,actual-cost);
+    try{await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});}catch{}
+    setUser?.(u=>({...u,puntos:nuevos}));
+    recordPointMovement(user.id,{amount:-cost,type:"spend",reason:`Compra ${amount} tiradas Gacha`,source:"gacha",balance:nuevos,meta:{cost,amount}});
+    showToast(`Compradas ${amount} tiradas por ${cost} puntos`);
+    return true;
   }
 
   if(activeGame){
@@ -10329,7 +10478,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
         {activeGame==="runner"&&<RastaRunnerGame user={user} onWin={pts=>handleWin("runner",pts)}/>} 
         {activeGame==="jump"&&<PlatformJumpGame user={user} onWin={pts=>handleWin("jump",pts)}/>} 
         {activeGame==="stitch"&&<DreadStitchGame user={user} onWin={pts=>handleWin("stitch",pts)}/>} 
-        {activeGame==="gacha"&&<GachaSlotsGame user={user} settings={settings} onWin={pts=>handleWin("gacha",pts)}/>} 
+        {activeGame==="gacha"&&<GachaSlotsGame user={user} settings={settings} onWin={pts=>handleWin("gacha",pts)} onBuyPulls={buyGachaPulls}/>} 
         {activeGame==="tycoon"&&<RastaCutsTycoonGame user={user} showToast={showToast}/>} 
       </div>
     );
