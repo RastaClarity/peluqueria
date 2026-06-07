@@ -311,6 +311,9 @@ const SFX={
   tab:()=>playUiSound("tab"),
   click:()=>playUiSound("tap"),
   action:()=>playUiSound("action"),
+  jump:()=>playUiSound("jump"),
+  collect:()=>playUiSound("collect"),
+  hit:()=>playUiSound("hit"),
   coins:()=>playUiSound("money"),
   success:()=>playUiSound("success"),
   error:()=>playUiSound("error"),
@@ -319,20 +322,23 @@ const SFX={
 function playUiSound(kind="tap"){
   if(globalMuted)return;
   const patterns={
-    tap:[[520,.035,.018,0],[720,.026,.012,.025]],
-    tab:[[620,.040,.018,0],[830,.030,.012,.035]],
-    page:[[392,.055,.022,0],[523,.065,.018,.045],[659,.075,.014,.090]],
-    back:[[392,.050,.020,0],[294,.070,.015,.052]],
-    action:[[520,.055,.022,0],[690,.060,.017,.052]],
-    shop:[[660,.050,.020,0],[880,.055,.017,.048],[1175,.065,.013,.096]],
-    game:[[330,.055,.020,0],[494,.070,.017,.045],[660,.090,.013,.105]],
-    social:[[440,.050,.019,0],[587,.060,.015,.045]],
-    admin:[[220,.060,.018,0],[330,.072,.014,.058]],
-    profile:[[523,.050,.018,0],[698,.062,.014,.055]],
-    money:[[784,.052,.021,0],[988,.054,.018,.044],[1175,.065,.014,.088],[1568,.070,.010,.132]],
-    notify:[[880,.050,.019,0],[1175,.060,.014,.06]],
-    success:[[523,.060,.020,0],[659,.068,.017,.060],[784,.076,.014,.120]],
-    error:[[246,.110,.023,0],[196,.125,.018,.085]]
+    tap:[[520,.022,.007,0]],
+    tab:[[620,.026,.008,0]],
+    page:[[392,.045,.014,0],[523,.050,.010,.045]],
+    back:[[392,.040,.012,0],[294,.052,.009,.05]],
+    action:[[560,.040,.012,0],[720,.045,.009,.045]],
+    jump:[[440,.035,.010,0],[660,.030,.006,.035]],
+    collect:[[720,.040,.014,0],[980,.044,.010,.045]],
+    hit:[[210,.070,.014,0]],
+    shop:[[660,.045,.014,0],[880,.050,.010,.048],[1175,.055,.007,.096]],
+    game:[[330,.045,.011,0],[494,.052,.008,.045]],
+    social:[[440,.040,.010,0],[587,.046,.007,.045]],
+    admin:[[220,.048,.010,0],[330,.055,.007,.058]],
+    profile:[[523,.040,.010,0],[698,.046,.007,.055]],
+    money:[[784,.045,.014,0],[988,.050,.010,.044],[1175,.055,.007,.088]],
+    notify:[[880,.040,.011,0],[1175,.046,.007,.06]],
+    success:[[523,.052,.014,0],[659,.058,.010,.060],[784,.064,.007,.120]],
+    error:[[246,.085,.012,0],[196,.095,.008,.075]]
   };
   (patterns[kind]||patterns.tap).forEach(([f,d,v,delay])=>playTone(f,"sine",d,v,delay));
 }
@@ -613,13 +619,13 @@ function nextMusicTrack(auto=false){
 
 let gameMusicInterval=null, resumeMainAfterGame=false;
 const GAME_MUSIC={
-  sopa:[392,440,494,587],
-  memoria:[330,392,440,494],
-  trivia:[349,392,440,523],
-  runner:[330,392,440,523],
-  jump:[392,494,587,659],
-  stitch:[349,440,523,659],
-  gacha:[196,247,294,330,392,494],
+  sopa:{notes:[392,440,494,587,659],tempo:820,wave:"triangle",bass:.5},
+  memoria:{notes:[330,392,440,494,523],tempo:760,wave:"sine",bass:.5},
+  trivia:{notes:[349,392,440,523,587],tempo:720,wave:"triangle",bass:.5},
+  runner:{notes:[330,392,494,587,659],tempo:520,wave:"square",bass:.45},
+  jump:{notes:[392,494,587,659,784],tempo:560,wave:"triangle",bass:.5},
+  stitch:{notes:[349,440,523,659,784],tempo:610,wave:"triangle",bass:.5},
+  gacha:{notes:[196,247,294,330,392,494],tempo:430,wave:"square",bass:.42},
 };
 function startGameMusic(gameId){
   if(globalMuted)return;
@@ -629,21 +635,36 @@ function startGameMusic(gameId){
   stopGeneratedMusic();
   applyBackgroundAudioState();
 
-  // La pista principal sigue "corriendo" en silencio si el navegador lo permite.
   if(backgroundAudioAvailable&&musicPlaying){
     const a=getBackgroundAudio();
     if(a&&a.paused)a.play().catch(()=>{});
   }
 
-  const notes=GAME_MUSIC[gameId]||GAME_MUSIC.sopa;
+  const cfg=GAME_MUSIC[gameId]||GAME_MUSIC.sopa;
+  const notes=cfg.notes;
   let i=0;
   gameMusicInterval=setInterval(()=>{
     if(globalMuted){stopGameMusic(false);return;}
-    playTone(notes[i%notes.length],"sine",0.22,0.038,0);
-    playTone(notes[(i+2)%notes.length],"triangle",0.30,0.016,0.11);
-    if(i%4===0)playTone(notes[(i+3)%notes.length]/2,"sine",0.18,0.020,0.02);
+    const n=notes[i%notes.length];
+    const next=notes[(i+2)%notes.length];
+
+    // Música de juego suave, distinta por juego, sin machacar el click.
+    if(gameId==="gacha"){
+      if(i%2===0)playTone(n,"square",0.050,0.018,0);
+      if(i%4===3)playTone(next*2,"triangle",0.060,0.010,0.045);
+      if(i%8===0)playTone(n*0.5,"sine",0.090,0.012,0.02);
+    }else if(gameId==="runner"){
+      if(i%2===0)playTone(n,"square",0.055,0.014,0);
+      if(i%4===0)playTone(n*cfg.bass,"sine",0.080,0.010,0.02);
+    }else if(gameId==="stitch"){
+      playTone(n,"triangle",0.060,0.013,0);
+      if(i%3===0)playTone(next,"sine",0.070,0.008,0.07);
+    }else{
+      playTone(n,cfg.wave,0.075,0.012,0);
+      if(i%4===1)playTone(next,"triangle",0.090,0.007,0.08);
+    }
     i++;
-  },690);
+  },cfg.tempo);
 }
 function stopGameMusic(restoreMain=true){
   if(gameMusicInterval){clearInterval(gameMusicInterval);gameMusicInterval=null;}
@@ -4205,7 +4226,7 @@ function Btn({children,onClick,col="green",full=false,small=false,disabled=false
   return <button onClick={disabled?undefined:(e)=>{col==="ghost"?SFX.click():SFX.action();onClick?.(e);}} className="bp" style={{background:col==="ghost"?"rgba(255,244,214,.72)":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"1px solid rgba(255,255,255,.22)",borderRadius:16,padding:small?"8px 14px":"12px 20px",fontWeight:900,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"0 6px 16px rgba(20,8,4,.12)":`0 8px 22px ${c.sh}`,transition:"all 0.18s ease",letterSpacing:".2px",...sx}}>{children}</button>;
 }
 function Card({children,style:sx={},onClick,hover=false}){
-  return <div onClick={onClick?(e)=>{SFX.click();onClick(e);}:undefined} className={`${hover?"ch":""} studio-panel`} style={{background:T.panel,borderRadius:20,padding:"16px",boxShadow:"0 8px 18px rgba(18,8,4,0.24)",border:`2px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",animation:"cardLift .35s ease",...sx}}>{children}</div>;
+  return <div onClick={onClick?(e)=>{SFX.tab();onClick(e);}:undefined} className={`${hover?"ch":""} studio-panel`} style={{background:T.panel,borderRadius:20,padding:"16px",boxShadow:"0 8px 18px rgba(18,8,4,0.24)",border:`2px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",animation:"cardLift .35s ease",...sx}}>{children}</div>;
 }
 function Input({label,value,onChange,type="text",placeholder="",style:sx={}}){
   return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)",...sx}} onFocus={e=>e.target.style.border=`1.5px solid ${T.g500}`} onBlur={e=>e.target.style.border=`1.5px solid ${T.g200}`}/></div>;
@@ -4235,7 +4256,7 @@ function EmptyState({icon,title,sub}){return <div style={{textAlign:"center",pad
 function PublicProfileModal({profile,onClose}){
   if(!profile)return null;
   const hidden=isPrivateProfile(profile);
-  const cfg=normalizeAvatarConfig(profile.avatar_config||profile.avatarConfig,profile.avatar);
+  const cfg=normalizeAvatarV3(profile.avatar_config||profile.avatarConfig,profile.id||profile.avatar||0);
   const pts=Number(profile.puntos||0);
   const nivel=pts>=1000?"VIP":pts>=500?"Oro":pts>=200?"Plata":"Bronce";
   if(hidden){
@@ -4398,23 +4419,23 @@ function avatarStorageKey(user){return `avatar_config_${String(user?.email||user
 function getLocalAvatarConfig(user, legacyAvatar=0){return normalizeAvatarConfig(localStorage.getItem(avatarStorageKey(user)), legacyAvatar);}
 function setLocalAvatarConfig(user, cfg){try{localStorage.setItem(avatarStorageKey(user),JSON.stringify(cfg));}catch{}}
 async function getAvatarConfigForProfile(profile){
-  if(!profile) return DEFAULT_AVATAR_CONFIG;
+  if(!profile) return cleanAvatarDefaults(0);
   try{
     const local=localStorage.getItem(avatarStorageKey(profile));
-    if(local) return normalizeAvatarConfig(local, profile.avatar);
+    if(local) return normalizeAvatarV3(JSON.parse(local), profile.id||profile.avatar||0);
   }catch{}
   try{
     const {data,error}=await supabase.from("avatar_profiles").select("avatar_config").eq("usuario_id",String(profile.id)).maybeSingle();
     if(!error && data?.avatar_config){
-      const cfg=normalizeAvatarConfig(data.avatar_config, profile.avatar);
+      const cfg=normalizeAvatarV3(data.avatar_config, profile.id||profile.avatar||0);
       setLocalAvatarConfig(profile,cfg);
       return cfg;
     }
   }catch{}
-  return normalizeAvatarConfig(null, profile.avatar);
+  return normalizeAvatarV3(profile.avatar_config||profile.avatarConfig||null, profile.id||profile.avatar||0);
 }
 async function saveAvatarConfigForUser(user,cfg){
-  const clean=normalizeAvatarConfig(cfg,user?.avatar);
+  const clean=normalizeAvatarV3(cfg,user?.id||user?.avatar||0);
   setLocalAvatarConfig(user,clean);
   try{await supabase.from("avatar_profiles").upsert({usuario_id:String(user.id),email:user.email,avatar_config:clean,updated_at:new Date().toISOString()},{onConflict:"usuario_id"});}catch{}
   return clean;
@@ -4429,7 +4450,8 @@ async function enrichProfilesWithAvatarConfigs(list=[]){
     const map=new Map((data||[]).map(r=>[String(r.usuario_id),r.avatar_config]));
     return arr.map(u=>{
       const cfg=map.get(String(u.id));
-      return cfg?{...u,avatar_config:normalizeAvatarConfig(cfg,u.avatar),avatarConfig:normalizeAvatarConfig(cfg,u.avatar)}:u;
+      const clean=cfg?normalizeAvatarV3(cfg,u.id||u.avatar||0):normalizeAvatarV3(u.avatar_config||u.avatarConfig,u.id||u.avatar||0);
+      return {...u,avatar_config:clean,avatarConfig:clean};
     });
   }catch(e){return arr;}
 }
@@ -4538,7 +4560,7 @@ async function awardWebPoints({user,setUser,showToast,showPoints,points,reason="
   recordPointMovement(user.id,{amount:allowed,type:"earn",reason:reason||"Puntos añadidos",source:"web",balance:nuevos,meta:{requested,allowed,excludeDailyCap}});
   setUser?.(u=>({...u,puntos:nuevos}));
   showPoints?.(allowed);
-  SFX.coins();
+  SFX.collect();
   showToast?.(`${reason||"Puntos añadidos"} +${allowed} pts${allowed<requested?` · límite diario aplicado`:``}`);
   return allowed;
 }
@@ -5605,11 +5627,11 @@ function BgPreview({id}){
   return <div style={{width:88,height:88,borderRadius:26,background:m[id]||m.plain,border:"5px solid rgba(19,10,6,.22)",boxShadow:"inset 0 18px 24px rgba(255,255,255,.16),0 10px 15px rgba(0,0,0,.16)"}}/>
 }
 function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=null}){
-  const current=form?.avatar_config||form?.avatar||form?.avatarV3||{};
+  const current=form?.avatar_config||form?.avatarConfig||form?.avatarV3||{};
   const cfg=normalizeAvatarV3(current,user?.id||0);
   const female=cfg.model==="female";
 
-  const setCfg=(next)=>setForm?.(f=>({...f,avatar_config:next,avatar:next,avatarV3:next}));
+  const setCfg=(next)=>setForm?.(f=>({...f,avatar_config:next,avatarConfig:next,avatarV3:next}));
   const patch=(k,v)=>setCfg(normalizeAvatarV3({...cfg,[k]:v},user?.id||0));
   const patchMany=(obj)=>setCfg(normalizeAvatarV3({...cfg,...obj},user?.id||0));
 
@@ -6119,7 +6141,7 @@ function isBannedProfile(u){
   return true;
 }
 function toAppUser(u){
-  const avatarConfig=normalizeAvatarConfig(u.avatar_config || u.avatarConfig, u.avatar);
+  const avatarConfig=normalizeAvatarV3(u.avatar_config || u.avatarConfig, u.id||u.avatar||0);
   const privacy=normalizePrivacy(u);
   return {
     id:u.id,
@@ -6962,7 +6984,7 @@ async function grantNewsPoints({user,setUser,showToast,showPoints,eventKey,point
   }catch(e){console.warn("No se pudieron dar puntos de actualidad",e);return false;}
 }
 function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
-  const openNews=()=>{SFX.click();onOpen?.(item);};
+  const openNews=()=>{SFX.tab();onOpen?.(item);};
   const cat=categoryInfo(item?.category);
   const visual=categoryVisual(item?.category);
   const hasImage=Boolean(item?.image);
@@ -7018,7 +7040,7 @@ function NewsShortCard({item,index=0,total=0,onOpen,stats=null}){
   const hasImage=Boolean(item?.image);
   const showYoutube=Boolean(item?.youtubeUrl||item?.category==="musica");
   const ytUrl=item?.youtubeUrl||`https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} oficial`)}`;
-  const openDetail=(e)=>{e?.stopPropagation?.();SFX.click();onOpen?.(item);};
+  const openDetail=(e)=>{e?.stopPropagation?.();SFX.tab();onOpen?.(item);};
   const openSource=(e)=>{e.stopPropagation();SFX.action();if(item?.url)window.open(item.url,"_blank","noopener,noreferrer");else openDetail(e);};
   const openYoutube=(e)=>{e.stopPropagation();SFX.action();window.open(ytUrl,"_blank","noopener,noreferrer");};
   const bg=hasImage
@@ -7940,7 +7962,7 @@ function Caja({user,showToast}){
       creado_por:user?.id||user?.email||"app"
     });
     if(ok){
-      SFX.coins();
+      SFX.collect();
       showToast?.(`Cobrado ${money(total)}`);
       setCarrito([]);
       setClienteNombre("");
@@ -7988,7 +8010,7 @@ function Caja({user,showToast}){
       const cobroId=Array.isArray(ok)?ok?.[0]?.id:null;
       if(cobroId) await dbPatch("citas",`?id=eq.${citaCobro.id}`,{cobro_id:cobroId,updated_at:new Date().toISOString()});
       const puntosDados=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
-      SFX.coins();
+      SFX.collect();
       showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosDados}/${puntosGenerados} pts de fidelidad`:""}${puntosGenerados&&puntosDados<puntosGenerados?" · límite diario aplicado":""}`);
       setCitaCobro(null);
       await loadCaja();
@@ -9009,7 +9031,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
       if(isAvatar) await unlockCosmeticForUser(user,p);
       recordPointMovement(user.id,{amount:-precio,type:"spend",reason:`Canje: ${p.nombre}`,source:isAvatar?"personalizacion":"tienda",balance:nuevos,meta:{item_id:p.id,item_key:p.item_key||null}});
       setUser(u=>({...u,puntos:nuevos}));
-      SFX.coins();
+      SFX.collect();
       await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Nuevo pedido de tienda",mensaje:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:true});
       await createNotification({usuario_id:user.id,rol_destino:"client",tipo:isAvatar?"avatar":"pedido",titulo:isAvatar?"Personalización desbloqueada":"Pedido creado",mensaje:isAvatar?`Has desbloqueado ${p.nombre}. Ve a Perfil > Editor para equiparlo.`:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:isAvatar?"avatar":"tienda_pedido",entidad_id:pedidoId||p.id,importante:false});
       showToast(isAvatar?`${p.nombre} desbloqueado`:`${p.nombre} pedido correctamente`);
@@ -9021,7 +9043,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
   function addCart(p){
     addToLocalCart(user,p,1);
-    SFX.coins();
+    SFX.collect();
     showToast(`${p.nombre} añadido al carrito`);
   }
 
@@ -9128,7 +9150,7 @@ function Cupones({user,showToast}){
     const found=cupones.find(c=>c.codigo?.toLowerCase()===code.toLowerCase());
     if(!found){showToast("Cupon no valido");SFX.error();return;}
     if(new Date(found.fecha_fin)<new Date()){showToast("Cupon caducado");SFX.error();return;}
-    SFX.coins();showToast(`${found.descuento}% de descuento - valido!`);
+    SFX.collect();showToast(`${found.descuento}% de descuento - valido!`);
   }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
@@ -9449,7 +9471,7 @@ function MemoryGame({onWin}){
     if(lock)return;
     const card=cards.find(c=>c.id===id);
     if(!card||card.flipped||card.matched)return;
-    SFX.click();
+    SFX.tab();
     const nc=cards.map(c=>c.id===id?{...c,flipped:true}:c);
     const nf=[...flipped,id];
     setCards(nc);setFlipped(nf);
@@ -9524,7 +9546,7 @@ function RastaRunnerGame({onWin,user}){
   const [powered,setPowered]=useState(false);
   const yRef=useRef(0),vyRef=useRef(0),jumpRef=useRef(2),holdRef=useRef(false),holdMsRef=useRef(0),runningRef=useRef(false),poweredRef=useRef(false);
   const runnerBoardRef=useRef(null);
-  const RUNNER_PLAYER_BOX={left:22,right:54};
+  const RUNNER_PLAYER_BOX={left:18,right:64};
   const RUNNER_HIT_Y=20;
 
   function resetAndStart(){
@@ -9534,7 +9556,7 @@ function RastaRunnerGame({onWin,user}){
   function pressJump(){
     if(!runningRef.current||gameOver) return;
     if(jumpRef.current<=0) return;
-    SFX.tab();
+    SFX.jump();
     vyRef.current=jumpRef.current===2?13.8:12.4;
     jumpRef.current-=1;
     holdRef.current=true;
@@ -9543,10 +9565,10 @@ function RastaRunnerGame({onWin,user}){
   }
   function releaseJump(){holdRef.current=false;holdMsRef.current=0;setHolding(false);}
   function endGame(){
-    setRunning(false);runningRef.current=false;setGameOver(true);SFX.error();
+    setRunning(false);runningRef.current=false;setGameOver(true);SFX.hit();
   }
   function consumePower(){
-    poweredRef.current=false;setPowered(false);SFX.success();
+    poweredRef.current=false;setPowered(false);SFX.collect();
   }
 
   useEffect(()=>{runningRef.current=running;},[running]);
@@ -9597,7 +9619,7 @@ function RastaRunnerGame({onWin,user}){
             o.done=true;
             poweredRef.current=true;setPowered(true);
             setScore(s=>s+12);
-            SFX.coins();
+            SFX.collect();
             return;
           }
 
@@ -9628,7 +9650,9 @@ function RastaRunnerGame({onWin,user}){
       style={{position:'relative',height:218,borderRadius:20,overflow:'hidden',background:'linear-gradient(180deg,#DDEBFF,#FFF0C9 72%,#C7A25C 72%)',border:'2px solid rgba(62,35,18,.15)',touchAction:'none',cursor:running?'pointer':'default'}}
     >
       <div style={{position:'absolute',left:0,right:0,bottom:28,height:4,background:'#6E3518'}}/>
-      <div style={{position:'absolute',left:14,bottom:32+y,transition:'none',transform:powered?'scale(1.22)':'scale(1)',transformOrigin:'bottom center'}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={powered?52:44}/></div>
+      <div style={{position:'absolute',left:10,bottom:30+y,transition:'none',transform:powered?'scale(1.10)':'scale(1)',transformOrigin:'bottom center'}}>
+        <Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={powered?78:66}/>
+      </div>
       <div style={{position:'absolute',left:10,bottom:8,fontSize:'.76rem',fontWeight:900,color:T.g700}}>Distancia: {score}</div>
       <div style={{position:'absolute',right:10,bottom:8,fontSize:'.72rem',fontWeight:900,color:T.g700}}>{jumpTxt}</div>
       {obstacles.map((o,i)=>{
@@ -9636,8 +9660,8 @@ function RastaRunnerGame({onWin,user}){
         const bottom=o.type==='pit'?8:22;
         return <div key={o.id||i} style={{position:'absolute',left:`${o.x}%`,bottom,fontSize:o.type==='pit'?'2rem':o.type==='comb'?'1.55rem':'1.65rem',filter:'drop-shadow(0 3px 4px rgba(0,0,0,.22))'}}>{icon}</div>
       })}
-      {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.42)',padding:18}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:10}}>Salta tijeras, bloques y agujeros. El peine te da una protección.</div><Btn col='gold' onClick={resetAndStart}>▶ Empezar</Btn></div></div>}
-      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.56)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>Runner terminado en {score}</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Récord de ronda: {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn col='gold' onClick={()=>onWin(pts)}>Guardar récord</Btn><Btn col='ghost' onClick={resetAndStart}>🔁 Reintentar</Btn></div></div></div>}
+      {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.42)',padding:18}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:10}}>Tu avatar corre en grande. Salta tijeras, bloques y agujeros. El peine te da una protección.</div><button type='button' onPointerDown={(e)=>{e.stopPropagation();e.preventDefault();resetAndStart();}} onClick={(e)=>{e.stopPropagation();}} style={{border:'2px solid #7A5A18',borderRadius:16,padding:'12px 18px',fontWeight:950,background:'linear-gradient(180deg,#FFF1A8,#D4AF37)',color:'#241006',boxShadow:'0 8px 16px rgba(0,0,0,.22)',cursor:'pointer'}}>▶ Empezar</button></div></div>}
+      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.56)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>Runner terminado en {score}</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Récord de ronda: {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><button type='button' onPointerDown={(e)=>{e.stopPropagation();e.preventDefault();onWin(pts);}} onClick={(e)=>e.stopPropagation()} style={{border:'2px solid #7A5A18',borderRadius:16,padding:'10px 14px',fontWeight:950,background:'linear-gradient(180deg,#FFF1A8,#D4AF37)',color:'#241006',boxShadow:'0 8px 16px rgba(0,0,0,.22)',cursor:'pointer'}}>Guardar récord</button><button type='button' onPointerDown={(e)=>{e.stopPropagation();e.preventDefault();resetAndStart();}} onClick={(e)=>e.stopPropagation()} style={{border:'2px solid rgba(255,244,214,.45)',borderRadius:16,padding:'10px 14px',fontWeight:950,background:'rgba(255,244,214,.18)',color:'#fff',boxShadow:'0 8px 16px rgba(0,0,0,.22)',cursor:'pointer'}}>🔁 Reintentar</button></div></div></div>}
     </div>
     <div style={{marginTop:10,fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45}}>Toca y mantén para saltar más. El peine te hace grande y aguanta un golpe, pero no se acumula. Si chocas protegido, vuelves a normal.</div>
   </Card>;
@@ -9655,7 +9679,7 @@ function PlatformJumpGame({onWin,user}){
   const JUMP_HIT_MIN=91.6;
   const JUMP_HIT_MAX=94.4;
   function resetAndStart(){setLane(1);setItems([]);setScore(0);setSpeed(1);setGameOver(false);setRunning(true);}
-  function move(dir){setLane(l=>Math.max(0,Math.min(2,l+dir)));SFX.click();}
+  function move(dir){setLane(l=>Math.max(0,Math.min(2,l+dir)));SFX.tab();}
   useEffect(()=>{
     if(!running) return;
     const onKey=e=>{if(e.key==='ArrowLeft')move(-1);if(e.key==='ArrowRight')move(1);};
@@ -9671,7 +9695,7 @@ function PlatformJumpGame({onWin,user}){
           if(!it.done && it.y>JUMP_HIT_MIN && it.y<JUMP_HIT_MAX && it.lane===lane){
             it.done=true;
             if(it.bad){setRunning(false);setGameOver(true);SFX.error();}
-            else{setScore(s=>s+it.pts);SFX.coins();}
+            else{setScore(s=>s+it.pts);SFX.collect();}
           }
         });
         next=next.filter(it=>!it.done && it.y<112);
@@ -9763,9 +9787,9 @@ function DreadStitchGame({onWin,user}){
     if(!running)return;
     setItems(prev=>prev.filter(i=>i.id!==item.id));
     if(item.kind==='scissor'){setScissors(s=>s+1);SFX.error();return;}
-    if(item.kind==='bonus'){setBonusHits(b=>b+1);setHits(h=>h+5);setRoundPoints(p=>Math.min(100,p+5));SFX.coins();return;}
+    if(item.kind==='bonus'){setBonusHits(b=>b+1);setHits(h=>h+5);setRoundPoints(p=>Math.min(100,p+5));SFX.collect();return;}
     if(item.kind==='hook3'){setHits(h=>h+3);setRoundPoints(p=>Math.min(100,p+3));SFX.action();return;}
-    setHits(h=>h+1);setRoundPoints(p=>Math.min(100,p+1));SFX.click();
+    setHits(h=>h+1);setRoundPoints(p=>Math.min(100,p+1));SFX.tab();
   }
 
   const finalPts=won?Math.max(1,Math.min(10,Math.floor(lastAccuracy/18)+bonusHits)):0;
@@ -9840,7 +9864,7 @@ function GachaSlotsGame({user,onWin,settings,onBuyPulls}){
       const next=Math.max(0,pulls-10);
       setPulls(next);setGachaPullsToday(uid,next);
       setResult({pts:0,key:null,label:'Has comprado 10 tiradas extra por 5 puntos'});
-      SFX.coins();
+      SFX.collect();
     }
   }
   return <Card style={{background:'linear-gradient(180deg,#271006,#5C3317 55%,#D4AF37)',border:`2px solid ${T.gold}`,color:T.white}}>
@@ -10165,7 +10189,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
       if((state.rc||0)<cost){showToast?.(`Necesitas ${cost} RC para abrir ${def.name}`);SFX.error();return;}
       const now=Date.now(),endAt=now+tycoonBuildSeconds(state,id,"unlock")*1000;
       mutate(prev=>{prev.rc-=cost;prev.buildQueue.push({id:`${id}_${now}`,roomId:id,type:"unlock",targetLevel:1,cost,label:`Abrir ${def.name}`,startedAt:now,endAt});prev.log=pushLog(prev,`Obra iniciada: abrir ${def.name}.`);return prev;});
-      setInspect({icon:def.icon,title:def.name,text:`Zona en obras. Tiempo: ${tycoonFormatTime(endAt-now)}.`});SFX.coins();return;
+      setInspect({icon:def.icon,title:def.name,text:`Zona en obras. Tiempo: ${tycoonFormatTime(endAt-now)}.`});SFX.collect();return;
     }
     const nextLevel=(room.level||1)+1,cost=tycoonUpgradeCost(state,id);
     if((state.rc||0)<cost){showToast?.(`Necesitas ${cost} RC para mejorar ${def.name}`);SFX.error();return;}
@@ -10194,7 +10218,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
       prev.log=pushLog(prev,`Atendiste una tanda de ${served} cliente${served===1?"":"s"} y ganaste ${gain} RC.`);
       return prev;
     });
-    SFX.coins();
+    SFX.collect();
   }
   function restock(){
     const cost=Math.max(45,Math.round(135-(economy.storage*9)));
@@ -10430,7 +10454,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     const remaining=Math.max(0,gameDailyCap-getDailyGamePointsTotal(user.id));
     const reward=Math.min(maxReward,rawScore,remaining);
     saveLocalGameScore(gameId,user,rawScore);
-    try{ await dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,usuario_avatar_config:user.avatarConfig||user.avatar_config||null,game_id:gameId,score:rawScore,week:weekKey()}); }catch{}
+    try{ await dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,usuario_avatar_config:normalizeAvatarV3(user.avatarConfig||user.avatar_config,user.id||user.avatar||0),game_id:gameId,score:rawScore,week:weekKey()}); }catch{}
     setBoardGame(gameId);
     setBoardTick(t=>t+1);
     if(alreadyPlayed){
@@ -10989,7 +11013,7 @@ function Chat({user,showToast}){
   async function send(){
     if(!text.trim())return;
     await dbPost("mensajes",{contenido:text,usuario_id:user.id,autor_nombre:user.nombre,autor_avatar:user.avatar,autor_rol:user.rol});
-    setText("");SFX.click();load();
+    setText("");SFX.tab();load();
   }
   return(
     <div style={{animation:"fadeSlide 0.4s ease",display:"flex",flexDirection:"column",height:"calc(100vh - 200px)"}}>
@@ -11205,7 +11229,7 @@ function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPo
       await supabase.from("user_cosmetics").upsert({usuario_id:String(user.id),item_key:item.item_key,created_at:new Date().toISOString()},{onConflict:"usuario_id,item_key"});
     }catch{}
     const keys=[...new Set([...owned,item.item_key])];
-    saveLocalOwnedCosmetics(user,keys);setOwned(keys);setUser?.(u=>({...u,puntos:nuevos}));showPoints?.(0);SFX.coins();showToast?.(`${item.nombre} desbloqueado`);
+    saveLocalOwnedCosmetics(user,keys);setOwned(keys);setUser?.(u=>({...u,puntos:nuevos}));showPoints?.(0);SFX.collect();showToast?.(`${item.nombre} desbloqueado`);
     apply(item,true);
   }
   async function apply(item,skipToast=false){
@@ -11431,10 +11455,10 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
   const [tab,setTab]=useState("resumen");
   const [ownedCosmetics,setOwnedCosmetics]=useState(localOwnedCosmetics(user));
   const [privacy,setPrivacy]=useState(normalizePrivacy(user));
-  const [form,setForm]=useState({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});
-  useEffect(()=>{setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)});setOwnedCosmetics(localOwnedCosmetics(user));setPrivacy(normalizePrivacy(user));},[user.id,user.nombre,user.avatar,user.avatarConfig,user.perfil_publico,user.modo_incognito]);
+  const [form,setForm]=useState({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarV3(user.avatarConfig||user.avatar_config,user.id||user.avatar||0),avatar_config:normalizeAvatarV3(user.avatarConfig||user.avatar_config,user.id||user.avatar||0)});
+  useEffect(()=>{const savedCfg=normalizeAvatarV3(user.avatarConfig||user.avatar_config,user.id||user.avatar||0);setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:savedCfg,avatar_config:savedCfg});setOwnedCosmetics(localOwnedCosmetics(user));setPrivacy(normalizePrivacy(user));},[user.id,user.nombre,user.avatar,user.avatarConfig,user.avatar_config,user.perfil_publico,user.modo_incognito]);
   async function save(){
-    const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
+    const cfg=normalizeAvatarV3(form.avatarConfig||form.avatar_config,user.id||form.avatar||0);
     await dbPatch("usuarios",`?id=eq.${user.id}`,{nombre:form.nombre,avatar:form.avatar});
     await saveAvatarConfigForUser({...user,nombre:form.nombre,avatar:form.avatar},cfg);
     setUser(u=>({...u,nombre:form.nombre,avatar:form.avatar,avatarConfig:cfg,avatar_config:cfg}));
@@ -11449,7 +11473,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
     SFX.success();showToast(next.modo_incognito?"Modo incógnito activado":"Privacidad actualizada");
   }
   const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Oro":user.puntos>=200?"Plata":"Bronce";
-  const cfg=normalizeAvatarConfig(form.avatarConfig,form.avatar);
+  const cfg=normalizeAvatarV3(form.avatarConfig||form.avatar_config,user.id||form.avatar||0);
   const tabs=[
     {id:"resumen",icon:"👤",label:"Resumen"},
     {id:"editar",icon:"🎨",label:"Editor"},
@@ -11513,11 +11537,11 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
           ownedKeys={ownedCosmetics}
           user={user}
           onSave={save}
-          onReset={()=>setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:normalizeAvatarConfig(user.avatarConfig||user.avatar_config,user.avatar)})}
+          onReset={()=>{const resetCfg=normalizeAvatarV3(user.avatarConfig||user.avatar_config,user.id||user.avatar||0);setForm({nombre:user.nombre,avatar:user.avatar||0,avatarConfig:resetCfg,avatar_config:resetCfg})}}
         />
       </Card>}
 
-      {tab==="camino"&&<AvatarRewardPath user={user} setUser={setUser} currentConfig={cfg} onApply={(newCfg)=>{setForm(f=>({...f,avatarConfig:newCfg}));setOwnedCosmetics(localOwnedCosmetics(user));}} showToast={showToast} showPoints={showPoints}/>}
+      {tab==="camino"&&<AvatarRewardPath user={user} setUser={setUser} currentConfig={cfg} onApply={(newCfg)=>{const clean=normalizeAvatarV3(newCfg,user.id||user.avatar||0);setForm(f=>({...f,avatarConfig:clean,avatar_config:clean}));setOwnedCosmetics(localOwnedCosmetics(user));}} showToast={showToast} showPoints={showPoints}/>}
 
       {tab==="logros"&&<ObjetivosTrofeos user={user} setUser={setUser} showToast={showToast} showPoints={showPoints}/>}
 
@@ -15460,7 +15484,7 @@ function HelperMascot({page,settings=null}){
       setContextTip(rastaElementHelp(explainTarget,page));
       setRareTip(null);
       setOpen(true);
-      SFX.click();
+      SFX.tab();
     };
     document.addEventListener("click",onHelpClick,true);
     document.addEventListener("pointerup",onHelpClick,true);
@@ -15522,7 +15546,7 @@ function HelperMascot({page,settings=null}){
     const finalPos=d.last||pos;
     try{localStorage.setItem("rasta_helper_pos_v3",JSON.stringify(finalPos));}catch{}
     if(!d.moved){
-      SFX.click();
+      SFX.tab();
       setOpen(v=>!v);
     }
   }
@@ -15887,7 +15911,7 @@ function CartPanel({show,onClose,user,setUser,showToast}){
       await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Carrito confirmado",mensaje:`${user.nombre||user.email||"Cliente"} confirmó un carrito de ${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"} por ${totalPts} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:String(user.id),importante:false});
     }catch{}
     setItems([]);
-    SFX.coins();
+    SFX.collect();
     showToast?.(avatarItems.length?`Carrito confirmado. Personalización desbloqueada.`:"Carrito confirmado");
     onClose?.();
   }
