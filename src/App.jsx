@@ -62,16 +62,13 @@ function notificationIcon(tipo="general"){
 }
 
 const T = {
-  // Paleta app 2026 cálida: menos blanco puro, más crema/oliva suave y contraste legible.
-  g900:"#120B06",g800:"#1E150C",g700:"#312113",g600:"#4A311A",
-  g500:"#684524",g400:"#866135",g300:"#A98A55",g200:"#C6AE77",
-  g150:"#D8C48E",g100:"#E3D0A2",g50:"#F1E4BF",
-  pink:"#8F2E24",gold:"#B99A45",orange:"#A8662B",red:"#672018",blue:"#243E50",
-  ink:"#100906",
-  panel:"linear-gradient(180deg,#F0E2BA 0%,#DDC894 100%)",
-  panel2:"linear-gradient(180deg,#E7D39F 0%,#CCB47E 100%)",
-  panelSoft:"linear-gradient(180deg,#F4E8C6 0%,#E4D19E 100%)",
-  text:"#1A0F08",textSub:"#55391F",white:"#F1E4BF",
+  // Paleta mate pirata/rasta: menos brillo, más lectura y contraste cálido.
+  g900:"#130B06",g800:"#21140C",g700:"#332013",g600:"#4B301B",
+  g500:"#6B4524",g400:"#8A5A2E",g300:"#A87945",g200:"#C6A06A",
+  g150:"#D8BE87",g100:"#C7A66B",g50:"#E8D3A2",
+  pink:"#8F2E24",gold:"#B99A45",orange:"#A8662B",red:"#672018",blue:"#263F4D",
+  ink:"#120806",panel:"#E6CF9B",panel2:"#D8BE87",
+  text:"#1A0F08",textSub:"#5B3A20",white:"#F0E0B8",
   gradAdmin:"linear-gradient(135deg,#130B06,#21140C 62%,#3A2414)",
   gradStaff:"linear-gradient(135deg,#21140C,#4B301B 62%,#6B4524)",
   gradClient:"linear-gradient(135deg,#26331D,#4F602D 58%,#7C6A35)",
@@ -106,7 +103,7 @@ const BRAND = {
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
 const APP_VERSION="RASTACUTS_2_4_1_EDITOR_FASE115_STYLE";
-const APP_VERSION_SHORT="2.9.0";
+const APP_VERSION_SHORT="2.9.1";
 const APP_BUILD_DATE="2026-06-06";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -689,18 +686,6 @@ const CSS=`
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#8A5A2E;border-radius:4px}
 body{margin:0;background-color:#160B07;background-image:repeating-linear-gradient(0deg,rgba(232,211,162,.035) 0 1px,transparent 1px 6px),linear-gradient(160deg,#120806 0%,#21140C 48%,#2E1C10 100%)}
 input,select,button,textarea{font-family:'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
- 
-.studio-panel{
-  background:linear-gradient(180deg,#EFE0B5 0%,#D9C18B 100%)!important;
-  box-shadow:0 14px 32px rgba(12,35,20,.18), inset 0 1px 0 rgba(255,244,214,.32)!important;
-}
-.soft-surface{
-  background:linear-gradient(180deg,#EBD9A9 0%,#D4BC85 100%)!important;
-}
-input,select,textarea{
-  background:#F1E4BF!important;
-}
-button.bp:hover{filter:saturate(1.06) brightness(1.03)}
 @keyframes popIn{from{opacity:0;transform:scale(0.82)}to{opacity:1;transform:scale(1)}}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes fadeSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -774,7 +759,7 @@ button.bp:hover{filter:saturate(1.06) brightness(1.03)}
 .nav-tab-pro{position:relative;transition:transform .20s cubic-bezier(.34,1.56,.64,1), background .2s ease, filter .2s ease}
 .nav-tab-pro:hover,.nav-tab-pro:focus-visible{transform:translateY(-6px);filter:saturate(1.22)}
 .nav-tab-pro:hover .nav-icon-pro{animation:navBouncePro .55s ease}
-.nav-tab-pro:after{content:"";position:absolute;left:50%;bottom:-1px;width:4px;height:4px;border-radius:50%;background:#E6D09B;opacity:0;transform:translateX(-50%);transition:opacity .2s ease, width .2s ease}
+.nav-tab-pro:after{content:"";position:absolute;left:50%;bottom:-1px;width:4px;height:4px;border-radius:50%;background:#F5E6C8;opacity:0;transform:translateX(-50%);transition:opacity .2s ease, width .2s ease}
 .nav-tab-pro:hover:after{opacity:.85;width:18px}
 .header-action-pro{transition:transform .2s ease, background .2s ease, box-shadow .2s ease}
 .header-action-pro:hover{transform:translateY(-2px) scale(1.03);background:rgba(255,255,255,.26)!important;box-shadow:0 8px 18px rgba(0,0,0,.18)}
@@ -1427,7 +1412,7 @@ body[data-rc-theme="day"]{
 .app-shell[data-rc-theme] .page-content-pro [style*="background:#fff"],
 .app-shell[data-rc-theme] .page-content-pro [style*="background:linear-gradient(180deg,#FFF"],
 .app-shell[data-rc-theme] .page-content-pro [style*="background:linear-gradient(180deg,#E6CF9B"],
-.app-shell[data-rc-theme] .page-content-pro [style*="background:linear-gradient(180deg,#E6D09B"],
+.app-shell[data-rc-theme] .page-content-pro [style*="background:linear-gradient(180deg,#F6E5BE"],
 .app-shell[data-rc-theme] .page-content-pro [style*="background:rgba(255,255,255"],
 .app-shell[data-rc-theme] .page-content-pro button:not(.bp):not(.nav-tab-pro):not(.header-action-pro),
 .rc-standalone-shell[data-rc-theme] button:not(.bp):not(.nav-tab-pro):not(.header-action-pro){
@@ -1451,7 +1436,7 @@ body[data-rc-theme="day"]{
 .app-shell[data-rc-theme] .page-content-pro [style*="background:#fff"] *,
 .app-shell[data-rc-theme] .page-content-pro [style*="background:linear-gradient(180deg,#FFF"] *,
 .app-shell[data-rc-theme] .page-content-pro [style*="background:linear-gradient(180deg,#E6CF9B"] *,
-.app-shell[data-rc-theme] .page-content-pro [style*="background:linear-gradient(180deg,#E6D09B"] *{
+.app-shell[data-rc-theme] .page-content-pro [style*="background:linear-gradient(180deg,#F6E5BE"] *{
   color:#24324D!important;
 }
 .app-shell[data-rc-theme] .page-content-pro .icon3d,
@@ -1673,7 +1658,7 @@ body[data-rc-theme="day"]{
 }
 .app-shell[data-rc-theme] .nav-tab-pro[data-active="true"] .nav-icon-pro{
   background:linear-gradient(135deg,#43D6FF,#9C7DFF 60%,#7EF29A)!important;
-  color:#F4E8C6!important;
+  color:#FFFFFF!important;
 }
 .app-shell[data-rc-theme] .nav-tab-pro span{font-weight:950!important;opacity:1!important}
 .app-shell[data-rc-theme="day"] .nav-tab-pro span{color:#4D5F7D!important}
@@ -1700,7 +1685,7 @@ body[data-rc-theme="day"]{
   --rc-panel-fun:linear-gradient(145deg,rgba(12,26,43,.94),rgba(20,39,62,.90));
   --rc-frost:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035));
   --rc-text:#F7FBFF;
-  --rc-text-strong:#F4E8C6;
+  --rc-text-strong:#FFFFFF;
   --rc-muted:#C4D4E5;
   --rc-subtle:#91A8BE;
   --rc-cream:#F7FBFF;
@@ -1726,7 +1711,7 @@ body[data-rc-theme="day"]{
   --rc-text-strong:#071525;
   --rc-muted:#425B70;
   --rc-subtle:#60778B;
-  --rc-cream:#F4E8C6;
+  --rc-cream:#FFFFFF;
   --rc-panel-lite:rgba(238,249,255,.94);
   --rc-border:rgba(40,172,220,.22);
   --rc-border-strong:rgba(34,181,232,.48);
@@ -1867,7 +1852,7 @@ body[data-rc-theme="day"]{
 .app-shell[data-rc-theme="day"] input,
 .app-shell[data-rc-theme="day"] select,
 .app-shell[data-rc-theme="day"] textarea{
-  background:#F4E8C6!important;
+  background:#FFFFFF!important;
   color:#0F2033!important;
 }
 .app-shell[data-rc-theme="night"] input::placeholder,
@@ -1954,11 +1939,11 @@ body[data-rc-theme="night"]{
   --rc-card-soft:rgba(42,25,14,.86);
   --rc-panel-fun:linear-gradient(145deg,rgba(18,10,6,.92),rgba(36,20,11,.86));
   --rc-frost:linear-gradient(145deg,rgba(255,244,214,.105),rgba(255,255,255,.028));
-  --rc-text:#E6D09B;
-  --rc-text-strong:#F1E4BF;
+  --rc-text:#F5E6C8;
+  --rc-text-strong:#FFF4D6;
   --rc-muted:#D7C49A;
   --rc-subtle:#A79068;
-  --rc-cream:#F1E4BF;
+  --rc-cream:#FFF4D6;
   --rc-panel-lite:rgba(44,26,14,.92);
   --rc-border:rgba(216,190,135,.22);
   --rc-border-strong:rgba(185,154,69,.48);
@@ -1966,7 +1951,7 @@ body[data-rc-theme="night"]{
   --rc-primary-2:#B99A45;
   --rc-accent2:#4F602D;
   --rc-accent3:#A72822;
-  --rc-accent-warm:#D8BC7F;
+  --rc-accent-warm:#F0D69C;
   --rc-danger:#E85B76;
   --rc-shadow:0 28px 84px rgba(0,0,0,.56);
   --rc-inner:inset 0 1px 0 rgba(255,244,214,.12);
@@ -2017,20 +2002,20 @@ body[data-rc-theme="night"]{
     linear-gradient(145deg,rgba(255,244,214,.075),rgba(255,244,214,.025)),
     rgba(19,11,6,.86)!important;
   border:1px solid rgba(216,190,135,.22)!important;
-  color:#E6D09B!important;
+  color:#F5E6C8!important;
   box-shadow:0 22px 62px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,244,214,.09)!important;
 }
 .app-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b),
 .app-shell[data-rc-theme="night"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b),
 .app-shell[data-rc-theme="night"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b),
 .rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b){
-  color:#F1E4BF!important;
+  color:#FFF4D6!important;
 }
 .app-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small),
 .app-shell[data-rc-theme="night"] .landing-feature-pro :where(p,div,span,label,small),
 .app-shell[data-rc-theme="night"] .landing-nav-card :where(p,div,span,label,small),
 .rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small){
-  color:#E6D09B!important;
+  color:#F5E6C8!important;
 }
 
 /* Botones en modo noche: oro/crema con profundidad, no cian. */
@@ -2042,7 +2027,7 @@ body[data-rc-theme="night"]{
     linear-gradient(135deg,rgba(212,175,55,.22),rgba(79,96,45,.12)),
     rgba(28,16,9,.88)!important;
   border:1px solid rgba(216,190,135,.34)!important;
-  color:#F1E4BF!important;
+  color:#FFF4D6!important;
   box-shadow:0 14px 34px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,244,214,.12)!important;
 }
 .app-shell[data-rc-theme="night"] .bp:hover,
@@ -2059,10 +2044,10 @@ body[data-rc-theme="night"]{
 .app-shell[data-rc-theme="night"] .theme-toggle-pro{
   background:linear-gradient(135deg,rgba(255,244,214,.14),rgba(212,175,55,.12))!important;
   border:1px solid rgba(216,190,135,.26)!important;
-  color:#F1E4BF!important;
+  color:#FFF4D6!important;
 }
 .app-shell[data-rc-theme="night"] .nav-tab-pro{
-  color:#E6D09B!important;
+  color:#F5E6C8!important;
 }
 .app-shell[data-rc-theme="night"] .nav-tab-pro span{
   color:#D7C49A!important;
@@ -2071,7 +2056,7 @@ body[data-rc-theme="night"]{
   background:linear-gradient(135deg,rgba(212,175,55,.16),rgba(255,244,214,.06))!important;
 }
 .app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] span{
-  color:#F1E4BF!important;
+  color:#FFF4D6!important;
 }
 .app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] .nav-icon-pro{
   background:linear-gradient(135deg,#6B4D1F,#B99A45 62%,#D8BE87)!important;
@@ -2086,7 +2071,7 @@ body[data-rc-theme="night"]{
 .rc-standalone-shell[data-rc-theme="night"] select,
 .rc-standalone-shell[data-rc-theme="night"] textarea{
   background:rgba(8,6,4,.70)!important;
-  color:#F1E4BF!important;
+  color:#FFF4D6!important;
   border:1px solid rgba(216,190,135,.26)!important;
 }
 .app-shell[data-rc-theme="night"] input::placeholder,
@@ -2103,14 +2088,14 @@ body[data-rc-theme="night"]{
     radial-gradient(circle at 20% 8%,rgba(212,175,55,.16),transparent 30%),
     linear-gradient(145deg,rgba(19,11,6,.92),rgba(36,20,11,.86))!important;
   border:1px solid rgba(216,190,135,.26)!important;
-  color:#F1E4BF!important;
+  color:#FFF4D6!important;
   box-shadow:0 26px 78px rgba(0,0,0,.52)!important;
 }
 .rc-standalone-shell[data-rc-theme="night"] .tycoon-map-card *,
 .rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board *,
 .app-shell[data-rc-theme="night"] .tycoon-map-card *,
 .app-shell[data-rc-theme="night"] .tycoon-map-board *{
-  color:#F1E4BF!important;
+  color:#FFF4D6!important;
 }
 
 /* Modo día queda limpio, pero lo acercamos menos a azul chillón y más crema clara del login. */
@@ -2161,7 +2146,7 @@ body[data-rc-theme="day"]{
   --rc-accent-warm:#F0C66E;
   --rc-danger:#8F2E24;
 
-  --rc-cream:#F1E4BF;
+  --rc-cream:#FFF4D6;
   --rc-panel-lite:#E8D3A2;
   --rc-shadow:0 26px 78px rgba(0,0,0,.48);
   --rc-inner:inset 0 1px 0 rgba(255,255,255,.52);
@@ -2217,7 +2202,7 @@ body[data-rc-theme="night"]{
 .app-shell[data-rc-theme="night"] .bottom-nav-pro *,
 .app-shell[data-rc-theme="night"] .header-action-pro,
 .app-shell[data-rc-theme="night"] .theme-toggle-pro{
-  color:#F1E4BF!important;
+  color:#FFF4D6!important;
 }
 .app-shell[data-rc-theme="night"] .header-action-pro,
 .app-shell[data-rc-theme="night"] .theme-toggle-pro{
@@ -2367,7 +2352,7 @@ body[data-rc-theme="day"]{
 .app-shell[data-rc-theme] .app-header-pro [style*="borderRadius:999"],
 .app-shell[data-rc-theme] .bottom-nav-pro [style*="borderRadius:999"]{
   background:rgba(255,255,255,.16)!important;
-  color:#F1E4BF!important;
+  color:#FFF4D6!important;
 }
 .app-shell[data-rc-theme="day"] .app-header-pro [style*="borderRadius:999"],
 .app-shell[data-rc-theme="day"] .bottom-nav-pro [style*="borderRadius:999"]{
@@ -2389,7 +2374,7 @@ body[data-rc-theme="day"]{
   --rc-frost:linear-gradient(145deg,rgba(255,255,255,.13),rgba(120,200,120,.06));
 
   --rc-text:#F8FFF5;
-  --rc-text-strong:#F4E8C6;
+  --rc-text-strong:#FFFFFF;
   --rc-muted:#D8EBDD;
   --rc-subtle:#B8D0BD;
 
@@ -2453,7 +2438,7 @@ body[data-rc-theme="night"]{
 .rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"],
 .app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"],
 .rc-standalone-shell[data-rc-theme="night"] [class*="badge"]{
-  background:linear-gradient(180deg,#F4E8C6,#FFF2D6)!important;
+  background:linear-gradient(180deg,#FFFFFF,#FFF2D6)!important;
   color:#172112!important;
   border:1px solid rgba(255,216,102,.50)!important;
   text-shadow:none!important;
@@ -2608,7 +2593,7 @@ body[data-rc-theme="day"]{
   --travian-bg2:#1A2417;
   --travian-forest:#263820;
   --travian-panel:#E9D8B4;
-  --travian-panel2:#E9D5A3;
+  --travian-panel2:#F6E8C8;
   --travian-panel3:#CDB78C;
   --travian-ink:#3A2A18;
   --travian-ink2:#5B4429;
@@ -2626,7 +2611,7 @@ body[data-rc-theme="day"]{
   --rc-card:rgba(233,216,180,.96);
   --rc-card-strong:rgba(246,232,200,.98);
   --rc-card-soft:rgba(205,183,140,.92);
-  --rc-panel-fun:linear-gradient(180deg,#E9D5A3 0%,#E9D8B4 58%,#D4BD8F 100%);
+  --rc-panel-fun:linear-gradient(180deg,#F6E8C8 0%,#E9D8B4 58%,#D4BD8F 100%);
   --rc-frost:linear-gradient(180deg,rgba(246,232,200,.98),rgba(205,183,140,.92));
   --rc-text:#3A2A18;
   --rc-text-strong:#241709;
@@ -2675,7 +2660,7 @@ body[data-rc-theme="night"]{
 .rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro{
   background:
     radial-gradient(circle at 20% 0%,rgba(255,255,255,.36),transparent 34%),
-    linear-gradient(180deg,#E9D5A3 0%,#E9D8B4 58%,#D4BD8F 100%)!important;
+    linear-gradient(180deg,#F6E8C8 0%,#E9D8B4 58%,#D4BD8F 100%)!important;
   color:#3A2A18!important;
   border:2px solid #8E7957!important;
   border-radius:14px!important;
@@ -2701,11 +2686,11 @@ body[data-rc-theme="night"]{
     linear-gradient(180deg,rgba(246,232,200,.10),rgba(0,0,0,.08)),
     linear-gradient(180deg,#4A3522 0%,#241709 100%)!important;
   border:2px solid #8E7957!important;
-  box-shadow:0 18px 42px rgba(0,0,0,.48),inset 0 1px 0 rgba(216,190,135,.18)!important;
+  box-shadow:0 18px 42px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,244,214,.18)!important;
 }
 .app-shell[data-rc-theme="night"] .app-header-pro *,
 .app-shell[data-rc-theme="night"] .bottom-nav-pro *{
-  color:#E9D5A3!important;
+  color:#F6E8C8!important;
 }
 .app-shell[data-rc-theme="night"] .nav-tab-pro{
   background:rgba(246,232,200,.08)!important;
@@ -2782,7 +2767,7 @@ body[data-rc-theme="night"]{
   background:
     radial-gradient(circle at 50% 25%,rgba(126,158,78,.24),transparent 42%),
     linear-gradient(180deg,#182416 0%,#10160F 100%)!important;
-  color:#E9D5A3!important;
+  color:#F6E8C8!important;
   border:2px solid #8E7957!important;
   border-radius:14px!important;
   box-shadow:0 20px 52px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,244,214,.14)!important;
@@ -2791,11 +2776,11 @@ body[data-rc-theme="night"]{
 .rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board *,
 .app-shell[data-rc-theme="night"] .tycoon-map-card *,
 .app-shell[data-rc-theme="night"] .tycoon-map-board *{
-  color:#E9D5A3!important;
+  color:#F6E8C8!important;
 }
 .rc-standalone-shell[data-rc-theme="night"] .tycoon-map-board button,
 .app-shell[data-rc-theme="night"] .tycoon-map-board button{
-  background:linear-gradient(180deg,#E9D5A3,#D4BD8F)!important;
+  background:linear-gradient(180deg,#F6E8C8,#D4BD8F)!important;
   color:#3A2A18!important;
   border:2px solid #8E7957!important;
 }
@@ -2883,7 +2868,7 @@ body[data-rc-theme="day"]{
 }
 .login-cyber-shell .studio-panel *{color:#3A2A18!important}
 .login-cyber-shell .landing-feature-pro{
-  background:linear-gradient(180deg,#E9D5A3,#D4BD8F)!important;
+  background:linear-gradient(180deg,#F6E8C8,#D4BD8F)!important;
   color:#3A2A18!important;
   border:2px solid #8E7957!important;
 }
@@ -3040,7 +3025,7 @@ button:disabled{
   justify-content:center;
   padding:10px;
   margin-bottom:12px;
-  background:linear-gradient(180deg,#E9D5A3,#D4BD8F);
+  background:linear-gradient(180deg,#F6E8C8,#D4BD8F);
   border:2px solid #8E7957;
   border-radius:12px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.55);
@@ -4233,12 +4218,210 @@ html,body,#root{
   .avatar-clean-preview>div:first-child{width:144px!important;height:144px!important}
 }
 
+
+
+/* ===== FASE106: modo noche real + día sin blanco nuclear ===== */
+/* Forzamos una paleta mucho más oscura y moderna. Esto va al final para pisar fases anteriores. */
+body[data-rc-theme="night"]{
+  color-scheme:dark;
+  background:
+    radial-gradient(circle at 14% 0%,rgba(70,125,82,.20),transparent 28%),
+    radial-gradient(circle at 84% 4%,rgba(173,135,61,.10),transparent 26%),
+    radial-gradient(circle at 50% 112%,rgba(107,64,36,.12),transparent 38%),
+    linear-gradient(135deg,#040705 0%,#0A1510 48%,#111F18 100%)!important;
+}
+.app-shell[data-rc-theme="night"],.rc-standalone-shell[data-rc-theme="night"]{
+  --rc-bg-a:#040705;
+  --rc-bg-b:#0A1510;
+  --rc-bg-c:#111F18;
+  --rc-card:rgba(25,34,29,.90);
+  --rc-card-strong:rgba(31,43,36,.96);
+  --rc-card-soft:rgba(37,50,42,.88);
+  --rc-panel-fun:linear-gradient(145deg,rgba(34,45,38,.96),rgba(24,32,27,.94));
+  --rc-frost:linear-gradient(145deg,rgba(87,120,92,.20),rgba(255,244,214,.035));
+  --rc-text:#F0DFB5;
+  --rc-text-strong:#FFF1C7;
+  --rc-muted:#D1C39C;
+  --rc-subtle:#B2A57F;
+  --rc-border:rgba(119,151,112,.30);
+  --rc-border-strong:rgba(195,159,84,.45);
+  --rc-primary:#78A85F;
+  --rc-primary-2:#A8863E;
+  --rc-accent2:#467D52;
+  --rc-accent3:#B56B48;
+  --rc-accent-warm:#C39F54;
+  --rc-cream:#F0DFB5;
+  --rc-panel-lite:#243329;
+  --rc-shadow:0 28px 84px rgba(0,0,0,.58);
+  --rc-inner:inset 0 1px 0 rgba(255,244,214,.08);
+  background:
+    radial-gradient(circle at 12% 2%,rgba(70,125,82,.17),transparent 30%),
+    radial-gradient(circle at 88% 0%,rgba(195,159,84,.10),transparent 27%),
+    radial-gradient(circle at 50% 112%,rgba(181,107,72,.10),transparent 42%),
+    linear-gradient(135deg,#040705,#0A1510 50%,#111F18)!important;
+  color:#F0DFB5!important;
+}
+
+.app-shell[data-rc-theme="night"] .studio-panel,
+.app-shell[data-rc-theme="night"] .landing-feature-pro,
+.app-shell[data-rc-theme="night"] .landing-nav-card,
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .news-short,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="night"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro,
+.rc-standalone-shell[data-rc-theme="night"] .news-short{
+  background:
+    linear-gradient(145deg,rgba(48,61,50,.96),rgba(25,34,29,.94))!important;
+  color:#F0DFB5!important;
+  border:1.5px solid rgba(119,151,112,.28)!important;
+  box-shadow:0 20px 58px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,244,214,.07)!important;
+  backdrop-filter:blur(18px) saturate(1.12)!important;
+}
+
+.app-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(h1,h2,h3,h4,h5,strong,b),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(h1,h2,h3,h4,h5,strong,b),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(h1,h2,h3,h4,h5,strong,b),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(h1,h2,h3,h4,h5,strong,b){
+  color:#FFF1C7!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.30)!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-feature-pro :where(p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .landing-nav-card :where(p,div,span,label,small),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(p,div,span,label,small),
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel :where(p,div,span,label,small){
+  color:#F0DFB5!important;
+}
+
+/* Evita tarjetas interiores color pergamino en noche. */
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="#FFF"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="#F6"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="#F5"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="#F4"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="#E6"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="255,244,214"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="246,229,194"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="255,252,242"]{
+  background:linear-gradient(145deg,rgba(48,61,50,.94),rgba(25,34,29,.92))!important;
+  color:#F0DFB5!important;
+  border-color:rgba(119,151,112,.30)!important;
+}
+
+/* Cabecera y lateral noche más oscuros. */
+.app-shell[data-rc-theme="night"] .app-header-pro,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro{
+  background:
+    linear-gradient(135deg,rgba(255,244,214,.07),rgba(255,244,214,.02)),
+    rgba(12,23,17,.90)!important;
+  border-color:rgba(119,151,112,.30)!important;
+  box-shadow:0 22px 60px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,244,214,.08)!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"]{
+  background:linear-gradient(135deg,#78A85F,#A8863E)!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] span,
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"]{
+  color:#101A12!important;
+}
+
+.app-shell[data-rc-theme="night"] input,
+.app-shell[data-rc-theme="night"] select,
+.app-shell[data-rc-theme="night"] textarea,
+.rc-standalone-shell[data-rc-theme="night"] input,
+.rc-standalone-shell[data-rc-theme="night"] select,
+.rc-standalone-shell[data-rc-theme="night"] textarea{
+  background:rgba(9,18,13,.88)!important;
+  color:#FFF1C7!important;
+  border:1px solid rgba(119,151,112,.34)!important;
+}
+
+/* Botones noche con contraste, pero sin llenar todo de amarillo. */
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:linear-gradient(135deg,#345C3C,#78A85F 58%,#A8863E)!important;
+  color:#FFF1C7!important;
+  border:1px solid rgba(240,223,181,.24)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.38)!important;
+}
+
+/* Día sin blanco nuclear. */
+body[data-rc-theme="day"]{
+  color-scheme:light;
+  background:
+    radial-gradient(circle at 14% -3%,rgba(173,135,61,.22),transparent 30%),
+    radial-gradient(circle at 84% 0%,rgba(70,125,82,.12),transparent 28%),
+    radial-gradient(circle at 50% 108%,rgba(181,107,72,.10),transparent 36%),
+    linear-gradient(135deg,#CFC7AF 0%,#D8D0B8 48%,#C5CDBA 100%)!important;
+}
+.app-shell[data-rc-theme="day"],.rc-standalone-shell[data-rc-theme="day"]{
+  --rc-bg-a:#CFC7AF;
+  --rc-bg-b:#D8D0B8;
+  --rc-bg-c:#C5CDBA;
+  --rc-card:rgba(214,205,179,.88);
+  --rc-card-strong:rgba(226,217,190,.94);
+  --rc-card-soft:rgba(198,204,182,.82);
+  --rc-panel-fun:linear-gradient(145deg,rgba(226,217,190,.92),rgba(198,204,182,.84));
+  --rc-frost:linear-gradient(145deg,rgba(226,217,190,.78),rgba(188,196,174,.54));
+  --rc-text:#1E150C;
+  --rc-text-strong:#120A03;
+  --rc-muted:#513A24;
+  --rc-subtle:#665A45;
+  --rc-border:rgba(104,69,36,.22);
+  --rc-border-strong:rgba(168,134,62,.44);
+  --rc-primary:#5F864D;
+  --rc-primary-2:#A8863E;
+  --rc-accent2:#467D52;
+  --rc-accent3:#9B5D41;
+  --rc-shadow:0 24px 64px rgba(65,56,35,.18);
+  background:
+    radial-gradient(circle at 12% 2%,rgba(173,135,61,.18),transparent 30%),
+    radial-gradient(circle at 88% 0%,rgba(70,125,82,.10),transparent 28%),
+    linear-gradient(135deg,#CFC7AF,#D8D0B8 50%,#C5CDBA)!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel,
+.app-shell[data-rc-theme="day"] .landing-feature-pro,
+.app-shell[data-rc-theme="day"] .landing-nav-card,
+.app-shell[data-rc-theme="day"] .modal-panel-pro,
+.app-shell[data-rc-theme="day"] .news-short,
+.rc-standalone-shell[data-rc-theme="day"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="day"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="day"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="day"] .modal-panel-pro{
+  background:linear-gradient(145deg,rgba(225,216,188,.90),rgba(198,204,182,.78))!important;
+  color:#1E150C!important;
+  border:1px solid rgba(104,69,36,.24)!important;
+  box-shadow:0 16px 42px rgba(65,56,35,.14),inset 0 1px 0 rgba(255,244,214,.36)!important;
+}
+.app-shell[data-rc-theme="day"] .app-header-pro,
+.app-shell[data-rc-theme="day"] .bottom-nav-pro{
+  background:linear-gradient(135deg,rgba(225,216,188,.72),rgba(198,204,182,.48)),rgba(207,199,175,.70)!important;
+  border-color:rgba(104,69,36,.22)!important;
+}
+.app-shell[data-rc-theme="day"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:linear-gradient(135deg,#5F864D,#A8863E)!important;
+  color:#FFF1C7!important;
+  border:1px solid rgba(255,244,214,.32)!important;
+}
+
+/* Chips/badges menos blancos en los dos modos. */
+.app-shell[data-rc-theme] .page-content-pro [style*="borderRadius:999"],
+.rc-standalone-shell[data-rc-theme] [style*="borderRadius:999"],
+.app-shell[data-rc-theme] .page-content-pro [style*="border-radius:999"],
+.rc-standalone-shell[data-rc-theme] [style*="border-radius:999"]{
+  background:rgba(168,134,62,.24)!important;
+  color:inherit!important;
+  border:1px solid rgba(168,134,62,.34)!important;
+}
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
   const C={green:{bg:T.gradClient,sh:"rgba(64,145,108,0.35)"},dark:{bg:T.gradAdmin,sh:"rgba(27,67,50,0.35)"},pink:{bg:T.gradPink,sh:"rgba(233,30,140,0.3)"},gold:{bg:T.gradGold,sh:"rgba(255,183,3,0.35)"},red:{bg:"linear-gradient(135deg,#E53935,#EF5350)",sh:"rgba(229,57,53,0.3)"},ghost:{bg:"transparent",sh:"none"}};
   const c=C[col]||C.green;
-  return <button onClick={disabled?undefined:(e)=>{col==="ghost"?SFX.click():SFX.action();onClick?.(e);}} className="bp" style={{background:col==="ghost"?"rgba(232,211,162,.72)":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"1px solid rgba(255,255,255,.22)",borderRadius:16,padding:small?"8px 14px":"12px 20px",fontWeight:900,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"0 6px 16px rgba(20,8,4,.12)":`0 8px 22px ${c.sh}`,transition:"all 0.18s ease",letterSpacing:".2px",...sx}}>{children}</button>;
+  return <button onClick={disabled?undefined:(e)=>{col==="ghost"?SFX.click():SFX.action();onClick?.(e);}} className="bp" style={{background:col==="ghost"?"rgba(255,244,214,.72)":c.bg,color:col==="ghost"?T.g700:T.white,border:col==="ghost"?`2px solid ${T.g300}`:"1px solid rgba(255,255,255,.22)",borderRadius:16,padding:small?"8px 14px":"12px 20px",fontWeight:900,fontSize:small?"0.78rem":"0.9rem",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.55:1,width:full?"100%":"auto",boxShadow:col==="ghost"?"0 6px 16px rgba(20,8,4,.12)":`0 8px 22px ${c.sh}`,transition:"all 0.18s ease",letterSpacing:".2px",...sx}}>{children}</button>;
 }
 function Card({children,style:sx={},onClick,hover=false}){
   return <div onClick={onClick?(e)=>{SFX.tab();onClick(e);}:undefined} className={`${hover?"ch":""} studio-panel`} style={{background:T.panel,borderRadius:20,padding:"16px",boxShadow:"0 8px 18px rgba(18,8,4,0.24)",border:`2px solid ${T.g300}`,transition:"all 0.22s ease",cursor:onClick?"pointer":"default",animation:"cardLift .35s ease",...sx}}>{children}</div>;
@@ -4250,15 +4433,15 @@ function Select({label,value,onChange,options=[]}){
   return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>{label}</div>}<select value={value} onChange={e=>onChange(e.target.value)} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}>{options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>;
 }
 function Badge({children,col="green"}){
-  const C={green:{bg:T.g150,c:T.g700},pink:{bg:"#FCE4EC",c:T.pink},gold:{bg:"#F2E4BC",c:"#E65100"},red:{bg:"#FFEBEE",c:T.red},blue:{bg:"#E3F2FD",c:T.blue}};
+  const C={green:{bg:T.g150,c:T.g700},pink:{bg:"#FCE4EC",c:T.pink},gold:{bg:"#FFF8E1",c:"#E65100"},red:{bg:"#FFEBEE",c:T.red},blue:{bg:"#E3F2FD",c:T.blue}};
   const cc=C[col]||C.green;
   return <span style={{background:cc.bg,color:cc.c,borderRadius:50,padding:"3px 10px",fontSize:"0.72rem",fontWeight:800}}>{children}</span>;
 }
 function Modal({show,onClose,title,children}){
   if(!show)return null;
   return <div className="modal-overlay-pro" style={{position:"fixed",inset:0,background:"rgba(10,7,4,0.62)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center",paddingTop:24}} onClick={onClose}>
-    <div className="modal-panel-pro" onClick={e=>e.stopPropagation()} style={{background:"linear-gradient(180deg,#F3E7C7,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:"24px 24px 0 0",padding:"18px 16px calc(112px + env(safe-area-inset-bottom))",width:"100%",maxWidth:480,animation:"slideUp 0.28s ease",maxHeight:"calc(100dvh - 24px)",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",boxShadow:"0 -18px 42px rgba(0,0,0,.28)"}}>
-      <div style={{position:"sticky",top:-18,zIndex:5,display:"flex",justifyContent:"space-between",alignItems:"center",margin:"-18px -16px 16px",padding:"14px 16px 12px",background:"linear-gradient(180deg,#F3E7C7,#F1E4BF)",borderBottom:`1px solid ${T.g200}`,boxShadow:"0 8px 18px rgba(20,8,4,.08)"}}>
+    <div className="modal-panel-pro" onClick={e=>e.stopPropagation()} style={{background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:"24px 24px 0 0",padding:"18px 16px calc(112px + env(safe-area-inset-bottom))",width:"100%",maxWidth:480,animation:"slideUp 0.28s ease",maxHeight:"calc(100dvh - 24px)",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",boxShadow:"0 -18px 42px rgba(0,0,0,.28)"}}>
+      <div style={{position:"sticky",top:-18,zIndex:5,display:"flex",justifyContent:"space-between",alignItems:"center",margin:"-18px -16px 16px",padding:"14px 16px 12px",background:"linear-gradient(180deg,#FFF8E6,#FFF4D6)",borderBottom:`1px solid ${T.g200}`,boxShadow:"0 8px 18px rgba(20,8,4,.08)"}}>
         <div style={{fontWeight:950,fontSize:"1.08rem",color:T.text}}>{title}</div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:34,height:34,cursor:"pointer",fontSize:"1rem",color:T.g700,fontWeight:950}}>×</button>
       </div>
@@ -4294,11 +4477,11 @@ function PublicProfileModal({profile,onClose}){
       <div style={{display:"flex",justifyContent:"center",gap:8,flexWrap:"wrap",marginTop:10}}>
         <Badge col="gold">{nivel}</Badge><Badge col="green">{pts} pts</Badge>
       </div>
-      <Card style={{marginTop:14,textAlign:"left",background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+      <Card style={{marginTop:14,textAlign:"left",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
         <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🎭 Estilo</div>
         <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub}}>{avatarStyleName(cfg)}</div>
       </Card>
-      <Card style={{marginTop:10,textAlign:"left",background:"linear-gradient(180deg,#E6D09B,#E6C27A)"}}>
+      <Card style={{marginTop:10,textAlign:"left",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
         <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🏆 Resumen público</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,textAlign:"center"}}>
           <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Puntos</div></div>
@@ -4312,7 +4495,7 @@ function PublicProfileModal({profile,onClose}){
 
 function SectionHeader({icon,title,sub,action}){return <div style={{marginBottom:18,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.3rem",color:T.g800}}>{icon} {title}</div>{sub&&<div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2}}>{sub}</div>}</div>{action}</div>;}
 function StatCard({icon,label,value,col="green"}){
-  const C={green:{bg:T.g150,ac:T.g600},gold:{bg:"#F2E4BC",ac:T.orange},pink:{bg:"#FCE4EC",ac:T.pink},blue:{bg:"#E3F2FD",ac:T.blue}};
+  const C={green:{bg:T.g150,ac:T.g600},gold:{bg:"#FFF8E1",ac:T.orange},pink:{bg:"#FCE4EC",ac:T.pink},blue:{bg:"#E3F2FD",ac:T.blue}};
   const c=C[col]||C.green;
   return <Card style={{background:c.bg,border:"none",padding:"14px 16px"}} hover><div style={{fontSize:"1.5rem",marginBottom:4}}>{icon}</div><div style={{fontSize:"0.72rem",fontWeight:700,color:T.textSub,marginBottom:2}}>{label}</div><div style={{fontWeight:900,fontSize:"1.4rem",color:c.ac}}>{value}</div></Card>;
 }
@@ -4322,10 +4505,10 @@ const AVATAR_STYLES=[
   {emoji:"👩🏽‍🎤",name:"Punk Queen",tag:"undercut rebelde",bg:"linear-gradient(145deg,#5C0F0F,#F06A3B)"},
   {emoji:"🧔🏽‍♂️",name:"Barber Boss",tag:"barba pro",bg:"linear-gradient(145deg,#130906,#8B4513)"},
   {emoji:"👨🏽‍🦱",name:"Afro Pop",tag:"volumen 3D",bg:"linear-gradient(145deg,#1A3A5C,#E1A85D)"},
-  {emoji:"👩🏽‍🦱",name:"Curl Star",tag:"rizos grandes",bg:"linear-gradient(145deg,#6E3518,#E5C66F)"},
+  {emoji:"👩🏽‍🦱",name:"Curl Star",tag:"rizos grandes",bg:"linear-gradient(145deg,#6E3518,#FFF1A8)"},
   {emoji:"👩🏼‍🎨",name:"Color Splash",tag:"mechas fantasía",bg:"linear-gradient(145deg,#C0392B,#D4AF37)"},
   {emoji:"🧑🏾‍🦱",name:"Dread Master",tag:"rastas largas",bg:"linear-gradient(145deg,#24110A,#9A4F22)"},
-  {emoji:"👱🏽‍♀️",name:"Blonde Blade",tag:"bob luminoso",bg:"linear-gradient(145deg,#D4AF37,#F1E4BF)"},
+  {emoji:"👱🏽‍♀️",name:"Blonde Blade",tag:"bob luminoso",bg:"linear-gradient(145deg,#D4AF37,#FFF4D6)"},
   {emoji:"🧑🏻‍🎤",name:"Cyber Punk",tag:"neón urbano",bg:"linear-gradient(145deg,#150B07,#C0392B)"},
   {emoji:"👩🏾‍🦳",name:"Silver Flow",tag:"plata premium",bg:"linear-gradient(145deg,#6E3518,#EDE1C8)"},
   {emoji:"🧑🏽",name:"Fresh Cut",tag:"degradado limpio",bg:"linear-gradient(145deg,#3A1E10,#C97934)"},
@@ -4482,7 +4665,7 @@ function bgGradient(bg){
     dark:"linear-gradient(180deg,#110907 0%,#2A120B 52%,#7A4A28 100%)",
     red:"linear-gradient(180deg,#3A0909 0%,#8C1C13 48%,#F06A3B 100%)",
     blue:"linear-gradient(180deg,#13243D 0%,#1A5B8F 48%,#7ED6E8 100%)",
-    paper:"linear-gradient(180deg,#815128 0%,#D7B177 38%,#F1E4BF 100%)",
+    paper:"linear-gradient(180deg,#815128 0%,#D7B177 38%,#FFF4D6 100%)",
     studio:"linear-gradient(180deg,#120A08 0%,#50301C 55%,#F2CF75 100%)",
     street:"linear-gradient(180deg,#120806 0%,#2B2430 40%,#556B8D 72%,#C97934 100%)",
     royal:"linear-gradient(180deg,#140806 0%,#3C0E17 38%,#7E0D28 64%,#D4AF37 100%)",
@@ -5130,7 +5313,7 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
   const stroke=mini?4.5:6.5;
   const uid=`rcav_${cfg.model}_${cfg.hair}_${cfg.skin}_${cfg.hairColor}_${cfg.face}_${cfg.accessory}_${cfg.hat}_${cfg.tattoo}_${cfg.glasses}_${cfg.bg}`.replace(/[^a-zA-Z0-9_]/g,"");
   const bgMap={
-    plain:["#E6C986","#D5AE55"],
+    plain:["#F8E6B2","#D5AE55"],
     barber:["#28130A","#B67B27"],
     beach:["#7DD3FC","#F5D483"],
     studio:["#2A1910","#C9993B"],
@@ -5556,7 +5739,7 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
     {!mini&&cfg.bg==="beach"&&<g>
       <circle cx="196" cy="48" r="25" fill="#FFE27A" opacity=".95"/>
       <path d="M6 164 C42 145 78 148 110 160 C145 174 178 171 234 145 L234 254 L6 254Z" fill="#F6D78A" opacity=".82"/>
-      <path d="M8 154 C46 139 78 143 111 156 C146 169 180 164 232 142" fill="none" stroke="#F4E8C6" strokeWidth="6" strokeLinecap="round" opacity=".8"/>
+      <path d="M8 154 C46 139 78 143 111 156 C146 169 180 164 232 142" fill="none" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" opacity=".8"/>
       <path d="M22 96 C44 87 68 87 89 99" fill="none" stroke="#EFFFFF" strokeWidth="5" strokeLinecap="round" opacity=".75"/>
       <path d="M33 236 C55 216 71 185 67 145" fill="none" stroke="#6B441F" strokeWidth="8" strokeLinecap="round" opacity=".75"/>
       <path d="M68 145 C48 132 33 128 17 132 M69 145 C87 129 104 124 121 128 M67 145 C72 122 84 107 101 99" fill="none" stroke="#236B3C" strokeWidth="7" strokeLinecap="round" opacity=".82"/>
@@ -5568,7 +5751,7 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
       <rect x="24" y="184" width="192" height="26" rx="10" fill="#E5BC63" opacity=".45"/>
       <circle cx="54" cy="226" r="15" fill="#F6D878" opacity=".7"/>
       <circle cx="186" cy="226" r="15" fill="#F6D878" opacity=".7"/>
-      <path d="M35 42 L65 72 M205 42 L175 72" stroke="#F4E8C6" strokeWidth="5" strokeLinecap="round" opacity=".55"/>
+      <path d="M35 42 L65 72 M205 42 L175 72" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" opacity=".55"/>
     </g>}
 
     {!mini&&cfg.bg==="studio"&&<g>
@@ -5583,7 +5766,7 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
     {!mini&&cfg.bg==="workshop"&&<g>
       <rect x="26" y="185" width="188" height="29" rx="8" fill="#3B2A1D" opacity=".72"/>
       <path d="M34 206 H206" stroke="#E7C777" strokeWidth="10" opacity=".75"/>
-      <path d="M45 50 L111 116 M195 50 L129 116" stroke="#F4E8C6" strokeWidth="5" strokeLinecap="round" opacity=".55"/>
+      <path d="M45 50 L111 116 M195 50 L129 116" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" opacity=".55"/>
       <path d="M47 50 L37 72 M193 50 L203 72" stroke="#E7C777" strokeWidth="6" strokeLinecap="round" opacity=".65"/>
       <rect x="38" y="222" width="164" height="15" rx="6" fill="#7A5631" opacity=".75"/>
       <circle cx="42" cy="172" r="13" fill="#E7C777" opacity=".7"/>
@@ -5638,7 +5821,7 @@ function PiecePreview({type,item,cfg,mini}){
   return null
 }
 function BgPreview({id}){
-  const m={plain:"linear-gradient(160deg,#E6C986,#D5AE55)",barber:"linear-gradient(160deg,#1B100B,#75411F)",neon:"linear-gradient(160deg,#0D1625,#21A8D8)",warm:"linear-gradient(160deg,#40200F,#E0A943)"};
+  const m={plain:"linear-gradient(160deg,#F8E6B2,#D5AE55)",barber:"linear-gradient(160deg,#1B100B,#75411F)",neon:"linear-gradient(160deg,#0D1625,#21A8D8)",warm:"linear-gradient(160deg,#40200F,#E0A943)"};
   return <div style={{width:88,height:88,borderRadius:26,background:m[id]||m.plain,border:"5px solid rgba(19,10,6,.22)",boxShadow:"inset 0 18px 24px rgba(255,255,255,.16),0 10px 15px rgba(0,0,0,.16)"}}/>
 }
 function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=null}){
@@ -5713,7 +5896,7 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
   const ItemButton=({active,onClick,children})=>(
     <button type="button" className="bp" onClick={onClick} style={{
       border:"2px solid "+(active?"#1ad7ff":"rgba(114,77,35,.28)"),
-      background:active?"linear-gradient(135deg,#FFE078,#BFFFD8,#BCE9FF)":"linear-gradient(180deg,#EAD49B,#DAB96D)",
+      background:active?"linear-gradient(135deg,#FFE078,#BFFFD8,#BCE9FF)":"linear-gradient(180deg,#FFF2C9,#DAB96D)",
       color:"#14335C",
       borderRadius:18,
       padding:"10px 12px",
@@ -5744,10 +5927,10 @@ function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=n
       </div>
       <div style={{display:"flex",gap:8,alignItems:"center"}}>
         <button type="button" className="bp" disabled={disabled} onClick={()=>cycle(field,list,-1)} style={{
-          width:44,height:44,borderRadius:16,border:"2px solid #A77A27",background:"#E5C97F",fontWeight:1000,fontSize:"1.15rem",color:"#193A6B",opacity:disabled?.45:1
+          width:44,height:44,borderRadius:16,border:"2px solid #A77A27",background:"#FFF0B7",fontWeight:1000,fontSize:"1.15rem",color:"#193A6B",opacity:disabled?.45:1
         }}>‹</button>
         <button type="button" className="bp" disabled={disabled} onClick={()=>cycle(field,list,1)} style={{
-          width:44,height:44,borderRadius:16,border:"2px solid #A77A27",background:"#E5C97F",fontWeight:1000,fontSize:"1.15rem",color:"#193A6B",opacity:disabled?.45:1
+          width:44,height:44,borderRadius:16,border:"2px solid #A77A27",background:"#FFF0B7",fontWeight:1000,fontSize:"1.15rem",color:"#193A6B",opacity:disabled?.45:1
         }}>›</button>
       </div>
     </div>
@@ -6224,8 +6407,8 @@ function LandingFeature({icon,title,sub,accent="#D4AF37"}){
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         <div className="icon3d" style={{fontSize:"1.65rem",filter:`drop-shadow(0 0 10px ${accent}66)`}}>{icon}</div>
         <div style={{minWidth:0}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.05rem",color:"#F1E4BF",lineHeight:1}}>{title}</div>
-          <div style={{fontSize:".72rem",fontWeight:800,color:"rgba(232,211,162,.72)",lineHeight:1.25,marginTop:4}}>{sub}</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.05rem",color:"#FFF4D6",lineHeight:1}}>{title}</div>
+          <div style={{fontSize:".72rem",fontWeight:800,color:"rgba(255,244,214,.72)",lineHeight:1.25,marginTop:4}}>{sub}</div>
         </div>
       </div>
       <div style={{position:"absolute",left:12,right:12,bottom:8,height:3,borderRadius:999,background:`linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)`,opacity:.85}}/>
@@ -6398,7 +6581,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
           background:"rgba(255,244,214,.08)",
           border:"1px solid rgba(212,175,55,.28)",
           borderRadius:999,
-          color:"#E6D09B",
+          color:"#F5E6C8",
           fontWeight:950,
           fontSize:".75rem",
           letterSpacing:".08em",
@@ -6414,7 +6597,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
           border:"1px solid rgba(212,175,55,.32)",
           borderRadius:22,
           padding:"12px 14px",
-          color:"#F1E4BF",
+          color:"#FFF4D6",
           boxShadow:"0 12px 24px rgba(0,0,0,.25)"
         }}>
           <div style={{fontWeight:950,fontSize:compact?".94rem":"1.05rem",color:"#FFD66B"}}>{slogan}</div>
@@ -6428,13 +6611,13 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
         )}
         {onNavigate&&(
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-            <button className="landing-nav-card" onClick={()=>onNavigate("citas")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#F1E4BF",fontWeight:950,cursor:"pointer"}}>
+            <button className="landing-nav-card" onClick={()=>onNavigate("citas")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
               <div style={{fontSize:"1.45rem"}}>📅</div><div style={{fontSize:".72rem"}}>Reserva</div>
             </button>
-            <button className="landing-nav-card" onClick={()=>onNavigate("juegos")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#F1E4BF",fontWeight:950,cursor:"pointer"}}>
+            <button className="landing-nav-card" onClick={()=>onNavigate("juegos")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
               <div style={{fontSize:"1.45rem"}}>🎮</div><div style={{fontSize:".72rem"}}>Juega</div>
             </button>
-            <button className="landing-nav-card" onClick={()=>onNavigate("tienda")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#F1E4BF",fontWeight:950,cursor:"pointer"}}>
+            <button className="landing-nav-card" onClick={()=>onNavigate("tienda")} style={{border:"1px solid rgba(212,175,55,.35)",borderRadius:18,padding:"11px 6px",background:"rgba(255,244,214,.08)",color:"#FFF4D6",fontWeight:950,cursor:"pointer"}}>
               <div style={{fontSize:"1.45rem"}}>🎁</div><div style={{fontSize:".72rem"}}>Premios</div>
             </button>
           </div>
@@ -6528,7 +6711,7 @@ function Auth({onLogin,showToast,settings}){
           </div>
         </div>
 
-        <Card style={{padding:"22px 18px",animation:"softPop3d 0.42s ease",background:"linear-gradient(180deg,#F1E4BF 0%,#D8BC7F 100%)",border:"2px solid #B99A45",boxShadow:"0 18px 40px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.75)"}}>
+        <Card style={{padding:"22px 18px",animation:"softPop3d 0.42s ease",background:"linear-gradient(180deg,#FFF4D6 0%,#F0D69C 100%)",border:"2px solid #B99A45",boxShadow:"0 18px 40px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.75)"}}>
           <div style={{display:"flex",background:"rgba(36,17,10,.08)",borderRadius:14,padding:4,marginBottom:18}}>
             {["login","register"].map(m=>(
               <button key={m} onClick={()=>{setMode(m);setFormError("");}} style={{flex:1,padding:"10px 8px",borderRadius:12,border:"none",background:mode===m?"linear-gradient(180deg,#24110A,#6E3518)": "transparent",color:mode===m?T.white:T.g800,fontWeight:950,fontSize:"0.86rem",cursor:"pointer",transition:"all 0.2s"}}>
@@ -6695,7 +6878,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         <StatCard icon="📦" label="Stock bajo" value={stats.stockBajo} col={stats.stockBajo?"red":"blue"}/>
       </div>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
           <div>
             <div style={{fontWeight:950,color:T.g800}}>⚡ Lo urgente</div>
@@ -6704,7 +6887,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
           <Badge col="gold">acción</Badge>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:9}}>
-          {urgencias.map(u=><button key={u.id} onClick={()=>jump(u.tab)} style={{border:`1.5px solid ${u.col==="red"?T.red:u.col==="green"?"#4F602D":T.gold}`,background:u.col==="red"?"linear-gradient(180deg,#F0D3BB,#E4B59A)":u.col==="green"?"linear-gradient(180deg,#E8F0CF,#D8BE87)":"linear-gradient(180deg,#F1E4BF,#EBD18D)",borderRadius:16,padding:12,textAlign:"left",cursor:"pointer",boxShadow:"0 8px 18px rgba(20,8,4,.10)"}}>
+          {urgencias.map(u=><button key={u.id} onClick={()=>jump(u.tab)} style={{border:`1.5px solid ${u.col==="red"?T.red:u.col==="green"?"#4F602D":T.gold}`,background:u.col==="red"?"linear-gradient(180deg,#F0D3BB,#E4B59A)":u.col==="green"?"linear-gradient(180deg,#E8F0CF,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",borderRadius:16,padding:12,textAlign:"left",cursor:"pointer",boxShadow:"0 8px 18px rgba(20,8,4,.10)"}}>
             <div style={{display:"flex",gap:9,alignItems:"flex-start"}}>
               <div style={{fontSize:"1.45rem",lineHeight:1}}>{u.icon}</div>
               <div style={{minWidth:0}}>
@@ -6716,7 +6899,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         </div>
       </Card>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`2px solid ${T.g300}`}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:9}}>🚀 Accesos rápidos</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(118px,1fr))",gap:8}}>
           {quick.map(q=><button key={q.id} onClick={()=>jump(q.id)} style={{border:`1.5px solid ${T.g300}`,background:"rgba(255,255,255,.34)",borderRadius:15,padding:"10px 8px",fontWeight:950,color:T.g800,cursor:"pointer",textAlign:"center"}}>
@@ -6737,13 +6920,13 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr",gap:7}}>
           {checkItems.map(item=><div key={item.id} style={{display:"flex",gap:7,alignItems:"stretch"}}>
-            <button onClick={()=>toggleCheck(item.id)} style={{flex:1,border:`1.5px solid ${checked[item.id]?"#4F602D":T.g300}`,background:checked[item.id]?"linear-gradient(180deg,#E8F0CF,#D8BE87)":"rgba(232,211,162,.72)",borderRadius:13,padding:"9px 10px",fontWeight:900,color:T.g800,textAlign:"left",cursor:"pointer"}}>{checked[item.id]?"✅":"⬜"} {item.icon} {item.text}</button>
-            <button onClick={()=>jump(item.tab)} style={{border:`1.5px solid ${T.g300}`,background:"rgba(232,211,162,.72)",borderRadius:13,padding:"0 10px",fontWeight:950,color:T.g700,cursor:"pointer"}}>Ir</button>
+            <button onClick={()=>toggleCheck(item.id)} style={{flex:1,border:`1.5px solid ${checked[item.id]?"#4F602D":T.g300}`,background:checked[item.id]?"linear-gradient(180deg,#E8F0CF,#D8BE87)":"rgba(255,244,214,.72)",borderRadius:13,padding:"9px 10px",fontWeight:900,color:T.g800,textAlign:"left",cursor:"pointer"}}>{checked[item.id]?"✅":"⬜"} {item.icon} {item.text}</button>
+            <button onClick={()=>jump(item.tab)} style={{border:`1.5px solid ${T.g300}`,background:"rgba(255,244,214,.72)",borderRadius:13,padding:"0 10px",fontWeight:950,color:T.g700,cursor:"pointer"}}>Ir</button>
           </div>)}
         </div>
       </Card>
 
-      <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
           <div>
             <div style={{fontWeight:950,fontSize:"1rem",color:T.g800}}>📅 Próximas citas</div>
@@ -6828,7 +7011,7 @@ function ClientDashboard({user,onNavigate,settings}){
       </Card>
 
       {proxCita?(
-        <Card style={{marginBottom:16,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <Card style={{marginBottom:16,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
             <div>
               <div style={{fontWeight:950,color:T.g800,marginBottom:6}}>📅 Tu próxima cita</div>
@@ -6839,7 +7022,7 @@ function ClientDashboard({user,onNavigate,settings}){
           </div>
         </Card>
       ):(
-        <Card style={{marginBottom:16,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}} hover onClick={()=>onNavigate?.("citas")}>
+        <Card style={{marginBottom:16,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}} hover onClick={()=>onNavigate?.("citas")}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{fontSize:"2rem"}}>📅</div>
             <div style={{flex:1}}>
@@ -6853,7 +7036,7 @@ function ClientDashboard({user,onNavigate,settings}){
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:18}}>
         {[["📅","Cita","citas"],["🎮","Arcade","juegos"],["🎁","Tienda","tienda"],["📩","Buzón","buzon"]].map(([icon,lbl,id])=>(
-          <Card key={lbl} onClick={()=>onNavigate?.(id)} style={{textAlign:"center",padding:"14px 8px",background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",minHeight:92,border:`1.5px solid ${T.g300}`}} hover>
+          <Card key={lbl} onClick={()=>onNavigate?.(id)} style={{textAlign:"center",padding:"14px 8px",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",minHeight:92,border:`1.5px solid ${T.g300}`}} hover>
             <div className="icon3d" style={{fontSize:"2rem"}}>{icon}</div>
             <div style={{fontSize:"0.75rem",fontWeight:950,color:T.g700,marginTop:6}}>{lbl}</div>
           </Card>
@@ -6866,7 +7049,7 @@ function ClientDashboard({user,onNavigate,settings}){
         <div>
           <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>Novedades de la tienda</div>
           {noticias.map(n=>(
-            <Card key={n.id} style={{marginBottom:10,background:"linear-gradient(180deg,#F1E4BF,#D8BC7F)"}} hover>
+            <Card key={n.id} style={{marginBottom:10,background:"linear-gradient(180deg,#FFF4D6,#F0D69C)"}} hover>
               <div style={{fontWeight:900,color:T.g800}}>{n.emoji} {n.titulo||n.contenido?.slice(0,40)}</div>
               <div style={{fontSize:"0.8rem",color:T.textSub,marginTop:4,fontWeight:800}}>{n.contenido}</div>
             </Card>
@@ -6978,7 +7161,7 @@ function CategoryNewsPoster({catId,featured=false}){
     <div style={{position:"absolute",right:-16,top:-18,fontSize:featured?"6.8rem":"5.3rem",opacity:.12,transform:"rotate(-10deg)"}}>{poster.icons[0]}</div>
     <div style={{position:"absolute",left:18,top:18,display:"flex",gap:8}}>{poster.icons.map((ic,i)=><span key={ic+i} style={{width:i===0?48:38,height:i===0?48:38,borderRadius:16,display:"grid",placeItems:"center",background:i===0?visual.accent:"rgba(255,244,214,.62)",color:"#FFF8E5",fontSize:i===0?"1.55rem":"1.15rem",boxShadow:"0 8px 16px rgba(18,8,4,.18)",border:"1px solid rgba(255,244,214,.35)"}}>{ic}</span>)}</div>
     <div style={{position:"absolute",left:18,right:18,bottom:18}}>
-      <div style={{fontFamily:"'Pirata One',cursive",fontSize:featured?"1.55rem":"1.28rem",lineHeight:1,color:visual.dark,textShadow:"0 1px 0 rgba(216,190,135,.55)"}}>{poster.title}</div>
+      <div style={{fontFamily:"'Pirata One',cursive",fontSize:featured?"1.55rem":"1.28rem",lineHeight:1,color:visual.dark,textShadow:"0 1px 0 rgba(255,244,214,.55)"}}>{poster.title}</div>
       <div style={{fontSize:".78rem",fontWeight:950,color:T.textSub,marginTop:4}}>{poster.sub}</div>
       <div style={{marginTop:9,display:"inline-flex",alignItems:"center",gap:6,background:"rgba(19,11,6,.12)",border:`1px solid ${T.g300}`,borderRadius:999,padding:"5px 10px",fontSize:".7rem",fontWeight:950,color:visual.dark}}>{cat.icon} {cat.label}</div>
     </div>
@@ -7070,7 +7253,7 @@ function NewsShortCard({item,index=0,total=0,onOpen,stats=null}){
     <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(0,0,0,.08) 38%,rgba(0,0,0,.54) 68%,rgba(0,0,0,.82) 100%)"}}/>
     <div style={{position:"absolute",left:14,right:14,top:14,display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
       <span style={{display:"inline-flex",alignItems:"center",gap:7,background:visual.accent,color:"#FFF8E5",borderRadius:999,padding:"8px 12px",fontSize:".78rem",fontWeight:950,boxShadow:"0 10px 20px rgba(0,0,0,.28)",border:"1px solid rgba(255,244,214,.24)"}}>{cat.icon} {cat.short}</span>
-      <span style={{background:"rgba(12,6,3,.55)",color:T.white,border:"1px solid rgba(216,190,135,.18)",borderRadius:999,padding:"7px 10px",fontSize:".72rem",fontWeight:950,backdropFilter:"blur(5px)"}}>{index+1}/{total}</span>
+      <span style={{background:"rgba(12,6,3,.55)",color:T.white,border:"1px solid rgba(255,244,214,.18)",borderRadius:999,padding:"7px 10px",fontSize:".72rem",fontWeight:950,backdropFilter:"blur(5px)"}}>{index+1}/{total}</span>
     </div>
     <div style={{position:"absolute",right:12,bottom:170,display:"grid",gap:10,justifyItems:"center"}}>
       <button onClick={openDetail} style={{width:48,height:48,borderRadius:"50%",border:"1px solid rgba(255,244,214,.35)",background:"rgba(240,224,184,.88)",color:T.g900,fontSize:"1rem",fontWeight:950,boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer"}}>💬</button>
@@ -7203,7 +7386,7 @@ function ActualidadMini({onNavigate}){
   },[]);
   const first=items[0];
   const rest=items.slice(1,3);
-  return <Card style={{marginBottom:16,padding:0,overflow:"hidden",background:"linear-gradient(160deg,#FFF8E5,#E6D09B 62%,#E6C27A)",border:`2px solid ${T.g300}`}}>
+  return <Card style={{marginBottom:16,padding:0,overflow:"hidden",background:"linear-gradient(160deg,#FFF8E5,#F6E5BE 62%,#E6C27A)",border:`2px solid ${T.g300}`}}>
     <div style={{padding:"16px",background:"radial-gradient(circle at 8% 10%,rgba(212,175,55,.30),transparent 30%),linear-gradient(135deg,rgba(36,17,10,.08),rgba(255,244,214,.58))"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
         <div>
@@ -7641,7 +7824,7 @@ function Citas({user,showToast,onNavigate}){
           </div>
         )}
         <Input label="Notas" value={form.notas} onChange={v=>setForm(f=>({...f,notas:v}))} placeholder="Ej: quiero revisar raíces, pelo sensible, voy con prisa..."/>
-        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#F3E7C7 38%,#F3E7C7)",boxShadow:"0 -10px 22px rgba(235,218,170,.92)"}}>
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)",boxShadow:"0 -10px 22px rgba(255,248,230,.9)"}}>
           <Btn full onClick={saveCita}>Enviar cita pendiente</Btn>
         </div>
       </Modal>
@@ -7762,7 +7945,7 @@ function Clientes({user,showToast}){
       </Card>
       <Input value={search} onChange={setSearch} placeholder="Buscar cliente por nombre o email..."/>
       {loading?<Spinner/>:filtered.length===0?<EmptyState icon="👥" title="Sin clientes" sub="Todavía no hay usuarios con citas registradas."/>:filtered.map(c=>(
-        <Card key={c.id} style={{marginBottom:10,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`1.5px solid ${T.g300}`}} hover onClick={()=>selectCliente(c)}>
+        <Card key={c.id} style={{marginBottom:10,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`1.5px solid ${T.g300}`}} hover onClick={()=>selectCliente(c)}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <PublicAvatar profile={c} currentUser={user} size={44}/>
             <div style={{flex:1,minWidth:0}}>
@@ -7816,7 +7999,7 @@ function Clientes({user,showToast}){
                   const st=String(h.estado||"pendiente").toLowerCase();
                   const col={pendiente:"gold",propuesta:"blue",confirmada:"green",completada:"blue",cancelada:"red"}[st]||"gold";
                   const dur=citaDuration(citaServices(h));
-                  return <Card key={h.id} style={{marginBottom:9,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`1.5px solid ${T.g200}`,padding:12}}>
+                  return <Card key={h.id} style={{marginBottom:9,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`1.5px solid ${T.g200}`,padding:12}}>
                     <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>
@@ -8062,7 +8245,7 @@ function Caja({user,showToast}){
         <StatCard icon="💳" label="Tarjeta hoy" value={money(porMetodo("tarjeta"))} col="blue"/>
       </div>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
           <div>
             <div style={{fontWeight:950,color:T.g800}}>🏁 Citas realizadas pendientes de cobrar</div>
@@ -8092,7 +8275,7 @@ function Caja({user,showToast}){
         }
       </Card>
 
-      <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`2px solid ${T.g300}`}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
           <div>
             <div style={{fontWeight:950,color:T.g800}}>📜 Últimos cobros</div>
@@ -8142,7 +8325,7 @@ function Caja({user,showToast}){
           </div>
         )}
         <Select label="Método de pago" value={metodo} onChange={setMetodo} options={[{value:"efectivo",label:"Efectivo"},{value:"tarjeta",label:"Tarjeta"},{value:"bizum",label:"Bizum"},{value:"mixto",label:"Mixto"}]}/>
-        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#F3E7C7 38%,#F3E7C7)"}}>
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
           <Btn full col="gold" onClick={cobrarVentaManual} disabled={!carrito.length}>Cobrar {money(total)}</Btn>
         </div>
       </Modal>
@@ -8150,7 +8333,7 @@ function Caja({user,showToast}){
       <Modal show={!!citaCobro} onClose={()=>setCitaCobro(null)} title="Cobrar cita realizada">
         {citaCobro&&(
           <div>
-            <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+            <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
               <div style={{fontWeight:950,color:T.g800}}>👤 {citaCobro.cliente_nombre||"Cliente"}</div>
               <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,marginTop:4}}>📆 {citaCobro.fecha} · 🕒 {citaCobro.hora}</div>
               <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,marginTop:4}}>✂️ {citaCobro.servicio_label||citaCobro.servicio}</div>
@@ -8165,7 +8348,7 @@ function Caja({user,showToast}){
               </div>
             </Card>
             <Input label="Descripción" value={cobroForm.descripcion} onChange={v=>setCobroForm(f=>({...f,descripcion:v}))}/>
-            <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#F3E7C7 38%,#F3E7C7)"}}>
+            <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
               <Btn full col="gold" onClick={cobrarCita}>Guardar cobro</Btn>
             </div>
           </div>
@@ -8276,7 +8459,7 @@ function AdminUsuarios({user,showToast}){
         </div>
       </Card>
 
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <Input value={search} onChange={setSearch} placeholder="Buscar usuario por nombre o email..."/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:7}}>
           {[
@@ -8284,7 +8467,7 @@ function AdminUsuarios({user,showToast}){
             {id:"client",label:"Clientes",n:roleCounts.client||0},
             {id:"staff",label:"Staff",n:roleCounts.staff||0},
             {id:"admin",label:"Admin",n:roleCounts.admin||0},
-          ].map(f=><button key={f.id} onClick={()=>{SFX.tab();setRoleFilter(f.id);}} style={{border:`2px solid ${roleFilter===f.id?T.gold:T.g300}`,background:roleFilter===f.id?T.gradGold:"rgba(232,211,162,.72)",color:roleFilter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
+          ].map(f=><button key={f.id} onClick={()=>{SFX.tab();setRoleFilter(f.id);}} style={{border:`2px solid ${roleFilter===f.id?T.gold:T.g300}`,background:roleFilter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:roleFilter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
             {f.label}<br/><span style={{opacity:.75}}>{f.n}</span>
           </button>)}
         </div>
@@ -8292,7 +8475,7 @@ function AdminUsuarios({user,showToast}){
 
       {loading?<Spinner/>:filtered.length===0?<EmptyState icon="👑" title="Sin usuarios" sub="No hay cuentas con ese filtro."/>:filtered.map(u=>{
         const banned=isBannedProfile(u);
-        return <Card key={u.id} style={{marginBottom:10,background:banned?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:banned?`2px solid ${T.red}`:`1.5px solid ${T.g300}`,opacity:banned?.82:1}} hover onClick={()=>{setSelected(u);setBanForm({motivo:u.motivo_baneo||"",hasta:u.baneo_hasta?String(u.baneo_hasta).slice(0,10):""});}}>
+        return <Card key={u.id} style={{marginBottom:10,background:banned?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:banned?`2px solid ${T.red}`:`1.5px solid ${T.g300}`,opacity:banned?.82:1}} hover onClick={()=>{setSelected(u);setBanForm({motivo:u.motivo_baneo||"",hasta:u.baneo_hasta?String(u.baneo_hasta).slice(0,10):""});}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <PublicAvatar profile={u} currentUser={user} size={42}/>
             <div style={{flex:1,minWidth:0}}>
@@ -8334,7 +8517,7 @@ function AdminUsuarios({user,showToast}){
             </select>
           </Card>
 
-          <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${isBannedProfile(selected)?T.red:T.g300}`,padding:12}}>
+          <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${isBannedProfile(selected)?T.red:T.g300}`,padding:12}}>
             <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🚫 Bloqueo de usuario</div>
             <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginBottom:10}}>Si bloqueas una cuenta, no podrá iniciar sesión mientras el bloqueo esté activo.</div>
             {!isBannedProfile(selected)&&<>
@@ -8708,7 +8891,7 @@ function Foro({user,showToast}){
 
     {!shown&&totalPendingThreads()>0&&<Card hover onClick={()=>setFilter("pendientes")} style={{marginBottom:14,background:"linear-gradient(180deg,#FFE9D8,#EBD18D)",border:"2px solid #A72822"}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <div style={{width:36,height:36,borderRadius:999,background:"#A72822",color:"#F1E4BF",display:"grid",placeItems:"center",fontWeight:950}}>{totalPendingThreads()}</div>
+        <div style={{width:36,height:36,borderRadius:999,background:"#A72822",color:"#FFF4D6",display:"grid",placeItems:"center",fontWeight:950}}>{totalPendingThreads()}</div>
         <div style={{flex:1}}>
           <div style={{fontWeight:950,color:T.g800}}>Hilos pendientes de leer</div>
           <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Tienes temas seguidos con respuestas nuevas. Pulsa para verlos.</div>
@@ -8716,7 +8899,7 @@ function Foro({user,showToast}){
       </div>
     </Card>}
 
-    {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+    {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Abrir nuevo tema</div>
       <Input label="Título" value={title} onChange={setTitle} placeholder="Ej: ¿Qué cuidados necesita una rasta nueva?"/>
       <Select label="Categoría" value={category} onChange={setCategory} options={categories.filter(c=>!specialFilters.has(c.id)).map(c=>({value:c.id,label:`${c.icon} ${c.label}`}))}/>
@@ -8724,7 +8907,7 @@ function Foro({user,showToast}){
       <div style={{marginTop:10}}><Btn full col="gold" onClick={createTopic}>➕ Crear tema</Btn></div>
     </Card>}
 
-    {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#F3E7C7,#F3E2BC)",border:`2px solid ${T.g300}`}}>
+    {!shown&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`}}>
       <Input label="Buscar en el foro" value={search} onChange={setSearch} placeholder="Buscar tema, texto o autor..."/>
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4}}>
         {categories.map(c=><button key={c.id} onClick={()=>{SFX.tab();setFilter(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===c.id?T.gold:T.g300}`,background:filter===c.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>
@@ -8735,7 +8918,7 @@ function Foro({user,showToast}){
 
     {shown? <div>
       <Btn small col="ghost" onClick={()=>setActive(null)} style={{marginBottom:10}}>← Volver al foro</Btn>
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`2px solid ${shown.fijado?T.gold:T.g300}`}}>
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${shown.fijado?T.gold:T.g300}`}}>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
           {shown.fijado&&<Badge col="gold">📌 fijado</Badge>}
           {shown.cerrado&&<Badge col="red">cerrado</Badge>}
@@ -8778,13 +8961,13 @@ function Foro({user,showToast}){
           </div>
           <div style={{fontSize:".86rem",fontWeight:750,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div>
           <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:8,flexWrap:"wrap"}}>
-            {!canModerate&&<button onClick={()=>openReport("respuesta",r)} style={{background:"rgba(232,211,162,.72)",border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.76rem",color:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999}}>🚩 Reportar</button>}
+            {!canModerate&&<button onClick={()=>openReport("respuesta",r)} style={{background:"rgba(255,244,214,.72)",border:`1.5px solid ${T.g200}`,cursor:"pointer",fontSize:"0.76rem",color:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999}}>🚩 Reportar</button>}
             <button onClick={()=>voteTarget(r,"respuesta")} title={voted("respuesta",r.id)?"Quitar voto":"Votar"} style={{background:voted("respuesta",r.id)?T.gradGold:T.g150,border:`1.5px solid ${voted("respuesta",r.id)?T.gold:T.g200}`,cursor:"pointer",fontSize:"0.76rem",color:voted("respuesta",r.id)?T.g900:T.g700,fontWeight:950,padding:'6px 10px',borderRadius:999,opacity:1}}>{voted("respuesta",r.id)?"💛":"🤍"} {r.likes||0}</button>
           </div>
         </Card>;
       })}
 
-      <Card style={{background:shown.cerrado?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <Card style={{background:shown.cerrado?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         {shown.cerrado?<div style={{fontWeight:950,color:T.red,textAlign:"center"}}>Este tema está cerrado. No se pueden añadir respuestas.</div>:<>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Responder al tema</div>
           <textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder="Responder al tema..." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px",background:T.g150,resize:"vertical",outline:"none",fontWeight:800,color:T.text}}/>
@@ -8796,7 +8979,7 @@ function Foro({user,showToast}){
       const respuestas=Number(t.respuestas_count)||topicReplies(t.id).length;
       const unread=unreadCount(t);
       const followed=isFollowing(t);
-      return <Card key={t.id} hover onClick={()=>openTopic(t)} style={{marginBottom:10,background:unread>0?"linear-gradient(180deg,#FFE9D8,#EBD18D)":t.fijado?"linear-gradient(180deg,#F1E4BF,#EBD18D)":"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:unread>0?"2px solid #A72822":t.fijado?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+      return <Card key={t.id} hover onClick={()=>openTopic(t)} style={{marginBottom:10,background:unread>0?"linear-gradient(180deg,#FFE9D8,#EBD18D)":t.fijado?"linear-gradient(180deg,#FFF4D6,#EBD18D)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:unread>0?"2px solid #A72822":t.fijado?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <PublicAvatar profile={a} size={38}/>
           <div style={{flex:1,minWidth:0}}>
@@ -8929,7 +9112,7 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
   const pts=Number(user?.puntos||0);
   const next=info.next;
   return (
-    <Card className="shop-command-center" style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`1.5px solid ${T.g200}`,marginBottom:14}}>
+    <Card className="shop-command-center" style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`1.5px solid ${T.g200}`,marginBottom:14}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div>
           <div style={{fontSize:".74rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:T.textSub}}>{SHOP_PHASE_LABEL}</div>
@@ -9094,7 +9277,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
         </div>
       </Card>
 
-      {pedidos.length>0&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      {pedidos.length>0&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🧾 Tus últimos pedidos</div>
         {pedidos.slice(0,3).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",padding:"7px 0",borderTop:`1px solid ${T.g150}`}}>
           <div style={{minWidth:0}}>
@@ -9416,7 +9599,7 @@ function SopaLetras({onWin,user}){
         {words.map(w=><Badge key={w} col={found.includes(w)?"green":"gold"}>{found.includes(w)?"OK ":""}{w}</Badge>)}
       </div>
       <div
-        style={{userSelect:"none",touchAction:"none",display:"inline-block",maxWidth:"100%",overflowX:"auto",background:"#E6D09B",borderRadius:12,padding:8,border:`2px solid ${T.g400}`,cursor:"crosshair"}}
+        style={{userSelect:"none",touchAction:"none",display:"inline-block",maxWidth:"100%",overflowX:"auto",background:"#F5E6C8",borderRadius:12,padding:8,border:`2px solid ${T.g400}`,cursor:"crosshair"}}
         onMouseLeave={handleEnd}
       >
         {Array(SIZE).fill(null).map((_,r)=>(
@@ -9443,7 +9626,7 @@ function SopaLetras({onWin,user}){
                     width:"clamp(21px,6.05vw,27px)",height:"clamp(21px,6.05vw,27px)",display:"flex",alignItems:"center",justifyContent:"center",
                     fontSize:"clamp(0.62rem,2.65vw,0.82rem)",fontWeight:900,cursor:"crosshair",borderRadius:6,
                     background:isF?"#8B4513":isSel?(wrong?"#FFCDD2":"#D4AF37"):"transparent",
-                    color:isF?"#E6D09B":isSel?(wrong?"#8B0000":"#2C1810"):"#2C1810",
+                    color:isF?"#F5E6C8":isSel?(wrong?"#8B0000":"#2C1810"):"#2C1810",
                     border:isSel&&!wrong?`2px solid #8B4513`:"2px solid transparent",
                     transition:"background 0.08s",
                     fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
@@ -9516,7 +9699,7 @@ function MemoryGame({onWin}){
         </div>
       </Card>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9}}>
-        {cards.map(c=><button key={c.id} onClick={()=>flip(c.id)} style={{height:66,borderRadius:14,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:"1.25rem",fontWeight:900,cursor:"pointer",background:c.flipped||c.matched?"linear-gradient(180deg,#F1E4BF,#E6C27A)":"linear-gradient(180deg,#6E3518,#24110A)",color:c.flipped||c.matched?T.g800:T.g600,border:`2px solid ${c.matched?T.gold:T.g500}`,transition:"all 0.2s",boxShadow:"0 6px 14px rgba(20,8,4,.18)"}}>
+        {cards.map(c=><button key={c.id} onClick={()=>flip(c.id)} style={{height:66,borderRadius:14,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:"1.25rem",fontWeight:900,cursor:"pointer",background:c.flipped||c.matched?"linear-gradient(180deg,#FFF4D6,#E6C27A)":"linear-gradient(180deg,#6E3518,#24110A)",color:c.flipped||c.matched?T.g800:T.g600,border:`2px solid ${c.matched?T.gold:T.g500}`,transition:"all 0.2s",boxShadow:"0 6px 14px rgba(20,8,4,.18)"}}>
           {(c.flipped||c.matched)?<><span>{c.item.emoji}</span><span style={{fontSize:".55rem",marginTop:2}}>{c.item.label}</span></>:<span style={{color:T.g200}}>?</span>}
         </button>)}
       </div>
@@ -9654,7 +9837,7 @@ function RastaRunnerGame({onWin,user}){
 
   const pts=Math.max(1,Math.min(12,Math.floor(score/30)));
   const jumpTxt=running?`Saltos: ${jumpsLeft} · ${powered?'peine activo':'sin poder'}`:'Peine = modo grande, una protección';
-  return <Card style={{background:'linear-gradient(180deg,#E5CF98,#E7CA8A)',border:`2px solid ${T.g300}`}}>
+  return <Card style={{background:'linear-gradient(180deg,#F4E5BE,#E7CA8A)',border:`2px solid ${T.g300}`}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8,gap:8}}><div style={{fontWeight:900,color:T.g800}}>🦖✂️ Rasta Runner</div><Badge col={powered?'green':'gold'}>{powered?'Peine activo':'Runner'}</Badge></div>
     <div
       ref={runnerBoardRef}
@@ -9675,8 +9858,8 @@ function RastaRunnerGame({onWin,user}){
         const bottom=o.type==='pit'?8:22;
         return <div key={o.id||i} style={{position:'absolute',left:`${o.x}%`,bottom,fontSize:o.type==='pit'?'2rem':o.type==='comb'?'1.55rem':'1.65rem',filter:'drop-shadow(0 3px 4px rgba(0,0,0,.22))'}}>{icon}</div>
       })}
-      {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(216,190,135,.35)',padding:18}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:10}}>Tu avatar corre en grande. Salta tijeras, bloques y agujeros. El peine te da una protección.</div><button type='button' onPointerDown={(e)=>{e.stopPropagation();e.preventDefault();resetAndStart();}} onClick={(e)=>{e.stopPropagation();}} style={{border:'2px solid #7A5A18',borderRadius:16,padding:'12px 18px',fontWeight:950,background:'linear-gradient(180deg,#E5C66F,#D4AF37)',color:'#241006',boxShadow:'0 8px 16px rgba(0,0,0,.22)',cursor:'pointer'}}>▶ Empezar</button></div></div>}
-      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.56)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>Runner terminado en {score}</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Récord de ronda: {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><button type='button' onPointerDown={(e)=>{e.stopPropagation();e.preventDefault();onWin(pts);}} onClick={(e)=>e.stopPropagation()} style={{border:'2px solid #7A5A18',borderRadius:16,padding:'10px 14px',fontWeight:950,background:'linear-gradient(180deg,#E5C66F,#D4AF37)',color:'#241006',boxShadow:'0 8px 16px rgba(0,0,0,.22)',cursor:'pointer'}}>Guardar récord</button><button type='button' onPointerDown={(e)=>{e.stopPropagation();e.preventDefault();resetAndStart();}} onClick={(e)=>e.stopPropagation()} style={{border:'2px solid rgba(255,244,214,.45)',borderRadius:16,padding:'10px 14px',fontWeight:950,background:'rgba(216,190,135,.18)',color:'#fff',boxShadow:'0 8px 16px rgba(0,0,0,.22)',cursor:'pointer'}}>🔁 Reintentar</button></div></div></div>}
+      {!running && !gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,248,230,.42)',padding:18}}><div style={{textAlign:'center'}}><div style={{fontWeight:900,color:T.g800,marginBottom:10}}>Tu avatar corre en grande. Salta tijeras, bloques y agujeros. El peine te da una protección.</div><button type='button' onPointerDown={(e)=>{e.stopPropagation();e.preventDefault();resetAndStart();}} onClick={(e)=>{e.stopPropagation();}} style={{border:'2px solid #7A5A18',borderRadius:16,padding:'12px 18px',fontWeight:950,background:'linear-gradient(180deg,#FFF1A8,#D4AF37)',color:'#241006',boxShadow:'0 8px 16px rgba(0,0,0,.22)',cursor:'pointer'}}>▶ Empezar</button></div></div>}
+      {gameOver && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(40,20,10,.56)',padding:16}}><div style={{textAlign:'center',color:T.white}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.45rem'}}>Runner terminado en {score}</div><div style={{fontWeight:800,margin:'8px 0 12px'}}>Récord de ronda: {pts} pts</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><button type='button' onPointerDown={(e)=>{e.stopPropagation();e.preventDefault();onWin(pts);}} onClick={(e)=>e.stopPropagation()} style={{border:'2px solid #7A5A18',borderRadius:16,padding:'10px 14px',fontWeight:950,background:'linear-gradient(180deg,#FFF1A8,#D4AF37)',color:'#241006',boxShadow:'0 8px 16px rgba(0,0,0,.22)',cursor:'pointer'}}>Guardar récord</button><button type='button' onPointerDown={(e)=>{e.stopPropagation();e.preventDefault();resetAndStart();}} onClick={(e)=>e.stopPropagation()} style={{border:'2px solid rgba(255,244,214,.45)',borderRadius:16,padding:'10px 14px',fontWeight:950,background:'rgba(255,244,214,.18)',color:'#fff',boxShadow:'0 8px 16px rgba(0,0,0,.22)',cursor:'pointer'}}>🔁 Reintentar</button></div></div></div>}
     </div>
     <div style={{marginTop:10,fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45}}>Toca y mantén para saltar más. El peine te hace grande y aguanta un golpe, pero no se acumula. Si chocas protegido, vuelves a normal.</div>
   </Card>;
@@ -9808,18 +9991,18 @@ function DreadStitchGame({onWin,user}){
   }
 
   const finalPts=won?Math.max(1,Math.min(10,Math.floor(lastAccuracy/18)+bonusHits)):0;
-  return <Card style={{background:'linear-gradient(180deg,#E6D09B,#E6C27A)',border:`2px solid ${T.gold}`}}>
+  return <Card style={{background:'linear-gradient(180deg,#F5E6C8,#E6C27A)',border:`2px solid ${T.gold}`}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:10}}><div style={{display:'flex',alignItems:'center',gap:8,fontWeight:900,color:T.g800}}><Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={36}/> Gancho Ninja</div><Badge col={accuracy>=70?'green':'gold'}>{accuracy}%</Badge></div>
     <div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,lineHeight:1.45,marginBottom:10}}>Objetivo: <b>100 puntos y termina</b>. Ganchillo <b>+3</b>, ticket dorado <b>+5</b>, normales <b>+1</b>. Con <b>20 tijeras</b> pierdes.</div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:10,textAlign:'center'}}>
-      <div style={{background:'rgba(216,190,135,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Objetivo</div>100</div>
-      <div style={{background:'rgba(216,190,135,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Puntos</div>{roundPoints}/100</div>
-      <div style={{background:'rgba(216,190,135,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Tijeras</div>{scissors}/20</div>
-      <div style={{background:'rgba(216,190,135,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Dorados</div>{bonusHits}</div>
+      <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Objetivo</div>100</div>
+      <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Puntos</div>{roundPoints}/100</div>
+      <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Tijeras</div>{scissors}/20</div>
+      <div style={{background:'rgba(255,244,214,.55)',borderRadius:14,padding:8,fontWeight:900,color:T.g800}}><div style={{fontSize:'.66rem',color:T.textSub}}>Dorados</div>{bonusHits}</div>
     </div>
     <div style={{height:280,position:'relative',overflow:'hidden',borderRadius:20,border:'2px solid rgba(62,35,18,.18)',background:'radial-gradient(circle at 25% 18%,rgba(255,214,107,.34),transparent 28%),linear-gradient(160deg,#24110A,#6E3518)',touchAction:'none',cursor:running?'crosshair':'default'}}>
-      <div style={{position:'absolute',top:12,left:12,right:12,zIndex:2,height:9,borderRadius:999,background:'rgba(216,190,135,.18)',overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(100,roundPoints)}%`,background:roundPoints>=100?'linear-gradient(90deg,#2F6B42,#9BE7B0)':'linear-gradient(90deg,#D4AF37,#E5C66F)',transition:'width .2s ease'}}/></div>
-      {items.map(it=><button key={it.id} onPointerDown={(e)=>{e.preventDefault();tapItem(it)}} onClick={(e)=>e.preventDefault()} style={{position:'absolute',left:`${it.x}%`,top:`${it.y}%`,transform:'translate(-50%,-50%)',width:it.kind==='bonus'?70:it.kind==='hook3'?64:60,height:it.kind==='bonus'?70:it.kind==='hook3'?64:60,borderRadius:'50%',border:'2px solid rgba(232,211,162,.82)',background:it.kind==='bonus'?'linear-gradient(180deg,#FFF8C8,#D4AF37)':it.kind==='hook3'?'linear-gradient(180deg,#DFFFE9,#3DAE5D)':it.kind==='scissor'?'linear-gradient(180deg,#FFEBEE,#C0392B)':'linear-gradient(180deg,#F1E4BF,#D4AF37)',boxShadow:'0 10px 20px rgba(0,0,0,.28)',fontSize:it.kind==='bonus'?'2rem':'1.8rem',display:'grid',placeItems:'center',cursor:'pointer',touchAction:'none',animation:it.kind==='bonus'?'rewardPulsePro 1.2s infinite':'none'}}>{it.icon}</button>)}
+      <div style={{position:'absolute',top:12,left:12,right:12,zIndex:2,height:9,borderRadius:999,background:'rgba(255,244,214,.18)',overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(100,roundPoints)}%`,background:roundPoints>=100?'linear-gradient(90deg,#2F6B42,#9BE7B0)':'linear-gradient(90deg,#D4AF37,#FFF1A8)',transition:'width .2s ease'}}/></div>
+      {items.map(it=><button key={it.id} onPointerDown={(e)=>{e.preventDefault();tapItem(it)}} onClick={(e)=>e.preventDefault()} style={{position:'absolute',left:`${it.x}%`,top:`${it.y}%`,transform:'translate(-50%,-50%)',width:it.kind==='bonus'?70:it.kind==='hook3'?64:60,height:it.kind==='bonus'?70:it.kind==='hook3'?64:60,borderRadius:'50%',border:'2px solid rgba(255,244,214,.82)',background:it.kind==='bonus'?'linear-gradient(180deg,#FFF8C8,#D4AF37)':it.kind==='hook3'?'linear-gradient(180deg,#DFFFE9,#3DAE5D)':it.kind==='scissor'?'linear-gradient(180deg,#FFEBEE,#C0392B)':'linear-gradient(180deg,#FFF4D6,#D4AF37)',boxShadow:'0 10px 20px rgba(0,0,0,.28)',fontSize:it.kind==='bonus'?'2rem':'1.8rem',display:'grid',placeItems:'center',cursor:'pointer',touchAction:'none',animation:it.kind==='bonus'?'rewardPulsePro 1.2s infinite':'none'}}>{it.icon}</button>)}
       {!running && !finished && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(255,244,214,.16)',padding:16}}><div style={{textAlign:'center',color:T.white,maxWidth:300}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.55rem',marginBottom:8}}>100 puntos y partida cerrada</div><div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,marginBottom:12}}>{message}</div><Btn col='gold' onClick={start}>▶ Empezar</Btn></div></div>}
       {finished && <div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',background:'rgba(20,8,4,.72)',padding:16}}><div style={{textAlign:'center',color:T.white,maxWidth:320}}><div style={{fontFamily:"'Pirata One',cursive",fontSize:'1.55rem'}}>{won?'Partida completada':'Partida perdida'}</div><div style={{fontWeight:900,margin:'8px 0'}}>Puntos {roundPoints} · precisión {lastAccuracy}%</div><div style={{fontSize:'.82rem',fontWeight:800,opacity:.85,marginBottom:12}}>{message}</div><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}>{won&&<Btn col='gold' onClick={()=>onWin(finalPts)}>Guardar récord · {finalPts}</Btn>}<Btn col='ghost' onClick={start}>🔁 Jugar otra vez</Btn></div></div></div>}
     </div>
@@ -9890,9 +10073,9 @@ function GachaSlotsGame({user,onWin,settings,onBuyPulls}){
     <div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,lineHeight:1.45,marginBottom:12}}>Junta 3 símbolos iguales. Si ganas, cobras sin salir del juego y puedes seguir tirando.</div>
     <div style={{height:8,background:'rgba(255,244,214,.22)',borderRadius:999,overflow:'hidden',marginBottom:14}}><div style={{height:'100%',width:`${Math.min(100,(pulls/dailyLimit)*100)}%`,background:T.gradGold,borderRadius:999,transition:'width .25s ease'}}/></div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
-      {reels.map((key,i)=><div key={i} style={{height:106,borderRadius:22,display:'grid',placeItems:'center',background:'linear-gradient(180deg,#F3E7C7,#E8C477)',border:'3px solid rgba(255,244,214,.75)',boxShadow:'inset 0 8px 18px rgba(0,0,0,.16),0 10px 20px rgba(0,0,0,.22)',fontSize:'2.6rem',animation:spinning?'rewardPulsePro .38s infinite':'none'}}>{SYMBOLS[key]?.icon}</div>)}
+      {reels.map((key,i)=><div key={i} style={{height:106,borderRadius:22,display:'grid',placeItems:'center',background:'linear-gradient(180deg,#FFF8E6,#E8C477)',border:'3px solid rgba(255,244,214,.75)',boxShadow:'inset 0 8px 18px rgba(0,0,0,.16),0 10px 20px rgba(0,0,0,.22)',fontSize:'2.6rem',animation:spinning?'rewardPulsePro .38s infinite':'none'}}>{SYMBOLS[key]?.icon}</div>)}
     </div>
-    {result&&<Card style={{background:'rgba(235,218,170,.92)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{result.pts>0?`Premio: ${result.pts} puntos reales. Puedes cobrar y seguir jugando.`:pullsLeft<=0?'Sin tiradas. Puedes comprar 10 por 5 puntos.':'Puedes volver a tirar mientras te queden tiradas.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar '+result.pts+' puntos'}</Btn></div>}</Card>}
+    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{result.pts>0?`Premio: ${result.pts} puntos reales. Puedes cobrar y seguir jugando.`:pullsLeft<=0?'Sin tiradas. Puedes comprar 10 por 5 puntos.':'Puedes volver a tirar mientras te queden tiradas.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar '+result.pts+' puntos'}</Btn></div>}</Card>}
     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
       <Btn full col={pullsLeft>0?'gold':'ghost'} disabled={spinning||pullsLeft<=0} onClick={spin}>{spinning?'Girando...':pullsLeft>0?'🎰 Tirar':'Sin tiradas'}</Btn>
       <Btn full col='ghost' disabled={spinning||Number(user?.puntos||0)<5} onClick={buyPulls}>🛒 10 tiradas · 5 pts</Btn>
@@ -9905,7 +10088,7 @@ function ArcadeInfoPanel({onOpenGacha}){
   const [open,setOpen]=useState(false);
   return <div style={{marginBottom:14}}>
     <div style={{
-      background:"#F3E7C7",
+      background:"#FFF8E6",
       border:`1px solid ${T.g200}`,
       borderRadius:22,
       padding:"13px 14px",
@@ -9920,7 +10103,7 @@ function ArcadeInfoPanel({onOpenGacha}){
           onClick={()=>{SFX.tab();setOpen(v=>!v);}}
           style={{
             border:`1px solid ${T.g200}`,
-            background:"#F4E8C6",
+            background:"#FFFFFF",
             borderRadius:999,
             padding:"7px 11px",
             fontWeight:900,
@@ -10275,7 +10458,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
   }
   function MiniStat({icon,label,value,sub}){return <div style={{background:"linear-gradient(180deg,rgba(255,244,214,.95),rgba(232,211,162,.87))",border:"1.5px solid rgba(212,175,55,.55)",borderRadius:16,padding:"10px 11px",boxShadow:"0 8px 18px rgba(0,0,0,.16)"}}><div style={{display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:"1.25rem"}}>{icon}</span><b style={{color:T.g800}}>{value}</b></div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub,marginTop:3}}>{label}</div>{sub&&<div style={{fontSize:".62rem",fontWeight:800,color:T.textSub,opacity:.82}}>{sub}</div>}</div>;}
   function Bar({label,value}){const v=clampNum(value,0,100);return <div style={{marginBottom:9}}><div style={{display:"flex",justifyContent:"space-between",fontSize:".74rem",fontWeight:950,color:T.g800,marginBottom:4}}><span>{label}</span><span>{Math.round(v)}%</span></div><div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.16)",overflow:"hidden"}}><div style={{height:"100%",width:`${v}%`,borderRadius:999,background:v<35?"linear-gradient(90deg,#8F2E24,#E57373)":v<70?"linear-gradient(90deg,#B99A45,#F3D37B)":"linear-gradient(90deg,#315D2D,#7FCB84)",transition:"width .25s ease"}}/></div></div>;}
-  function Tab({id,icon,label}){return <button onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:"rgba(255,244,214,.25)"}`,background:tab===id?"linear-gradient(180deg,#D4AF37,#A87945)":"rgba(255,244,214,.12)",color:tab===id?T.g900:"#F1E4BF",borderRadius:16,padding:"10px 8px",fontWeight:950,cursor:"pointer",boxShadow:tab===id?"0 10px 24px rgba(212,175,55,.22)":"0 8px 18px rgba(0,0,0,.15)"}}><div style={{fontSize:"1.25rem"}}>{icon}</div><div style={{fontSize:".72rem"}}>{label}</div></button>;}
+  function Tab({id,icon,label}){return <button onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:"rgba(255,244,214,.25)"}`,background:tab===id?"linear-gradient(180deg,#D4AF37,#A87945)":"rgba(255,244,214,.12)",color:tab===id?T.g900:"#FFF4D6",borderRadius:16,padding:"10px 8px",fontWeight:950,cursor:"pointer",boxShadow:tab===id?"0 10px 24px rgba(212,175,55,.22)":"0 8px 18px rgba(0,0,0,.15)"}}><div style={{fontSize:"1.25rem"}}>{icon}</div><div style={{fontSize:".72rem"}}>{label}</div></button>;}
   function BuildingBadge({task}){
     if(!task)return null;
     const left=Math.max(0,Number(task.endAt||0)-nowTick);
@@ -10292,13 +10475,13 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
         </div>
         <Badge col="gold">{opened}/{roomList.length} zonas</Badge>
       </div>
-      <div className="tycoon-map-board" style={{position:"relative",height:standalone?405:325,zIndex:2,borderRadius:24,overflow:"hidden",background:"linear-gradient(180deg,rgba(255,244,214,.10),rgba(0,0,0,.22))",border:"1px solid rgba(216,190,135,.18)",boxShadow:"inset 0 0 42px rgba(0,0,0,.20)",transform:"translateZ(0)",animation:"none"}}>
+      <div className="tycoon-map-board" style={{position:"relative",height:standalone?405:325,zIndex:2,borderRadius:24,overflow:"hidden",background:"linear-gradient(180deg,rgba(255,244,214,.10),rgba(0,0,0,.22))",border:"1px solid rgba(255,244,214,.18)",boxShadow:"inset 0 0 42px rgba(0,0,0,.20)",transform:"translateZ(0)",animation:"none"}}>
         <div style={{position:"absolute",inset:0,background:"linear-gradient(0deg,rgba(0,0,0,.16),transparent 55%),radial-gradient(circle at 50% 42%,rgba(255,244,214,.09),transparent 42%)",pointerEvents:"none"}}/>
         <div style={{position:"absolute",left:"6%",right:"6%",bottom:"16%",height:78,background:"rgba(72,42,20,.58)",transform:"skewX(-18deg) translateZ(0)",borderRadius:32,boxShadow:"0 22px 40px rgba(0,0,0,.24)"}}/>
         <div style={{position:"absolute",left:"14%",top:"18%",width:"70%",height:"58%",borderRadius:"50%",border:"3px dashed rgba(255,244,214,.16)",pointerEvents:"none"}}/>
         {roomList.map(r=>{
           const task=tycoonTaskFor(state,r.id),blocked=!r.unlocked,def=tycoonRoomDef(r.id);
-          return <button key={r.id} onClick={()=>r.unlocked?enterRoom(r.id):setInspect({icon:r.icon,title:r.name,roomId:r.id,unlock:tycoonCanUnlock(r.id,state),text:tycoonCanUnlock(r.id,state)?`Puedes abrir esta zona por ${tycoonUnlockCost(r.id)} RC.`:`Bloqueada. Requisito: ${def.req}.`})} style={{position:"absolute",left:def.pos.left,top:def.pos.top,transform:"translate(-50%,-50%) translateZ(0)",width:124,minHeight:88,border:`2px solid ${blocked?"rgba(255,244,214,.24)":T.gold}`,background:blocked?"rgba(18,8,6,.72)":"linear-gradient(180deg,#F1E4BF,#C6A06A)",color:blocked?T.white:T.g900,borderRadius:20,padding:10,cursor:"pointer",boxShadow:"0 14px 24px rgba(0,0,0,.30)",textAlign:"center",transition:"transform .18s ease, filter .18s ease, box-shadow .18s ease",animation:"none",willChange:"transform"}} onMouseEnter={e=>{e.currentTarget.style.transform="translate(-50%,-52%) translateZ(0) scale(1.03)";e.currentTarget.style.filter="brightness(1.06)";}} onMouseLeave={e=>{e.currentTarget.style.transform="translate(-50%,-50%) translateZ(0)";e.currentTarget.style.filter="none";}}>
+          return <button key={r.id} onClick={()=>r.unlocked?enterRoom(r.id):setInspect({icon:r.icon,title:r.name,roomId:r.id,unlock:tycoonCanUnlock(r.id,state),text:tycoonCanUnlock(r.id,state)?`Puedes abrir esta zona por ${tycoonUnlockCost(r.id)} RC.`:`Bloqueada. Requisito: ${def.req}.`})} style={{position:"absolute",left:def.pos.left,top:def.pos.top,transform:"translate(-50%,-50%) translateZ(0)",width:124,minHeight:88,border:`2px solid ${blocked?"rgba(255,244,214,.24)":T.gold}`,background:blocked?"rgba(18,8,6,.72)":"linear-gradient(180deg,#FFF4D6,#C6A06A)",color:blocked?T.white:T.g900,borderRadius:20,padding:10,cursor:"pointer",boxShadow:"0 14px 24px rgba(0,0,0,.30)",textAlign:"center",transition:"transform .18s ease, filter .18s ease, box-shadow .18s ease",animation:"none",willChange:"transform"}} onMouseEnter={e=>{e.currentTarget.style.transform="translate(-50%,-52%) translateZ(0) scale(1.03)";e.currentTarget.style.filter="brightness(1.06)";}} onMouseLeave={e=>{e.currentTarget.style.transform="translate(-50%,-50%) translateZ(0)";e.currentTarget.style.filter="none";}}>
             <div style={{fontSize:"1.65rem",lineHeight:1}}>{blocked?"🔒":r.icon}</div>
             <div style={{fontWeight:950,fontSize:".82rem",lineHeight:1.1}}>{r.short||r.name}</div>
             <div style={{fontSize:".65rem",fontWeight:850,opacity:.84}}>{r.unlocked?`Nv. ${r.level||0}`:"Bloqueada"}</div>
@@ -10311,7 +10494,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
       </div>}
     </div>;
   }
-  function SceneObject({h}){return <button onClick={()=>handleHotspot(h)} title={h.title} style={{position:"absolute",left:h.left,top:h.top,width:h.w||82,height:h.h||64,border:"2px solid rgba(255,244,214,.65)",background:"rgba(232,211,162,.82)",color:T.g900,borderRadius:18,cursor:"pointer",boxShadow:"0 12px 26px rgba(0,0,0,.25)",fontWeight:950,display:"grid",placeItems:"center",animation:"chipFloat 4s ease-in-out infinite"}}><div style={{fontSize:"1.7rem",lineHeight:1}}>{h.icon}</div><div style={{fontSize:".66rem",lineHeight:1.05}}>{h.title}</div></button>;}
+  function SceneObject({h}){return <button onClick={()=>handleHotspot(h)} title={h.title} style={{position:"absolute",left:h.left,top:h.top,width:h.w||82,height:h.h||64,border:"2px solid rgba(255,244,214,.65)",background:"rgba(255,244,214,.82)",color:T.g900,borderRadius:18,cursor:"pointer",boxShadow:"0 12px 26px rgba(0,0,0,.25)",fontWeight:950,display:"grid",placeItems:"center",animation:"chipFloat 4s ease-in-out infinite"}}><div style={{fontSize:"1.7rem",lineHeight:1}}>{h.icon}</div><div style={{fontSize:".66rem",lineHeight:1.05}}>{h.title}</div></button>;}
   function TycoonScene({roomId}){
     const room=state.rooms?.[roomId]||tycoonBaseRoom(roomId),def=tycoonRoomDef(roomId),lvl=room.level||0;
     const roomImg=tycoonRoomImage(roomId);
@@ -10364,7 +10547,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
 
       {/* Fallback decorativo por si todavía no has subido imágenes reales. Queda encima como objetos de juego. */}
       {roomId==="hall"&&<>
-        <div style={{position:"absolute",left:"38%",top:"28%",fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",color:"#F1E4BF",textShadow:"0 4px 10px #000"}}>Rasta Cuts</div>
+        <div style={{position:"absolute",left:"38%",top:"28%",fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",color:"#FFF4D6",textShadow:"0 4px 10px #000"}}>Rasta Cuts</div>
         {hasDecor&&[...Array(Math.min(4,state.decor?.plants||0))].map((_,i)=><div key={`p${i}`} style={{position:"absolute",left:`${8+i*20}%`,bottom:"8%",fontSize:"1.8rem",filter:"drop-shadow(0 7px 8px rgba(0,0,0,.45))"}}>🌿</div>)}
         {hasDecor&&[...Array(Math.min(5,state.decor?.lights||0))].map((_,i)=><div key={`l${i}`} style={{position:"absolute",left:`${18+i*13}%`,top:"13%",fontSize:"1.15rem",filter:"drop-shadow(0 0 8px rgba(255,224,120,.8))"}}>💡</div>)}
       </>}
@@ -10376,7 +10559,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
 
       {[...(hotspots[roomId]||[]),...common].map((h,i)=><SceneObject key={i} h={h}/>)}
       {selectedTask&&<div style={{position:"absolute",right:14,bottom:14}}><BuildingBadge task={selectedTask}/></div>}
-      <div style={{position:"absolute",left:14,bottom:14,background:"rgba(18,8,6,.68)",border:"1px solid rgba(255,244,214,.24)",borderRadius:16,padding:"7px 10px",fontSize:".68rem",fontWeight:850,color:"rgba(232,211,162,.82)",backdropFilter:"blur(8px)"}}>
+      <div style={{position:"absolute",left:14,bottom:14,background:"rgba(18,8,6,.68)",border:"1px solid rgba(255,244,214,.24)",borderRadius:16,padding:"7px 10px",fontSize:".68rem",fontWeight:850,color:"rgba(255,244,214,.82)",backdropFilter:"blur(8px)"}}>
         Fondo: {roomImg} · si no existe, se usa escena híbrida
       </div>
     </div>;
@@ -10407,20 +10590,20 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     </div>
     {tab==="mapa"&&<TycoonMap/>}
     {tab==="sala"&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(285px,1fr))",gap:12}}>
-      <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontWeight:950,color:T.g800,fontSize:"1.08rem"}}>{selectedDef.icon} {selectedDef.name}</div><div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,lineHeight:1.35}}>{selectedDef.desc}</div></div><Badge col={selectedRoom.unlocked?"green":"red"}>{selectedRoom.unlocked?`Nivel ${selectedRoom.level}`:"Bloqueada"}</Badge></div><TycoonScene roomId={selectedId}/></Card>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontWeight:950,color:T.g800,fontSize:"1.08rem"}}>{selectedDef.icon} {selectedDef.name}</div><div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,lineHeight:1.35}}>{selectedDef.desc}</div></div><Badge col={selectedRoom.unlocked?"green":"red"}>{selectedRoom.unlocked?`Nivel ${selectedRoom.level}`:"Bloqueada"}</Badge></div><TycoonScene roomId={selectedId}/></Card>
       <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Panel de la sala</div><div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginBottom:12}}>{selectedDef.effect}</div>
         {selectedTask&&<div style={{marginBottom:12,background:"rgba(18,8,6,.08)",borderRadius:14,padding:10,fontWeight:900,color:T.g800}}>⏳ {selectedTask.label} · queda {tycoonFormatTime(Number(selectedTask.endAt)-nowTick)}</div>}
         <Bar label="Satisfacción" value={state.satisfaction}/><Bar label="Limpieza" value={state.cleanliness}/><Bar label="Energía del equipo" value={state.energy}/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8,marginTop:12}}><Btn col="gold" onClick={()=>selectedRoom.unlocked?startRoomTask(selectedId,"upgrade"):startRoomTask(selectedId,"unlock")} disabled={Boolean(selectedTask)||queueFull}>{selectedRoom.unlocked?`Mejorar ${roomCost} RC`:`Abrir ${roomCost} RC`}</Btn><Btn col="green" onClick={attendBurst}>Atender tanda</Btn><Btn col="ghost" onClick={cleanShop}>Limpiar 35 RC</Btn></div>
         <div style={{fontSize:".75rem",fontWeight:850,color:T.textSub,marginTop:10}}>Tiempo de obra: {roomTime}</div>
-        {inspect&&<div style={{marginTop:12,background:"rgba(216,190,135,.55)",border:`1.5px solid ${T.g300}`,borderRadius:16,padding:12}}><div style={{fontWeight:950,color:T.g800}}>{inspect.icon} {inspect.title}</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.35}}>{inspect.text}</div></div>}
+        {inspect&&<div style={{marginTop:12,background:"rgba(255,244,214,.55)",border:`1.5px solid ${T.g300}`,borderRadius:16,padding:12}}><div style={{fontWeight:950,color:T.g800}}>{inspect.icon} {inspect.title}</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.35}}>{inspect.text}</div></div>}
       </Card>
     </div>}
-    {tab==="stock"&&<Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📦 Almacén visual</div><div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,marginBottom:12}}>Capacidad según almacén: {economy.capacity}. Si el stock cae, baja la entrada de clientes.</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:8}}>{Object.entries(state.stock||{}).map(([k,v])=><MiniStat key={k} icon={k==="wax"?"🧴":k==="shampoo"?"🫧":k==="towels"?"🧺":"🥤"} label={{wax:"Cera",shampoo:"Champú",towels:"Toallas",drinks:"Bebidas"}[k]||k} value={Math.floor(v)}/>)}</div><div style={{marginTop:12,display:"flex",gap:8,flexWrap:"wrap"}}><Btn col="gold" onClick={restock}>Reponer stock</Btn><Btn col="ghost" onClick={()=>enterRoom("storage")}>Entrar al almacén</Btn></div></Card>}
-    {tab==="equipo"&&<Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:10}}>👥 Equipo y decoración</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))",gap:8,marginBottom:12}}><MiniStat icon="💈" label="Barberos" value={state.staff?.barbers||0}/><MiniStat icon="🧹" label="Ayudantes" value={state.staff?.assistants||0}/><MiniStat icon="🧾" label="Caja" value={state.staff?.cashiers||0}/><MiniStat icon="⚙️" label="Servicio" value={economy.servicePower.toFixed(1)}/></div><div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}><Btn col="green" onClick={()=>hire("barbers")}>Barbero 390 RC</Btn><Btn col="green" onClick={()=>hire("assistants")}>Ayudante 210 RC</Btn><Btn col="ghost" onClick={()=>hire("cashiers")}>Caja 280 RC</Btn></div><div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Hall / escaparate</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(125px,1fr))",gap:8}}><Btn small col="ghost" onClick={()=>buyDecor("plants")}>🌿 Planta 90</Btn><Btn small col="ghost" onClick={()=>buyDecor("posters")}>🖼️ Póster 120</Btn><Btn small col="ghost" onClick={()=>buyDecor("lights")}>💡 Luces 180</Btn><Btn small col="ghost" onClick={()=>buyDecor("vitrine")}>🧴 Vitrina 260</Btn></div></Card>}
-    {tab==="obras"&&<Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}><div><div style={{fontWeight:950,color:T.g800}}>🔨 Cola de obras</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>Máximo actual: {maxQueue}. Sube el Hall para mejorar la gestión.</div></div><Badge col="gold">{activeQueue.length}/{maxQueue}</Badge></div>{activeQueue.length===0?<EmptyState icon="🔨" title="No hay obras en marcha" sub="Entra en una sala o usa el mapa para iniciar mejoras."/>:<div style={{display:"grid",gap:9}}>{activeQueue.map(t=>{const total=Math.max(1,Number(t.endAt)-Number(t.startedAt));const left=Math.max(0,Number(t.endAt)-nowTick);const pct=clampNum(100-(left/total*100),0,100);return <div key={t.id} style={{background:"rgba(255,244,214,.65)",border:`1.5px solid ${T.g300}`,borderRadius:16,padding:12}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}><b style={{color:T.g800}}>{t.label}</b><Badge col="gold">{tycoonFormatTime(left)}</Badge></div><div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden",marginTop:9}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#263F4D,#B99A45)",borderRadius:999}}/></div></div>;})}</div>}</Card>}
-    {tab==="guia"&&<Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}><div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:12}}><div style={{fontSize:"2.2rem"}}>🧔🏽‍♂️</div><div><div style={{fontWeight:950,color:T.g800}}>Guía de Rasta</div><div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>{guideTexts[state.guideStep%guideTexts.length]}</div><div style={{marginTop:10}}><Btn small col="gold" onClick={()=>mutate(prev=>({...prev,guideStep:(prev.guideStep||0)+1}))}>Siguiente consejo</Btn></div></div></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:10}}>{[{icon:"💰",t:"Economía RC",d:"Los RC sólo pertenecen al Tycoon. Sirven para stock, mejoras, equipo y decoración."},{icon:"🗺️",t:"Mapa",d:"Es la vista principal tipo Travian. Pulsa edificios para entrar o ver requisitos."},{icon:"🏠",t:"Salas",d:"Cada sala tiene objetos clicables. La escena cambia según el tipo de zona."},{icon:"📦",t:"Stock",d:"Sin productos no se atienden clientes y los RC/h bajan."},{icon:"🔨",t:"Obras",d:"Las mejoras tardan tiempo real y se completan solas."},{icon:"📈",t:"Progreso",d:"Hall atrae clientes, Peluquería sube ingresos, Almacén sostiene la economía."}].map(x=><div key={x.t} style={{background:"rgba(255,255,255,.38)",border:`1px solid ${T.g200}`,borderRadius:16,padding:12}}><div style={{fontWeight:950,color:T.g800}}>{x.icon} {x.t}</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>{x.d}</div></div>)}</div><div style={{marginTop:12,display:"flex",justifyContent:"flex-end"}}><Btn small col="red" onClick={resetGame}>Reiniciar Tycoon</Btn></div></Card>}
+    {tab==="stock"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📦 Almacén visual</div><div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,marginBottom:12}}>Capacidad según almacén: {economy.capacity}. Si el stock cae, baja la entrada de clientes.</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:8}}>{Object.entries(state.stock||{}).map(([k,v])=><MiniStat key={k} icon={k==="wax"?"🧴":k==="shampoo"?"🫧":k==="towels"?"🧺":"🥤"} label={{wax:"Cera",shampoo:"Champú",towels:"Toallas",drinks:"Bebidas"}[k]||k} value={Math.floor(v)}/>)}</div><div style={{marginTop:12,display:"flex",gap:8,flexWrap:"wrap"}}><Btn col="gold" onClick={restock}>Reponer stock</Btn><Btn col="ghost" onClick={()=>enterRoom("storage")}>Entrar al almacén</Btn></div></Card>}
+    {tab==="equipo"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:10}}>👥 Equipo y decoración</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))",gap:8,marginBottom:12}}><MiniStat icon="💈" label="Barberos" value={state.staff?.barbers||0}/><MiniStat icon="🧹" label="Ayudantes" value={state.staff?.assistants||0}/><MiniStat icon="🧾" label="Caja" value={state.staff?.cashiers||0}/><MiniStat icon="⚙️" label="Servicio" value={economy.servicePower.toFixed(1)}/></div><div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}><Btn col="green" onClick={()=>hire("barbers")}>Barbero 390 RC</Btn><Btn col="green" onClick={()=>hire("assistants")}>Ayudante 210 RC</Btn><Btn col="ghost" onClick={()=>hire("cashiers")}>Caja 280 RC</Btn></div><div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Hall / escaparate</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(125px,1fr))",gap:8}}><Btn small col="ghost" onClick={()=>buyDecor("plants")}>🌿 Planta 90</Btn><Btn small col="ghost" onClick={()=>buyDecor("posters")}>🖼️ Póster 120</Btn><Btn small col="ghost" onClick={()=>buyDecor("lights")}>💡 Luces 180</Btn><Btn small col="ghost" onClick={()=>buyDecor("vitrine")}>🧴 Vitrina 260</Btn></div></Card>}
+    {tab==="obras"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}><div><div style={{fontWeight:950,color:T.g800}}>🔨 Cola de obras</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>Máximo actual: {maxQueue}. Sube el Hall para mejorar la gestión.</div></div><Badge col="gold">{activeQueue.length}/{maxQueue}</Badge></div>{activeQueue.length===0?<EmptyState icon="🔨" title="No hay obras en marcha" sub="Entra en una sala o usa el mapa para iniciar mejoras."/>:<div style={{display:"grid",gap:9}}>{activeQueue.map(t=>{const total=Math.max(1,Number(t.endAt)-Number(t.startedAt));const left=Math.max(0,Number(t.endAt)-nowTick);const pct=clampNum(100-(left/total*100),0,100);return <div key={t.id} style={{background:"rgba(255,244,214,.65)",border:`1.5px solid ${T.g300}`,borderRadius:16,padding:12}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}><b style={{color:T.g800}}>{t.label}</b><Badge col="gold">{tycoonFormatTime(left)}</Badge></div><div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden",marginTop:9}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#263F4D,#B99A45)",borderRadius:999}}/></div></div>;})}</div>}</Card>}
+    {tab==="guia"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:12}}><div style={{fontSize:"2.2rem"}}>🧔🏽‍♂️</div><div><div style={{fontWeight:950,color:T.g800}}>Guía de Rasta</div><div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>{guideTexts[state.guideStep%guideTexts.length]}</div><div style={{marginTop:10}}><Btn small col="gold" onClick={()=>mutate(prev=>({...prev,guideStep:(prev.guideStep||0)+1}))}>Siguiente consejo</Btn></div></div></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:10}}>{[{icon:"💰",t:"Economía RC",d:"Los RC sólo pertenecen al Tycoon. Sirven para stock, mejoras, equipo y decoración."},{icon:"🗺️",t:"Mapa",d:"Es la vista principal tipo Travian. Pulsa edificios para entrar o ver requisitos."},{icon:"🏠",t:"Salas",d:"Cada sala tiene objetos clicables. La escena cambia según el tipo de zona."},{icon:"📦",t:"Stock",d:"Sin productos no se atienden clientes y los RC/h bajan."},{icon:"🔨",t:"Obras",d:"Las mejoras tardan tiempo real y se completan solas."},{icon:"📈",t:"Progreso",d:"Hall atrae clientes, Peluquería sube ingresos, Almacén sostiene la economía."}].map(x=><div key={x.t} style={{background:"rgba(255,255,255,.38)",border:`1px solid ${T.g200}`,borderRadius:16,padding:12}}><div style={{fontWeight:950,color:T.g800}}>{x.icon} {x.t}</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>{x.d}</div></div>)}</div><div style={{marginTop:12,display:"flex",justifyContent:"flex-end"}}><Btn small col="red" onClick={resetGame}>Reiniciar Tycoon</Btn></div></Card>}
     <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Registro</div><div style={{display:"grid",gap:6,maxHeight:190,overflow:"auto"}}>{(state.log||[]).slice(0,12).map((l,i)=><div key={i} style={{fontSize:".75rem",fontWeight:820,color:T.textSub,lineHeight:1.35,borderBottom:`1px solid ${T.g200}`,paddingBottom:5}}>{new Date(l.t).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})} · {l.msg}</div>)}</div></Card>
   </div>;
 }
@@ -10555,7 +10738,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
           const played=getPlayedToday(g.id,user.id);
           const best=getMyBestScore(g.id,user.id);
           return(
-            <Card key={g.id} style={{opacity:played?0.76:1,background:played?"linear-gradient(180deg,#EBD8A8,#D7B777)":"linear-gradient(135deg,#F1E4BF,#E6D09B)",border:played?`1px solid ${T.g300}`:`2px solid ${T.gold}`}} hover>
+            <Card key={g.id} style={{opacity:played?0.76:1,background:played?"linear-gradient(180deg,#EBD8A8,#D7B777)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)",border:played?`1px solid ${T.g300}`:`2px solid ${T.gold}`}} hover>
               <div style={{display:"flex",alignItems:"center",gap:14}}>
                 <div className="icon3d" style={{fontSize:"2.55rem"}}>{g.icon}</div>
                 <div style={{flex:1,minWidth:0}}>
@@ -10928,7 +11111,7 @@ function Ranking({user}){
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="🏆" title="Rankings" sub="Top 10 estilo liga"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
-        {Object.entries(cfg).map(([id,c])=><button key={id} onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g200}`,background:tab===id?T.gradGold:"rgba(232,211,162,.82)",color:tab===id?T.g900:T.g700,borderRadius:16,padding:"9px 6px",fontWeight:900,cursor:"pointer",boxShadow:tab===id?"0 8px 20px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.12)"}}><div className="icon3d" style={{fontSize:"1.35rem"}}>{c.icon}</div><div style={{fontSize:".68rem"}}>{c.title}</div></button>)}
+        {Object.entries(cfg).map(([id,c])=><button key={id} onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g200}`,background:tab===id?T.gradGold:"rgba(255,244,214,.82)",color:tab===id?T.g900:T.g700,borderRadius:16,padding:"9px 6px",fontWeight:900,cursor:"pointer",boxShadow:tab===id?"0 8px 20px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.12)"}}><div className="icon3d" style={{fontSize:"1.35rem"}}>{c.icon}</div><div style={{fontSize:".68rem"}}>{c.title}</div></button>)}
       </div>
       <Card style={{marginBottom:12,background:"linear-gradient(135deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}><div className="icon3d" style={{fontSize:"2.1rem"}}>{cfg[tab].icon}</div><div><div style={{fontWeight:900}}>{cfg[tab].title}</div><div style={{fontSize:".75rem",opacity:.78,fontWeight:700}}>{cfg[tab].sub}</div></div></div>
@@ -10937,7 +11120,7 @@ function Ranking({user}){
         const isMe=u.id===user.id;
         const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`;
         return(
-          <Card key={u.id} onClick={()=>setSelectedProfile(u)} style={{marginBottom:8,background:isMe?"linear-gradient(180deg,#E5C66F,#E6D09B)":"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:isMe?`2px solid ${T.gold}`:`1px solid ${T.g300}`}} hover>
+          <Card key={u.id} onClick={()=>setSelectedProfile(u)} style={{marginBottom:8,background:isMe?"linear-gradient(180deg,#FFF1A8,#F6E5BE)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:isMe?`2px solid ${T.gold}`:`1px solid ${T.g300}`}} hover>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <div className="icon3d" style={{fontSize:i<3?"1.7rem":"1.1rem",minWidth:38,textAlign:"center",fontWeight:900}}>{medal}</div>
               <PublicAvatar profile={u} currentUser={user} size={42}/>
@@ -11080,7 +11263,7 @@ function PerfilNewsActivity({user}){
     </div>
     {loading?<Spinner/>:total===0?<div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.4}}>Todavía no has comentado ni dado like en Actualidad. Abre una noticia, aporta algo útil y empieza a sumar puntos.</div>:<>
       {items.length>0&&<div style={{fontWeight:950,color:T.g800,fontSize:".86rem",margin:"4px 0 8px"}}>Comentarios recientes</div>}
-      {items.map(c=><div key={c.id} onClick={()=>c.news_url&&window.open(c.news_url,"_blank","noopener,noreferrer")} style={{background:"rgba(232,211,162,.72)",border:`1px solid ${T.g200}`,borderRadius:14,padding:"9px 10px",marginBottom:8,cursor:c.news_url?"pointer":"default"}}>
+      {items.map(c=><div key={c.id} onClick={()=>c.news_url&&window.open(c.news_url,"_blank","noopener,noreferrer")} style={{background:"rgba(255,244,214,.72)",border:`1px solid ${T.g200}`,borderRadius:14,padding:"9px 10px",marginBottom:8,cursor:c.news_url?"pointer":"default"}}>
         <div style={{fontWeight:950,color:T.g800,fontSize:".82rem",lineHeight:1.18}}>{c.news_title||"Noticia"}</div>
         <div style={{fontSize:".76rem",fontWeight:750,color:T.textSub,lineHeight:1.35,marginTop:4,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>“{c.contenido}”</div>
       </div>)}
@@ -11123,9 +11306,9 @@ async function safeList(table,query){try{const r=await dbGet(table,query);return
 function MissionCard({m,value,claimed,onClaim}){
   const done=value>=m.goal;
   const pct=clampPct(value,m.goal);
-  return <Card style={{marginBottom:10,padding:12,background:done?"linear-gradient(180deg,#F2E4BC,#E6D09B)":"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`2px solid ${done?T.gold:T.g200}`}}>
+  return <Card style={{marginBottom:10,padding:12,background:done?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"linear-gradient(180deg,#FFF4D6,#F5E6C8)",border:`2px solid ${done?T.gold:T.g200}`}}>
     <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-      <div style={{width:42,height:42,borderRadius:16,display:"grid",placeItems:"center",fontSize:"1.35rem",background:done?T.gradGold:"rgba(232,211,162,.82)",boxShadow:"0 8px 16px rgba(20,8,4,.14)"}}>{m.icon}</div>
+      <div style={{width:42,height:42,borderRadius:16,display:"grid",placeItems:"center",fontSize:"1.35rem",background:done?T.gradGold:"rgba(255,244,214,.82)",boxShadow:"0 8px 16px rgba(20,8,4,.14)"}}>{m.icon}</div>
       <div style={{flex:1,minWidth:0}}>
         <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"baseline"}}><div style={{fontWeight:950,color:T.g800,lineHeight:1.1}}>{m.title}</div><div style={{fontWeight:950,color:done?T.orange:T.g600,fontSize:".82rem"}}>+{m.points} pts</div></div>
         <div style={{fontSize:".78rem",fontWeight:750,color:T.textSub,marginTop:3}}>{m.desc}</div>
@@ -11133,7 +11316,7 @@ function MissionCard({m,value,claimed,onClaim}){
         <div style={{height:8,background:"rgba(110,53,24,.16)",borderRadius:999,overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:`${pct}%`,background:done?T.gradGold:T.gradClient,borderRadius:999,transition:"width .3s ease"}}/></div>
       </div>
     </div>
-    {claimed?<div style={{marginTop:9,fontSize:".78rem",fontWeight:900,color:T.g700,background:"rgba(232,211,162,.72)",borderRadius:12,padding:"8px 10px"}}>Reclamado</div>
+    {claimed?<div style={{marginTop:9,fontSize:".78rem",fontWeight:900,color:T.g700,background:"rgba(255,244,214,.72)",borderRadius:12,padding:"8px 10px"}}>Reclamado</div>
       :done?<div style={{marginTop:9}}><Btn full small col="gold" onClick={onClaim}>Reclamar +{m.points}</Btn></div>
       :<div style={{marginTop:9,fontSize:".76rem",fontWeight:800,color:T.textSub}}>Completa el objetivo para reclamarlo.</div>}
   </Card>;
@@ -11200,17 +11383,17 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
   }
   const unlockedCount=Object.values(trophies).filter(Boolean).length;
   const available=MISSION_DEFS.filter(m=>missionValue(m,stats)>=m.goal&&!claimed[`${m.key}_${missionPeriodKey(m)}`]).length;
-  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`2px solid ${available?T.gold:T.g300}`}}>
+  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${available?T.gold:T.g300}`}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:12}}>
       <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🎯 Objetivos y trofeos</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Motivos claros para volver cada día sin regalar puntos infinitos.</div></div>
       <Badge col={available?"gold":"green"}>{available} listos</Badge>
     </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-      <button onClick={()=>setTab("missions")} style={{border:`2px solid ${tab==="missions"?T.gold:T.g200}`,borderRadius:14,padding:"9px 10px",fontWeight:950,cursor:"pointer",background:tab==="missions"?T.gradGold:"rgba(232,211,162,.72)",color:tab==="missions"?T.g900:T.g700}}>Objetivos</button>
-      <button onClick={()=>setTab("trophies")} style={{border:`2px solid ${tab==="trophies"?T.gold:T.g200}`,borderRadius:14,padding:"9px 10px",fontWeight:950,cursor:"pointer",background:tab==="trophies"?T.gradGold:"rgba(232,211,162,.72)",color:tab==="trophies"?T.g900:T.g700}}>Trofeos {unlockedCount}/{TROPHY_DEFS.length}</button>
+      <button onClick={()=>setTab("missions")} style={{border:`2px solid ${tab==="missions"?T.gold:T.g200}`,borderRadius:14,padding:"9px 10px",fontWeight:950,cursor:"pointer",background:tab==="missions"?T.gradGold:"rgba(255,244,214,.72)",color:tab==="missions"?T.g900:T.g700}}>Objetivos</button>
+      <button onClick={()=>setTab("trophies")} style={{border:`2px solid ${tab==="trophies"?T.gold:T.g200}`,borderRadius:14,padding:"9px 10px",fontWeight:950,cursor:"pointer",background:tab==="trophies"?T.gradGold:"rgba(255,244,214,.72)",color:tab==="trophies"?T.g900:T.g700}}>Trofeos {unlockedCount}/{TROPHY_DEFS.length}</button>
     </div>
     {loading?<Spinner/>:tab==="missions"?<div>{MISSION_DEFS.map(m=><MissionCard key={m.key} m={m} value={missionValue(m,stats)} claimed={!!claimed[`${m.key}_${missionPeriodKey(m)}`]} onClaim={()=>claimMission(m)}/>)}</div>
-      :<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{TROPHY_DEFS.map(t=>{const on=!!trophies[t.key];return <div key={t.key} style={{border:`2px solid ${on?T.gold:T.g200}`,borderRadius:18,padding:12,background:on?"linear-gradient(180deg,#F2E4BC,#E6D09B)":"rgba(255,244,214,.58)",opacity:on?1:.55,textAlign:"center"}}><div style={{fontSize:"2rem",filter:on?"drop-shadow(0 6px 8px rgba(212,175,55,.35))":"grayscale(1)"}}>{t.icon}</div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem",lineHeight:1.1}}>{t.title}</div><div style={{fontSize:".7rem",fontWeight:800,color:T.textSub,marginTop:4,lineHeight:1.25}}>{t.desc}</div></div>})}</div>}
+      :<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{TROPHY_DEFS.map(t=>{const on=!!trophies[t.key];return <div key={t.key} style={{border:`2px solid ${on?T.gold:T.g200}`,borderRadius:18,padding:12,background:on?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"rgba(255,244,214,.58)",opacity:on?1:.55,textAlign:"center"}}><div style={{fontSize:"2rem",filter:on?"drop-shadow(0 6px 8px rgba(212,175,55,.35))":"grayscale(1)"}}>{t.icon}</div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem",lineHeight:1.1}}>{t.title}</div><div style={{fontSize:".7rem",fontWeight:800,color:T.textSub,marginTop:4,lineHeight:1.25}}>{t.desc}</div></div>})}</div>}
   </Card>;
 }
 
@@ -11256,13 +11439,13 @@ function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPo
   }
   const cats=[{id:"todos",label:"Todo"},{id:"gorras",label:"Gorras"},{id:"gafas",label:"Gafas"},{id:"marcos",label:"Marcos"},{id:"auras",label:"Auras"},{id:"fondos",label:"Fondos"},{id:"extras",label:"Extras"}];
   const shown=items.filter(i=>cat==="todos"||i.categoria===cat);
-  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`2px solid ${T.gold}`}}>
+  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:10}}>
       <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🧢 Tienda de estilo</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Canjea puntos por cosméticos del perfil. Se desbloquean para siempre.</div></div>
       <Badge col="gold">{user.puntos||0} pts</Badge>
     </div>
     <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:8}}>{cats.map(c=><button key={c.id} onClick={()=>setCat(c.id)} style={{whiteSpace:"nowrap",border:`2px solid ${cat===c.id?T.gold:T.g200}`,background:cat===c.id?T.gradGold:"rgba(255,244,214,.8)",borderRadius:999,padding:"7px 12px",fontWeight:950,color:cat===c.id?T.g900:T.g700,cursor:"pointer"}}>{c.label}</button>)}</div>
-    {loading?<Spinner/>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{shown.map(item=>{const has=owned.includes(item.item_key);const active=normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;return <div key={item.item_key} style={{background:active?"linear-gradient(180deg,#F2E4BC,#E6D09B)":"rgba(232,211,162,.72)",border:`2px solid ${active?T.gold:T.g200}`,borderRadius:18,padding:10,boxShadow:"0 8px 18px rgba(20,8,4,.1)"}}>
+    {loading?<Spinner/>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{shown.map(item=>{const has=owned.includes(item.item_key);const active=normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;return <div key={item.item_key} style={{background:active?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"rgba(255,244,214,.72)",border:`2px solid ${active?T.gold:T.g200}`,borderRadius:18,padding:10,boxShadow:"0 8px 18px rgba(20,8,4,.1)"}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:6,alignItems:"center",marginBottom:8}}><Badge col={rarityColor(item.rareza)}>{rarityLabel(item.rareza)}</Badge><b style={{color:T.orange,fontSize:".78rem"}}>{item.puntos_precio} pts</b></div>
       <div style={{display:"flex",justifyContent:"center",margin:"4px 0 8px"}}><Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(item)}} size={92}/></div>
       <div style={{fontWeight:950,color:T.g800,fontSize:".84rem",lineHeight:1.1}}>{item.nombre}</div>
@@ -11316,7 +11499,7 @@ function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}
       borderRadius:"50%",
       display:"grid",
       placeItems:"center",
-      background:active?"linear-gradient(145deg,#F2E4BC,#E6C27A)":reached?"linear-gradient(145deg,#F1E4BF,#F0D39B)":"linear-gradient(145deg,#16100C,#3A2A1D)",
+      background:active?"linear-gradient(145deg,#FFF8E1,#E6C27A)":reached?"linear-gradient(145deg,#FFF4D6,#F0D39B)":"linear-gradient(145deg,#16100C,#3A2A1D)",
       border:`3px solid ${active?T.gold:owned?T.g300:reached?T.gold:"rgba(255,244,214,.22)"}`,
       boxShadow:active?"0 0 24px rgba(212,175,55,.55)":reached?"0 8px 18px rgba(212,175,55,.25)":"inset 0 10px 22px rgba(0,0,0,.35),0 8px 14px rgba(20,8,4,.18)",
       overflow:"hidden",
@@ -11405,7 +11588,7 @@ async function reveal(item){
   const selectedActive=selectedItem?normalizeAvatarConfig(currentConfig,user.avatar)[selectedItem.slot]===selectedItem.valor:false;
   const next=items.find(i=>!owned.includes(i.item_key) && Number(i.puntos_precio||0)>(user.puntos||0)) || items.find(i=>!owned.includes(i.item_key));
 
-  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`2px solid ${T.gold}`,overflow:"hidden",padding:14}}>
+  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`,overflow:"hidden",padding:14}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:10}}>
       <div style={{minWidth:0}}>
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.34rem",color:T.g800}}>🎁 Camino de recompensas</div>
@@ -11442,7 +11625,7 @@ async function reveal(item){
       </div>
 
       {selectedItem&&<div style={{display:"grid",gridTemplateColumns:"74px 1fr",gap:10,alignItems:"center",background:"rgba(255,248,225,.72)",border:`2px solid ${selectedReached?T.gold:T.g200}`,borderRadius:18,padding:10}}>
-        <div style={{width:68,height:68,borderRadius:"50%",display:"grid",placeItems:"center",background:selectedReached?"linear-gradient(145deg,#F1E4BF,#E6C27A)":"linear-gradient(145deg,#16100C,#3A2A1D)",overflow:"hidden",boxShadow:"inset 0 8px 18px rgba(0,0,0,.18)"}}>
+        <div style={{width:68,height:68,borderRadius:"50%",display:"grid",placeItems:"center",background:selectedReached?"linear-gradient(145deg,#FFF4D6,#E6C27A)":"linear-gradient(145deg,#16100C,#3A2A1D)",overflow:"hidden",boxShadow:"inset 0 8px 18px rgba(0,0,0,.18)"}}>
           <div style={{filter:selectedReached||selectedOwned?"none":"grayscale(1) brightness(0)",opacity:selectedReached||selectedOwned?1:.78}}>
             <Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(selectedItem)}} size={62}/>
           </div>
@@ -11497,30 +11680,30 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
   ];
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <Card style={{marginBottom:12,background:"linear-gradient(160deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(232,211,162,.72)",color:T.white,padding:"14px 14px"}}>
+      <Card style={{marginBottom:12,background:"linear-gradient(160deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.72)",color:T.white,padding:"14px 14px"}}>
         <div style={{display:"flex",gap:13,alignItems:"center"}}>
           <Av av={form.avatar} config={cfg} size={86}/>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white,lineHeight:1}}>{user.nombre}</div>
-            <div style={{fontSize:".74rem",color:"rgba(232,211,162,.82)",fontWeight:800,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.email}</div>
+            <div style={{fontSize:".74rem",color:"rgba(255,244,214,.82)",fontWeight:800,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.email}</div>
             <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
               <Badge col="gold">{nivel}</Badge>
               <Badge col="green">{user.puntos||0} pts</Badge>
             </div>
-            <div style={{fontSize:".72rem",fontWeight:800,color:"rgba(232,211,162,.82)",marginTop:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{avatarStyleName(cfg)}</div>
+            <div style={{fontSize:".72rem",fontWeight:800,color:"rgba(255,244,214,.82)",marginTop:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{avatarStyleName(cfg)}</div>
           </div>
         </div>
       </Card>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
-        {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${tab===t.id?T.gold:T.g300}`,background:tab===t.id?T.gradGold:"rgba(232,211,162,.82)",color:tab===t.id?T.g900:T.g700,borderRadius:16,padding:"9px 4px",fontWeight:950,cursor:"pointer",boxShadow:tab===t.id?"0 10px 22px rgba(212,175,55,.24)":"0 5px 12px rgba(20,8,4,.1)"}}>
+        {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${tab===t.id?T.gold:T.g300}`,background:tab===t.id?T.gradGold:"rgba(255,244,214,.82)",color:tab===t.id?T.g900:T.g700,borderRadius:16,padding:"9px 4px",fontWeight:950,cursor:"pointer",boxShadow:tab===t.id?"0 10px 22px rgba(212,175,55,.24)":"0 5px 12px rgba(20,8,4,.1)"}}>
           <div style={{fontSize:"1.1rem",lineHeight:1}}>{t.icon}</div>
           <div style={{fontSize:".68rem",marginTop:3}}>{t.label}</div>
         </button>)}
       </div>
 
       {tab==="resumen"&&<>
-        <Card style={{marginBottom:12,background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
             <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>{user.puntos||0}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div></div>
             <div><div style={{fontSize:"1.35rem"}}>🏆</div><div style={{fontWeight:950,color:T.g800}}>{nivel}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>nivel</div></div>
@@ -11533,14 +11716,14 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
             {privacy.modo_incognito?<IncognitoAvatar size={48}/>:<Av av={form.avatar} config={cfg} size={48}/>}          
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr",gap:8}}>
-            <button onClick={()=>updatePrivacy({perfil_publico:!privacy.perfil_publico,modo_incognito:privacy.modo_incognito && !privacy.perfil_publico?false:privacy.modo_incognito})} style={{border:`2px solid ${privacy.perfil_publico?T.g300:T.blue}`,background:privacy.perfil_publico?"rgba(232,211,162,.72)":"linear-gradient(135deg,#1B1B1B,#3A3A3A)",color:privacy.perfil_publico?T.g800:T.white,borderRadius:16,padding:"11px 12px",fontWeight:950,cursor:"pointer",textAlign:"left"}}>{privacy.perfil_publico?"👁️ Perfil público activado":"🚫 Perfil público oculto"}<div style={{fontSize:".72rem",fontWeight:800,opacity:.8,marginTop:2}}>{privacy.perfil_publico?"Otros usuarios pueden abrir tu perfil público.":"Otros usuarios no verán tu ficha pública."}</div></button>
-            <button onClick={()=>updatePrivacy({modo_incognito:!privacy.modo_incognito,perfil_publico:privacy.modo_incognito?privacy.perfil_publico:false})} style={{border:`2px solid ${privacy.modo_incognito?T.blue:T.g300}`,background:privacy.modo_incognito?"linear-gradient(135deg,#050505,#242424)":"rgba(232,211,162,.72)",color:privacy.modo_incognito?T.white:T.g800,borderRadius:16,padding:"11px 12px",fontWeight:950,cursor:"pointer",textAlign:"left"}}>{privacy.modo_incognito?"🕶️ Modo incógnito activado":"👤 Modo incógnito desactivado"}<div style={{fontSize:".72rem",fontWeight:800,opacity:.8,marginTop:2}}>{privacy.modo_incognito?"En rankings y comunidad aparecerás como xxxxxx con silueta negra.":"Se mostrará tu nombre y tu avatar público."}</div></button>
+            <button onClick={()=>updatePrivacy({perfil_publico:!privacy.perfil_publico,modo_incognito:privacy.modo_incognito && !privacy.perfil_publico?false:privacy.modo_incognito})} style={{border:`2px solid ${privacy.perfil_publico?T.g300:T.blue}`,background:privacy.perfil_publico?"rgba(255,244,214,.72)":"linear-gradient(135deg,#1B1B1B,#3A3A3A)",color:privacy.perfil_publico?T.g800:T.white,borderRadius:16,padding:"11px 12px",fontWeight:950,cursor:"pointer",textAlign:"left"}}>{privacy.perfil_publico?"👁️ Perfil público activado":"🚫 Perfil público oculto"}<div style={{fontSize:".72rem",fontWeight:800,opacity:.8,marginTop:2}}>{privacy.perfil_publico?"Otros usuarios pueden abrir tu perfil público.":"Otros usuarios no verán tu ficha pública."}</div></button>
+            <button onClick={()=>updatePrivacy({modo_incognito:!privacy.modo_incognito,perfil_publico:privacy.modo_incognito?privacy.perfil_publico:false})} style={{border:`2px solid ${privacy.modo_incognito?T.blue:T.g300}`,background:privacy.modo_incognito?"linear-gradient(135deg,#050505,#242424)":"rgba(255,244,214,.72)",color:privacy.modo_incognito?T.white:T.g800,borderRadius:16,padding:"11px 12px",fontWeight:950,cursor:"pointer",textAlign:"left"}}>{privacy.modo_incognito?"🕶️ Modo incógnito activado":"👤 Modo incógnito desactivado"}<div style={{fontSize:".72rem",fontWeight:800,opacity:.8,marginTop:2}}>{privacy.modo_incognito?"En rankings y comunidad aparecerás como xxxxxx con silueta negra.":"Se mostrará tu nombre y tu avatar público."}</div></button>
           </div>
         </Card>
         <PerfilNewsActivity user={user}/>
       </>}
 
-      {tab==="editar"&&<Card style={{marginBottom:16,padding:12,background:"linear-gradient(180deg,#E9D5A3,#D4BD8F)",border:"2px solid #8E7957"}}>
+      {tab==="editar"&&<Card style={{marginBottom:16,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)",border:"2px solid #8E7957"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
           <div><div style={{fontWeight:950,color:T.g800}}>Editor de personaje</div><div style={{fontSize:".78rem",color:T.textSub,fontWeight:800,lineHeight:1.3}}>Ahora se comporta como una ventana de juego: inventario, apariencia, objetos bloqueados, vista previa y guardado directo.</div></div>
           <div className="icon3d" style={{fontSize:"2rem"}}>🎮</div>
@@ -11742,7 +11925,7 @@ function MusicaComunidad({showToast}){
       <div style={{padding:"18px 16px",position:"relative"}}>
         <div style={{position:"absolute",right:-18,top:-28,fontSize:"7rem",opacity:.10,transform:"rotate(-12deg)"}}>🎧</div>
         <div style={{position:"relative",zIndex:1}}>
-          <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(232,211,162,.72)"}}>Biblioteca Rasta Cuts</div>
+          <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,244,214,.72)"}}>Biblioteca Rasta Cuts</div>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1,color:"#FFD66B",textShadow:"0 4px 12px rgba(0,0,0,.35)"}}>Biblioteca musical</div>
           <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35,marginTop:4}}>Selección editable desde admin: enlaces oficiales y archivos propios/libres subidos con permiso.</div>
           <button onClick={reloadMusic} style={{marginTop:11,border:"1px solid rgba(255,244,214,.35)",background:"rgba(255,244,214,.12)",color:T.white,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>🔄 Cambiar selección</button>
@@ -11758,7 +11941,7 @@ function MusicaComunidad({showToast}){
 
     {loading?<Spinner/>:list.length===0?<EmptyState icon="🎧" title="Sin música en esta categoría" sub="Añade artistas, enlaces o archivos desde Gestión > Música."/>:
       <div style={{display:"grid",gap:12}}>
-        {list.map(item=><Card key={item.id} style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${item.destacado?T.gold:T.g300}`}} hover>
+        {list.map(item=><Card key={item.id} style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${item.destacado?T.gold:T.g300}`}} hover>
           <div style={{display:"grid",gridTemplateColumns:"88px 1fr",gap:0}}>
             <div style={{minHeight:150,background:"radial-gradient(circle at 40% 25%,rgba(255,255,255,.28),transparent 32%),linear-gradient(160deg,#24110A,#4E3A76 60%,#D4AF37)",display:"grid",placeItems:"center",position:"relative"}}>
               <div className="icon3d" style={{fontSize:"2.9rem"}}>{item.icono||"🎧"}</div>
@@ -11838,7 +12021,7 @@ function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=
       <StatCard icon="💬" label="Respuestas" value={stats.loading?"…":stats.respuestas} col="blue"/>
       <StatCard icon="📰" label="Comentarios" value={stats.loading?"…":stats.comentarios} col="pink"/>
     </div>
-    <Card style={{background:"linear-gradient(180deg,#F1E4BF,#F4E0B4)",border:`1.5px solid ${T.g200}`,boxShadow:"0 10px 22px rgba(20,8,4,.10)",marginBottom:10}}>
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F4E0B4)",border:`1.5px solid ${T.g200}`,boxShadow:"0 10px 22px rgba(20,8,4,.10)",marginBottom:10}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:220}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.42rem",color:T.g800,lineHeight:1}}>Centro de comunidad</div>
@@ -11853,7 +12036,7 @@ function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=
     </Card>
     <Card style={{background:"linear-gradient(135deg,rgba(33,20,12,.96),rgba(75,48,27,.92))",border:"1.5px solid rgba(255,244,214,.24)",color:T.white,padding:"12px 13px"}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:9}}>
-        {normas.map((n,i)=><div key={n} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:".78rem",fontWeight:820,lineHeight:1.32,color:"rgba(255,244,214,.86)"}}><span style={{display:"grid",placeItems:"center",width:22,height:22,borderRadius:999,background:i===0?"#B99A45":i===1?"#4F602D":"#263F4D",color:"#F1E4BF",fontWeight:1000,flexShrink:0}}>{i+1}</span><span>{n}</span></div>)}
+        {normas.map((n,i)=><div key={n} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:".78rem",fontWeight:820,lineHeight:1.32,color:"rgba(255,244,214,.86)"}}><span style={{display:"grid",placeItems:"center",width:22,height:22,borderRadius:999,background:i===0?"#B99A45":i===1?"#4F602D":"#263F4D",color:"#FFF4D6",fontWeight:1000,flexShrink:0}}>{i+1}</span><span>{n}</span></div>)}
       </div>
     </Card>
   </div>;
@@ -11876,19 +12059,19 @@ function Comunidad(props){
       <div style={{display:"flex",gap:12,alignItems:"center",justifyContent:"space-between"}}>
         <div>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",lineHeight:1}}>Comunidad</div>
-          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(232,211,162,.82)",lineHeight:1.35}}>Un solo sitio para leer, participar, descubrir música y volver a tus hilos sin perderte entre pestañas.</div>
+          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.82)",lineHeight:1.35}}>Un solo sitio para leer, participar, descubrir música y volver a tus hilos sin perderte entre pestañas.</div>
         </div>
         <div className="icon3d" style={{fontSize:"2.1rem"}}>🌐</div>
       </div>
     </Card>
     <ComunidadCentroPanel tabs={tabs} activeId={active.id} onSelect={(id)=>{SFX.tab();setSub(id);}} settings={settings}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(78px,1fr))",gap:8,marginBottom:12}}>
-      {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setSub(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(232,211,162,.82)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)",minHeight:64}}>
+      {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setSub(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.82)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)",minHeight:64}}>
         <div style={{fontSize:"1.28rem",lineHeight:1}}>{t.icon}</div>
         <div style={{fontSize:".75rem",marginTop:3}}>{t.label}</div>
       </button>)}
     </div>
-    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",padding:"12px 14px"}}>
+    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px"}}>
       <div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div>
       <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{active.sub}</div>
     </Card>
@@ -12008,7 +12191,7 @@ function GestionTienda({user,showToast}){
       </div>
 
       {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin productos" sub="Crea el primer producto de tienda."/>:
-        visibles.map(item=><Card key={item.id} style={{marginBottom:10,background:item.activo?"linear-gradient(180deg,#F1E4BF,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",opacity:item.activo?1:.72}}>
+        visibles.map(item=><Card key={item.id} style={{marginBottom:10,background:item.activo?"linear-gradient(180deg,#FFF4D6,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",opacity:item.activo?1:.72}}>
           <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
             <div className="icon3d" style={{fontSize:"2rem"}}>{item.icono||"🎁"}</div>
             <div style={{flex:1,minWidth:0}}>
@@ -12064,7 +12247,7 @@ function GestionTienda({user,showToast}){
           <Input label="Valor/opcional" value={form.valor} onChange={v=>setForm(f=>({...f,valor:v}))} placeholder="warm, flame..."/>
         </div>
         <Select label="Estado" value={form.activo} onChange={v=>setForm(f=>({...f,activo:v}))} options={[{value:"true",label:"Activo"},{value:"false",label:"Oculto"}]}/>
-        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#F3E7C7 38%,#F3E7C7)"}}>
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
           <Btn full col="gold" onClick={saveItem}>Guardar producto</Btn>
         </div>
       </Modal>
@@ -12093,7 +12276,7 @@ async function loadAppSettingsFromDb(){
 }
 function DisabledSection({icon="🔒",title="Sección desactivada",sub="Esta sección está desactivada desde Gestión > Ajustes."}){
   return <div style={{animation:"fadeSlide .32s ease"}}>
-    <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{textAlign:"center",padding:"12px 6px"}}>
         <div className="icon3d" style={{fontSize:"3rem",marginBottom:8}}>{icon}</div>
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.g800}}>{title}</div>
@@ -12191,7 +12374,7 @@ function GestionAjustes({user,showToast}){
         </button>)}
       </div>
 
-      {loading?<Spinner/>:<Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      {loading?<Spinner/>:<Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <div className="icon3d" style={{fontSize:"2rem"}}>{META[active].icon}</div>
           <div>
@@ -12243,7 +12426,7 @@ function GestionAjustes({user,showToast}){
           <TextField k="rasta_helper" f="tono" label="Tono del asistente"/>
         </>}
 
-        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#F3E7C7 38%,#F3E7C7)"}}>
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
           <Btn full col="gold" onClick={()=>save(active)} disabled={saving}>{saving?"Guardando...":"Guardar ajustes"}</Btn>
         </div>
       </Card>}
@@ -12262,7 +12445,7 @@ function MessageBubble({msg,isMine=false}){
   return <div style={{display:"flex",justifyContent:isMine?"flex-end":"flex-start",marginBottom:10}}>
     <div style={{
       maxWidth:"82%",
-      background:isMine?"linear-gradient(135deg,#4F602D,#2F6B42)":"linear-gradient(180deg,#F1E4BF,#E9D9B7)",
+      background:isMine?"linear-gradient(135deg,#4F602D,#2F6B42)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",
       color:isMine?T.white:T.g800,
       border:isMine?"1px solid rgba(255,244,214,.25)":`1.5px solid ${T.g300}`,
       borderRadius:isMine?"18px 18px 4px 18px":"18px 18px 18px 4px",
@@ -12334,13 +12517,13 @@ function BuzonPrivado({user,showToast,refreshUnread,unread}){
       </div>
     </Card>
 
-    <Card style={{background:"linear-gradient(180deg,#F3E7C7,#F3E2BC)",border:`2px solid ${T.g300}`,marginBottom:14,minHeight:280}}>
+    <Card style={{background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,marginBottom:14,minHeight:280}}>
       {loading?<Spinner/>:mensajes.length===0?<EmptyState icon="📩" title="Aún no hay mensajes" sub="Escribe el primero y aparecerá aquí el historial."/>:
         <div>{mensajes.map(m=><MessageBubble key={m.id} msg={m} isMine={String(m.autor_rol||"client")==="client"}/>)}</div>
       }
     </Card>
 
-    <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Nuevo mensaje</div>
       <textarea value={texto} onChange={e=>setTexto(e.target.value)} rows={4} placeholder="Escribe tu mensaje privado..." style={{width:"100%",borderRadius:14,border:`1.5px solid ${T.g200}`,background:T.g50,padding:"11px 12px",fontSize:".9rem",fontWeight:800,color:T.text,resize:"vertical",outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}/>
       <div style={{marginTop:10}}>
@@ -12457,7 +12640,7 @@ function GestionMensajes({user,showToast,refreshUnread,unread}){
     </Card>
 
     {!selected&&(
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <Input label="Buscar conversación" value={search} onChange={setSearch} placeholder="Cliente, mensaje o ID..."/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
           {[{id:"abierto",label:"Abiertas"},{id:"cerrado",label:"Cerradas"},{id:"todo",label:"Todas"}].map(f=><button key={f.id} onClick={()=>{SFX.tab();setStatusFilter(f.id);}} style={{border:`2px solid ${statusFilter===f.id?T.gold:T.g300}`,background:statusFilter===f.id?T.gradGold:"rgba(255,244,214,.84)",color:statusFilter===f.id?T.g900:T.g700,borderRadius:14,padding:"9px 6px",fontWeight:950,cursor:"pointer",fontSize:".76rem"}}>{f.label}</button>)}
@@ -12469,7 +12652,7 @@ function GestionMensajes({user,showToast,refreshUnread,unread}){
       loading?<Spinner/>:conversaciones.length===0?<EmptyState icon="📩" title="Sin mensajes" sub="Cuando un cliente escriba, aparecerá aquí."/>:
       conversaciones.map(c=>{
         const when=c.ultimo?.created_at?new Date(c.ultimo.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-        return <Card key={c.usuario_id} hover onClick={()=>openThread(c)} style={{marginBottom:10,background:c.unread?"linear-gradient(180deg,#F1E4BF,#EBD18D)":"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:c.unread?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+        return <Card key={c.usuario_id} hover onClick={()=>openThread(c)} style={{marginBottom:10,background:c.unread?"linear-gradient(180deg,#FFF4D6,#EBD18D)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:c.unread?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div className="icon3d" style={{fontSize:"2rem"}}>{c.unread?"🔔":"💬"}</div>
             <div style={{flex:1,minWidth:0}}>
@@ -12498,11 +12681,11 @@ function GestionMensajes({user,showToast,refreshUnread,unread}){
           <Btn small col="red" onClick={()=>cambiarEstadoConversacion("cerrado")}>Cerrar</Btn>
         </div>
 
-        <Card style={{background:"linear-gradient(180deg,#F3E7C7,#F3E2BC)",border:`2px solid ${T.g300}`,marginBottom:14,minHeight:300}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,marginBottom:14,minHeight:300}}>
           {threadLoading?<Spinner/>:thread.map(m=><MessageBubble key={m.id} msg={m} isMine={String(m.autor_rol||"client")!=="client"}/>)}
         </Card>
 
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Responder</div>
           <textarea value={texto} onChange={e=>setTexto(e.target.value)} rows={4} placeholder="Escribe la respuesta..." style={{width:"100%",borderRadius:14,border:`1.5px solid ${T.g200}`,background:T.g50,padding:"11px 12px",fontSize:".9rem",fontWeight:800,color:T.text,resize:"vertical",outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}/>
           <div style={{marginTop:10}}>
@@ -12663,7 +12846,7 @@ function GestionMusica({user,showToast}){
       </div>
 
       {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🎧" title="Sin música" sub="Añade el primer artista, canción, playlist o audio propio."/>:
-        visibles.map(item=><Card key={item.id} style={{marginBottom:10,background:item.activo?"linear-gradient(180deg,#F1E4BF,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",opacity:item.activo?1:.72,border:item.destacado?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+        visibles.map(item=><Card key={item.id} style={{marginBottom:10,background:item.activo?"linear-gradient(180deg,#FFF4D6,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",opacity:item.activo?1:.72,border:item.destacado?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
           <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
             <div className="icon3d" style={{fontSize:"2rem"}}>{item.icono||"🎧"}</div>
             <div style={{flex:1,minWidth:0}}>
@@ -12717,7 +12900,7 @@ function GestionMusica({user,showToast}){
         </div>
         <Select label="Destacado" value={form.destacado} onChange={v=>setForm(f=>({...f,destacado:v}))} options={[{value:"true",label:"Destacado"},{value:"false",label:"Normal"}]}/>
         <Select label="Estado" value={form.activo} onChange={v=>setForm(f=>({...f,activo:v}))} options={[{value:"true",label:"Activo"},{value:"false",label:"Oculto"}]}/>
-        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#F3E7C7 38%,#F3E7C7)"}}>
+        <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
           <Btn full col="gold" onClick={saveItem} disabled={uploading}>{uploading?"Subiendo...":"Guardar música"}</Btn>
         </div>
       </Modal>
@@ -12809,7 +12992,7 @@ function GestionAgenda({showToast}){
         </div>
       </Card>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"grid",gridTemplateColumns:"44px 1fr 44px",gap:8,alignItems:"end",marginBottom:12}}>
           <Btn small col="ghost" onClick={()=>addDays(modo==="semana"?-7:-1)}>←</Btn>
           <Input label={modo==="semana"?"Semana de referencia":"Fecha"} value={fecha} onChange={setFecha} type="date"/>
@@ -12833,7 +13016,7 @@ function GestionAgenda({showToast}){
           {citas.filter(c=>String(c.fecha||"")===fecha).length===0?<EmptyState icon="🗓️" title="Día libre" sub="No hay citas registradas para esta fecha."/>:
             slots.map(slot=>{
               const citasHora=slot.citas;
-              return <Card key={slot.hora} style={{marginBottom:9,padding:0,overflow:"hidden",background:citasHora.length?"linear-gradient(180deg,#F1E4BF,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`1.5px solid ${citasHora.length?T.g300:T.g150}`,opacity:citasHora.length?1:.62}}>
+              return <Card key={slot.hora} style={{marginBottom:9,padding:0,overflow:"hidden",background:citasHora.length?"linear-gradient(180deg,#FFF4D6,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`1.5px solid ${citasHora.length?T.g300:T.g150}`,opacity:citasHora.length?1:.62}}>
                 <div style={{display:"grid",gridTemplateColumns:"62px 1fr",gap:0}}>
                   <div style={{background:citasHora.length?"linear-gradient(180deg,#6E3518,#24110A)":"rgba(75,48,27,.22)",color:citasHora.length?T.white:T.g700,display:"grid",placeItems:"center",fontWeight:950,fontSize:".9rem",padding:"12px 4px"}}>
                     {slot.hora}
@@ -12881,7 +13064,7 @@ function GestionAgenda({showToast}){
           {days.map(day=>{
             const list=citasDia(day);
             const total=list.filter(c=>String(c.estado||"")!=="cancelada").reduce((sum,c)=>sum+(Number(c.servicio_precio)||0),0);
-            return <Card key={day} style={{marginBottom:11,background:day===todayKey()?"linear-gradient(180deg,#F1E4BF,#EBD18D)":"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:day===todayKey()?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+            return <Card key={day} style={{marginBottom:11,background:day===todayKey()?"linear-gradient(180deg,#FFF4D6,#EBD18D)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:day===todayKey()?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:10}}>
                 <div>
                   <div style={{fontWeight:950,color:T.g800,textTransform:"capitalize"}}>{dayLabel(day)}</div>
@@ -12983,7 +13166,7 @@ function GestionPedidos({user,showToast}){
     <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
       {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setFilter(t.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===t.id?T.gold:T.g300}`,background:filter===t.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===t.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>{t.label} ({countEstado(t.id)})</button>)}
     </div>
-    {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin pedidos" sub="No hay pedidos en esta vista."/>:visibles.map(p=><Card key={p.id} style={{marginBottom:10,background:p.estado==="cancelado"?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:p.estado==="pendiente"?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+    {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin pedidos" sub="No hay pedidos en esta vista."/>:visibles.map(p=><Card key={p.id} style={{marginBottom:10,background:p.estado==="cancelado"?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:p.estado==="pendiente"?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}><Badge col={p.estado==="entregado"?"green":p.estado==="cancelado"?"red":p.estado==="listo"?"blue":"gold"}>{p.estado}</Badge><Badge col="gold">{p.puntos_coste||0} pts</Badge></div>
@@ -13070,7 +13253,7 @@ function GestionModeracion({user,showToast}){
     {loading?<Spinner/>:list.length===0?<EmptyState icon="🛡️" title="Sin reportes" sub="No hay reportes en esta vista."/>:list.map(r=>{
       const st=String(r.estado||"pendiente");
       const col=st==="pendiente"?"red":st==="descartado"?"green":st==="oculto"?"gold":"blue";
-      return <Card key={r.id} hover onClick={()=>{setSelected(r);setNota(r.notas_admin||"");}} style={{marginBottom:10,background:st==="pendiente"?"linear-gradient(180deg,#F1E4BF,#EBD18D)":"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:st==="pendiente"?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+      return <Card key={r.id} hover onClick={()=>{setSelected(r);setNota(r.notas_admin||"");}} style={{marginBottom:10,background:st==="pendiente"?"linear-gradient(180deg,#FFF4D6,#EBD18D)":"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:st==="pendiente"?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
         <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
           <div style={{fontSize:"1.6rem"}}>🚩</div>
           <div style={{flex:1,minWidth:0}}>
@@ -13213,11 +13396,11 @@ function GestionEstadisticas({showToast}){
         </div>
       </Card>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
           {[
             ["hoy","Hoy"],["7d","7 días"],["mes","Mes"],["30d","30 días"],["anio","Año"]
-          ].map(([id,label])=><button key={id} onClick={()=>{SFX.tab();setRange(id);}} style={{border:`2px solid ${range===id?T.gold:T.g300}`,background:range===id?T.gradGold:"rgba(232,211,162,.72)",color:range===id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".7rem"}}>{label}</button>)}
+          ].map(([id,label])=><button key={id} onClick={()=>{SFX.tab();setRange(id);}} style={{border:`2px solid ${range===id?T.gold:T.g300}`,background:range===id?T.gradGold:"rgba(255,244,214,.72)",color:range===id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".7rem"}}>{label}</button>)}
         </div>
       </Card>
 
@@ -13233,7 +13416,7 @@ function GestionEstadisticas({showToast}){
           <StatCard icon="⭐" label="Puntos movidos" value={puntosPedidos+puntosNoticias+puntosCanjes} col="gold"/>
         </div>
 
-        <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>📈 Resumen rápido</div>
           <div style={{display:"grid",gap:8,fontSize:".84rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>
             <div>Ingresos registrados: <b style={{color:T.g800}}>{money(ingresos)}</b> en {cobrosOk.length} cobro{cobrosOk.length===1?"":"s"}.</div>
@@ -13244,19 +13427,19 @@ function GestionEstadisticas({showToast}){
         </Card>
 
         <div style={{display:"grid",gap:14}}>
-          <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
             <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>✂️ Servicios más pedidos</div>
             <BarList items={topServicios}/>
           </Card>
-          <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
             <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🎁 Productos/canjes más pedidos</div>
             <BarList items={topPedidos}/>
           </Card>
-          <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
             <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🎮 Juegos más usados</div>
             <BarList items={topJuegos}/>
           </Card>
-          <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
             <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>👑 Clientes con más puntos</div>
             {topClientes.length===0?<div style={{fontSize:".82rem",fontWeight:800,color:T.textSub}}>Sin clientes todavía.</div>:topClientes.map((c,i)=><div key={c.id||i} style={{display:"flex",justifyContent:"space-between",gap:8,padding:"8px 0",borderBottom:i<topClientes.length-1?`1px solid ${T.g150}`:"none",fontSize:".84rem"}}>
               <span style={{fontWeight:900,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{i+1}. {c.nombre||c.email||"Cliente"}</span>
@@ -13353,16 +13536,16 @@ function GestionSeguridad({user,showToast}){
         <StatCard icon="🕒" label="Últimos 7 días" value={ultimos7} col="green"/>
       </div>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
-          {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);}} style={{border:`2px solid ${filter===f.id?T.gold:T.g300}`,background:filter===f.id?T.gradGold:"rgba(232,211,162,.72)",color:filter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
+          {filters.map(f=><button key={f.id} onClick={()=>{SFX.tab();setFilter(f.id);}} style={{border:`2px solid ${filter===f.id?T.gold:T.g300}`,background:filter===f.id?T.gradGold:"rgba(255,244,214,.72)",color:filter===f.id?T.g900:T.g700,borderRadius:14,padding:"8px 4px",fontWeight:950,cursor:"pointer",fontSize:".68rem"}}>
             <div>{f.icon}</div><div>{f.label}</div>
           </button>)}
         </div>
       </Card>
 
       {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛡️" title="Sin registros" sub="Todavía no hay auditoría con este filtro."/>:
-        visibles.map(r=><Card key={r.id} style={{marginBottom:10,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`1.5px solid ${T.g300}`}}>
+        visibles.map(r=><Card key={r.id} style={{marginBottom:10,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`1.5px solid ${T.g300}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:8}}>
             <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
               <Badge col={colTipo(r.tipo)}>{labelTipo(r.tipo)}</Badge>
@@ -13468,10 +13651,10 @@ function GestionFacturacionPanel({user,showToast}){
       </div>
     </Card>
 
-    <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`,padding:12}}>
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`,padding:12}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
         {[["hoy","Hoy"],["7d","7 días"],["mes","Mes"],["30d","30 días"]].map(([id,label])=>
-          <button key={id} onClick={()=>{SFX.tab();setRange(id);}} style={{border:`2px solid ${range===id?T.gold:T.g300}`,background:range===id?T.gradGold:"rgba(232,211,162,.72)",color:range===id?T.g900:T.g700,borderRadius:14,padding:"9px 4px",fontWeight:950,cursor:"pointer",fontSize:".72rem"}}>
+          <button key={id} onClick={()=>{SFX.tab();setRange(id);}} style={{border:`2px solid ${range===id?T.gold:T.g300}`,background:range===id?T.gradGold:"rgba(255,244,214,.72)",color:range===id?T.g900:T.g700,borderRadius:14,padding:"9px 4px",fontWeight:950,cursor:"pointer",fontSize:".72rem"}}>
             {label}
           </button>
         )}
@@ -13490,19 +13673,19 @@ function GestionFacturacionPanel({user,showToast}){
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🧾 Estado de caja</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             {estadoCobros()} Ingresos válidos: <b style={{color:T.g800}}>{money(ingresos)}</b>.
           </div>
         </Card>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📅 Citas y trabajo</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Hay <b style={{color:T.g800}}>{citasRealizadas.length}</b> cita{citasRealizadas.length===1?"":"s"} realizada{citasRealizadas.length===1?"":"s"} y <b style={{color:T.g800}}>{citasPendientes.length}</b> pendiente{citasPendientes.length===1?"":"s"} en el periodo.
           </div>
         </Card>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🛍️ Tienda y canjes</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Pedidos activos: <b style={{color:T.g800}}>{pedidosActivos.length}</b>. Puntos canjeados: <b style={{color:T.g800}}>{puntosCanjeados}</b>.
@@ -13588,25 +13771,25 @@ function GestionComunidadPanel({user,showToast,unread}){
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
-        <Card style={{background:reportesPendientes.length?"linear-gradient(180deg,#FFE7DE,#F0C3B3)":"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:reportesPendientes.length?"linear-gradient(180deg,#FFE7DE,#F0C3B3)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🛡️ Moderación</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             {reportesPendientes.length?`Hay ${reportesPendientes.length} reporte${reportesPendientes.length===1?"":"s"} pendiente${reportesPendientes.length===1?"":"s"} de revisar.`:"No hay reportes pendientes."}
           </div>
         </Card>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📩 Mensajes privados</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Mensajes de clientes sin leer: <b style={{color:T.g800}}>{mensajesClienteNoLeidos.length||unread?.admin||0}</b>.
           </div>
         </Card>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🗣️ Foro y actividad</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Foro: <b style={{color:T.g800}}>{foroActivo?"activo":"pausado"}</b>. Temas abiertos: <b style={{color:T.g800}}>{temasAbiertos.length}</b>. Cerrados: <b style={{color:T.g800}}>{temasCerrados.length}</b>.
           </div>
         </Card>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🎧 Música y actualidad</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Música: <b style={{color:T.g800}}>{musicaActivaCfg?"activa":"pausada"}</b>. Actualidad: <b style={{color:T.g800}}>{noticiasActivas?"activa":"pausada"}</b>.
@@ -13689,7 +13872,7 @@ function GestionComunidadAjustes({user,showToast}){
   }
 
   function Toggle({label,sub,value,onChange}){
-    return <button onClick={()=>isAdmin&&onChange(!value)} style={{textAlign:"left",border:`2px solid ${value?T.gold:T.g300}`,background:value?"linear-gradient(180deg,#F1E4BF,#F4D58D)":"rgba(255,244,214,.78)",borderRadius:16,padding:"12px",cursor:isAdmin?"pointer":"not-allowed",opacity:isAdmin?1:.65}}>
+    return <button onClick={()=>isAdmin&&onChange(!value)} style={{textAlign:"left",border:`2px solid ${value?T.gold:T.g300}`,background:value?"linear-gradient(180deg,#FFF4D6,#F4D58D)":"rgba(255,244,214,.78)",borderRadius:16,padding:"12px",cursor:isAdmin?"pointer":"not-allowed",opacity:isAdmin?1:.65}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center"}}>
         <div>
           <div style={{fontWeight:950,color:T.g800}}>{label}</div>
@@ -13715,7 +13898,7 @@ function GestionComunidadAjustes({user,showToast}){
     </Card>
 
     {loading?<Spinner/>:<>
-      <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)"}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🌐 Secciones públicas</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:10}}>
           <Toggle label="Foro activo" sub="Permite abrir temas y responder." value={settings.secciones.foro_activo!==false} onChange={v=>setSection("foro_activo",v)}/>
@@ -13724,7 +13907,7 @@ function GestionComunidadAjustes({user,showToast}){
         </div>
       </Card>
 
-      <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)"}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🛡️ Reglas internas</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:10,marginBottom:12}}>
           <Toggle label="Mensajes activos" sub="Permite usar el buzón privado." value={settings.comunidad.mensajes_activos!==false} onChange={v=>setComunidad("mensajes_activos",v)}/>
@@ -13807,19 +13990,19 @@ function GestionTiendaPanel({user,showToast}){
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🎁 Premios y canjes</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Hay <b style={{color:T.g800}}>{itemsActivos}</b> objeto{itemsActivos===1?"":"s"} activo{itemsActivos===1?"":"s"} y <b style={{color:T.g800}}>{premiosActivos}</b> premio{premiosActivos===1?"":"s"} de canje. Canjes: <b style={{color:T.g800}}>{canjesActivos?"permitidos":"pausados"}</b>.
           </div>
         </Card>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📋 Pedidos</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Pendientes/preparando/listos: <b style={{color:T.g800}}>{pedidosPendientes.length}</b>. Listos para entregar: <b style={{color:T.g800}}>{pedidosListos.length}</b>.
           </div>
         </Card>
-        <Card style={{background:stockBajo.length?"linear-gradient(180deg,#FFE7DE,#F0C3B3)":"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:stockBajo.length?"linear-gradient(180deg,#FFE7DE,#F0C3B3)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📦 Stock</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             {stockBajo.length?`Hay ${stockBajo.length} producto${stockBajo.length===1?"":"s"} por debajo del mínimo.`:"No hay productos por debajo del mínimo."}
@@ -13903,7 +14086,7 @@ function GestionTiendaAjustes({user,showToast}){
   }
 
   function Toggle({label,sub,value,onChange}){
-    return <button onClick={()=>isAdmin&&onChange(!value)} style={{textAlign:"left",border:`2px solid ${value?T.gold:T.g300}`,background:value?"linear-gradient(180deg,#F1E4BF,#F4D58D)":"rgba(255,244,214,.78)",borderRadius:16,padding:"12px",cursor:isAdmin?"pointer":"not-allowed",opacity:isAdmin?1:.65}}>
+    return <button onClick={()=>isAdmin&&onChange(!value)} style={{textAlign:"left",border:`2px solid ${value?T.gold:T.g300}`,background:value?"linear-gradient(180deg,#FFF4D6,#F4D58D)":"rgba(255,244,214,.78)",borderRadius:16,padding:"12px",cursor:isAdmin?"pointer":"not-allowed",opacity:isAdmin?1:.65}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center"}}>
         <div>
           <div style={{fontWeight:950,color:T.g800}}>{label}</div>
@@ -13929,7 +14112,7 @@ function GestionTiendaAjustes({user,showToast}){
     </Card>
 
     {loading?<Spinner/>:<>
-      <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)"}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🛍️ Activación</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:10}}>
           <Toggle label="Tienda activa" sub="Muestra u oculta la tienda para clientes." value={settings.secciones.tienda_activa!==false} onChange={v=>setSection("tienda_activa",v)}/>
@@ -13937,7 +14120,7 @@ function GestionTiendaAjustes({user,showToast}){
         </div>
       </Card>
 
-      <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)"}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>⭐ Reglas de canje</div>
         <Input label="Puntos mínimos para canjear" type="number" value={String(settings.tienda.puntos_minimos_canje??0)} onChange={v=>setTienda("puntos_minimos_canje",Math.max(0,parseInt(v,10)||0))}/>
         <div style={{marginBottom:14}}>
@@ -14075,7 +14258,7 @@ function GestionJuegosAdmin({user,showToast}){
   },{})).sort((a,b)=>b[1]-a[1]).slice(0,8);
 
   function Toggle({label,sub,value,onChange,disabled=false}){
-    return <button onClick={()=>!disabled&&onChange(!value)} style={{textAlign:"left",border:`2px solid ${value?T.gold:T.g300}`,background:value?"linear-gradient(180deg,#F1E4BF,#F4D58D)":"rgba(255,244,214,.78)",borderRadius:16,padding:"12px",cursor:disabled?"not-allowed":"pointer",opacity:disabled?.6:1}}>
+    return <button onClick={()=>!disabled&&onChange(!value)} style={{textAlign:"left",border:`2px solid ${value?T.gold:T.g300}`,background:value?"linear-gradient(180deg,#FFF4D6,#F4D58D)":"rgba(255,244,214,.78)",borderRadius:16,padding:"12px",cursor:disabled?"not-allowed":"pointer",opacity:disabled?.6:1}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center"}}>
         <div>
           <div style={{fontWeight:950,color:T.g800}}>{label}</div>
@@ -14087,7 +14270,7 @@ function GestionJuegosAdmin({user,showToast}){
   }
 
   function SmallTab({id,icon,label}){
-    return <button onClick={()=>{SFX.tab();setActive(id);}} style={{border:`2px solid ${active===id?T.gold:T.g300}`,background:active===id?T.gradGold:"rgba(232,211,162,.82)",color:active===id?T.g900:T.g700,borderRadius:15,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active===id?"0 10px 24px rgba(212,175,55,.22)":"0 5px 12px rgba(20,8,4,.08)"}}>
+    return <button onClick={()=>{SFX.tab();setActive(id);}} style={{border:`2px solid ${active===id?T.gold:T.g300}`,background:active===id?T.gradGold:"rgba(255,244,214,.82)",color:active===id?T.g900:T.g700,borderRadius:15,padding:"10px 6px",fontWeight:950,cursor:"pointer",boxShadow:active===id?"0 10px 24px rgba(212,175,55,.22)":"0 5px 12px rgba(20,8,4,.08)"}}>
       <div style={{fontSize:"1.25rem",lineHeight:1}}>{icon}</div>
       <div style={{fontSize:".72rem",marginTop:4}}>{label}</div>
     </button>;
@@ -14099,7 +14282,7 @@ function GestionJuegosAdmin({user,showToast}){
         <div className="icon3d" style={{fontSize:"2.35rem"}}>🎮</div>
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Gestión de juegos</div>
-          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(232,211,162,.82)",lineHeight:1.35}}>
+          <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.82)",lineHeight:1.35}}>
             Control real de Arcade, rankings, retos, límites diarios y actividad de jugadores.
           </div>
         </div>
@@ -14123,7 +14306,7 @@ function GestionJuegosAdmin({user,showToast}){
           <StatCard icon="🎯" label="Retos activos" value={activeRetos} col="green"/>
           <StatCard icon="🏆" label="Mejor marca" value={bestScore?(Number(bestScore.score)||Number(bestScore.points)||0):0} col="pink"/>
         </div>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🎮 Juegos disponibles</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10}}>
             {gameList.map(g=><div key={g.id} style={{border:`1px solid ${T.g300}`,borderRadius:15,padding:10,background:"rgba(255,244,214,.70)"}}>
@@ -14137,14 +14320,14 @@ function GestionJuegosAdmin({user,showToast}){
       </>}
 
       {active==="ajustes"&&<div style={{display:"grid",gap:12}}>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>⚙️ Activación</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:10}}>
             <Toggle label="Arcade activo" sub="Muestra u oculta la sección Arcade para clientes." value={settings.secciones.arcade_activo!==false} onChange={v=>setSectionValue("arcade_activo",v)} disabled={!isAdmin}/>
             <Toggle label="Gacha activo" sub="Permite o bloquea la máquina de premios." value={settings.secciones.gacha_activo!==false} onChange={v=>setSectionValue("gacha_activo",v)} disabled={!isAdmin}/>
           </div>
         </Card>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>⭐ Límites y recompensas</div>
           <Input label="Límite diario de puntos por juegos" type="number" value={String(settings.puntos.limite_diario_juegos??75)} onChange={v=>setPointValue("limite_diario_juegos",Math.max(0,parseInt(v,10)||0))}/>
           <Input label="Tiradas diarias de Gacha" type="number" value={String(settings.puntos.gacha_tiradas_dia??50)} onChange={v=>setPointValue("gacha_tiradas_dia",Math.max(0,parseInt(v,10)||0))}/>
@@ -14153,7 +14336,7 @@ function GestionJuegosAdmin({user,showToast}){
         </Card>
       </div>}
 
-      {active==="rankings"&&<Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+      {active==="rankings"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🏆 Partidas por juego</div>
         {byGame.length===0?<EmptyState icon="🏆" title="Sin partidas" sub="Todavía no hay puntuaciones registradas."/>:<div style={{display:"grid",gap:9}}>
           {byGame.map(([id,count])=><div key={id}>
@@ -14168,7 +14351,7 @@ function GestionJuegosAdmin({user,showToast}){
       </Card>}
 
       {active==="retos"&&<div style={{display:"grid",gap:12}}>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🎯 Crear reto</div>
           <Input label="Título" value={newReto.titulo} onChange={v=>setNewReto(r=>({...r,titulo:v}))}/>
           <Input label="Descripción" value={newReto.descripcion} onChange={v=>setNewReto(r=>({...r,descripcion:v}))}/>
@@ -14180,7 +14363,7 @@ function GestionJuegosAdmin({user,showToast}){
           <Btn col="gold" onClick={createReto} disabled={!isAdmin}>Crear reto</Btn>
         </Card>
 
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>📋 Retos existentes</div>
           {retos.length===0?<EmptyState icon="🎯" title="Sin retos" sub="Aún no hay retos creados."/>:retos.slice(0,20).map(r=><div key={r.id} style={{padding:"10px 0",borderBottom:`1px solid ${T.g200}`}}>
             <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
@@ -14197,7 +14380,7 @@ function GestionJuegosAdmin({user,showToast}){
         </Card>
       </div>}
 
-      {active==="actividad"&&<Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+      {active==="actividad"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🕹️ Últimas partidas</div>
         {scores.length===0?<EmptyState icon="🕹️" title="Sin actividad" sub="Aún no hay partidas registradas."/>:scores.slice(0,30).map((s,idx)=><div key={s.id||idx} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:10,padding:"9px 0",borderBottom:`1px solid ${T.g200}`}}>
           <div>
@@ -14273,19 +14456,19 @@ function GestionAdminPanel({user,showToast}){
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
-        <Card style={{background:baneados.length?"linear-gradient(180deg,#FFE7DE,#F0C3B3)":"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:baneados.length?"linear-gradient(180deg,#FFE7DE,#F0C3B3)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🚫 Bloqueos</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             {baneados.length?`Hay ${baneados.length} usuario${baneados.length===1?"":"s"} bloqueado${baneados.length===1?"":"s"}.`:"No hay usuarios bloqueados."}
           </div>
         </Card>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>👑 Roles</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Cambios de rol registrados: <b style={{color:T.g800}}>{cambiosRol.length}</b>. Revisa los cambios delicados desde Seguridad.
           </div>
         </Card>
-        <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)"}}>
+        <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>⚙️ Ajustes</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Ajustes registrados: <b style={{color:T.g800}}>{data.settings.length}</b>. Editables: <b style={{color:T.g800}}>{ajustesEditables}</b>.
@@ -14352,7 +14535,7 @@ function GestionRolesPermisos({user,showToast}){
         <StatCard icon="🙂" label="Clientes" value={roleUsers(ROLES.CLIENT).length} col="blue"/>
       </div>
 
-      <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",overflowX:"auto"}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",overflowX:"auto"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🧩 Matriz de permisos</div>
         <div style={{minWidth:560}}>
           <div style={{display:"grid",gridTemplateColumns:"1.2fr 1fr 1fr 1fr",gap:6,fontSize:".76rem",fontWeight:950,color:T.g800,marginBottom:6}}>
@@ -14526,7 +14709,7 @@ function GestionSeguridadSupabase({user,showToast}){
       </div>
     </Card>
 
-    <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,marginBottom:10}}>
         <div>
           <div style={{fontWeight:950,color:T.g800}}>Estado antes de tocar RLS</div>
@@ -14549,7 +14732,7 @@ function GestionSeguridadSupabase({user,showToast}){
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:12}}>
       {blocks.map(b=>{
         const blockDone=b.items.filter((_,i)=>checked[`${b.id}_${i}`]).length;
-        return <Card key={b.id} style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`2px solid ${T.g300}`}}>
+        return <Card key={b.id} style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
           <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
             <div style={{fontSize:"1.75rem"}}>{b.icon}</div>
             <div style={{flex:1}}>
@@ -14568,7 +14751,7 @@ function GestionSeguridadSupabase({user,showToast}){
             {b.items.map((text,i)=>{
               const key=`${b.id}_${i}`;
               const on=!!checked[key];
-              return <button key={key} onClick={()=>toggle(key)} style={{textAlign:"left",display:"flex",gap:9,alignItems:"flex-start",border:`1.5px solid ${on?T.gold:T.g300}`,background:on?"linear-gradient(180deg,#E8D3A2,#D8BE87)":"rgba(232,211,162,.72)",borderRadius:13,padding:"9px 10px",cursor:"pointer",fontWeight:850,color:on?T.g800:T.textSub,lineHeight:1.28}}>
+              return <button key={key} onClick={()=>toggle(key)} style={{textAlign:"left",display:"flex",gap:9,alignItems:"flex-start",border:`1.5px solid ${on?T.gold:T.g300}`,background:on?"linear-gradient(180deg,#E8D3A2,#D8BE87)":"rgba(255,244,214,.72)",borderRadius:13,padding:"9px 10px",cursor:"pointer",fontWeight:850,color:on?T.g800:T.textSub,lineHeight:1.28}}>
                 <span style={{fontSize:"1rem",lineHeight:1.1}}>{on?"✅":"⬜"}</span>
                 <span style={{fontSize:".82rem"}}>{text}</span>
               </button>;
@@ -14699,7 +14882,7 @@ function GestionChecklist({user,showToast}){
       </div>
     </Card>
 
-    <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,marginBottom:10}}>
         <div>
           <div style={{fontWeight:950,color:T.g800}}>Progreso de revisión</div>
@@ -14713,7 +14896,7 @@ function GestionChecklist({user,showToast}){
     </Card>
 
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
-      {groups.map(g=><Card key={g.id} style={{background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",border:`2px solid ${T.g300}`}}>
+      {groups.map(g=><Card key={g.id} style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
           <div style={{fontSize:"1.75rem"}}>{g.icon}</div>
           <div>
@@ -14727,7 +14910,7 @@ function GestionChecklist({user,showToast}){
           {g.items.map((text,i)=>{
             const key=`${g.id}_${i}`;
             const on=!!checked[key];
-            return <button key={key} onClick={()=>toggle(key)} style={{textAlign:"left",display:"flex",gap:9,alignItems:"flex-start",border:`1.5px solid ${on?T.gold:T.g300}`,background:on?"linear-gradient(180deg,#E8D3A2,#D8BE87)":"rgba(232,211,162,.72)",borderRadius:13,padding:"9px 10px",cursor:"pointer",fontWeight:850,color:on?T.g800:T.textSub,lineHeight:1.28}}>
+            return <button key={key} onClick={()=>toggle(key)} style={{textAlign:"left",display:"flex",gap:9,alignItems:"flex-start",border:`1.5px solid ${on?T.gold:T.g300}`,background:on?"linear-gradient(180deg,#E8D3A2,#D8BE87)":"rgba(255,244,214,.72)",borderRadius:13,padding:"9px 10px",cursor:"pointer",fontWeight:850,color:on?T.g800:T.textSub,lineHeight:1.28}}>
               <span style={{fontSize:"1rem",lineHeight:1.1}}>{on?"✅":"⬜"}</span>
               <span style={{fontSize:".82rem"}}>{text}</span>
             </button>;
@@ -14817,7 +15000,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
   }
 
   function RestrictedCard({title,sub,icon="🔒"}){
-    return <Card style={{background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+    return <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <div style={{fontSize:"2rem"}}>{icon}</div>
         <div>
@@ -14844,9 +15027,9 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
         </div>
       </Card>
 
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#F1E4BF,#E9D9B7)",border:`2px solid ${T.g300}`,padding:12}}>
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`,padding:12}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8}}>
-          {gestionGroups.map(g=><button key={g.id} onClick={()=>openGestionGroup(g.id)} style={{border:`2px solid ${gestionGroup===g.id?T.gold:T.g300}`,background:gestionGroup===g.id?T.gradGold:"rgba(232,211,162,.72)",color:gestionGroup===g.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",fontSize:".72rem",boxShadow:gestionGroup===g.id?"0 10px 24px rgba(212,175,55,.22)":"0 5px 12px rgba(20,8,4,.08)"}}>
+          {gestionGroups.map(g=><button key={g.id} onClick={()=>openGestionGroup(g.id)} style={{border:`2px solid ${gestionGroup===g.id?T.gold:T.g300}`,background:gestionGroup===g.id?T.gradGold:"rgba(255,244,214,.72)",color:gestionGroup===g.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",fontSize:".72rem",boxShadow:gestionGroup===g.id?"0 10px 24px rgba(212,175,55,.22)":"0 5px 12px rgba(20,8,4,.08)"}}>
             <div style={{fontSize:"1.2rem",lineHeight:1}}>{g.icon}</div>
             <div style={{marginTop:4}}>{g.label}</div>
           </button>)}
@@ -14863,7 +15046,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
         </button>)}
       </div>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#F1E4BF,#E6D09B)",padding:"12px 14px"}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px"}}>
         <div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div>
         <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{active.sub}</div>
         <div style={{marginTop:8,fontSize:".72rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>
@@ -15664,7 +15847,7 @@ function HelperMascot({page,settings=null}){
             ...bubbleSideStyle,
             width:"min(318px, calc(100vw - 112px))",
             maxWidth:318,
-            background:helpMode?"linear-gradient(180deg,#FFF6CF,#F3E0A8)":"linear-gradient(180deg,#F3E7C7,#FFF1C8)",
+            background:helpMode?"linear-gradient(180deg,#FFF6CF,#F3E0A8)":"linear-gradient(180deg,#FFF8E6,#FFF1C8)",
             border:`2px solid ${helpMode?T.gold:T.g200}`,
             borderRadius:22,
             padding:"12px 14px",
@@ -15701,7 +15884,7 @@ function HelperMascot({page,settings=null}){
               position:"absolute",
               width:18,
               height:18,
-              background:helpMode?"linear-gradient(180deg,#FFF6CF,#F3E0A8)":"linear-gradient(180deg,#F3E7C7,#FFF1C8)",
+              background:helpMode?"linear-gradient(180deg,#FFF6CF,#F3E0A8)":"linear-gradient(180deg,#FFF8E6,#FFF1C8)",
               transform:"rotate(-45deg)",
               ...arrowStyle
             }}/>
@@ -15818,26 +16001,26 @@ function WalletPanel({show,onClose,user}){
   const movColor=m=>m.amount>0?T.g700:m.amount<0?T.red:T.textSub;
   const clear=()=>{clearPointHistory(user?.id);setHistory([]);};
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#F3E7C7,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
         <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>👛 Cartera</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Puntos web separados del Tycoon y de pagos futuros.</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
-        <Card style={{padding:12,background:"linear-gradient(180deg,#F1E4BF,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>⭐</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>{pts}</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Puntos disponibles</div></Card>
-        <Card style={{padding:12,background:"linear-gradient(180deg,#F1E4BF,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>💳</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>0,00 €</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Saldo futuro</div></Card>
+        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>⭐</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>{pts}</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Puntos disponibles</div></Card>
+        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>💳</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>0,00 €</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Saldo futuro</div></Card>
       </div>
-      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F1E4BF,#E9D8B4)"}}>
+      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>Límite diario normal</span><span>{todayEarned}/{dailyMax} pts</span></div>
         <div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F)",borderRadius:999}}/></div>
         <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 puntos/día completando todo perfecto. Gacha, RC del Tycoon, compras y devoluciones quedan aparte.</div>
       </Card>
-      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#E9D5A3,#D4BD8F)"}}>
+      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{fontWeight:950,color:T.g800}}>Economías separadas</div>
         <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:6}}>Puntos web: avatar, perfil, tienda y comunidad. RC: sólo Tycoon. Dinero real futuro: pagos, reservas o saldo, siempre separado.</div>
       </Card>
 
-      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F3E7C7,#E9D8B4)",border:`2px solid ${T.g300}`}}>
+      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF8E6,#E9D8B4)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9}}>
           <div>
             <div style={{fontWeight:950,color:T.g800}}>📜 Historial de puntos</div>
@@ -15931,13 +16114,13 @@ function CartPanel({show,onClose,user,setUser,showToast}){
     onClose?.();
   }
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#F3E7C7,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
         <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🛒 Carrito</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Premios, tienda y personalización del avatar/perfil.</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
       </div>
-      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:7,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(232,211,162,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
-      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#E9D5A3,#D4BD8F)"}}>
+      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:7,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(255,244,214,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
+      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800}}><span>Total</span><span>{totalPts} pts</span></div>
         <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:6}}>Base preparada para añadir/quitar productos desde Tienda y Personalización en fases siguientes.</div>
       </Card>
@@ -15983,7 +16166,7 @@ function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefres
     onOpenCitas?.();
   }
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:700,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:480,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#F3E7C7,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:480,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
         <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🔔 Notificaciones</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>{unread} sin leer · {items.length} recientes</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
@@ -15993,7 +16176,7 @@ function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefres
         const opened=openId===n.id;
         const cita=isCita(n);
         const rows=detailRows(n);
-        return <Card key={n.id} style={{marginBottom:9,padding:12,background:n.leida?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#F1E4BF,#EBD18D)",border:n.importante?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
+        return <Card key={n.id} style={{marginBottom:9,padding:12,background:n.leida?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"linear-gradient(180deg,#FFF4D6,#EBD18D)",border:n.importante?`2px solid ${T.gold}`:`1.5px solid ${T.g300}`}}>
           <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
             <div className="icon3d" style={{fontSize:"1.6rem"}}>{notificationIcon(n.tipo)}</div>
             <div style={{flex:1,minWidth:0}}>
@@ -16074,7 +16257,7 @@ function SafetyVersionPanel({user=null,settings=null,checkingSession=false,sessi
   if(open){
     return (
       <div style={{position:"fixed",left:10,right:10,bottom:"calc(76px + env(safe-area-inset-bottom,0px))",zIndex:2500,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
-        <div style={{width:"min(460px,100%)",pointerEvents:"auto",background:"linear-gradient(180deg,#F3E7C7,#E9D3A4)",color:T.g900,border:`2px solid ${sessionWarning?T.red:T.gold}`,borderRadius:18,boxShadow:"0 18px 46px rgba(0,0,0,.36)",padding:12,fontFamily:"'Outfit',system-ui,sans-serif"}}>
+        <div style={{width:"min(460px,100%)",pointerEvents:"auto",background:"linear-gradient(180deg,#FFF8E6,#E9D3A4)",color:T.g900,border:`2px solid ${sessionWarning?T.red:T.gold}`,borderRadius:18,boxShadow:"0 18px 46px rgba(0,0,0,.36)",padding:12,fontFamily:"'Outfit',system-ui,sans-serif"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:8}}>
             <div>
               <div style={{fontWeight:1000,fontSize:".92rem",color:T.g900}}>🛡️ Diagnóstico Rasta Cuts</div>
@@ -16092,14 +16275,14 @@ function SafetyVersionPanel({user=null,settings=null,checkingSession=false,sessi
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             <button onClick={copyInfo} style={{border:0,borderRadius:12,padding:"10px 8px",background:T.g700,color:T.white,fontWeight:1000,cursor:"pointer"}}>{copied?"Copiado":"Copiar debug"}</button>
             <button onClick={clearRastaCutsClientData} style={{border:0,borderRadius:12,padding:"10px 8px",background:T.red,color:T.white,fontWeight:1000,cursor:"pointer"}}>Limpiar datos</button>
-            <button onClick={toggleSafeMode} style={{gridColumn:"1 / -1",border:`1px solid ${T.g300}`,borderRadius:12,padding:"9px 8px",background:safeMode?"#F8E0B4":"#F3E7C7",color:T.g800,fontWeight:1000,cursor:"pointer"}}>Modo seguro local: {safeMode?"ON":"OFF"}</button>
+            <button onClick={toggleSafeMode} style={{gridColumn:"1 / -1",border:`1px solid ${T.g300}`,borderRadius:12,padding:"9px 8px",background:safeMode?"#F8E0B4":"#FFF8E6",color:T.g800,fontWeight:1000,cursor:"pointer"}}>Modo seguro local: {safeMode?"ON":"OFF"}</button>
           </div>
         </div>
       </div>
     );
   }
   return (
-    <button onClick={()=>setOpen(true)} title={`Versión ${APP_VERSION_SHORT}`} style={{position:"fixed",left:10,bottom:"calc(84px + env(safe-area-inset-bottom,0px))",zIndex:2400,border:0,borderRadius:999,padding:"6px 9px",background:sessionWarning?"linear-gradient(180deg,#A72822,#672018)":"linear-gradient(180deg,#21140C,#130B06)",color:"#F1E4BF",fontWeight:1000,fontSize:".68rem",boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer",opacity:.88}}>
+    <button onClick={()=>setOpen(true)} title={`Versión ${APP_VERSION_SHORT}`} style={{position:"fixed",left:10,bottom:"calc(84px + env(safe-area-inset-bottom,0px))",zIndex:2400,border:0,borderRadius:999,padding:"6px 9px",background:sessionWarning?"linear-gradient(180deg,#A72822,#672018)":"linear-gradient(180deg,#21140C,#130B06)",color:"#FFF4D6",fontWeight:1000,fontSize:".68rem",boxShadow:"0 8px 18px rgba(0,0,0,.26)",cursor:"pointer",opacity:.88}}>
       {sessionWarning?"⚠️":"🛡️"} {APP_VERSION_SHORT}
     </button>
   );
@@ -16123,7 +16306,7 @@ function Av({av=0,config=null,size=36}){
     </div>;
   }
   const cfg=normalizeAvatarConfig(config,av);
-  const frame={none:`2px solid rgba(255,244,214,.9)`,bronze:`3px solid #C97934`,gold:`3px solid #D4AF37`,neon:`3px solid #5FD7FF`,legend:`3px solid #E5C66F`}[cfg.frame]||`2px solid rgba(255,244,214,.9)`;
+  const frame={none:`2px solid rgba(255,244,214,.9)`,bronze:`3px solid #C97934`,gold:`3px solid #D4AF37`,neon:`3px solid #5FD7FF`,legend:`3px solid #FFF1A8`}[cfg.frame]||`2px solid rgba(255,244,214,.9)`;
   const aura={none:"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)",warm:"0 0 22px rgba(212,175,55,.45), 0 8px 18px rgba(20,8,4,.28)",flame:"0 0 26px rgba(240,106,59,.55), 0 8px 18px rgba(20,8,4,.28)",ocean:"0 0 26px rgba(95,215,255,.45), 0 8px 18px rgba(20,8,4,.28)",vip:"0 0 30px rgba(255,241,168,.7), 0 8px 18px rgba(20,8,4,.28)"}[cfg.aura]||"0 8px 18px rgba(20,8,4,.28), inset 0 2px 0 rgba(255,255,255,.35)";
   return <div title={avatarStyleName(cfg)} style={{width:size,height:size,borderRadius:"28%",background:bgGradient(cfg.bg),display:"flex",alignItems:"center",justifyContent:"center",border:frame,boxShadow:aura,position:"relative",overflow:"hidden",perspective:500}}>
     {cfg.aura!=="none"&&<span style={{position:"absolute",inset:3,borderRadius:"28%",background:"radial-gradient(circle at 35% 18%,rgba(255,255,255,.28),transparent 42%)",pointerEvents:"none"}}/>}
@@ -16435,7 +16618,7 @@ function AppCore(){
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones · campana de avisos y citas" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#F1E4BF",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #F1E4BF",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
+          <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones · campana de avisos y citas" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
           <button className="header-action-pro wallet-button-pro" onClick={()=>setWalletOpen(true)} title="Cartera · puntos, saldo y límite diario" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>👛</button>
           <button className="header-action-pro cart-button-pro" onClick={()=>setCartOpen(true)} title="Carrito · compras y personalización" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🛒</button>
           <button className="header-action-pro" onClick={handleMusicButtonClick} title={musicOn?`Doble toque: canción aleatoria (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
@@ -16456,7 +16639,7 @@ function AppCore(){
           const badge=(role===ROLES.CLIENT && n.id==="buzon")?unread.client:((role!==ROLES.CLIENT && n.id==="gestion")?unread.admin:0);
           return(
           <button className="nav-tab-pro" data-active={ap===n.id?"true":"false"} key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",minWidth:38,position:"relative"}}>
-            {badge>0&&<span style={{position:"absolute",top:-2,right:2,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#F1E4BF",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #F1E4BF",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{badge>9?"9+":badge}</span>}
+            {badge>0&&<span style={{position:"absolute",top:-2,right:2,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{badge>9?"9+":badge}</span>}
             <div className="nav-icon-pro" style={{fontSize:"1.1rem",background:ap===n.id?`linear-gradient(135deg,${clinicAccent},${clinicAccent2})`:"transparent",borderRadius:10,padding:"4px 7px",transform:ap===n.id?"scale(1.18)":"scale(1)",transition:"all 0.22s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:ap===n.id?`0 3px 12px ${clinicAccent}55`:"none"}}>{n.icon}</div>
             <span style={{fontSize:"0.52rem",fontWeight:800,color:ap===n.id?"var(--rc-text)":"var(--rc-muted)",transition:"color 0.2s"}}>{n.label}</span>
           </button>
