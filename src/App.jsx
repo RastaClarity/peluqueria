@@ -5266,10 +5266,6 @@ function CartoonAvatar({config,size=260,mini=false,focus="full"}){
     return null;
   };
 
-    return null;
-  };
-
-  };
   const eyesLayer=()=>{
     const y=112;
     const ly=cfg.eyes==="happy"?115:y;
@@ -5423,207 +5419,211 @@ function BgPreview({id}){
   return <div style={{width:88,height:88,borderRadius:26,background:m[id]||m.plain,border:"5px solid rgba(19,10,6,.22)",boxShadow:"inset 0 18px 24px rgba(255,255,255,.16),0 10px 15px rgba(0,0,0,.16)"}}/>
 }
 function AvatarEditor({form,setForm,ownedKeys=[],user=null,onSave=null,onReset=null}){
-  const [section,setSection]=useState("hair");
-  const [hairFilter,setHairFilter]=useState("all");
   const current=form?.avatar_config||form?.avatar||form?.avatarV3||{};
   const cfg=normalizeAvatarV3(current,user?.id||0);
   const female=cfg.model==="female";
+
   const setCfg=(next)=>setForm?.(f=>({...f,avatar_config:next,avatar:next,avatarV3:next}));
   const patch=(k,v)=>setCfg(normalizeAvatarV3({...cfg,[k]:v},user?.id||0));
   const patchMany=(obj)=>setCfg(normalizeAvatarV3({...cfg,...obj},user?.id||0));
+
+  const safeList=(arr=[])=>Array.isArray(arr)?arr:[];
+  const optionById=(arr,id)=>safeList(arr).find(x=>x.id===id);
+  const hairAllowed=(h)=> female ? (h.group==="mujer"||h.group==="rastas"||h.group==="trenzas"||h.group==="rizo") : h.group!=="mujer";
+  const hairList=HAIR_STYLES.filter(hairAllowed);
+  const beardList=female?[{id:"none",label:"Sin barba"}]:CLEAN_AVATAR_OPTIONS.beard;
+  const accessoryList=[
+    {id:"none",label:"Nada"},
+    {id:"earringSmall",label:"Pendiente pequeño"},
+    {id:"earringHoop",label:"Aro"},
+    {id:"noseRing",label:"Piercing nariz"},
+    {id:"lipRing",label:"Piercing labio"},
+    {id:"cap",label:"Gorra"},
+    {id:"bandana",label:"Bandana"},
+    {id:"bucket",label:"Bucket hat"}
+  ];
+  const glassesList=CLEAN_AVATAR_OPTIONS.glasses||[{id:"none",label:"Sin gafas"}];
+
+  const ensureIn=(list,key,fallback=null)=>{
+    const ids=list.map(x=>x.id);
+    if(ids.includes(cfg[key])) return cfg[key];
+    return fallback ?? ids[0];
+  };
+
+  const cycle=(key,list,dir=1)=>{
+    const clean=safeList(list).filter(Boolean);
+    if(!clean.length)return;
+    const ids=clean.map(x=>x.id);
+    const cur=ids.includes(cfg[key])?cfg[key]:ids[0];
+    const idx=ids.indexOf(cur);
+    patch(key,ids[(idx+dir+ids.length)%ids.length]);
+  };
+
   const randomize=()=>{
     const model=pick(["male","female"]);
-    const availableHair=HAIR_STYLES.filter(h=>model==="female"?h.group==="mujer"||["rastas","trenzas","rizo"].includes(h.group):h.group!=="mujer");
-    setCfg(normalizeAvatarV3({model,face:cleanPick(CLEAN_AVATAR_OPTIONS.face),skin:cleanPick(CLEAN_AVATAR_OPTIONS.skin),hair:pick(availableHair)?.id,hairColor:cleanPick(CLEAN_AVATAR_OPTIONS.hairColor),eyes:cleanPick(CLEAN_AVATAR_OPTIONS.eyes),mouth:cleanPick(CLEAN_AVATAR_OPTIONS.mouth),beard:model==="female"?"none":pick(["none","stubble","goatee","short","full"]),glasses:pick(["none","none","round","square","sun"]),accessory:pick(["none","none","earringSmall","cap","bandana","bucket"]),bg:cleanPick(CLEAN_AVATAR_OPTIONS.bg)},user?.id||0))
+    const femaleNext=model==="female";
+    const availableHair=HAIR_STYLES.filter(h=>femaleNext?(h.group==="mujer"||["rastas","trenzas","rizo"].includes(h.group)):h.group!=="mujer");
+    setCfg(normalizeAvatarV3({
+      model,
+      face:cleanPick(CLEAN_AVATAR_OPTIONS.face),
+      skin:cleanPick(CLEAN_AVATAR_OPTIONS.skin),
+      hair:pick(availableHair)?.id||"fadeMid",
+      hairColor:cleanPick(CLEAN_AVATAR_OPTIONS.hairColor),
+      eyes:cleanPick(CLEAN_AVATAR_OPTIONS.eyes),
+      mouth:cleanPick(CLEAN_AVATAR_OPTIONS.mouth),
+      beard:femaleNext?"none":pick(["none","stubble","goatee","short","full"]),
+      glasses:pick(["none","none","round","square","sun"]),
+      accessory:pick(["none","none","earringSmall","cap","bandana","bucket"]),
+      bg:cleanPick(CLEAN_AVATAR_OPTIONS.bg)
+    },user?.id||0));
   };
+
   const reset=()=>{setCfg(cleanAvatarDefaults(user?.id||0));onReset?.()};
 
-  // Gender-filtered hair list
-  const genderHairFilter=(h)=>{
-    if(female) return h.group==="mujer"||["rastas","trenzas","rizo"].includes(h.group);
-    return h.group!=="mujer";
-  };
-  const hairForGender=HAIR_STYLES.filter(genderHairFilter);
-  const visibleHair=(hairFilter==="all"?hairForGender:hairForGender.filter(h=>h.group===hairFilter));
-
-  // Sections — beard only for male
-  const sections=[
-    {id:"hair",icon:"✂️",label:"Pelo"},
-    {id:"color",icon:"🎨",label:"Color"},
-    {id:"base",icon:"👤",label:"Base"},
-    {id:"face",icon:"🙂",label:"Cara"},
-    ...(!female?[{id:"beard",icon:"🧔",label:"Barba"}]:[]),
-    {id:"extras",icon:"🕶️",label:"Extras"},
-    {id:"style",icon:"✨",label:"Fondo"}
-  ];
-
-  // Hair filters — gender-aware
-  const allFilters=[
-    {id:"all",label:"Todo"},
-    ...(!female?[{id:"barber",label:"Barber"}]:[]),
-    {id:"rastas",label:"Rastas"},
-    {id:"trenzas",label:"Trenzas"},
-    {id:"rizo",label:"Rizo"},
-    ...(female?[{id:"mujer",label:"Mujer"}]:[]),
-  ];
-
-  const neutral={model:cfg.model,face:female?"heart":"round",skin:"warm",hairColor:"black",eyes:"happy",mouth:"smile",beard:"none",glasses:"none",accessory:"none",bg:"plain"};
-  const currentHair=HAIR_STYLES.find(h=>h.id===cfg.hair);
-  const sectionInfo={
-    hair:{title:"Peinados",sub:female?"Estilos femeninos y mixtos — no incluye rapados":"Estilos masculinos — barber, rastas, afro"},
-    color:{title:"Color de pelo",sub:"El color afecta al pelo, cejas y barba"},
-    base:{title:"Base del avatar",sub:"Género, forma de cara y tono de piel"},
-    face:{title:"Cara y expresión",sub:"Forma de cara, ojos y boca"},
-    beard:{title:"Barba y bigote",sub:"Solo disponible en avatares masculinos"},
-    extras:{title:"Accesorios",sub:"Gafas, pendientes, gorras y piercings"},
-    style:{title:"Fondo",sub:"El escenario detrás del avatar"}
-  }[section]||{title:"Editor",sub:""};
-
-  const Option=({active,label,onClick,children})=><button type="button" onClick={onClick} className="rc-avatar-option"
-    style={{border:active?"3px solid #21CDF4":"2px solid rgba(59,37,13,.38)",borderRadius:24,
-    background:active?"linear-gradient(135deg,#FFF09B,#A5FFD5 62%,#D8CBFF)":"linear-gradient(180deg,#FFF2C8,#E4C578)",
-    boxShadow:active?"0 14px 26px rgba(23,182,224,.22)":"0 8px 18px rgba(57,35,12,.12)",
-    padding:10,minHeight:154,cursor:"pointer",fontWeight:950,color:"#152A4E",display:"grid",placeItems:"center",gap:6,overflow:"hidden",position:"relative"}}>
-    {active&&<span style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:999,background:"#10244A",color:"#fff",display:"grid",placeItems:"center",fontSize:12,fontWeight:900}}>✓</span>}
-    <div style={{display:"grid",placeItems:"center",minHeight:104}}>{children}</div>
-    <div style={{fontSize:'.8rem',lineHeight:1.06,textAlign:"center"}}>{label}</div>
-  </button>;
-  const Grid=({children})=><div className="rc-avatar-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:12}}>{children}</div>;
-
-  const renderOptions=()=>{
-    if(section==="hair") return <>
-      <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:12}}>
-        {allFilters.map(f=><button key={f.id} onClick={()=>setHairFilter(f.id)} type="button"
-          style={{border:hairFilter===f.id?"2px solid #10244A":"1px solid rgba(120,86,36,.32)",
-          background:hairFilter===f.id?"#FFE987":"#F8E3A5",color:"#13264A",
-          borderRadius:14,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>{f.label}</button>)}
-      </div>
-      <Grid>{visibleHair.map(h=><Option key={h.id} active={cfg.hair===h.id} label={h.label}
-        onClick={()=>patch("hair",h.id)}>
-        <CartoonAvatar config={{...neutral,hair:h.id,model:h.group==="mujer"?"female":cfg.model,face:h.group==="mujer"?"heart":"round"}} size={104} mini focus="hair"/>
-      </Option>)}</Grid>
-    </>;
-    if(section==="color") return <Grid>
-      {CLEAN_AVATAR_OPTIONS.hairColor.map(o=><Option key={o.id} active={cfg.hairColor===o.id} label={o.label} onClick={()=>patch("hairColor",o.id)}>
-        <div style={{width:92,height:92,borderRadius:28,background:`linear-gradient(145deg,${shade(o.color,44)},${o.color} 56%,${shade(o.color,-42)})`,border:"5px solid rgba(19,10,6,.18)",boxShadow:"inset 0 15px 22px rgba(255,255,255,.20),0 8px 15px rgba(0,0,0,.14)"}}/>
-      </Option>)}
-    </Grid>;
-    if(section==="base") return <Grid>
-      {CLEAN_AVATAR_OPTIONS.model.map(o=><Option key={o.id} active={cfg.model===o.id} label={o.label}
-        onClick={()=>patchMany({model:o.id,beard:o.id==="female"?"none":cfg.beard,
-          hair:o.id==="female"&&HAIR_STYLES.find(h=>h.id===cfg.hair)?.group!=="mujer"?"waves":
-               o.id==="male"&&HAIR_STYLES.find(h=>h.id===cfg.hair)?.group==="mujer"?"fadeMid":cfg.hair})}>
-        <CartoonAvatar config={{...neutral,model:o.id,face:o.id==="female"?"heart":"square",hair:o.id==="female"?"waves":"fadeMid"}} size={104} mini focus="face"/>
-      </Option>)}
-      {CLEAN_AVATAR_OPTIONS.skin.map(o=><Option key={o.id} active={cfg.skin===o.id} label={o.label} onClick={()=>patch("skin",o.id)}>
-        <div style={{width:92,height:92,borderRadius:30,background:`linear-gradient(145deg,${shade(o.color,28)},${o.color} 60%,${shade(o.color,-38)})`,border:"5px solid rgba(19,10,6,.18)"}}/>
-      </Option>)}
-    </Grid>;
-    if(section==="face") return <Grid>
-      {CLEAN_AVATAR_OPTIONS.face.map(o=><Option key={o.id} active={cfg.face===o.id} label={o.label} onClick={()=>patch("face",o.id)}>
-        <CartoonAvatar config={{...neutral,face:o.id,hair:"buzz"}} size={104} mini focus="face"/>
-      </Option>)}
-      {CLEAN_AVATAR_OPTIONS.eyes.map(o=><Option key={`e-${o.id}`} active={cfg.eyes===o.id} label={o.label} onClick={()=>patch("eyes",o.id)}>
-        <CartoonAvatar config={{...neutral,eyes:o.id,hair:"buzz"}} size={104} mini focus="face"/>
-      </Option>)}
-      {CLEAN_AVATAR_OPTIONS.mouth.map(o=><Option key={`m-${o.id}`} active={cfg.mouth===o.id} label={o.label} onClick={()=>patch("mouth",o.id)}>
-        <CartoonAvatar config={{...neutral,mouth:o.id,hair:"buzz"}} size={104} mini focus="face"/>
-      </Option>)}
-    </Grid>;
-    if(section==="beard") return female
-      ?<div style={{padding:24,textAlign:"center",background:"rgba(120,86,36,.10)",borderRadius:18,color:"#4A2E14",fontWeight:900,fontSize:"1rem"}}>
-        La barba no está disponible en el avatar femenino.<br/>
-        <span style={{fontSize:".85rem",fontWeight:700,opacity:.7}}>Cambia a masculino en la pestaña "Base" para ver estas opciones.</span>
-      </div>
-      :<Grid>
-        {CLEAN_AVATAR_OPTIONS.beard.map(o=><Option key={o.id} active={cfg.beard===o.id} label={o.label} onClick={()=>patch("beard",o.id)}>
-          <CartoonAvatar config={{...neutral,model:"male",face:"square",hair:"fadeLow",beard:o.id}} size={104} mini focus="beard"/>
-        </Option>)}
-      </Grid>;
-    if(section==="extras") return <Grid>
-      {CLEAN_AVATAR_OPTIONS.glasses.map(o=><Option key={`g-${o.id}`} active={cfg.glasses===o.id} label={`Gafas ${o.label}`} onClick={()=>patch("glasses",o.id)}>
-        <CartoonAvatar config={{...neutral,hair:"buzz",glasses:o.id,accessory:"none"}} size={104} mini focus="extras"/>
-      </Option>)}
-      {CLEAN_AVATAR_OPTIONS.accessory.map(o=><Option key={`a-${o.id}`} active={cfg.accessory===o.id} label={o.label} onClick={()=>patch("accessory",o.id)}>
-        <CartoonAvatar config={{...neutral,hair:"buzz",glasses:"none",accessory:o.id}} size={104} mini focus="extras"/>
-      </Option>)}
-    </Grid>;
-    return <Grid>
-      {CLEAN_AVATAR_OPTIONS.bg.map(o=><Option key={o.id} active={cfg.bg===o.id} label={o.label} onClick={()=>patch("bg",o.id)}>
-        <BgPreview id={o.id}/>
-      </Option>)}
-    </Grid>;
+  const chooseModel=(model)=>{
+    const nextFemale=model==="female";
+    const allowed=HAIR_STYLES.filter(h=>nextFemale?(h.group==="mujer"||["rastas","trenzas","rizo"].includes(h.group)):h.group!=="mujer");
+    const currentHair=allowed.some(h=>h.id===cfg.hair)?cfg.hair:(nextFemale?"waves":"fadeMid");
+    patchMany({
+      model,
+      hair:currentHair,
+      beard:nextFemale?"none":(cfg.beard==="none"?cfg.beard:(cfg.beard||"stubble")),
+      face:nextFemale?(cfg.face==="square"?"heart":cfg.face):(cfg.face==="heart"?"round":cfg.face)
+    });
   };
 
-  return <div className="rc-avatar-editor" style={{display:"grid",gap:12}}>
+  const ItemButton=({active,onClick,children})=>(
+    <button type="button" className="bp" onClick={onClick} style={{
+      border:"2px solid "+(active?"#1ad7ff":"rgba(114,77,35,.28)"),
+      background:active?"linear-gradient(135deg,#FFE078,#BFFFD8,#BCE9FF)":"linear-gradient(180deg,#FFF2C9,#DAB96D)",
+      color:"#14335C",
+      borderRadius:18,
+      padding:"10px 12px",
+      fontWeight:900,
+      boxShadow:active?"0 10px 22px rgba(20,190,255,.22), inset 0 2px 0 rgba(255,255,255,.75)":"inset 0 2px 0 rgba(255,255,255,.6),0 8px 16px rgba(50,25,8,.10)",
+      cursor:"pointer",
+      minHeight:44
+    }}>{children}</button>
+  );
+
+  const StepRow=({title,sub,value,list,field,disabled=false})=>{
+    const current=optionById(list,value)||list?.[0]||{label:""};
+    return <div style={{
+      display:"grid",
+      gridTemplateColumns:"1fr auto",
+      gap:10,
+      alignItems:"center",
+      background:"linear-gradient(180deg,rgba(255,246,218,.92),rgba(215,177,94,.58))",
+      border:"2px solid rgba(111,72,28,.24)",
+      borderRadius:22,
+      padding:12,
+      boxShadow:"inset 0 2px 0 rgba(255,255,255,.55)"
+    }}>
+      <div style={{minWidth:0}}>
+        <div style={{fontWeight:900,color:"#1B3766",fontSize:"1rem"}}>{title}</div>
+        {sub&&<div style={{fontSize:".75rem",fontWeight:800,color:"#65431D"}}>{sub}</div>}
+        <div style={{fontFamily:"Pirata One,cursive",fontSize:"1.45rem",color:"#4A2A12",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{current?.label||"—"}</div>
+      </div>
+      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+        <button type="button" className="bp" disabled={disabled} onClick={()=>cycle(field,list,-1)} style={{
+          width:44,height:44,borderRadius:16,border:"2px solid #A77A27",background:"#FFF0B7",fontWeight:1000,fontSize:"1.15rem",color:"#193A6B",opacity:disabled?.45:1
+        }}>‹</button>
+        <button type="button" className="bp" disabled={disabled} onClick={()=>cycle(field,list,1)} style={{
+          width:44,height:44,borderRadius:16,border:"2px solid #A77A27",background:"#FFF0B7",fontWeight:1000,fontSize:"1.15rem",color:"#193A6B",opacity:disabled?.45:1
+        }}>›</button>
+      </div>
+    </div>
+  };
+
+  const ColorGrid=({title,list,field})=>(
+    <div style={{background:"rgba(255,244,210,.58)",border:"1px solid rgba(112,72,28,.18)",borderRadius:20,padding:12}}>
+      <div style={{fontWeight:1000,color:"#1B3766",marginBottom:8}}>{title}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(46px,1fr))",gap:8}}>
+        {list.map(o=><button key={o.id} type="button" title={o.label} onClick={()=>patch(field,o.id)} style={{
+          height:44,
+          borderRadius:15,
+          border:"3px solid "+(cfg[field]===o.id?"#18D7FF":"rgba(68,42,15,.28)"),
+          background:o.color||"#DDD",
+          boxShadow:cfg[field]===o.id?"0 0 0 4px rgba(24,215,255,.16), inset 0 2px 0 rgba(255,255,255,.35)":"inset 0 2px 0 rgba(255,255,255,.25)",
+          cursor:"pointer"
+        }}/>)}
+      </div>
+    </div>
+  );
+
+  const avatarTitle=`Avatar ${female?"femenino":"masculino"} · ${(optionById(hairList,cfg.hair)||{}).label||"Pelo"}`;
+
+  return <div style={{display:"grid",gap:14}}>
+    <div style={{
+      display:"grid",
+      gridTemplateColumns:"minmax(210px,340px) 1fr",
+      gap:18,
+      alignItems:"stretch",
+      padding:18,
+      borderRadius:28,
+      background:"linear-gradient(135deg,#3A1F10,#B97919 55%,#E4BD42)",
+      border:"3px solid rgba(255,226,132,.42)",
+      boxShadow:"0 18px 34px rgba(36,16,4,.24), inset 0 2px 0 rgba(255,255,255,.18)"
+    }} className="avatar-game-editor">
+      <div style={{display:"grid",placeItems:"center",background:"radial-gradient(circle at 50% 32%,rgba(255,225,105,.28),rgba(42,18,7,.72) 70%)",borderRadius:26,padding:14,border:"2px solid rgba(20,8,4,.25)"}}>
+        <CartoonAvatar config={cfg} size={300}/>
+      </div>
+
+      <div style={{display:"flex",flexDirection:"column",gap:12,justifyContent:"center"}}>
+        <div>
+          <div style={{fontFamily:"Pirata One,cursive",fontSize:"clamp(1.7rem,4vw,2.7rem)",lineHeight:1,color:"#14335C",textShadow:"0 2px 0 rgba(255,245,205,.75)"}}>Editor de Avatar</div>
+          <div style={{fontWeight:900,color:"#3A260E",opacity:.9}}>{avatarTitle}</div>
+        </div>
+
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <ItemButton active={cfg.model==="male"} onClick={()=>chooseModel("male")}>Masculino</ItemButton>
+          <ItemButton active={cfg.model==="female"} onClick={()=>chooseModel("female")}>Femenino</ItemButton>
+          <ItemButton active={false} onClick={reset}>↩ Reset</ItemButton>
+          <ItemButton active={false} onClick={randomize}>🎲 Random</ItemButton>
+          <button type="button" className="bp" onClick={onSave} style={{
+            border:"2px solid #315B12",
+            background:"linear-gradient(180deg,#79B822,#3E850D)",
+            color:"#FFF7C7",
+            borderRadius:18,
+            padding:"10px 18px",
+            fontWeight:1000,
+            boxShadow:"0 10px 0 #24500B,0 16px 22px rgba(30,10,0,.22)",
+            minHeight:44
+          }}>💾 Guardar</button>
+        </div>
+
+        <div style={{fontSize:".82rem",fontWeight:800,color:"#4A2A12",background:"rgba(255,242,196,.55)",padding:"8px 10px",borderRadius:14}}>
+          Edita el personaje grande. Cada fila cambia una parte concreta del avatar, sin galerías enormes ni miniaturas repetidas.
+        </div>
+      </div>
+    </div>
+
+    <div style={{
+      display:"grid",
+      gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",
+      gap:12
+    }}>
+      <StepRow title="Pelo" sub="Cortes, rastas, trenzas y melenas" value={ensureIn(hairList,"hair","fadeMid")} list={hairList} field="hair"/>
+      <StepRow title="Cara" sub="Forma base del personaje" value={cfg.face} list={CLEAN_AVATAR_OPTIONS.face} field="face"/>
+      <StepRow title="Ojos" sub="Expresión" value={cfg.eyes} list={CLEAN_AVATAR_OPTIONS.eyes} field="eyes"/>
+      <StepRow title="Boca" sub="Gesto" value={cfg.mouth} list={CLEAN_AVATAR_OPTIONS.mouth} field="mouth"/>
+      <StepRow title="Barba" sub={female?"Desactivada en femenino":"Barbería masculina"} value={ensureIn(beardList,"beard","none")} list={beardList} field="beard" disabled={female}/>
+      <StepRow title="Gafas" sub="Ojos y estilo" value={cfg.glasses} list={glassesList} field="glasses"/>
+      <StepRow title="Accesorio" sub="Pendientes, gorros y piercings" value={cfg.accessory} list={accessoryList} field="accessory"/>
+      <StepRow title="Fondo" sub="Escena de avatar" value={cfg.bg} list={CLEAN_AVATAR_OPTIONS.bg} field="bg"/>
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12}}>
+      <ColorGrid title="Color de piel" list={CLEAN_AVATAR_OPTIONS.skin} field="skin"/>
+      <ColorGrid title="Color de pelo" list={CLEAN_AVATAR_OPTIONS.hairColor} field="hairColor"/>
+    </div>
+
     <style>{`
-      .rc-avatar-editor *{box-sizing:border-box}
-      .rc-avatar-option{transition:transform .16s ease, filter .16s ease}
-      .rc-avatar-option:hover{transform:translateY(-2px);filter:saturate(1.04) brightness(1.02)}
       @media(max-width:760px){
-        .rc-avatar-shell{grid-template-columns:1fr!important}
-        .rc-avatar-preview{position:relative!important;top:auto!important;order:-1;border-left:0!important;border-bottom:1px solid rgba(120,86,36,.22);padding:0 0 12px!important}
-        .rc-avatar-tabs{display:flex!important;overflow-x:auto!important;gap:6px!important;padding-bottom:4px!important}
-        .rc-avatar-tabs button{flex-shrink:0!important;min-width:70px!important}
-        .rc-avatar-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-        .rc-avatar-hero{grid-template-columns:1fr!important;text-align:center}
-        .rc-avatar-hero>div{justify-items:center!important}
+        .avatar-game-editor{grid-template-columns:1fr!important;padding:12px!important}
+        .avatar-game-editor svg{max-width:260px!important;height:auto!important}
       }
-      @media(min-width:1080px){.rc-avatar-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
     `}</style>
-    <Card pad={0} style={{overflow:"hidden",border:"2px solid rgba(184,138,31,.52)",background:"linear-gradient(180deg,#FFF3CE,#E8CE8E)",boxShadow:"0 18px 35px rgba(28,15,6,.22)"}}>
-      <div className="rc-avatar-hero" style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:18,alignItems:"center",padding:"16px 18px 18px",background:"linear-gradient(135deg,#231107,#A86D1E 68%,#E5BD47)",color:"#F7EAC1"}}>
-        <CartoonAvatar config={cfg} size={200}/>
-        <div style={{display:"grid",gap:8,alignContent:"center"}}>
-          <div style={{fontWeight:950,fontSize:"1.35rem",color:"#10244A",textShadow:"0 1px 0 rgba(255,255,255,.25)"}}>Editor de Avatar</div>
-          <div style={{fontWeight:850,fontSize:".86rem",color:"#10244A",maxWidth:650}}>
-            {female?"Rasgos femeninos: pestañas, labios y peinados de mujer separados.":"Rasgos masculinos: barba, cortes barber y fade con volumen."}
-          </div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            <span style={{background:"#FFF2C8",color:"#231407",borderRadius:999,padding:"7px 12px",fontWeight:950}}>{female?"Femenino":"Masculino"}</span>
-            <span style={{background:"#FFF2C8",color:"#231407",borderRadius:999,padding:"7px 12px",fontWeight:950}}>{currentHair?.label||"Peinado"}</span>
-          </div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:4}}>
-            <Btn onClick={reset} col="green">↩ Reset</Btn>
-            <Btn onClick={randomize} col="gold">🎲 Random</Btn>
-            <Btn onClick={()=>onSave?.()} col="green">💾 Guardar</Btn>
-          </div>
-        </div>
-      </div>
-      <div style={{padding:12}}>
-        <div className="rc-avatar-tabs" style={{display:"grid",gridTemplateColumns:`repeat(${sections.length},minmax(0,1fr))`,gap:7,background:"rgba(143,101,25,.12)",padding:8,borderRadius:18,border:"1px solid rgba(120,86,36,.22)",marginBottom:12}}>
-          {sections.map(s=><button key={s.id} type="button" onClick={()=>setSection(s.id)}
-            style={{border:section===s.id?"2px solid #10244A":"1px solid rgba(120,86,36,.28)",borderRadius:14,padding:"9px 4px",
-            background:section===s.id?"linear-gradient(180deg,#FFE987,#D7AA2F)":"#F8E3A5",
-            color:"#13264A",fontWeight:950,cursor:"pointer",boxShadow:section===s.id?"0 8px 15px rgba(0,0,0,.14)":"none"}}>
-            <div style={{fontSize:"1.05rem"}}>{s.icon}</div>
-            <div style={{fontSize:".67rem"}}>{s.label}</div>
-          </button>)}
-        </div>
-        <div className="rc-avatar-shell" style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 300px",gap:14,alignItems:"start"}}>
-          <div style={{minWidth:0}}>
-            <div style={{display:"flex",alignItems:"end",justifyContent:"space-between",gap:10,margin:"0 0 10px"}}>
-              <div>
-                <h3 style={{margin:0,fontFamily:"Pirata One,cursive",fontSize:"1.9rem",color:"#3D2411"}}>{sectionInfo.title}</h3>
-                <div style={{fontSize:".82rem",fontWeight:850,color:"#263B63"}}>{sectionInfo.sub}</div>
-              </div>
-              <span style={{background:female?"#F6D4E6":"#F6E3A6",border:`1px solid ${female?"#C87EA0":"#C89F2B"}`,borderRadius:999,padding:"6px 11px",fontWeight:950,color:"#21365D",whiteSpace:"nowrap"}}>
-                {female?"♀ Femenino":"♂ Masculino"}
-              </span>
-            </div>
-            {renderOptions()}
-          </div>
-          <div className="rc-avatar-preview" style={{position:"sticky",top:12,borderLeft:"1px solid rgba(120,86,36,.20)",paddingLeft:14,display:"grid",gap:10,justifyItems:"center"}}>
-            <CartoonAvatar config={cfg} size={280}/>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"center"}}>
-              <span style={{background:"#E8D3A2",color:T.g900,borderRadius:999,padding:"6px 11px",fontWeight:950,fontSize:".74rem"}}>{female?"Femenino":"Masculino"}</span>
-              <span style={{background:"#E8D3A2",color:T.g900,borderRadius:999,padding:"6px 11px",fontWeight:950,fontSize:".74rem"}}>{currentHair?.label||"Peinado"}</span>
-            </div>
-            <Btn col="green" full onClick={()=>onSave?.()}>💾 Guardar avatar</Btn>
-          </div>
-        </div>
-      </div>
-    </Card>
   </div>
 }
 
@@ -16249,5 +16249,3 @@ export default function App(){
     </MobileRuntimeGuard>
   );
 }
-
-  
