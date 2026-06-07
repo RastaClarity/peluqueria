@@ -102,8 +102,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_9_2A_UI_READABLE_2026";
-const APP_VERSION_SHORT="2.9.2a";
+const APP_VERSION="RASTACUTS_2_9_2B_UI_READABLE_RASTA_SOUND";
+const APP_VERSION_SHORT="2.9.2b";
 const APP_BUILD_DATE="2026-06-07";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -319,6 +319,37 @@ const SFX={
   error:()=>playUiSound("error"),
   notify:()=>playUiSound("notify"),
 };
+
+function playRastaVoice(kind="talk"){
+  if(globalMuted)return;
+  try{
+    const voices={
+      open:[
+        [523,.050,.012,0],[659,.055,.014,.055],[784,.070,.010,.115],[1046,.050,.006,.190]
+      ],
+      close:[
+        [659,.045,.010,0],[523,.052,.009,.055],[392,.070,.007,.115]
+      ],
+      tip:[
+        [587,.050,.012,0],[740,.060,.012,.060],[880,.045,.010,.135],[740,.050,.006,.205]
+      ],
+      help:[
+        [392,.050,.010,0],[523,.055,.012,.050],[392,.045,.008,.115],[659,.070,.010,.175]
+      ],
+      context:[
+        [440,.040,.010,0],[660,.052,.012,.052],[880,.054,.010,.116]
+      ],
+      happy:[
+        [523,.045,.012,0],[659,.045,.012,.045],[784,.055,.013,.095],[988,.070,.009,.155]
+      ]
+    };
+    const pattern=voices[kind]||voices.talk||voices.open;
+    pattern.forEach(([f,d,v,delay],idx)=>{
+      playTone(f,idx%2?"triangle":"sine",d,v,delay);
+    });
+    if(kind==="open"||kind==="tip"||kind==="happy") playNoise(.035,.004,.075,"lowpass",1250);
+  }catch(e){}
+}
 function playUiSound(kind="tap"){
   if(globalMuted)return;
   const patterns={
@@ -4736,6 +4767,193 @@ body[data-rc-theme="day"]{
   color:#FFF8E8!important;
   -webkit-text-fill-color:#FFF8E8!important;
 }
+
+/* ===== FASE124: legibilidad total 2.9.2b + fuente app 2026 ===== */
+:root{
+  --rc-font-app:'Inter','Plus Jakarta Sans','Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --rc-font-display:'Plus Jakarta Sans','Inter','Space Grotesk','Outfit',system-ui,sans-serif;
+}
+body,.app-shell,.rc-standalone-shell,input,select,button,textarea{
+  font-family:var(--rc-font-app)!important;
+  font-optical-sizing:auto!important;
+  text-rendering:geometricPrecision!important;
+  -webkit-font-smoothing:antialiased!important;
+  -moz-osx-font-smoothing:grayscale!important;
+}
+.app-shell :where(h1,h2,h3,h4,h5,h6),
+.rc-standalone-shell :where(h1,h2,h3,h4,h5,h6),
+.app-shell .brand-home-button{
+  font-family:var(--rc-font-display)!important;
+  letter-spacing:-.035em!important;
+}
+
+/* Noche real: las tarjetas oscuras mantienen texto claro aunque venga inline azul/marrón. */
+body[data-rc-theme="night"],
+.app-shell[data-rc-theme="night"],
+.rc-standalone-shell[data-rc-theme="night"]{
+  --rc-text:#FFF6DE;
+  --rc-text-strong:#FFFFFF;
+  --rc-muted:#E2D4AF;
+  --rc-soft:#CDBD91;
+  --rc-card:rgba(12,27,18,.96);
+  --rc-card-strong:rgba(17,38,26,.98);
+  --rc-border:rgba(222,190,104,.50);
+  color:#FFF6DE!important;
+  color-scheme:dark!important;
+}
+.app-shell[data-rc-theme="night"] .studio-panel,
+.app-shell[data-rc-theme="night"] .landing-feature-pro,
+.app-shell[data-rc-theme="night"] .landing-nav-card,
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .news-short,
+.app-shell[data-rc-theme="night"] .avatar-travian-window,
+.app-shell[data-rc-theme="night"] .shop-reward-card,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .landing-feature-pro,
+.rc-standalone-shell[data-rc-theme="night"] .landing-nav-card,
+.rc-standalone-shell[data-rc-theme="night"] .modal-panel-pro{
+  background:
+    radial-gradient(circle at 18% 0%,rgba(255,244,214,.095),transparent 32%),
+    linear-gradient(145deg,rgba(16,37,25,.98),rgba(7,18,12,.96))!important;
+  border-color:rgba(222,190,104,.50)!important;
+  color:#FFF6DE!important;
+  -webkit-text-fill-color:#FFF6DE!important;
+  box-shadow:0 18px 52px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,244,214,.11)!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro,
+.app-shell[data-rc-theme="night"] .page-content-pro *:not(svg):not(path):not(circle):not(rect):not(line):not(polyline):not(polygon):not(ellipse):not(stop):not(defs),
+.app-shell[data-rc-theme="night"] .modal-panel-pro,
+.app-shell[data-rc-theme="night"] .modal-panel-pro *:not(svg):not(path):not(circle):not(rect):not(line):not(polyline):not(polygon):not(ellipse):not(stop):not(defs),
+.rc-standalone-shell[data-rc-theme="night"],
+.rc-standalone-shell[data-rc-theme="night"] *:not(svg):not(path):not(circle):not(rect):not(line):not(polyline):not(polygon):not(ellipse):not(stop):not(defs){
+  color:#FFF6DE!important;
+  -webkit-text-fill-color:#FFF6DE!important;
+  text-shadow:none!important;
+  opacity:1!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro :where(h1,h2,h3,h4,h5,h6,strong,b),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(h1,h2,h3,h4,h5,h6,strong,b),
+.rc-standalone-shell[data-rc-theme="night"] :where(h1,h2,h3,h4,h5,h6,strong,b){
+  color:#FFFFFF!important;
+  -webkit-text-fill-color:#FFFFFF!important;
+  font-weight:950!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro :where(p,small,label,em,i,li,td,th),
+.app-shell[data-rc-theme="night"] .modal-panel-pro :where(p,small,label,em,i,li,td,th),
+.rc-standalone-shell[data-rc-theme="night"] :where(p,small,label,em,i,li,td,th){
+  color:#E2D4AF!important;
+  -webkit-text-fill-color:#E2D4AF!important;
+}
+
+/* Botones y accesos rápidos: blancos sobre fondo verde, sin azul oscuro perdido. */
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.app-shell[data-rc-theme="night"] .modal-panel-pro button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro){
+  background:
+    linear-gradient(145deg,rgba(101,203,113,.24),rgba(221,186,99,.16)),
+    rgba(8,22,14,.96)!important;
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+  border:1.5px solid rgba(222,190,104,.56)!important;
+  font-weight:900!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.app-shell[data-rc-theme="night"] .modal-panel-pro button:not(.nav-tab-pro):not(.header-action-pro) *,
+.rc-standalone-shell[data-rc-theme="night"] button:not(.nav-tab-pro):not(.header-action-pro) *{
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+}
+
+/* Header y menú: no tocar a oscuro sobre oscuro. */
+.app-shell[data-rc-theme="night"] .app-header-pro,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro{
+  background:linear-gradient(145deg,rgba(255,244,214,.10),rgba(255,244,214,.035)),rgba(5,15,9,.94)!important;
+  border-color:rgba(222,190,104,.48)!important;
+  color:#FFF8E8!important;
+}
+.app-shell[data-rc-theme="night"] .app-header-pro *,
+.app-shell[data-rc-theme="night"] .bottom-nav-pro *,
+.app-shell[data-rc-theme="night"] .header-action-pro *,
+.app-shell[data-rc-theme="night"] .nav-tab-pro *{
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"]{
+  background:linear-gradient(145deg,rgba(102,204,113,.42),rgba(221,186,99,.30))!important;
+  border-color:rgba(222,190,104,.72)!important;
+}
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] .nav-icon-pro,
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] .nav-icon-pro *{
+  color:#061108!important;
+  -webkit-text-fill-color:#061108!important;
+}
+
+/* Chips y badges claros: excepción posterior al texto global para que se lean. */
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius: 999"],
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius: 50"],
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"],
+.app-shell[data-rc-theme="night"] .page-content-pro .shop-avatar-tag,
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius: 999"],
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"]{
+  background:linear-gradient(180deg,#FFF8E8,#E7D3A4)!important;
+  color:#111A0F!important;
+  -webkit-text-fill-color:#111A0F!important;
+  border:1px solid rgba(222,190,104,.64)!important;
+  text-shadow:none!important;
+}
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="borderRadius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius:999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius: 999"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="border-radius: 50"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro [class*="badge"] *,
+.app-shell[data-rc-theme="night"] .page-content-pro .shop-avatar-tag *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="borderRadius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius:999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [style*="border-radius: 999"] *,
+.rc-standalone-shell[data-rc-theme="night"] [class*="badge"] *{
+  color:#111A0F!important;
+  -webkit-text-fill-color:#111A0F!important;
+}
+
+/* Burbujas de Rasta: siempre crema con letra oscura, aunque el modo global sea noche. */
+.rasta-helper-fixed-safe [style*="FFF8E6"],
+.rasta-helper-fixed-safe [style*="FFF6CF"],
+.rasta-helper-fixed-safe [style*="fff7e2"]{
+  color:#241709!important;
+  -webkit-text-fill-color:#241709!important;
+}
+.rasta-helper-fixed-safe [style*="FFF8E6"] *,
+.rasta-helper-fixed-safe [style*="FFF6CF"] *,
+.rasta-helper-fixed-safe [style*="fff7e2"] *{
+  color:#241709!important;
+  -webkit-text-fill-color:#241709!important;
+}
+
+/* Día suave: crema, no blanco nuclear. */
+body[data-rc-theme="day"],
+.app-shell[data-rc-theme="day"],
+.rc-standalone-shell[data-rc-theme="day"]{
+  color:#1D160D!important;
+  color-scheme:light!important;
+}
+.app-shell[data-rc-theme="day"] .page-content-pro *:not(svg):not(path):not(circle):not(rect):not(line):not(polyline):not(polygon):not(ellipse):not(stop):not(defs),
+.app-shell[data-rc-theme="day"] .modal-panel-pro *:not(svg):not(path):not(circle):not(rect):not(line):not(polyline):not(polygon):not(ellipse):not(stop):not(defs),
+.rc-standalone-shell[data-rc-theme="day"] *:not(svg):not(path):not(circle):not(rect):not(line):not(polyline):not(polygon):not(ellipse):not(stop):not(defs){
+  color:#1D160D!important;
+  -webkit-text-fill-color:#1D160D!important;
+}
+.app-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro),
+.app-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro) *,
+.rc-standalone-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro),
+.rc-standalone-shell[data-rc-theme="day"] button:not(.nav-tab-pro):not(.header-action-pro) *{
+  color:#FFF8E8!important;
+  -webkit-text-fill-color:#FFF8E8!important;
+}
+
 `;
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -16002,6 +16220,7 @@ function HelperMascot({page,settings=null}){
       setContextTip(rastaElementHelp(explainTarget,page));
       setRareTip(null);
       setOpen(true);
+      playRastaVoice("context");
       SFX.tab();
     };
     document.addEventListener("click",onHelpClick,true);
@@ -16015,6 +16234,7 @@ function HelperMascot({page,settings=null}){
   function goTip(dir){
     setRareTip(null);
     setContextTip(null);
+    playRastaVoice("tip");
     setTipIndex(i=>{
       const len=Math.max(1,tips.length);
       return (i+dir+len)%len;
@@ -16026,6 +16246,7 @@ function HelperMascot({page,settings=null}){
     setHelpMode(false);
     setContextTip(null);
     const rare=pickRastaUnique([...RASTA_RARE_CULTURE_TIPS,...RASTA_DAILY_FUN_TIPS,...RASTA_GENERAL_TIPS],`rasta_manual_tip_${TODAY_KEY()}`,45);
+    playRastaVoice("happy");
     setRareTip(rare);
   }
 
@@ -16035,6 +16256,7 @@ function HelperMascot({page,settings=null}){
     setContextTip(null);
     setHelpMode(v=>!v);
     setOpen(true);
+    playRastaVoice("help");
     SFX.tab();
   }
 
@@ -16065,7 +16287,9 @@ function HelperMascot({page,settings=null}){
     try{localStorage.setItem("rasta_helper_pos_v3",JSON.stringify(finalPos));}catch{}
     if(!d.moved){
       SFX.tab();
-      setOpen(v=>!v);
+      const nextOpen=!open;
+      playRastaVoice(nextOpen?"open":"close");
+      setOpen(nextOpen);
     }
   }
 
