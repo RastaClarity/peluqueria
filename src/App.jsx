@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 import "./styles/rastacuts.css";
+import { BACKGROUND_PLAYLIST, PENTA, NOTE_FREQ, REGGAE_LOFI_TRACKS, GAME_MUSIC } from "./data/musicData.js";
+import { HELP_TEXTS, HELP_TIPS } from "./data/rastaHelpData.js";
 
 // Valores de respaldo para que la app funcione aunque Vercel no inyecte las variables.
 // La anon key es pública en apps frontend; lo que nunca debe ponerse aquí es la service_role/secret key.
@@ -103,8 +105,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_9_3A_CLEAN_CSS";
-const APP_VERSION_SHORT="2.9.3a";
+const APP_VERSION="RASTACUTS_2_9_3B_CLEAN_DATA";
+const APP_VERSION_SHORT="2.9.3b";
 const APP_BUILD_DATE="2026-06-07";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -112,113 +114,13 @@ let audioCtx=null,musicInterval=null,musicPlaying=false,globalMuted=true;
 let masterVolume=0.72;
 let backgroundAudio=null,backgroundAudioAvailable=true;
 let backgroundTrackIndex=0,backgroundSourceTry=0,backgroundDuckedForGame=false; let backgroundFirstStartDone=false;
-const BACKGROUND_PLAYLIST=[
-  {name:"Glass Lounge Loop",mood:"lounge",gain:1.00,srcs:["/audio/Glass%20Lounge%20Loop.mp3","/audio/Glass Lounge Loop.mp3"]},
-  {name:"Quiet Rhodes Loop",mood:"chill",gain:1.16,srcs:["/audio/Quiet%20Rhodes%20Loop.mp3","/audio/Quiet Rhodes Loop.mp3"]},
-  {name:"Velvet Reward Room",mood:"reward",gain:0.92,srcs:["/audio/Velvet%20Reward%20Room.mp3","/audio/Velvet Reward Room.mp3"]},
-  {name:"Velvet Menu Glow",mood:"menu",gain:0.94,srcs:["/audio/Velvet%20Menu%20Glow.mp3","/audio/Velvet Menu Glow.mp3"]},
-  {name:"Velvet Reward Shop",mood:"shop",gain:0.90,srcs:["/audio/Velvet%20Reward%20Shop.mp3","/audio/Velvet Reward Shop.mp3"]},
-  {name:"Drift Through Linen",mood:"ambient",gain:1.12,srcs:["/audio/Drift%20Through%20Linen.mp3","/audio/Drift Through Linen.mp3"]},
-  {name:"Velvet Menu Drift",mood:"menu",gain:1.04,srcs:["/audio/Velvet%20Menu%20Drift.mp3","/audio/Velvet Menu Drift.mp3"]},
-  {name:"Velvet Tab Loop",mood:"tab",gain:1.08,srcs:["/audio/Velvet%20Tab%20Loop.mp3","/audio/Velvet Tab Loop.mp3"]},
-  {name:"Barbershop Arcade Dub",mood:"backup",gain:0.95,srcs:["/audio/barbershop-arcade-dub.mp3","/audio/barbershop-arcade-dub(1).mp3"]},
-  {name:"Vinyl Arcade Skank",mood:"backup",gain:0.95,srcs:["/audio/Vinyl%20Arcade%20Skank.mp3","/audio/vinyl-arcade-skank.mp3"]},
-  {name:"Neon Barbertron",mood:"backup",gain:0.95,srcs:["/audio/Neon%20Barbertron.mp3","/audio/neon-barbertron.mp3"]}
-];
+
 let currentMusicTrack=0,musicStep=0;
 let backgroundShuffleQueue=[];
 let musicButtonClickTimer=null;
 let musicButtonLastTap=0;
-const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
-const NOTE_FREQ={
-  C2:65.41,Cs2:69.30,Db2:69.30,D2:73.42,Ds2:77.78,Eb2:77.78,E2:82.41,F2:87.31,Fs2:92.50,Gb2:92.50,G2:98,Ab2:103.83,Gs2:103.83,A2:110,As2:116.54,Bb2:116.54,B2:123.47,
-  C3:130.81,Cs3:138.59,Db3:138.59,D3:146.83,Ds3:155.56,Eb3:155.56,E3:164.81,F3:174.61,Fs3:185.00,Gb3:185.00,G3:196,Ab3:207.65,Gs3:207.65,A3:220,As3:233.08,Bb3:233.08,B3:246.94,
-  C4:261.63,Cs4:277.18,Db4:277.18,D4:293.66,Ds4:311.13,Eb4:311.13,E4:329.63,F4:349.23,Fs4:369.99,Gb4:369.99,G4:392,Ab4:415.30,Gs4:415.30,A4:440,As4:466.16,Bb4:466.16,B4:493.88,
-  C5:523.25,Cs5:554.37,Db5:554.37,D5:587.33,Ds5:622.25,Eb5:622.25,E5:659.25,F5:698.46,Fs5:739.99,Gb5:739.99,G5:783.99,Ab5:830.61,Gs5:830.61,A5:880,As5:932.33,Bb5:932.33,B5:987.77,
-  C6:1046.5,Cs6:1108.73,Db6:1108.73,D6:1174.66,Ds6:1244.51,Eb6:1244.51,E6:1318.51,F6:1396.91,Fs6:1479.98,Gb6:1479.98,G6:1567.98,Ab6:1661.22,Gs6:1661.22,A6:1760,As6:1864.66,Bb6:1864.66,B6:1975.53
-};
-const REGGAE_LOFI_TRACKS=[
-  {
-    name:"Brisa Dub de Pueblo",tickMs:430,length:704,accent:"pan",
-    bass:["A2",null,"A2","C3","E2",null,"G2","E2","F2",null,"F2","A2","G2",null,"E2","G2"],
-    chords:[["A3","C4","E4"],["G3","B3","D4"],["F3","A3","C4"],["E3","G3","B3"]],
-    melody:["E5",null,"G5","A5","C6",null,"B5","A5","G5",null,"E5","D5","E5",null,"G5",null,"A5",null,"C6","E6","D6",null,"C6","A5","G5",null,"A5","G5","E5",null,"D5",null],
-    counter:["A4",null,"C5",null,"E5",null,"C5",null,"G4",null,"B4",null,"D5",null,"B4",null],
-    groove:{kick:[0,8],snare:[4,12],hat:[2,6,10,14],bass:[0,3,8,11,14],skank:[5,13],ghost:[7,15],melody:[1,5,9,13],counter:[6,10,14],padEvery:32,arp:30}
-  },
-  {
-    name:"Skank de Mercado",tickMs:385,length:784,accent:"piano",
-    bass:["D2",null,"D2","F2","A2",null,"C3","A2","Bb2",null,"Bb2","D3","C3",null,"A2","C3"],
-    chords:[["D3","F3","A3"],["C3","E3","G3"],["Bb2","D3","F3"],["A2","C3","E3"]],
-    melody:["A4","D5",null,"F5","E5",null,"D5",null,"C5","E5",null,"G5","F5",null,"E5",null,"D5",null,"F5","A5",null,"G5","E5",null,"F5",null,"E5","D5",null,"C5",null,null],
-    counter:["D4",null,"F4",null,"A4",null,"F4",null,"C4",null,"E4",null,"G4",null,"E4",null],
-    groove:{kick:[0,6,10],snare:[4,12],rim:[15],hat:[2,5,8,11,14],bass:[0,2,6,8,10,13],skank:[3,7,11,15],ghost:[5,13],melody:[0,3,6,10,12],counter:[5,9,14],padEvery:64,arp:31}
-  },
-  {
-    name:"Noche Lofi en Tagor",tickMs:470,length:640,accent:"violin",
-    bass:["G2",null,null,"Bb2","D2",null,"F2",null,"Eb2",null,null,"G2","F2",null,"D2",null],
-    chords:[["G3","Bb3","D4"],["F3","A3","C4"],["Eb3","G3","Bb3"],["D3","F3","A3"]],
-    melody:["D5",null,null,"F5","G5",null,"Bb5",null,"A5",null,"G5","F5",null,"D5",null,null,"C5",null,"D5","F5",null,"G5",null,"Bb5","D6",null,"C6","Bb5",null,"G5",null,null],
-    counter:["G4",null,null,"Bb4",null,"D5",null,null,"F4",null,"A4",null,"C5",null,null,null],
-    groove:{kick:[0,9],snare:[4,12],hat:[3,7,11,15],bass:[0,4,9,12],skank:[6,14],ghost:[10],melody:[3,7,11,15],counter:[5,13],padEvery:16,arp:46}
-  },
-  {
-    name:"Costa One Drop",tickMs:410,length:736,accent:"pan",
-    bass:["C2",null,"C3",null,"G2",null,"Bb2","G2","F2",null,"F3",null,"G2",null,"Bb2","G2"],
-    chords:[["C3","E3","G3"],["Bb2","D3","F3"],["F3","A3","C4"],["G3","B3","D4"]],
-    melody:["G4","C5",null,"E5",null,"G5","E5",null,"Bb4","D5",null,"F5",null,"D5",null,null,"A4","C5",null,"F5","E5",null,"C5",null,"D5",null,"G5",null,"F5","D5",null,null],
-    counter:["C4",null,"E4",null,"G4",null,"E4",null,"F4",null,"A4",null,"C5",null,"A4",null],
-    groove:{kick:[0],snare:[4,12],rim:[8],hat:[2,6,10,14],bass:[0,1,7,8,9,15],skank:[2,6,10,14],ghost:[3,11],melody:[0,3,5,8,11,14],counter:[7,15],padEvery:48,arp:63}
-  },
-  {
-    name:"Ruta Rasta RPG",tickMs:360,length:848,accent:"piano",
-    bass:["E2",null,"E2","G2","B2",null,"D3","B2","C3",null,"C3","E3","D3",null,"B2","D3"],
-    chords:[["E3","G3","B3"],["D3","Fs3","A3"],["C3","E3","G3"],["B2","D3","Fs3"]],
-    melody:["B4","E5","G5","B5",null,"A5","G5","E5","D5",null,"E5","G5","A5",null,"B5",null,"C6","B5","A5","G5",null,"E5",null,"D5","E5","G5",null,"A5","G5","E5",null,null],
-    counter:["E4",null,"G4",null,"B4",null,"G4",null,"D4",null,"Fs4",null,"A4",null,"Fs4",null],
-    groove:{kick:[0,4,8,12],snare:[6,14],hat:[1,3,5,7,9,11,13,15],bass:[0,2,4,7,8,10,12,15],skank:[5,9,13],ghost:[3,11,15],melody:[0,2,4,6,8,10,12,14],counter:[7,15],padEvery:64,arp:30}
-  },
-  {
-    name:"Dub Espacial de Taller",tickMs:520,length:592,accent:"violin",
-    bass:["F2",null,null,null,"F2",null,"A2",null,"C3",null,null,"A2","Bb2",null,"C3",null],
-    chords:[["F3","A3","C4"],["C3","E3","G3"],["Bb2","D3","F3"],["C3","E3","G3"]],
-    melody:["C5",null,null,"F5",null,"A5",null,null,"G5",null,"F5",null,"E5",null,null,null,"D5",null,"F5",null,"G5",null,"A5",null,"C6",null,"A5","G5",null,"F5",null,null],
-    counter:["F4",null,null,null,"A4",null,null,null,"C5",null,null,null,"A4",null,null,null],
-    groove:{kick:[0,10],snare:[4,12],hat:[6,14],bass:[0,4,10,12],skank:[7,15],ghost:[3,11],melody:[3,5,9,13],counter:[8],padEvery:16,arp:62}
-  },
-  {
-    name:"Tauste Sunshine Ska",tickMs:330,length:912,accent:"pan",
-    bass:["A2","C3","E3",null,"G2","E2","C3",null,"F2","A2","C3",null,"E2","G2","B2",null],
-    chords:[["A3","C4","E4"],["G3","B3","D4"],["F3","A3","C4"],["E3","G3","B3"]],
-    melody:["A5",null,"C6","E6","D6",null,"C6","A5","G5",null,"A5","C6","B5",null,"A5",null,"E5","G5","A5","C6",null,"B5","G5",null,"A5",null,"E5",null,"G5","A5",null,null],
-    counter:["A4","C5",null,"E5",null,"C5",null,"A4","G4","B4",null,"D5",null,"B4",null,"G4"],
-    groove:{kick:[0,4,8,12],snare:[2,6,10,14],hat:[1,3,5,7,9,11,13,15],bass:[0,1,4,5,8,9,12,13],skank:[1,3,5,7,9,11,13,15],ghost:[],melody:[0,2,4,6,8,10,12,14],counter:[3,7,11,15],padEvery:96,arp:47}
-  },
-  {
-    name:"Meditación con Dreadlocks",tickMs:560,length:544,accent:"violin",
-    bass:["D2",null,null,null,"A2",null,null,null,"Bb2",null,null,null,"F2",null,"A2",null],
-    chords:[["D3","F3","A3"],["A2","C3","E3"],["Bb2","D3","F3"],["F3","A3","C4"]],
-    melody:["A4",null,null,null,"D5",null,"F5",null,"E5",null,null,"D5",null,"C5",null,null,"Bb4",null,"D5",null,"F5",null,null,"A5",null,"G5",null,"F5",null,null,null,null],
-    counter:["D4",null,null,null,"F4",null,null,null,"A4",null,null,null,"F4",null,null,null],
-    groove:{kick:[0],snare:[8],hat:[4,12],bass:[0,8,12],skank:[6,14],ghost:[],melody:[4,7,11,14],counter:[10],padEvery:16,arp:126}
-  },
-  {
-    name:"Barrio Old School",tickMs:395,length:768,accent:"piano",
-    bass:["B2",null,"B2","D3","Fs2",null,"A2","Fs2","G2",null,"G2","B2","A2",null,"Fs2","A2"],
-    chords:[["B2","D3","Fs3"],["A2","Cs3","E3"],["G2","B2","D3"],["Fs2","A2","Cs3"]],
-    melody:["Fs4",null,"B4","D5",null,"E5","D5","B4","A4",null,"Cs5","E5",null,"D5","Cs5",null,"B4","D5","Fs5",null,"E5","D5",null,"B4","A4",null,"B4","D5","Cs5",null,"A4",null],
-    counter:["B3",null,"D4",null,"Fs4",null,"D4",null,"A3",null,"Cs4",null,"E4",null,"Cs4",null],
-    groove:{kick:[0,7,8],snare:[4,12],rim:[10,15],hat:[2,5,6,9,11,14],bass:[0,3,7,8,11,15],skank:[5,13],ghost:[2,10,14],melody:[1,4,7,9,12,15],counter:[6,10,14],padEvery:64,arp:31}
-  },
-  {
-    name:"Isla de Vinilo",tickMs:445,length:688,accent:"pan",
-    bass:["C2",null,"Eb2",null,"G2",null,"Bb2",null,"Ab2",null,"C3",null,"Bb2",null,"G2",null],
-    chords:[["C3","Eb3","G3"],["Bb2","D3","F3"],["Ab2","C3","Eb3"],["G2","Bb2","D3"]],
-    melody:["G4",null,"C5",null,"Eb5","G5",null,"Bb5","Ab5",null,"G5","Eb5",null,"C5",null,null,"Bb4",null,"D5","F5",null,"G5",null,"F5","Eb5",null,"C5",null,"Bb4",null,"G4",null],
-    counter:["C4",null,null,"Eb4",null,"G4",null,null,"Ab4",null,null,"C5",null,"Bb4",null,null],
-    groove:{kick:[0,8,11],snare:[4,12],hat:[2,6,9,14],bass:[0,2,4,8,11,12,14],skank:[3,7,13],ghost:[5,15],melody:[2,5,8,10,13],counter:[7,15],padEvery:32,arp:30}
-  }
-];
+
+
 function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
 function resolveFreq(value){return typeof value==="number"?value:(NOTE_FREQ[value]||PENTA[0]);}
 function softWave(type="sine"){
@@ -650,15 +552,7 @@ function nextMusicTrack(auto=false){
 }
 
 let gameMusicInterval=null, resumeMainAfterGame=false;
-const GAME_MUSIC={
-  sopa:{notes:[392,440,494,587,659],tempo:820,wave:"triangle",bass:.5},
-  memoria:{notes:[330,392,440,494,523],tempo:760,wave:"sine",bass:.5},
-  trivia:{notes:[349,392,440,523,587],tempo:720,wave:"triangle",bass:.5},
-  runner:{notes:[330,392,494,587,659],tempo:520,wave:"square",bass:.45},
-  jump:{notes:[392,494,587,659,784],tempo:560,wave:"triangle",bass:.5},
-  stitch:{notes:[349,440,523,659,784],tempo:610,wave:"triangle",bass:.5},
-  gacha:{notes:[196,247,294,330,392,494],tempo:430,wave:"square",bass:.42},
-};
+
 function startGameMusic(gameId){
   if(globalMuted)return;
   stopGameMusic(false);
@@ -710,8 +604,6 @@ function stopGameMusic(restoreMain=true){
     resumeMainAfterGame=false;
   }
 }
-
-
 
 
 function Btn({children,onClick,col="green",full=false,small=false,disabled=false,style:sx={}}){
@@ -1221,7 +1113,6 @@ function shadeHex(hex,percent=0){
 }
 
 const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_1_5_BARBER_POLISH";
-
 
 
 function avatarColorForAccessory(value){
@@ -2711,7 +2602,6 @@ function LandingFeature({icon,title,sub,accent="#D4AF37"}){
     </div>
   );
 }
-
 
 
 function MiniRastaHelperFace({size=60,speaking=false}={}){
@@ -6028,7 +5918,6 @@ function TriviaGame({onWin}){
 }
 
 
-
 function RastaRunnerGame({onWin,user}){
   const [running,setRunning]=useState(false);
   const [score,setScore]=useState(0);
@@ -6437,9 +6326,6 @@ function ArcadeInfoPanel({onOpenGacha}){
     </div>
   </div>;
 }
-
-
-
 
 
 const TYCOON_ROOM_DEFS={
@@ -8045,7 +7931,6 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
 }
 
 
-
 const MUSIC_LIBRARY=[
   {id:"kaseo",artist:"Kase.O",emoji:"🎤",genre:"Rap clásico",mood:"letra, técnica y calma",desc:"Rap español de alto nivel, ideal para escuchar con atención. Buen punto de entrada para quien quiere rap con letras trabajadas.",links:[
     {label:"YouTube",url:"https://www.youtube.com/results?search_query=Kase.O+oficial"},
@@ -8282,7 +8167,6 @@ function MusicaComunidad({showToast}){
 }
 
 
-
 function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=null}={}){
   const [stats,setStats]=useState({posts:0,temas:0,respuestas:0,comentarios:0,loading:true});
   useEffect(()=>{
@@ -8377,7 +8261,6 @@ function Comunidad(props){
     {active.id==="musica"&&<MusicaComunidad {...props}/>} 
   </div>;
 }
-
 
 
 function GestionTienda({user,showToast}){
@@ -8550,7 +8433,6 @@ function GestionTienda({user,showToast}){
     </div>
   );
 }
-
 
 
 const DEFAULT_APP_SETTINGS={
@@ -9390,7 +9272,6 @@ function GestionAgenda({showToast}){
 }
 
 
-
 function GestionPedidos({user,showToast}){
   if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Zona interna" sub="Sólo admin y staff pueden gestionar pedidos."/>;
   const [pedidos,setPedidos]=useState([]);
@@ -9877,7 +9758,6 @@ function GestionSeguridad({user,showToast}){
 }
 
 
-
 function GestionFacturacionPanel({user,showToast}){
   const [loading,setLoading]=useState(true);
   const [range,setRange]=useState("hoy");
@@ -9998,7 +9878,6 @@ function GestionFacturacionPanel({user,showToast}){
     </>}
   </div>;
 }
-
 
 
 function GestionComunidadPanel({user,showToast,unread}){
@@ -10906,7 +10785,6 @@ function GestionBaneos({user,showToast}){
 }
 
 
-
 function GestionSeguridadSupabase({user,showToast}){
   const isAdmin=isAdminUser(user);
   const STORAGE_KEY="rasta_cuts_supabase_rls_plan_v1";
@@ -11393,28 +11271,6 @@ const NAV_CFG={
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
 
-const HELP_TEXTS={
-  dashboard:"Aquí ves tu resumen principal: puntos, próxima cita y accesos rápidos.",
-  comunidad:"Aquí están Tablón, Foro, Actualidad y Música: lee anuncios, abre temas, comenta noticias y descubre enlaces recomendados.",
-  musica:"Biblioteca de música con reggae, rap clásico, ska y rock. Entra a enlaces rápidos y descubre artistas sin música comercial.",
-  noticias:"Magazine de comunidad: lee noticias útiles, comenta, da likes y gana puntos por participar sin ruido político.",
-  feed:"El tablón es para anuncios oficiales de la tienda. Los clientes leen y reaccionan; admin y staff publican.",
-  foro:"En el Foro puedes abrir temas, responder, votar ideas y hablar con otros usuarios.",
-  tienda:"Aquí canjeas tus puntos por premios, descuentos o regalos.",
-  juegos:"En Arcade tienes juegos diarios, récords y retos para ganar puntos sin romper la economía.",
-  retos:"Los retos te dan objetivos para ganar más puntos de forma divertida.",
-  ranking:"En Ranking comparas tu progreso con otros clientes.",
-  perfil:"En Perfil editas tu personaje, tu nombre y tu estilo.",
-  citas:"Aquí se gestionan las reservas y el calendario.",
-  clientes:"Sección para revisar fichas y datos de clientes.",
-  inventario:"Aquí controlas productos y stock.",
-  caja:"Sección para cobros e ingresos.",
-  usuarios:"Aquí un admin puede cambiar roles y permisos.",
-  gestion:"Panel interno para facturación, caja, citas, clientes, stock y herramientas de administración.",
-  buzon:"Buzón privado para hablar con Rasta Cuts. El cliente ve su hilo y admin/staff responden desde Gestión > Mensajes.",
-  mensajes:"Buzón interno para responder mensajes privados de clientes.",
-  pedidos:"Gestión de canjes de tienda: pendiente, preparando, listo, entregado o cancelado."
-};
 
 function LoginHelperAvatar({size=46,speaking=false}={}){
   const wrapStyle={
@@ -11513,122 +11369,6 @@ function LoginHelperAvatar({size=46,speaking=false}={}){
   );
 }
 
-const HELP_TIPS = {
-  dashboard:[
-    "Ey, mi gente. Aquí tienes el campamento base: entrar a jugar, mirar novedades, pasar por la comunidad o revisar tu perfil sin perderte por los menús.",
-    "Si vienes con prisa, tira de los botones grandes. Si vienes con calma, date una vuelta por Actualidad; siempre hay alguna historia curiosa, rural o de buen comer.",
-    "Los puntos son como cuidar unas rastas: poquito a poco, con constancia y sin tirones raros.",
-    "Consejo de tienda: juega, comenta con cabeza y vuelve mañana. El buen flow se desbloquea por costumbre, no por machacar botones como loco."
-  ],
-  arcade:[
-    "Bienvenido al Arcade, brother. Aquí se juega por récord, por pique sano y por puntos para avatares, premios o descuentos.",
-    "Puedes rejugar para mejorar marca, pero los puntos reales no son barra libre. Si no, la tienda acaba más desplumada que un peine viejo.",
-    "Cada juego tiene su truco. Si dudas, tócame y te explico la jugada antes de que las tijeras te hagan un corte gratis.",
-    "Para jugar con flow: una partida, buen ritmo y sin ponerse nervioso. Como en reggae: tempo firme y cabeza fría."
-  ],
-  game_stitch:[
-    "Gancho Ninja va de precisión. Cose las rastas buenas, evita tijeras y no te emociones con el dedo, que aquí el pulso manda.",
-    "Objetivo claro: llegar a 100 puntos. Si juntas 20 tijeras, se acabó la ronda, mi pana.",
-    "Para pasar necesitas 81 aciertos o más. Menos de eso y esa rasta queda como hecha en una tormenta.",
-    "Si sale el ticket dorado, píllalo. Suma +5 y aparece poco, como aparcar bien a la primera en día de mercado."
-  ],
-  game_runner:[
-    "Rasta Runner es correr y saltar sin comerte las tijeras. Fácil de entender, peligroso cuando sube el ritmo.",
-    "Toca una vez para saltar. Toca dos veces para doble salto. Mantén pulsado un poco para alargarlo, pero no flotas como en One Piece.",
-    "El truco es no saltar tarde. Las tijeras no perdonan, y este rasta no hace injertos de emergencia.",
-    "Cuanta más distancia aguantes, mejor récord. Los puntos reales se cobran una vez al día, así la cosa mantiene valor."
-  ],
-  game_jump:[
-    "Rasta Jump es recoger herramientas y aguantar cuando la velocidad empieza a ponerse seria.",
-    "Peines, ganchillos y objetos de peluquería son tu tesoro. Las tijeras mal cogidas son el villano del capítulo.",
-    "Al principio parece paseo rural; luego se acelera y toca moverse con reflejos de tripulación pirata.",
-    "Mira el patrón, no persigas todo. A veces dejar pasar un objeto salva la partida."
-  ],
-  game_gacha:[
-    "Gacha Barber es la máquina de premios. Tiras, salen símbolos y si juntas tres iguales puede caer premio.",
-    "El ticket dorado es el tesoro grande: 50 puntos, pero sale rarísimo. Nivel encontrar el One Piece en la primera isla.",
-    "Lo normal es sacar 0. No te enfades; está pensado para emoción, no para imprimir puntos.",
-    "Cuando suene la máquina, deja que entre el rollo casino-reggae: una tirada, una sonrisa y seguimos."
-  ],
-  game_memoria:[
-    "Memoria Pro es de mirar bien, no de darle a lo loco. Aquí gana quien tiene calma de peluquero con cita complicada.",
-    "Encuentra parejas y no pierdas el hilo. Si te aceleras, el tablero te peina hacia atrás.",
-    "Buen juego para descansar de los reflejos. Ponte un tema tranquilo y trabaja la cabeza.",
-    "Repetir mejora récord, pero los puntos diarios solo se cobran una vez. Flow justo para todos."
-  ],
-  game_sopa:[
-    "La Sopa diaria es para buscar palabras sin presión. Ideal para jugar con café, perro al lado y cero estrés.",
-    "Cada día debería sentirse distinta. Si ves una palabra de peluquería, estilo o comunidad, márcala sin miedo.",
-    "Este juego es más de calma rural que de arcade loco. Aquí gana el ojo fino.",
-    "Completar la sopa guarda marca y puede dar puntos si aún no los cobraste hoy."
-  ],
-  game_trivia:[
-    "Trivia Barber es para aprender y picarse un poco. Pelo, estilo, rastas y cuidados con preguntas rápidas.",
-    "No pulses por impulso. Lee bien, que una respuesta rápida mal dada corta más que tijera sin afilar.",
-    "Esto puede servir para enseñar consejos reales de la tienda sin parecer clase aburrida.",
-    "Buen sitio para meter preguntas nuevas con el tiempo: cortes, cuidados, productos y cultura de la casa."
-  ],
-  tienda:[
-    "La tienda es la vitrina. Aquí los puntos tienen que oler a recompensa buena, no a saldo sin control.",
-    "Un descuento bien puesto vale más que veinte premios confusos. Claro, bonito y fácil de canjear.",
-    "Los cosméticos deberían apetecer antes de desbloquearlos. Silueta, misterio y premio: ahí está el pique.",
-    "Consejo de rasta: no llenes esto de texto. Que se vea limpio, como escaparate recién montado."
-  ],
-  comunidad:[
-    "Comunidad es la plaza del pueblo digital: tablón para avisos, foro para hablar y actualidad para leer algo con sentido.",
-    "Aquí no hace falta gritar. Buen comentario, buen like y buen debate. Flow de barrio, no gallinero.",
-    "Si alguien participa en un hilo, debería poder volver fácil desde su perfil. La conversación no se abandona en mitad del camino.",
-    "Para animarse: un poco de reggae, una noticia curiosa y a comentar con respeto."
-  ],
-  noticias:[
-    "Actualidad debe parecer revista, no teletexto. Pocas tarjetas buenas, categorías claras y cero ruido pesado.",
-    "Curiosidades, rural, comer, sitios, estilo y negocios: ese es el mapa. Política densa, a remar lejos.",
-    "Cada noticia puede abrir debate dentro de la app y también mandar a la fuente original.",
-    "Si sale un sitio bonito o un bar con buena pinta, guárdalo. Eso también es comunidad."
-  ],
-  perfil:[
-    "Perfil es tu guarida: avatar, nivel, recompensas, logros y tu rastro dentro de la app.",
-    "El editor tiene que ser visual. Ver el peinado antes de elegirlo, como creador de personaje de videojuego.",
-    "Los puntos funcionan mejor como progreso. Subes nivel, desbloqueas siluetas y el avatar va cogiendo personalidad.",
-    "Guarda el look cuando te guste. No queremos que el rasta salga al foro con la gorra atravesada, mi hermano."
-  ],
-  foro:[
-    "El foro es para conversaciones con sustancia: preguntas, ideas, votaciones y temas de la comunidad.",
-    "Premia calidad, no spam. Un buen comentario vale más que diez mensajes escritos con el peine en la boca.",
-    "Las encuestas pueden servir para elegir eventos, peinados, promos o ideas de la tienda.",
-    "Si el hilo se mueve, que vuelva arriba. Así la conversación respira."
-  ],
-  feed:[
-    "El tablón es la voz oficial: novedades, promos, avisos y cosas importantes de la tienda.",
-    "El cliente lee y reacciona; staff y admin publican. Ordenado, limpio y sin convertirlo en chat loco.",
-    "Un aviso bien puesto evita veinte preguntas repetidas. Eso es magia sin IA, mi pana.",
-    "Los posts importantes deberían poder fijarse arriba como cartel de barbería."
-  ],
-  cartera:[
-    "La cartera separa las economías: puntos web para perfil, tienda y comunidad; RC sólo para el Tycoon; dinero real futuro aparte.",
-    "La regla buena queda aplicada: máximo normal de 50 puntos al día si completas todo perfecto. Gacha, RC del Tycoon, compras y devoluciones quedan aparte.",
-    "Aquí verás puntos disponibles, progreso diario e historial de movimientos: ganancias, gastos y devoluciones.",
-    "Si algún día activas pagos, el saldo real debe vivir aquí, separado de los puntos para no mezclar churras con rastas."
-  ],
-  carrito:[
-    "El carrito guardará compras de tienda y personalización del avatar/perfil antes de confirmar el canje.",
-    "Aquí no entra el Tycoon. El Tycoon tendrá sus RC y su propia economía cuando lo mejoremos más adelante.",
-    "Lo ideal es que puedas añadir, quitar, vaciar y revisar total antes de gastar puntos.",
-    "Buen carrito: claro, sin letra pequeña y con el total siempre visible. Que nadie compre un peine pensando que era una corona."
-  ],
-  personalizacion:[
-    "La personalización es para avatar, perfil y presencia dentro de la web: marcos, fondos, títulos, colores, auras, siluetas e insignias.",
-    "Los cosméticos tienen precios duros: comunes, raros, épicos y legendarios para que el progreso dure semanas.",
-    "Primero se desbloquea el objeto; después se aplica desde el editor de personaje o perfil.",
-    "El Tycoon queda fuera de esta tienda por ahora. Sus muebles y mejoras visuales irán con RC cuando toque."
-  ],
-  notificaciones:[
-    "La campana es el buzón rápido: citas, mensajes, canjes y avisos importantes.",
-    "Una notificación de cita debe enseñar fecha, hora, servicio, estado y mensaje completo sin obligarte a buscar a ciegas.",
-    "Si algo es importante, debe verse como importante. Si ya lo leíste, que no siga gritando como loro en barbería.",
-    "Desde aquí deberías poder abrir la sección relacionada: Citas, comunidad, tienda o perfil."
-  ]
-};
 
 const RASTA_GENERAL_TIPS=[
   "Pulsa Activar ayuda y toca cualquier botón para saber qué hace sin ejecutar la acción.",
@@ -11728,7 +11468,6 @@ const RASTA_DAILY_FUN_TIPS=[
   "Los tops por juego motivan más cuando cada juego tiene identidad propia.",
   "Una ficha de cliente debe servir para recordar historial, no para cambiar roles."
 ];
-
 
 
 function rastaHash(str=""){
@@ -12268,7 +12007,6 @@ function pageTheme(page,communityTab,role){
 }
 
 
-
 function HelperInline({page,settings=null}){
   const [open,setOpen]=useState(false);
   const text=rastaPageHelpIntro(page);
@@ -12505,7 +12243,6 @@ function NotificacionesPanel({show,onClose,items=[],onMarkAll,onMarkOne,onRefres
     </div>
   </div>;
 }
-
 
 
 function clearRastaCutsClientData(){
