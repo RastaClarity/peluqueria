@@ -103,7 +103,7 @@ const BRAND = {
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
 const APP_VERSION="RASTACUTS_2_4_1_EDITOR_FASE115_STYLE";
-const APP_VERSION_SHORT="2.9.1";
+const APP_VERSION_SHORT="2.9.2";
 const APP_BUILD_DATE="2026-06-06";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
@@ -4415,6 +4415,92 @@ body[data-rc-theme="day"]{
   background:rgba(168,134,62,.24)!important;
   color:inherit!important;
   border:1px solid rgba(168,134,62,.34)!important;
+}
+
+
+/* ===== FASE107: corrección legibilidad modo noche ===== */
+/* El fondo ya está bien oscuro. Ahora forzamos textos claros en todos los paneles oscuros. */
+body[data-rc-theme="night"],
+.app-shell[data-rc-theme="night"],
+.rc-standalone-shell[data-rc-theme="night"]{
+  color:#F3E7C7!important;
+}
+
+.app-shell[data-rc-theme="night"] .page-content-pro,
+.app-shell[data-rc-theme="night"] .page-content-pro *,
+.rc-standalone-shell[data-rc-theme="night"],
+.rc-standalone-shell[data-rc-theme="night"] *{
+  color:#F3E7C7!important;
+}
+
+/* Títulos y números importantes */
+.app-shell[data-rc-theme="night"] .page-content-pro :where(h1,h2,h3,h4,h5,strong,b),
+.rc-standalone-shell[data-rc-theme="night"] :where(h1,h2,h3,h4,h5,strong,b){
+  color:#FFF4D6!important;
+}
+
+/* Subtextos y descripciones, antes quedaban azul oscuro */
+.app-shell[data-rc-theme="night"] .page-content-pro :where(p,span,small,label,div),
+.rc-standalone-shell[data-rc-theme="night"] :where(p,span,small,label,div){
+  color:#E6D6AE!important;
+}
+
+/* Botones y tarjetas rápidas */
+.app-shell[data-rc-theme="night"] button,
+.app-shell[data-rc-theme="night"] button *,
+.rc-standalone-shell[data-rc-theme="night"] button,
+.rc-standalone-shell[data-rc-theme="night"] button *{
+  color:#FFF4D6!important;
+}
+
+/* Inputs */
+.app-shell[data-rc-theme="night"] input,
+.app-shell[data-rc-theme="night"] select,
+.app-shell[data-rc-theme="night"] textarea{
+  color:#FFF4D6!important;
+}
+
+/* Badges/chips sobre fondo oscuro */
+.app-shell[data-rc-theme="night"] .page-content-pro [style*="color"],
+.rc-standalone-shell[data-rc-theme="night"] [style*="color"]{
+  color:#F3E7C7!important;
+}
+
+/* Excepción: botones dorados/verdes pueden mantener texto crema fuerte */
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"],
+.app-shell[data-rc-theme="night"] .nav-tab-pro[data-active="true"] *,
+.app-shell[data-rc-theme="night"] .header-action-pro,
+.app-shell[data-rc-theme="night"] .header-action-pro *,
+.app-shell[data-rc-theme="night"] .theme-toggle-pro,
+.app-shell[data-rc-theme="night"] .theme-toggle-pro *{
+  color:#FFF4D6!important;
+}
+
+/* Tarjetas de gestión con borde legible */
+.app-shell[data-rc-theme="night"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="night"] .studio-panel{
+  background:linear-gradient(145deg,rgba(43,58,48,.97),rgba(18,31,24,.95))!important;
+  border-color:rgba(173,148,82,.42)!important;
+}
+
+/* En el modo día no usamos blanco nuclear, pero sí texto oscuro legible */
+body[data-rc-theme="day"],
+.app-shell[data-rc-theme="day"],
+.app-shell[data-rc-theme="day"] .page-content-pro,
+.app-shell[data-rc-theme="day"] .page-content-pro *,
+.rc-standalone-shell[data-rc-theme="day"],
+.rc-standalone-shell[data-rc-theme="day"] *{
+  color:#1E150C!important;
+}
+.app-shell[data-rc-theme="day"] button,
+.app-shell[data-rc-theme="day"] button *,
+.rc-standalone-shell[data-rc-theme="day"] button,
+.rc-standalone-shell[data-rc-theme="day"] button *{
+  color:#FFF4D6!important;
+}
+.app-shell[data-rc-theme="day"] .studio-panel,
+.rc-standalone-shell[data-rc-theme="day"] .studio-panel{
+  background:linear-gradient(145deg,rgba(220,211,185,.94),rgba(194,202,180,.84))!important;
 }
 `;
 
