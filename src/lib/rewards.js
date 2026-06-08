@@ -251,6 +251,67 @@ function addToLocalCart(user,item,qty=1){
   return next;
 }
 
+async function createShopOrder({user,items=[],totalPoints=null,source="tienda",status=null,notes=null}={}){
+  if(!user?.id)return null;
+
+  const normalized=(Array.isArray(items)?items:[]).map(raw=>{
+    const h=hydrateCartItem(raw);
+    const qty=Math.max(1,Number(h.qty||1));
+    const puntos=Number(h.precio_puntos||h.puntos||h.puntos_precio||0);
+    return {
+      id:String(h.id||h.item_key||h.nombre||"item"),
+      item_key:h.item_key||null,
+      nombre:h.nombre||h.titulo||"Artículo",
+      categoria:h.categoria||"premios",
+      tipo:h.tipo||source||"tienda",
+      slot:h.slot||null,
+      valor:h.valor||null,
+      rareza:h.rareza||null,
+      qty,
+      puntos,
+      total_puntos:puntos*qty,
+      avatar:isAvatarPersonalizationItem(h)
+    };
+  });
+
+  if(!normalized.length)return null;
+
+  const total=Number.isFinite(Number(totalPoints))?Number(totalPoints):normalized.reduce((sum,it)=>sum+Number(it.total_puntos||0),0);
+  const first=normalized[0];
+  const allAvatar=normalized.every(it=>it.avatar);
+  const itemNombre=normalized.length===1?first.nombre:`Carrito (${normalized.length} artículo${normalized.length===1?"":"s"})`;
+  const itemId=normalized.length===1?String(first.id||first.item_key||"item"):"cart";
+  const itemCategoria=normalized.length===1?first.categoria:"carrito";
+  const itemTipo=normalized.length===1?first.tipo:(source||"carrito");
+  const estado=status || (allAvatar?"entregado":"pendiente");
+  const now=new Date().toISOString();
+
+  try{
+    const rows=await dbPost("tienda_pedidos",{
+      usuario_id:String(user.id),
+      cliente_nombre:user.nombre||user.name||user.email||"Cliente",
+      cliente_email:user.email||null,
+      item_id:itemId,
+      item_nombre:itemNombre,
+      item_categoria:itemCategoria,
+      item_tipo:itemTipo,
+      puntos_coste:total,
+      precio_euros:0,
+      estado,
+      items:normalized,
+      total_puntos:total,
+      notas:notes||null,
+      notas_cliente:notes||null,
+      updated_at:now
+    });
+
+    return Array.isArray(rows)?rows?.[0]||null:rows;
+  }catch(e){
+    console.warn("No se pudo crear pedido de tienda",e);
+    return null;
+  }
+}
+
 function catalogItemByKey(key){
   if(!key)return null;
 
@@ -347,6 +408,7 @@ export {
   readCart,
   writeCart,
   addToLocalCart,
+  createShopOrder,
   hydrateCartItem,
   isAvatarPersonalizationItem,
   unlockCosmeticForUser,
