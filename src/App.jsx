@@ -280,12 +280,17 @@ function bgGradient(bg){
     street:"linear-gradient(180deg,#120806 0%,#2B2430 40%,#556B8D 72%,#C97934 100%)",
     royal:"linear-gradient(180deg,#140806 0%,#3C0E17 38%,#7E0D28 64%,#D4AF37 100%)",
     office:"linear-gradient(180deg,#3C556F 0%,#94AFC9 56%,#E9D8B4 100%)",
-    beach:"linear-g{comun:"Común",raro:"Raro",epico:"Épico",legendario:"Legendario"}[r]||"Especial";}
-function rarityColor(r){return {comun:"green",raro:"blue",epico:"pink",legendario:"gold"}[r]||"green";}
-function cosmeticPatch(item){return item?.slot?{[item.slot]:item.valor}:{};}
-function ownedCosmeticKey(user){return `owned_cosmetics_${String(user?.id||user?.email||"anon")}`;}
-function localOwnedCosmetics(user){try{return JSON.parse(localStorage.getItem(ownedCosmeticKey(user))||"[]");}catch{return []}}
-function saveLocalOwnedCosmetics(user,keys){try{localStorage.setItem(ownedCosmeticKey(user),JSON.stringify([...new Set(keys)]));}catch{}}
+    beach:"linear-gradient(180deg,#79D7F3 0%,#12B5CB 44%,#0077A6 48%,#F4C97B 49%,#DFA95C 100%)",
+    setup:"linear-gradient(180deg,#090E19 0%,#17274C 44%,#263F8F 70%,#12B5CB 100%)",
+    camper:"linear-gradient(180deg,#A7D6F8 0%,#8BA56D 46%,#D7B64C 47%,#8F5A34 100%)",
+    terrace:"linear-gradient(180deg,#B9E3FF 0%,#77A45C 46%,#E7C57A 47%,#7A4A28 100%)",
+    reggae:"linear-gradient(180deg,#1C4D2F 0%,#1C4D2F 33%,#D7B64C 33%,#D7B64C 66%,#A72822 66%,#A72822 100%)",
+    barberShop:"linear-gradient(180deg,#1B1510 0%,#4E2B16 48%,#B99A45 100%)",
+    vipRoom:"linear-gradient(180deg,#11080E 0%,#4B1848 58%,#D7B64C 100%)"
+  };
+  return b[bg]||b.gold;
+}
+
 function makeId(value=""){let hash=0;for(const ch of String(value||"")){hash=(hash*31+ch.charCodeAt(0))>>>0;}return hash.toString(16);}
 function shadeHex(hex,percent=0){
   const raw=String(hex||"#000").replace("#","");
