@@ -4119,17 +4119,56 @@ function Foro({user,showToast}){
 // TIENDA
 
 function shopCategoryLabel(cat){
-  return {todo:"Todo",cupones:"Cupones",avatar:"Avatar",marcos:"Marcos",fondos:"Fondos",auras:"Auras",complementos:"Complementos",perfil:"Perfil",juegos:"Juegos",premios:"Premios"}[cat]||cat||"Premios";
+  return {todo:"Todo",estilo:"Estilo avatar",cupones:"Cupones",avatar:"Avatar",marcos:"Marcos",fondos:"Fondos",auras:"Auras",complementos:"Complementos",perfil:"Perfil",juegos:"Juegos",productos:"Productos €",premios:"Premios"}[cat]||cat||"Premios";
 }
 function itemShopCategory(p){
   const slot=String(p.slot||"");
-  const tipo=String(p.tipo||"");
+  const tipo=String(p.tipo||"").toLowerCase();
+  const cat=String(p.categoria||"premios").toLowerCase();
+  if(cat==="productos"||cat==="producto"||tipo.includes("producto_real")||tipo.includes("euros")||tipo.includes("euro")||p.requiere_pago_real)return "productos";
+  if(cat==="juegos"||tipo.includes("gacha")||tipo.includes("bonus")||tipo.includes("tirada")||tipo.includes("pull"))return "juegos";
   if(slot==="frame")return "marcos";
   if(slot==="bg")return "fondos";
   if(slot==="aura")return "auras";
   if(slot==="accessory")return "complementos";
   if(slot==="profileTitle"||slot==="nameColor"||slot==="profileCard"||slot==="sticker"||tipo.includes("perfil"))return "perfil";
-  return String(p.categoria||"premios");
+  if(cat==="avatar")return "estilo";
+  return cat||"premios";
+}
+function itemPointPrice(p){return Math.max(0,Number(p?.puntos_precio??p?.precio_puntos??p?.puntos??0)||0);}
+function itemEuroPrice(p){return Math.max(0,Number(p?.precio_euros??p?.precioEuros??0)||0);}
+function isRealMoneyProduct(p){
+  const tipo=String(p?.tipo||"").toLowerCase();
+  const cat=String(p?.categoria||"").toLowerCase();
+  return cat==="productos"||tipo==="producto_real"||tipo.includes("producto_real")||p?.requiere_pago_real===true||String(p?.moneda||"").toLowerCase()==="eur"||itemEuroPrice(p)>0;
+}
+function isGameVoucherItem(p){
+  const tipo=String(p?.tipo||"").toLowerCase();
+  const cat=String(p?.categoria||"").toLowerCase();
+  const slot=String(p?.slot||"").toLowerCase();
+  return cat==="juegos"||tipo.includes("gacha")||tipo.includes("tirada")||tipo.includes("pull")||slot==="gacha_pulls";
+}
+function gameVoucherAmount(p){
+  const fromCol=Number(p?.juego_bonus_cantidad);
+  if(Number.isFinite(fromCol)&&fromCol>0)return Math.floor(fromCol);
+  const fromVal=Number(p?.valor);
+  if(Number.isFinite(fromVal)&&fromVal>0)return Math.floor(fromVal);
+  return 10;
+}
+function gameVoucherKind(p){
+  const tipo=String(p?.juego_bonus_tipo||p?.slot||p?.tipo||"").toLowerCase();
+  if(tipo.includes("gacha"))return "gacha_pulls";
+  return "gacha_pulls";
+}
+function applyGameVoucher(user,item,qty=1){
+  const amount=gameVoucherAmount(item)*Math.max(1,Number(qty)||1);
+  const kind=gameVoucherKind(item);
+  if(kind==="gacha_pulls"){
+    const next=addGachaExtraPulls(user?.id,amount);
+    try{window.dispatchEvent(new CustomEvent("rasta-gacha-pulls-updated"));}catch{}
+    return {ok:true,kind,amount,total:next,label:`${amount} tiradas de Gacha añadidas`};
+  }
+  return {ok:false,kind,amount,total:0,label:"Vale de juego no reconocido"};
 }
 function rarityPriceRange(r){
   return {comun:"120–300 pts",raro:"350–900 pts",epico:"1.000–1.800 pts",legendario:"2.000–3.600 pts"}[r]||"Especial";
@@ -4216,7 +4255,7 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
           <div style={{fontSize:".74rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:T.textSub}}>{SHOP_PHASE_LABEL}</div>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.72rem",lineHeight:1,color:T.g800}}>Tienda y canjes</div>
           <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>
-            Premios claros, stock visible y canjes con menos lío.
+            Estilo de avatar, vales de juegos y productos reales separados sin mezclar economías.
           </div>
         </div>
         <div style={{display:"grid",gap:6,justifyItems:"end"}}>
@@ -4258,7 +4297,9 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
       <div className="shop-action-row" style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
         {onFilter&&<Btn small onClick={()=>onFilter("todos")}>🎁 Todos</Btn>}
         {onFilter&&<Btn small onClick={()=>onFilter("descuentos")}>🏷️ Descuentos</Btn>}
-        {onFilter&&<Btn small onClick={()=>onFilter("avatar")}>🧑 Avatar</Btn>}
+        {onFilter&&<Btn small onClick={()=>onFilter("avatar")}>🧑 Estilo</Btn>}
+        {onFilter&&<Btn small onClick={()=>onFilter("juegos")}>🎮 Juegos</Btn>}
+        {onFilter&&<Btn small onClick={()=>onFilter("productos")}>🧴 Productos €</Btn>}
       </div>
     </Card>
   );
@@ -4289,37 +4330,46 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
   }
 
   async function canjear(p){
-    const precio=Number(p.puntos_precio)||0;
+    const precio=itemPointPrice(p);
+    const precioEuros=itemEuroPrice(p);
     const stockLimitado=p.stock!==null && p.stock!==undefined && String(p.stock)!=="";
     const isAvatar=isAvatarPersonalizationItem(p);
+    const isGame=isGameVoucherItem(p);
+    const isReal=isRealMoneyProduct(p);
 
-    if((user.puntos||0)<precio){showToast("No tienes suficientes puntos");SFX.error();return;}
-    if(stockLimitado && Number(p.stock)<=0){showToast("Este premio está agotado");SFX.error();return;}
+    if(!isReal && (user.puntos||0)<precio){showToast("No tienes suficientes puntos");SFX.error();return;}
+    if(stockLimitado && Number(p.stock)<=0){showToast("Este artículo está agotado");SFX.error();return;}
 
-    const nuevos=Math.max(0,(user.puntos||0)-precio);
-    const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+    const nuevos=isReal?Number(user.puntos||0):Math.max(0,(user.puntos||0)-precio);
 
-    if(!okUser){
-      showToast("No se pudieron descontar los puntos");
-      SFX.error();
-      return;
+    if(!isReal){
+      const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+      if(!okUser){
+        showToast("No se pudieron descontar los puntos");
+        SFX.error();
+        return;
+      }
     }
 
     const pedido=await createShopOrder({
       user,
       items:[p],
-      totalPoints:precio,
-      source:isAvatar?"personalizacion":"tienda",
-      status:isAvatar?"entregado":"pendiente",
-      notes:isAvatar?"Personalización desbloqueada automáticamente.":"Pedido creado desde tienda."
+      totalPoints:isReal?0:precio,
+      source:isAvatar?"personalizacion":isGame?"juegos":isReal?"producto_real":"tienda",
+      status:(isAvatar||isGame)?"entregado":"pendiente",
+      notes:isAvatar?"Personalización desbloqueada automáticamente.":isGame?"Vale de juego aplicado automáticamente.":isReal?"Producto real solicitado. Pendiente de pago/confirmación en tienda.":"Pedido creado desde tienda."
     });
+
+    if(isReal && pedido?.id){
+      try{await dbPatch("tienda_pedidos",`?id=eq.${pedido.id}`,{precio_euros:precioEuros,total_puntos:0,puntos_coste:0,estado:"pendiente",updated_at:new Date().toISOString()});}catch{}
+    }
 
     try{
       await dbPost("canjes",{
         usuario_id:user.id,
         premio_id:p.id,
         premio_nombre:p.nombre,
-        puntos_gastados:precio,
+        puntos_gastados:isReal?0:precio,
         item_key:p.item_key||null,
         categoria:p.categoria||"premios",
         tipo:p.tipo||"canje"
@@ -4331,15 +4381,21 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
     }
 
     if(isAvatar) await unlockCosmeticForUser(user,p);
+    if(isGame){
+      const applied=applyGameVoucher(user,p,1);
+      if(!applied.ok){showToast(applied.label);SFX.error();return;}
+    }
 
-    recordPointMovement(user.id,{amount:-precio,type:"spend",reason:`Canje: ${p.nombre}`,source:isAvatar?"personalizacion":"tienda",balance:nuevos,meta:{item_id:p.id,item_key:p.item_key||null,pedido_id:pedido?.id||null}});
-    setUser(u=>({...u,puntos:nuevos}));
+    if(!isReal){
+      recordPointMovement(user.id,{amount:-precio,type:"spend",reason:`Canje: ${p.nombre}`,source:isAvatar?"personalizacion":isGame?"juegos":"tienda",balance:nuevos,meta:{item_id:p.id,item_key:p.item_key||null,pedido_id:pedido?.id||null,game_bonus:isGame?{kind:gameVoucherKind(p),amount:gameVoucherAmount(p)}:null}});
+      setUser(u=>({...u,puntos:nuevos}));
+    }
     SFX.collect();
 
-    await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Nuevo pedido de tienda",mensaje:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedido?.id||p.id,importante:true});
-    await createNotification({usuario_id:user.id,rol_destino:"client",tipo:isAvatar?"avatar":"pedido",titulo:isAvatar?"Personalización desbloqueada":"Pedido creado",mensaje:isAvatar?`Has desbloqueado ${p.nombre}. Ve a Perfil > Editor para equiparlo.`:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:isAvatar?"avatar":"tienda_pedido",entidad_id:pedido?.id||p.id,importante:false});
+    await createNotification({rol_destino:"admin",tipo:"pedido",titulo:isReal?"Nuevo pedido de producto real":"Nuevo pedido de tienda",mensaje:isReal?`${user.nombre||user.email||"Cliente"} solicitó ${p.nombre}${precioEuros?` por ${precioEuros.toFixed(2)} €`:""}.`:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedido?.id||p.id,importante:!isAvatar&&!isGame});
+    await createNotification({usuario_id:user.id,rol_destino:"client",tipo:isAvatar?"avatar":isGame?"juegos":isReal?"pedido":"pedido",titulo:isAvatar?"Personalización desbloqueada":isGame?"Vale de juego aplicado":isReal?"Pedido enviado":"Pedido creado",mensaje:isAvatar?`Has desbloqueado ${p.nombre}. Ve a Perfil > Editor para equiparlo.`:isGame?`Has comprado ${gameVoucherAmount(p)} tiradas extra para el Gacha Barber.`:isReal?`Tu pedido de ${p.nombre} queda pendiente de confirmación/pago en tienda.`:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:isAvatar?"avatar":isGame?"juego_bonus":"tienda_pedido",entidad_id:pedido?.id||p.id,importante:false});
 
-    showToast(isAvatar?`${p.nombre} desbloqueado`:`${p.nombre} pedido correctamente`);
+    showToast(isAvatar?`${p.nombre} desbloqueado`:isGame?`${gameVoucherAmount(p)} tiradas de Gacha añadidas`:isReal?`${p.nombre} solicitado correctamente`:`${p.nombre} pedido correctamente`);
     await load();
   }
 
@@ -4352,16 +4408,17 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
   const cats=[
     {id:"todo",label:"Todo",icon:"✨"},
-    {id:"avatar",label:"Avatar",icon:"🎭"},
+    {id:"estilo",label:"Estilo avatar",icon:"🎭"},
+    {id:"juegos",label:"Juegos",icon:"🎮"},
+    {id:"productos",label:"Productos €",icon:"🧴"},
+    {id:"cupones",label:"Cupones",icon:"🎟️"},
     {id:"marcos",label:"Marcos",icon:"🖼️"},
     {id:"fondos",label:"Fondos",icon:"🌄"},
     {id:"auras",label:"Auras",icon:"✨"},
-    {id:"complementos",label:"Complementos",icon:"🎒"},
     {id:"perfil",label:"Perfil",icon:"🏷️"},
-    {id:"cupones",label:"Cupones",icon:"🎟️"},
     {id:"premios",label:"Premios",icon:"🎁"}
   ];
-  const visibles=cat==="todo"?productos:cat==="avatar"?productos.filter(p=>isAvatarPersonalizationItem(p)):productos.filter(p=>itemShopCategory(p)===cat || String(p.categoria||"premios")===cat);
+  const visibles=cat==="todo"?productos:cat==="estilo"?productos.filter(p=>isAvatarPersonalizationItem(p)||itemShopCategory(p)==="estilo"):productos.filter(p=>itemShopCategory(p)===cat || String(p.categoria||"premios")===cat);
 
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
@@ -4371,7 +4428,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
         user={user}
         items={productos||[]}
         settings={settings||{}}
-        onFilter={(f)=>{ try{ if(f==='todos')setCat('todo'); else if(f==='avatar')setCat('avatar'); else if(f==='descuentos')setCat('cupones'); else if(f==='canjeables')setCat('todo'); }catch{} }}
+        onFilter={(f)=>{ try{ if(f==='todos')setCat('todo'); else if(f==='avatar')setCat('estilo'); else if(f==='juegos')setCat('juegos'); else if(f==='productos')setCat('productos'); else if(f==='descuentos')setCat('cupones'); else if(f==='canjeables')setCat('todo'); }catch{} }}
       />
 
       <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
@@ -4400,8 +4457,11 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
       {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin premios todavía" sub="Pronto habrá novedades en esta categoría."/>
         :visibles.map(p=>{
-          const precio=Number(p.puntos_precio)||0;
-          const ok=(user.puntos||0)>=precio;
+          const precio=itemPointPrice(p);
+          const precioEuros=itemEuroPrice(p);
+          const realMoney=isRealMoneyProduct(p);
+          const gameVoucher=isGameVoucherItem(p);
+          const ok=realMoney || (user.puntos||0)>=precio;
           const stockLimitado=p.stock!==null && p.stock!==undefined && String(p.stock)!=="";
           const agotado=stockLimitado && Number(p.stock)<=0;
           return(
@@ -4417,10 +4477,12 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
                       <div style={{fontWeight:950,color:T.g800,fontSize:".94rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.nombre}</div>
                       <div style={{fontSize:"0.78rem",color:T.textSub,marginTop:3,fontWeight:820,lineHeight:1.35}}>{p.descripcion}</div>
                     </div>
-                    <div style={{fontWeight:950,color:T.orange,fontSize:"1.02rem",whiteSpace:"nowrap"}}>{precio} pts</div>
+                    <div style={{fontWeight:950,color:T.orange,fontSize:"1.02rem",whiteSpace:"nowrap"}}>{realMoney?(precioEuros?`${precioEuros.toFixed(2)} €`:"Consultar"): `${precio} pts`}</div>
                   </div>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
                     <Badge col="gold">{shopCategoryLabel(itemShopCategory(p))}</Badge>
+                    {gameVoucher&&<Badge col="blue">+{gameVoucherAmount(p)} tiradas</Badge>}
+                    {realMoney&&<Badge col="blue">Pago en tienda</Badge>}
                     <Badge col={p.rareza==="epico"?"pink":p.rareza==="raro"?"blue":p.rareza==="legendario"?"gold":"green"}>{rarityLabel(p.rareza||"comun")}</Badge>
                     <Badge col="ghost">{rarityPriceRange(p.rareza||"comun")}</Badge>
                     {stockLimitado&&<Badge col={agotado?"red":"green"}>Stock {Number(p.stock)||0}</Badge>}
@@ -4429,7 +4491,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
                     {agotado?<div style={{textAlign:"center",fontSize:"0.78rem",color:T.red,fontWeight:950}}>Agotado</div>:
                     <div style={{display:"grid",gridTemplateColumns:ok?"1fr 1fr":"1fr",gap:8}}>
                       <Btn full small col="ghost" onClick={()=>addCart(p)}>🛒 Añadir</Btn>
-                      {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>Canjear</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} pts</div>}
+                      {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>{realMoney?"Solicitar":gameVoucher?"Comprar":isAvatarPersonalizationItem(p)?"Desbloquear":"Canjear"}</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} pts</div>}
                     </div>}
                   </div>
                 </div>
@@ -4496,6 +4558,10 @@ const GACHA_DAILY_PULL_LIMIT=50;
 function gachaPullsKey(uid){return `gacha_pulls_${uid||"anon"}_${TODAY_KEY()}`;}
 function getGachaPullsToday(uid){try{return Number(localStorage.getItem(gachaPullsKey(uid))||0);}catch{return 0;}}
 function setGachaPullsToday(uid,value){try{localStorage.setItem(gachaPullsKey(uid),String(Math.max(0,Number(value)||0)));}catch{}}
+function gachaExtraPullsKey(uid){return `gacha_extra_pulls_${uid||"anon"}`;}
+function getGachaExtraPulls(uid){try{return Number(localStorage.getItem(gachaExtraPullsKey(uid))||0);}catch{return 0;}}
+function setGachaExtraPulls(uid,value){try{localStorage.setItem(gachaExtraPullsKey(uid),String(Math.max(0,Number(value)||0)));}catch{}}
+function addGachaExtraPulls(uid,amount){const next=getGachaExtraPulls(uid)+(Number(amount)||0);setGachaExtraPulls(uid,next);return next;}
 function dailyGamePointsKey(uid){return `game_points_total_${uid}_${TODAY_KEY()}`;}
 function getDailyGamePointsTotal(uid){return Number(localStorage.getItem(dailyGamePointsKey(uid))||0);}
 function addDailyGamePointsTotal(uid,pts){const next=getDailyGamePointsTotal(uid)+(Number(pts)||0);localStorage.setItem(dailyGamePointsKey(uid),String(next));return next;}
@@ -5120,9 +5186,16 @@ function GachaSlotsGame({user,onWin,settings,onBuyPulls}){
   const [spinning,setSpinning]=useState(false);
   const [result,setResult]=useState(null);
   const [pulls,setPulls]=useState(()=>getGachaPullsToday(uid));
+  const [extraPulls,setExtraPullsState]=useState(()=>getGachaExtraPulls(uid));
   const [claimed,setClaimed]=useState(false);
   const dailyLimit=Math.max(1,parseInt(settings?.puntos?.gacha_tiradas_dia??GACHA_DAILY_PULL_LIMIT,10)||GACHA_DAILY_PULL_LIMIT);
-  const pullsLeft=Math.max(0,dailyLimit-pulls);
+  useEffect(()=>{
+    const reload=()=>setExtraPullsState(getGachaExtraPulls(uid));
+    window.addEventListener("rasta-gacha-pulls-updated",reload);
+    return()=>window.removeEventListener("rasta-gacha-pulls-updated",reload);
+  },[uid]);
+  const normalPullsLeft=Math.max(0,dailyLimit-pulls);
+  const pullsLeft=normalPullsLeft+Math.max(0,extraPulls);
   function pickPrize(){
     const r=Math.random();
     if(r<1/5000)return{pts:50,key:'ticket',label:'Premio gordo: 3 tickets dorados'};
@@ -5137,7 +5210,11 @@ function GachaSlotsGame({user,onWin,settings,onBuyPulls}){
   function spin(){
     if(spinning)return;
     if(pullsLeft<=0){SFX.error();setResult({pts:0,key:null,label:'Límite diario alcanzado'});return;}
-    const nextPulls=pulls+1;setPulls(nextPulls);setGachaPullsToday(uid,nextPulls);
+    if(normalPullsLeft>0){
+      const nextPulls=pulls+1;setPulls(nextPulls);setGachaPullsToday(uid,nextPulls);
+    }else{
+      const nextExtra=Math.max(0,extraPulls-1);setExtraPullsState(nextExtra);setGachaExtraPulls(uid,nextExtra);
+    }
     setSpinning(true);setResult(null);setClaimed(false);
     let ticks=0;const final=pickPrize();
     const spinTimer=setInterval(()=>{
@@ -5162,15 +5239,16 @@ function GachaSlotsGame({user,onWin,settings,onBuyPulls}){
     if(!onBuyPulls)return;
     const ok=await onBuyPulls(5,10);
     if(ok){
-      const next=Math.max(0,pulls-10);
-      setPulls(next);setGachaPullsToday(uid,next);
+      const next=addGachaExtraPulls(uid,10);
+      setExtraPullsState(next);
+      try{window.dispatchEvent(new CustomEvent("rasta-gacha-pulls-updated"));}catch{}
       setResult({pts:0,key:null,label:'Has comprado 10 tiradas extra por 5 puntos'});
       SFX.collect();
     }
   }
   return <Card style={{background:'linear-gradient(180deg,#271006,#5C3317 55%,#D4AF37)',border:`2px solid ${T.gold}`,color:T.white}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:12}}>
-      <div><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><div style={{fontSize:'.7rem',fontWeight:850,opacity:.78,marginTop:2}}>Máximo {dailyLimit} tiradas al día</div></div>
+      <div><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><div style={{fontSize:'.7rem',fontWeight:850,opacity:.78,marginTop:2}}>{dailyLimit} diarias + {extraPulls} extra</div></div>
       <Badge col={pullsLeft>0?'gold':'red'}>{pullsLeft}/{dailyLimit}</Badge>
     </div>
     <div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,lineHeight:1.45,marginBottom:12}}>Junta 3 símbolos iguales. Si ganas, cobras sin salir del juego y puedes seguir tirando.</div>
@@ -5178,12 +5256,12 @@ function GachaSlotsGame({user,onWin,settings,onBuyPulls}){
     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
       {reels.map((key,i)=><div key={i} style={{height:106,borderRadius:22,display:'grid',placeItems:'center',background:'linear-gradient(180deg,#FFF8E6,#E8C477)',border:'3px solid rgba(255,244,214,.75)',boxShadow:'inset 0 8px 18px rgba(0,0,0,.16),0 10px 20px rgba(0,0,0,.22)',fontSize:'2.6rem',animation:spinning?'rewardPulsePro .38s infinite':'none'}}>{SYMBOLS[key]?.icon}</div>)}
     </div>
-    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{result.pts>0?`Premio: ${result.pts} puntos reales. Puedes cobrar y seguir jugando.`:pullsLeft<=0?'Sin tiradas. Puedes comprar 10 por 5 puntos.':'Puedes volver a tirar mientras te queden tiradas.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar '+result.pts+' puntos'}</Btn></div>}</Card>}
+    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{result.pts>0?`Premio: ${result.pts} puntos reales. Puedes cobrar y seguir jugando.`:pullsLeft<=0?'Sin tiradas. Puedes comprar vales en la tienda o 10 por 5 puntos aquí.':extraPulls>0?'Usando tiradas extra compradas en tienda o arcade.':'Puedes volver a tirar mientras te queden tiradas.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar '+result.pts+' puntos'}</Btn></div>}</Card>}
     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
       <Btn full col={pullsLeft>0?'gold':'ghost'} disabled={spinning||pullsLeft<=0} onClick={spin}>{spinning?'Girando...':pullsLeft>0?'🎰 Tirar':'Sin tiradas'}</Btn>
       <Btn full col='ghost' disabled={spinning||Number(user?.puntos||0)<5} onClick={buyPulls}>🛒 10 tiradas · 5 pts</Btn>
     </div>
-    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{dailyLimit}. Comprar tiradas resta 5 puntos y libera 10 tiradas hoy.</div>
+    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{dailyLimit}. Extras disponibles: {extraPulls}. Los vales de tienda se pueden comprar tantas veces como quieras.</div>
   </Card>;
 }
 
@@ -5782,7 +5860,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     try{await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});}catch{}
     setUser?.(u=>({...u,puntos:nuevos}));
     recordPointMovement(user.id,{amount:-cost,type:"spend",reason:`Compra ${amount} tiradas Gacha`,source:"gacha",balance:nuevos,meta:{cost,amount}});
-    showToast(`Compradas ${amount} tiradas por ${cost} puntos`);
+    showToast(`Compradas ${amount} tiradas extra por ${cost} puntos`);
     return true;
   }
 
@@ -7183,7 +7261,7 @@ function Comunidad(props){
 
 function GestionTienda({user,showToast}){
   if(!isAdminUser(user)) return <EmptyState icon="🔒" title="Sólo admin" sub="La tienda editable sólo puede gestionarla el administrador."/>;
-  const empty={id:null,item_key:"",nombre:"",descripcion:"",categoria:"premios",tipo:"canje",icono:"🎁",puntos_precio:"100",stock:"",activo:"true",rareza:"comun",slot:"",valor:""};
+  const empty={id:null,item_key:"",nombre:"",descripcion:"",categoria:"premios",tipo:"canje",icono:"🎁",puntos_precio:"100",precio_euros:"",stock:"",activo:"true",rareza:"comun",slot:"",valor:"",juego_bonus_tipo:"",juego_bonus_cantidad:""};
   const [items,setItems]=useState([]);
   const [loading,setLoading]=useState(true);
   const [showEdit,setShowEdit]=useState(false);
@@ -7203,6 +7281,14 @@ function GestionTienda({user,showToast}){
     setForm({...empty,item_key:`item_${Date.now()}`});
     setShowEdit(true);
   }
+  function openGachaVoucher(){
+    setForm({...empty,item_key:`gacha_10_${Date.now()}`,nombre:"Vale 10 tiradas Gacha",descripcion:"Añade 10 tiradas extra al Gacha Barber. Se aplica al momento y se puede comprar todas las veces que quieras.",categoria:"juegos",tipo:"gacha_pulls",icono:"🎰",puntos_precio:"10",stock:"",rareza:"comun",slot:"gacha_pulls",valor:"10",juego_bonus_tipo:"gacha_pulls",juego_bonus_cantidad:"10"});
+    setShowEdit(true);
+  }
+  function openRealProduct(){
+    setForm({...empty,item_key:`producto_${Date.now()}`,nombre:"Producto peluquería",descripcion:"Producto físico de la peluquería. El pago se confirma en tienda.",categoria:"productos",tipo:"producto_real",icono:"🧴",puntos_precio:"0",precio_euros:"9.99",stock:"",rareza:"comun"});
+    setShowEdit(true);
+  }
 
   function openEdit(item){
     setForm({
@@ -7214,11 +7300,14 @@ function GestionTienda({user,showToast}){
       tipo:item.tipo||"canje",
       icono:item.icono||"🎁",
       puntos_precio:String(item.puntos_precio??0),
+      precio_euros:item.precio_euros===null||item.precio_euros===undefined?"":String(item.precio_euros),
       stock:item.stock===null||item.stock===undefined?"":String(item.stock),
       activo:String(item.activo!==false),
       rareza:item.rareza||"comun",
       slot:item.slot||"",
-      valor:item.valor||""
+      valor:item.valor||"",
+      juego_bonus_tipo:item.juego_bonus_tipo||"",
+      juego_bonus_cantidad:item.juego_bonus_cantidad===null||item.juego_bonus_cantidad===undefined?"":String(item.juego_bonus_cantidad)
     });
     setShowEdit(true);
   }
@@ -7233,11 +7322,16 @@ function GestionTienda({user,showToast}){
       tipo:form.tipo,
       icono:form.icono||"🎁",
       puntos_precio:Math.max(0,parseInt(form.puntos_precio||"0",10)||0),
+      precio_euros:form.precio_euros===""?null:Math.max(0,Number(String(form.precio_euros).replace(",","."))||0),
+      moneda:form.categoria==="productos"?"EUR":"puntos",
+      requiere_pago_real:form.categoria==="productos"||form.tipo==="producto_real",
       stock:form.stock===""?null:Math.max(0,parseInt(form.stock||"0",10)||0),
       activo:form.activo==="true",
       rareza:form.rareza,
       slot:form.slot.trim()||null,
       valor:form.valor.trim()||null,
+      juego_bonus_tipo:form.juego_bonus_tipo.trim()||((form.tipo||"").includes("gacha")?"gacha_pulls":null),
+      juego_bonus_cantidad:form.juego_bonus_cantidad===""?(form.tipo==="gacha_pulls"?Math.max(1,parseInt(form.valor||"10",10)||10):null):Math.max(1,parseInt(form.juego_bonus_cantidad||"0",10)||0),
       visible_para:"clientes",
       updated_at:new Date().toISOString()
     };
@@ -7266,13 +7360,14 @@ function GestionTienda({user,showToast}){
     {id:"cupones",label:"Cupones"},
     {id:"avatar",label:"Avatar"},
     {id:"juegos",label:"Juegos"},
+    {id:"productos",label:"Productos €"},
     {id:"premios",label:"Premios"}
   ];
   const visibles=filter==="todo"?items:items.filter(i=>String(i.categoria||"premios")===filter);
 
   return(
     <div style={{animation:"fadeSlide .34s ease"}}>
-      <SectionHeader icon="🛍️" title="Tienda editable" sub={`${items.length} productos configurados`} action={<Btn small col="gold" onClick={openNew}>+ Producto</Btn>}/>
+      <SectionHeader icon="🛍️" title="Tienda editable" sub={`${items.length} productos configurados`} action={<div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}><Btn small col="gold" onClick={openNew}>+ Producto</Btn><Btn small col="dark" onClick={openGachaVoucher}>+ Vale Gacha</Btn><Btn small col="ghost" onClick={openRealProduct}>+ Producto €</Btn></div>}/>
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2rem"}}>🛠️</div>
@@ -7298,8 +7393,9 @@ function GestionTienda({user,showToast}){
               </div>
               <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:3}}>{item.descripcion}</div>
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                <Badge col="gold">{item.puntos_precio} pts</Badge>
-                <Badge col="blue">{item.categoria}</Badge>
+                <Badge col="gold">{isRealMoneyProduct(item)?(itemEuroPrice(item)?`${itemEuroPrice(item).toFixed(2)} €`:"Producto €"):`${item.puntos_precio} pts`}</Badge>
+                <Badge col="blue">{shopCategoryLabel(itemShopCategory(item))}</Badge>
+                {isGameVoucherItem(item)&&<Badge col="blue">+{gameVoucherAmount(item)} tiradas</Badge>}
                 <Badge col={item.rareza==="epico"?"pink":item.rareza==="raro"?"blue":item.rareza==="legendario"?"gold":"green"}>{rarityLabel(item.rareza||"comun")}</Badge>
                 {item.stock!==null&&item.stock!==undefined&&<Badge col={Number(item.stock)>0?"green":"red"}>Stock {item.stock}</Badge>}
               </div>
@@ -7320,16 +7416,20 @@ function GestionTienda({user,showToast}){
           <Input label="Icono" value={form.icono} onChange={v=>setForm(f=>({...f,icono:v}))}/>
           <Input label="Precio puntos" value={form.puntos_precio} onChange={v=>setForm(f=>({...f,puntos_precio:v}))} type="number"/>
         </div>
+        <Input label="Precio euros opcional (sólo productos reales)" value={form.precio_euros} onChange={v=>setForm(f=>({...f,precio_euros:v}))} placeholder="9.99"/>
         <Select label="Categoría" value={form.categoria} onChange={v=>setForm(f=>({...f,categoria:v}))} options={[
           {value:"cupones",label:"Cupones"},
           {value:"avatar",label:"Avatar"},
           {value:"juegos",label:"Juegos"},
+          {value:"productos",label:"Productos reales €"},
           {value:"premios",label:"Premios"}
         ]}/>
         <Select label="Tipo" value={form.tipo} onChange={v=>setForm(f=>({...f,tipo:v}))} options={[
           {value:"cupon",label:"Cupón"},
           {value:"avatar",label:"Avatar"},
           {value:"bonus",label:"Bonus juego"},
+          {value:"gacha_pulls",label:"Vale Gacha tiradas"},
+          {value:"producto_real",label:"Producto real €"},
           {value:"canje",label:"Canje/premio"}
         ]}/>
         <Select label="Rareza" value={form.rareza} onChange={v=>setForm(f=>({...f,rareza:v}))} options={[
@@ -7340,8 +7440,12 @@ function GestionTienda({user,showToast}){
         ]}/>
         <Input label="Stock vacío = ilimitado" value={form.stock} onChange={v=>setForm(f=>({...f,stock:v}))} type="number"/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-          <Input label="Slot avatar/opcional" value={form.slot} onChange={v=>setForm(f=>({...f,slot:v}))} placeholder="aura, bg, frame..."/>
-          <Input label="Valor/opcional" value={form.valor} onChange={v=>setForm(f=>({...f,valor:v}))} placeholder="warm, flame..."/>
+          <Input label="Slot avatar/juego" value={form.slot} onChange={v=>setForm(f=>({...f,slot:v}))} placeholder="aura, bg, frame, gacha_pulls..."/>
+          <Input label="Valor" value={form.valor} onChange={v=>setForm(f=>({...f,valor:v}))} placeholder="warm, flame, 10..."/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Input label="Tipo bonus juego" value={form.juego_bonus_tipo} onChange={v=>setForm(f=>({...f,juego_bonus_tipo:v}))} placeholder="gacha_pulls"/>
+          <Input label="Cantidad bonus juego" value={form.juego_bonus_cantidad} onChange={v=>setForm(f=>({...f,juego_bonus_cantidad:v}))} type="number"/>
         </div>
         <Select label="Estado" value={form.activo} onChange={v=>setForm(f=>({...f,activo:v}))} options={[{value:"true",label:"Activo"},{value:"false",label:"Oculto"}]}/>
         <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
@@ -11100,45 +11204,58 @@ function CartPanel({show,onClose,user,setUser,showToast}){
   useEffect(()=>{writeCart(user,items);},[items,user?.id]);
   if(!show)return null;
   const hydratedItems=items.map(hydrateCartItem);
-  const totalPts=hydratedItems.reduce((sum,it)=>sum+(Number(it.precio_puntos||it.puntos||0)*Number(it.qty||1)),0);
+  const totalPts=hydratedItems.reduce((sum,it)=>sum+(isRealMoneyProduct(it)?0:(Number(it.precio_puntos||it.puntos||0)*Number(it.qty||1))),0);
+  const totalEuros=hydratedItems.reduce((sum,it)=>sum+(itemEuroPrice(it)*Number(it.qty||1)),0);
   function clearCart(){setItems([]);showToast?.("Carrito vaciado");}
   function removeItem(i){setItems(items.filter((_,idx)=>idx!==i));SFX.tab();}
   async function confirmCart(){
     if(!hydratedItems.length)return;
+    const pointItems=hydratedItems.filter(x=>!isRealMoneyProduct(x));
+    const realItems=hydratedItems.filter(isRealMoneyProduct);
+    const totalEuros=realItems.reduce((sum,it)=>sum+(itemEuroPrice(it)*Number(it.qty||1)),0);
     if((user.puntos||0)<totalPts){showToast?.(`Te faltan ${totalPts-(user.puntos||0)} puntos`);SFX.error();return;}
 
     const nuevos=Math.max(0,(user.puntos||0)-totalPts);
-    const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
 
-    if(!okUser){
-      showToast?.("No se pudieron descontar los puntos");
-      SFX.error();
-      return;
+    if(totalPts>0){
+      const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
+      if(!okUser){
+        showToast?.("No se pudieron descontar los puntos");
+        SFX.error();
+        return;
+      }
     }
 
     const avatarItems=hydratedItems.filter(raw=>isAvatarPersonalizationItem(raw));
-    const allAvatar=avatarItems.length===hydratedItems.length;
+    const gameItems=hydratedItems.filter(raw=>isGameVoucherItem(raw));
+    const allImmediate=(avatarItems.length+gameItems.length)===hydratedItems.length;
 
     const pedido=await createShopOrder({
       user,
       items:hydratedItems,
       totalPoints:totalPts,
-      source:"carrito",
-      status:allAvatar?"entregado":"pendiente",
-      notes:allAvatar?"Carrito de personalización desbloqueado automáticamente.":"Pedido creado desde carrito."
+      source:realItems.length?"carrito_mixto":gameItems.length?"juegos":avatarItems.length?"personalizacion":"carrito",
+      status:allImmediate?"entregado":"pendiente",
+      notes:allImmediate?"Carrito de desbloqueos aplicado automáticamente.":"Pedido creado desde carrito."
     });
+
+    if(pedido?.id && totalEuros>0){
+      try{await dbPatch("tienda_pedidos",`?id=eq.${pedido.id}`,{precio_euros:totalEuros,updated_at:new Date().toISOString()});}catch{}
+    }
 
     for(const raw of hydratedItems){
       const qty=Math.max(1,Number(raw.qty||1));
       for(let n=0;n<qty;n++){
         const isAvatar=isAvatarPersonalizationItem(raw);
+        const isGame=isGameVoucherItem(raw);
         if(isAvatar) await unlockCosmeticForUser(user,raw);
+        if(isGame) applyGameVoucher(user,raw,1);
         try{
           await dbPost("canjes",{
             usuario_id:user.id,
             premio_id:raw.id||raw.item_key||null,
             premio_nombre:raw.nombre||"Artículo",
-            puntos_gastados:Number(raw.precio_puntos||raw.puntos||0),
+            puntos_gastados:isRealMoneyProduct(raw)?0:Number(raw.precio_puntos||raw.puntos||0),
             item_key:raw.item_key||null,
             categoria:raw.categoria||"premios",
             tipo:raw.tipo||"carrito"
@@ -11147,31 +11264,38 @@ function CartPanel({show,onClose,user,setUser,showToast}){
       }
     }
 
-    recordPointMovement(user.id,{amount:-totalPts,type:"spend",reason:`Carrito confirmado (${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"})`,source:"carrito",balance:nuevos,meta:{pedido_id:pedido?.id||null,items:hydratedItems.map(x=>x.item_key||x.id||x.nombre)}});
-    setUser?.(u=>({...u,puntos:nuevos}));
+    if(totalPts>0){
+      recordPointMovement(user.id,{amount:-totalPts,type:"spend",reason:`Carrito confirmado (${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"})`,source:"carrito",balance:nuevos,meta:{pedido_id:pedido?.id||null,items:hydratedItems.map(x=>x.item_key||x.id||x.nombre)}});
+      setUser?.(u=>({...u,puntos:nuevos}));
+    }
 
     try{
       if(avatarItems.length){
         await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"avatar",titulo:"Personalización desbloqueada",mensaje:`Has desbloqueado ${avatarItems.length} artículo${avatarItems.length===1?"":"s"} para tu avatar/perfil. Ve a Perfil > Editor para equiparlo.`,entidad_tipo:"avatar",entidad_id:String(user.id),importante:false});
       }
-      await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Carrito confirmado",mensaje:`${user.nombre||user.email||"Cliente"} confirmó un carrito de ${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"} por ${totalPts} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedido?.id||String(user.id),importante:!allAvatar});
+      if(gameItems.length){
+        await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"juegos",titulo:"Vales de juego aplicados",mensaje:`Has añadido tiradas extra al Gacha Barber.`,entidad_tipo:"juego_bonus",entidad_id:String(user.id),importante:false});
+      }
+      await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Carrito confirmado",mensaje:`${user.nombre||user.email||"Cliente"} confirmó un carrito de ${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"}${totalPts?` por ${totalPts} puntos`:""}${totalEuros?` y ${totalEuros.toFixed(2)} €`:""}.`,entidad_tipo:"tienda_pedido",entidad_id:pedido?.id||String(user.id),importante:!allImmediate});
     }catch{}
 
     setItems([]);
     SFX.collect();
-    showToast?.(avatarItems.length?`Carrito confirmado. Personalización desbloqueada.`:"Carrito confirmado");
+    showToast?.(gameItems.length?`Carrito confirmado. Tiradas añadidas.`:avatarItems.length?`Carrito confirmado. Personalización desbloqueada.`:"Carrito confirmado");
     onClose?.();
   }
+
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
     <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
-        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🛒 Carrito</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Premios, tienda y personalización del avatar/perfil.</div></div>
+        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🛒 Carrito</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Estilo, juegos y productos. Total: {totalPts} pts{totalEuros?` · ${totalEuros.toFixed(2)} €`:""}</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
       </div>
-      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:7,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(255,244,214,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
+      {items.length===0?<EmptyState icon="🛒" title="Carrito vacío" sub="Aquí guardaremos compras de tienda y personalización del avatar. El Tycoon queda aparte."/>:<div style={{display:"grid",gap:8}}>{items.map((it,i)=><Card key={`${it.id}-${i}`} style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}><div style={{minWidth:0}}><div style={{fontWeight:950,color:T.g800,display:"flex",gap:7,alignItems:"center"}}><span>{it.icono||"🎁"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{it.nombre||it.titulo||"Artículo"}</span></div><div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>{isGameVoucherItem(it)?`Vale juego · +${gameVoucherAmount(it)} tiradas`:isRealMoneyProduct(it)?"Producto real · pago en tienda":it.categoria==="avatar"?"Personalización avatar/perfil":(it.tipo||"tienda")} · x{it.qty||1}</div></div><div style={{display:"grid",gap:6,justifyItems:"end"}}><div style={{fontWeight:950,color:T.g800}}>{isRealMoneyProduct(it)?(itemEuroPrice(it)?`${(itemEuroPrice(it)*(it.qty||1)).toFixed(2)} €`:"Consultar"):`${Number(it.precio_puntos||it.puntos||0)*(it.qty||1)} pts`}</div><button onClick={()=>removeItem(i)} style={{border:`1px solid ${T.g200}`,background:"rgba(255,244,214,.72)",borderRadius:999,padding:"4px 8px",fontWeight:950,color:T.red,cursor:"pointer"}}>Quitar</button></div></div></Card>)}</div>}
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
-        <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800}}><span>Total</span><span>{totalPts} pts</span></div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:6}}>Base preparada para añadir/quitar productos desde Tienda y Personalización en fases siguientes.</div>
+        <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800}}><span>Total puntos</span><span>{totalPts} pts</span></div>
+        {totalEuros>0&&<div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginTop:4}}><span>Total productos €</span><span>{totalEuros.toFixed(2)} €</span></div>}
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:6}}>Los puntos se descuentan al confirmar. Los productos reales quedan como pedido pendiente de pago/confirmación en tienda.</div>
       </Card>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}><Btn small col="ghost" onClick={clearCart} disabled={!items.length}>Vaciar</Btn><Btn small col="gold" onClick={confirmCart} disabled={!hydratedItems.length}>Confirmar</Btn></div>
       <div style={{marginTop:10}}><HelperInline page="carrito"/></div>
