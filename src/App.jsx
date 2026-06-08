@@ -86,8 +86,6 @@ import {
   bgGradient,
   makeId,
   shadeHex,
-  avatarColorForAccessory,
-  avatarAuraColor,
   HAIR_STYLES,
   CLEAN_AVATAR_OPTIONS,
   cleanPick,
@@ -118,8 +116,8 @@ const BRAND = {
 };
 
 // Reinicio limpio 2.0 desde FASE135A: base estable con editor por capas SVG interno.
-const APP_VERSION="RASTACUTS_2_9_3I_CLEAN_AVATAR_ENGINE";
-const APP_VERSION_SHORT="2.9.3i";
+const APP_VERSION="RASTACUTS_2_9_3I_FIX_DUPLICATE_AVATAR_HELPERS";
+const APP_VERSION_SHORT="2.9.3i-fix";
 const APP_BUILD_DATE="2026-06-07";
 const APP_SAFE_MODE_KEY="rastaCutsSafeMode";
 
