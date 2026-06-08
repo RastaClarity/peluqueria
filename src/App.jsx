@@ -48,6 +48,7 @@ import {
   addWebPointsToday,
   webPointsRemainingToday,
   readPointHistory,
+  readPointHistoryFromDb,
   recordPointMovement,
   clearPointHistory,
   awardWebPoints,
@@ -10935,11 +10936,21 @@ function HelperInline({page,settings=null}){
 
 function WalletPanel({show,onClose,user}){
   const [history,setHistory]=useState(()=>readPointHistory(user?.id));
+  const [historySource,setHistorySource]=useState("local");
   useEffect(()=>{
-    const reload=()=>setHistory(readPointHistory(user?.id));
+    let alive=true;
+    const load=async()=>{
+      const local=readPointHistory(user?.id);
+      if(alive){setHistory(local);setHistorySource("local");}
+      if(show&&user?.id){
+        const remote=await readPointHistoryFromDb(user.id,60);
+        if(alive&&Array.isArray(remote)&&remote.length){setHistory(remote);setHistorySource("supabase");}
+      }
+    };
+    const reload=()=>load();
     window.addEventListener("rasta-points-history-updated",reload);
-    reload();
-    return()=>window.removeEventListener("rasta-points-history-updated",reload);
+    load();
+    return()=>{alive=false;window.removeEventListener("rasta-points-history-updated",reload);};
   },[user?.id,show]);
   if(!show)return null;
   const pts=Number(user?.puntos||0);
