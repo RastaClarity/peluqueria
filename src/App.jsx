@@ -1,3 +1,4 @@
+// RASTA CUTS 2.9.4g FORCE DEPLOY CLEAN - 2026-06-08
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import "./styles/rastacuts.css";
 import { HELP_TEXTS, HELP_TIPS } from "./data/rastaHelpData.js";
