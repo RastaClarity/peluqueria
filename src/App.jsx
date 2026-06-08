@@ -63,6 +63,7 @@ import {
   readCart,
   writeCart,
   addToLocalCart,
+  createShopOrder,
   hydrateCartItem,
   isAvatarPersonalizationItem,
   unlockCosmeticForUser,
@@ -4290,50 +4291,56 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
   async function canjear(p){
     const precio=Number(p.puntos_precio)||0;
     const stockLimitado=p.stock!==null && p.stock!==undefined && String(p.stock)!=="";
+    const isAvatar=isAvatarPersonalizationItem(p);
+
     if((user.puntos||0)<precio){showToast("No tienes suficientes puntos");SFX.error();return;}
     if(stockLimitado && Number(p.stock)<=0){showToast("Este premio está agotado");SFX.error();return;}
+
     const nuevos=Math.max(0,(user.puntos||0)-precio);
     const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    const canjeRows=await dbPost("canjes",{
-      usuario_id:user.id,
-      premio_id:p.id,
-      premio_nombre:p.nombre,
-      puntos_gastados:precio,
-      item_key:p.item_key||null,
-      categoria:p.categoria||"premios",
-      tipo:p.tipo||"canje"
+
+    if(!okUser){
+      showToast("No se pudieron descontar los puntos");
+      SFX.error();
+      return;
+    }
+
+    const pedido=await createShopOrder({
+      user,
+      items:[p],
+      totalPoints:precio,
+      source:isAvatar?"personalizacion":"tienda",
+      status:isAvatar?"entregado":"pendiente",
+      notes:isAvatar?"Personalización desbloqueada automáticamente.":"Pedido creado desde tienda."
     });
-    const pedidoRows=await dbPost("tienda_pedidos",{
-      usuario_id:String(user.id),
-      cliente_nombre:user.nombre||user.email||"Cliente",
-      cliente_email:user.email||null,
-      item_id:String(p.id),
-      item_nombre:p.nombre,
-      item_categoria:p.categoria||"premios",
-      item_tipo:p.tipo||"canje",
-      puntos_coste:precio,
-      precio_euros:0,
-      estado:"pendiente",
-      notas_cliente:null,
-      updated_at:new Date().toISOString()
-    });
-    const pedidoId=Array.isArray(pedidoRows)?pedidoRows?.[0]?.id:null;
+
+    try{
+      await dbPost("canjes",{
+        usuario_id:user.id,
+        premio_id:p.id,
+        premio_nombre:p.nombre,
+        puntos_gastados:precio,
+        item_key:p.item_key||null,
+        categoria:p.categoria||"premios",
+        tipo:p.tipo||"canje"
+      });
+    }catch{}
+
     if(stockLimitado){
       await dbPatch("tienda_items",`?id=eq.${p.id}`,{stock:Math.max(0,Number(p.stock)-1)});
     }
-    if(okUser){
-      const isAvatar=isAvatarPersonalizationItem(p);
-      if(isAvatar) await unlockCosmeticForUser(user,p);
-      recordPointMovement(user.id,{amount:-precio,type:"spend",reason:`Canje: ${p.nombre}`,source:isAvatar?"personalizacion":"tienda",balance:nuevos,meta:{item_id:p.id,item_key:p.item_key||null}});
-      setUser(u=>({...u,puntos:nuevos}));
-      SFX.collect();
-      await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Nuevo pedido de tienda",mensaje:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedidoId||p.id,importante:true});
-      await createNotification({usuario_id:user.id,rol_destino:"client",tipo:isAvatar?"avatar":"pedido",titulo:isAvatar?"Personalización desbloqueada":"Pedido creado",mensaje:isAvatar?`Has desbloqueado ${p.nombre}. Ve a Perfil > Editor para equiparlo.`:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:isAvatar?"avatar":"tienda_pedido",entidad_id:pedidoId||p.id,importante:false});
-      showToast(isAvatar?`${p.nombre} desbloqueado`:`${p.nombre} pedido correctamente`);
-      await load();
-    }else{
-      showToast("Pedido guardado, pero revisa los puntos del usuario");
-    }
+
+    if(isAvatar) await unlockCosmeticForUser(user,p);
+
+    recordPointMovement(user.id,{amount:-precio,type:"spend",reason:`Canje: ${p.nombre}`,source:isAvatar?"personalizacion":"tienda",balance:nuevos,meta:{item_id:p.id,item_key:p.item_key||null,pedido_id:pedido?.id||null}});
+    setUser(u=>({...u,puntos:nuevos}));
+    SFX.collect();
+
+    await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Nuevo pedido de tienda",mensaje:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedido?.id||p.id,importante:true});
+    await createNotification({usuario_id:user.id,rol_destino:"client",tipo:isAvatar?"avatar":"pedido",titulo:isAvatar?"Personalización desbloqueada":"Pedido creado",mensaje:isAvatar?`Has desbloqueado ${p.nombre}. Ve a Perfil > Editor para equiparlo.`:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:isAvatar?"avatar":"tienda_pedido",entidad_id:pedido?.id||p.id,importante:false});
+
+    showToast(isAvatar?`${p.nombre} desbloqueado`:`${p.nombre} pedido correctamente`);
+    await load();
   }
 
   function addCart(p){
@@ -8259,6 +8266,7 @@ function GestionPedidos({user,showToast}){
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}><Badge col={p.estado==="entregado"?"green":p.estado==="cancelado"?"red":p.estado==="listo"?"blue":"gold"}>{p.estado}</Badge><Badge col="gold">{p.puntos_coste||0} pts</Badge></div>
           <div style={{fontWeight:950,color:T.g800}}>{p.item_nombre}</div>
+          {Array.isArray(p.items)&&p.items.length>0&&<div style={{marginTop:6,display:"grid",gap:4}}>{p.items.slice(0,4).map((it,idx)=><div key={idx} style={{fontSize:".72rem",fontWeight:850,color:T.textSub,background:"rgba(255,244,214,.52)",borderRadius:9,padding:"5px 7px"}}>• {it.nombre||"Artículo"} x{it.qty||1} · {Number(it.total_puntos||it.puntos||0)} pts</div>)}{p.items.length>4&&<div style={{fontSize:".7rem",fontWeight:850,color:T.textSub}}>+{p.items.length-4} artículo(s) más</div>}</div>}
           <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,marginTop:3}}>👤 {p.cliente_nombre||"Cliente"} · {p.cliente_email||"sin email"}</div>
           <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,marginTop:3}}>{new Date(p.created_at).toLocaleString("es-ES")}</div>
           {p.notas_admin&&<div style={{fontSize:".74rem",fontWeight:850,color:T.g800,marginTop:6,background:"rgba(255,244,214,.52)",borderRadius:10,padding:7}}>🔒 {p.notas_admin}</div>}
@@ -11022,14 +11030,33 @@ function CartPanel({show,onClose,user,setUser,showToast}){
   async function confirmCart(){
     if(!hydratedItems.length)return;
     if((user.puntos||0)<totalPts){showToast?.(`Te faltan ${totalPts-(user.puntos||0)} puntos`);SFX.error();return;}
+
     const nuevos=Math.max(0,(user.puntos||0)-totalPts);
     const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    const avatarItems=[];
+
+    if(!okUser){
+      showToast?.("No se pudieron descontar los puntos");
+      SFX.error();
+      return;
+    }
+
+    const avatarItems=hydratedItems.filter(raw=>isAvatarPersonalizationItem(raw));
+    const allAvatar=avatarItems.length===hydratedItems.length;
+
+    const pedido=await createShopOrder({
+      user,
+      items:hydratedItems,
+      totalPoints:totalPts,
+      source:"carrito",
+      status:allAvatar?"entregado":"pendiente",
+      notes:allAvatar?"Carrito de personalización desbloqueado automáticamente.":"Pedido creado desde carrito."
+    });
+
     for(const raw of hydratedItems){
       const qty=Math.max(1,Number(raw.qty||1));
       for(let n=0;n<qty;n++){
         const isAvatar=isAvatarPersonalizationItem(raw);
-        if(isAvatar){avatarItems.push(raw);await unlockCosmeticForUser(user,raw);}
+        if(isAvatar) await unlockCosmeticForUser(user,raw);
         try{
           await dbPost("canjes",{
             usuario_id:user.id,
@@ -11041,34 +11068,19 @@ function CartPanel({show,onClose,user,setUser,showToast}){
             tipo:raw.tipo||"carrito"
           });
         }catch{}
-        try{
-          await dbPost("tienda_pedidos",{
-            usuario_id:String(user.id),
-            cliente_nombre:user.nombre||user.email||"Cliente",
-            cliente_email:user.email||null,
-            item_id:String(raw.id||raw.item_key||"cart"),
-            item_nombre:raw.nombre||"Artículo",
-            item_categoria:raw.categoria||"premios",
-            item_tipo:raw.tipo||"carrito",
-            puntos_coste:Number(raw.precio_puntos||raw.puntos||0),
-            precio_euros:0,
-            estado:isAvatar?"entregado":"pendiente",
-            notas_cliente:isAvatar?"Personalización desbloqueada automáticamente.":"Pedido creado desde carrito.",
-            updated_at:new Date().toISOString()
-          });
-        }catch{}
       }
     }
-    if(okUser){
-      recordPointMovement(user.id,{amount:-totalPts,type:"spend",reason:`Carrito confirmado (${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"})`,source:"carrito",balance:nuevos,meta:{items:hydratedItems.map(x=>x.item_key||x.id||x.nombre)}});
-      setUser?.(u=>({...u,puntos:nuevos}));
-    }
+
+    recordPointMovement(user.id,{amount:-totalPts,type:"spend",reason:`Carrito confirmado (${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"})`,source:"carrito",balance:nuevos,meta:{pedido_id:pedido?.id||null,items:hydratedItems.map(x=>x.item_key||x.id||x.nombre)}});
+    setUser?.(u=>({...u,puntos:nuevos}));
+
     try{
       if(avatarItems.length){
         await createNotification({usuario_id:user.id,rol_destino:"client",tipo:"avatar",titulo:"Personalización desbloqueada",mensaje:`Has desbloqueado ${avatarItems.length} artículo${avatarItems.length===1?"":"s"} para tu avatar/perfil. Ve a Perfil > Editor para equiparlo.`,entidad_tipo:"avatar",entidad_id:String(user.id),importante:false});
       }
-      await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Carrito confirmado",mensaje:`${user.nombre||user.email||"Cliente"} confirmó un carrito de ${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"} por ${totalPts} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:String(user.id),importante:false});
+      await createNotification({rol_destino:"admin",tipo:"pedido",titulo:"Carrito confirmado",mensaje:`${user.nombre||user.email||"Cliente"} confirmó un carrito de ${hydratedItems.length} artículo${hydratedItems.length===1?"":"s"} por ${totalPts} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedido?.id||String(user.id),importante:!allAvatar});
     }catch{}
+
     setItems([]);
     SFX.collect();
     showToast?.(avatarItems.length?`Carrito confirmado. Personalización desbloqueada.`:"Carrito confirmado");
