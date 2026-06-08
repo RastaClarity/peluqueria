@@ -2785,7 +2785,7 @@ function Citas({user,showToast,onNavigate}){
   }
 
   function irBuzon(cita){
-    if(isAdmin){onNavigate?.("gestion");showToast?.("Abre Gestión > Mensajes para responder al cliente");}
+    if(isAdmin){onNavigate?.("gestion");showToast?.("Abre Gestión &gt; Mensajes para responder al cliente");}
     else onNavigate?.("buzon");
   }
 
@@ -3506,7 +3506,7 @@ function AdminUsuarios({user,showToast}){
       ? {baneado:false,motivo_baneo:null,baneado_por:null,baneado_at:null,baneo_hasta:null}
       : {
           baneado:true,
-          motivo_baneo:banForm.motivo||"Bloqueado desde Gestión > Usuarios",
+          motivo_baneo:banForm.motivo||"Bloqueado desde Gestión &gt; Usuarios",
           baneado_por:String(user.id),
           baneado_at:new Date().toISOString(),
           baneo_hasta:banForm.hasta?new Date(`${banForm.hasta}T23:59:59`).toISOString():null
@@ -4310,7 +4310,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
   const [cat,setCat]=useState("todo");
   const tiendaActiva=settings?.secciones?.tienda_activa!==false;
   useEffect(()=>{if(tiendaActiva)load();},[tiendaActiva]);
-  if(!tiendaActiva)return <DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión > Ajustes."/>;
+  if(!tiendaActiva)return <DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión &gt; Ajustes."/>;
 
   async function load(){
     setLoading(true);
@@ -4420,7 +4420,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
       <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>Puntos de fidelidad</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0}</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los fondos, estilos y cupones están en Perfil > Camino. Aquí sólo van vales de juegos y productos reales.</div></div>
+          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>Puntos de fidelidad</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0}</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los fondos, estilos y cupones están en Perfil &gt; Camino. Aquí sólo van vales de juegos y productos reales.</div></div>
           <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
@@ -5789,7 +5789,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
   const gachaActiva=settings?.secciones?.gacha_activo!==false;
   const gameDailyCap=Math.max(0,parseInt(settings?.puntos?.limite_diario_juegos??GAME_DAILY_CAP,10)||GAME_DAILY_CAP);
   const GAMES=ARCADE_GAMES.filter(g=>g.id!=="gacha"||gachaActiva);
-  if(!arcadeActiva)return <DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión > Ajustes."/>;
+  if(!arcadeActiva)return <DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión &gt; Ajustes."/>;
   useEffect(()=>{
     if(activeGame) startGameMusic(activeGame);
     else stopGameMusic();
@@ -7487,7 +7487,7 @@ function GestionTienda({user,showToast}){
           <div className="icon3d" style={{fontSize:"2rem"}}>🛠️</div>
           <div style={{flex:1}}>
             <div style={{fontWeight:950,fontSize:"1rem"}}>Administra vales de juegos y productos</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Crea vales de Gacha u otros extras de juegos. Los estilos, fondos y cupones van en Perfil > Camino de recompensas.</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Crea vales de Gacha u otros extras de juegos. Los estilos, fondos y cupones van en Perfil &gt; Camino de recompensas.</div>
           </div>
         </div>
       </Card>
@@ -7592,7 +7592,7 @@ async function loadAppSettingsFromDb(){
   }catch(e){}
   return next;
 }
-function DisabledSection({icon="🔒",title="Sección desactivada",sub="Esta sección está desactivada desde Gestión > Ajustes."}){
+function DisabledSection({icon="🔒",title="Sección desactivada",sub="Esta sección está desactivada desde Gestión &gt; Ajustes."}){
   return <div style={{animation:"fadeSlide .32s ease"}}>
     <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{textAlign:"center",padding:"12px 6px"}}>
@@ -8588,6 +8588,151 @@ function GestionPedidos({user,showToast}){
         <Btn full col="gold" onClick={guardarNotas}>Guardar</Btn>
       </>}
     </Modal>
+  </div>;
+}
+
+
+function GestionCuponesAdmin({user,showToast}){
+  if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Zona interna" sub="Sólo admin y staff pueden revisar cupones."/>;
+  const [rows,setRows]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [filter,setFilter]=useState("activos");
+  const [q,setQ]=useState("");
+
+  useEffect(()=>{load();},[]);
+
+  async function load(){
+    setLoading(true);
+    try{
+      const data=await dbGet("user_coupons","?order=created_at.desc&limit=500&select=*");
+      setRows(Array.isArray(data)?data:[]);
+    }catch(e){
+      console.warn("No se pudieron cargar cupones",e);
+      setRows([]);
+    }
+    setLoading(false);
+  }
+
+  function estadoCupon(c={}){
+    if(c.usado||String(c.estado||"").toLowerCase()==="usado")return "usado";
+    const e=String(c.estado||"disponible").toLowerCase();
+    return e||"disponible";
+  }
+  function estadoColor(e){return e==="usado"?"green":e==="cancelado"?"red":e==="caducado"?"pink":"gold";}
+  function clienteCupon(c){return c.usuario_nombre||c.usuario_email||c.usuario_id||"Cliente";}
+  function descCupon(c){return Number(c.descuento||0)||Number(String(c.valor||"0").replace(/\D/g,""))||0;}
+
+  async function auditCupon(c,estado){
+    try{
+      await dbPost("seguridad_auditoria",{
+        tipo:"cupon_estado",
+        entidad:"user_coupons",
+        entidad_id:String(c.id),
+        usuario_afectado_id:c.usuario_id?String(c.usuario_id):null,
+        usuario_afectado_email:c.usuario_email||null,
+        valor_anterior:String(c.estado||"disponible"),
+        valor_nuevo:String(estado),
+        detalle:`Cupón ${c.codigo||c.nombre} cambiado a ${estado}`,
+        created_at:new Date().toISOString()
+      });
+    }catch(e){console.warn("No se pudo auditar cupón",e);}
+  }
+
+  async function setEstado(c,estado){
+    const now=new Date().toISOString();
+    const patch={estado,usado:estado==="usado",used_at:estado==="usado"?now:null,usado_en:estado==="usado"?`Marcado por ${user?.email||user?.nombre||"staff"}`:null};
+    const ok=await dbPatch("user_coupons",`?id=eq.${c.id}`,patch);
+    if(ok){
+      await auditCupon(c,estado);
+      await createNotification({usuario_id:c.usuario_id,rol_destino:"client",tipo:"cupon",titulo:`Cupón ${estado}`,mensaje:`Tu cupón ${c.codigo||c.nombre} ahora está ${estado}.`,entidad_tipo:"user_coupon",entidad_id:c.id,importante:estado==="usado"});
+      SFX.success();
+      showToast?.(`Cupón ${estado}`);
+      await load();
+    }else{
+      SFX.error();
+      showToast?.("No se pudo actualizar el cupón");
+    }
+  }
+
+  async function copyCode(code){
+    try{await navigator.clipboard.writeText(code);showToast?.("Código copiado");SFX.success();}
+    catch{showToast?.(code||"Sin código");}
+  }
+
+  const query=normalizeText(q);
+  const filtered=rows.filter(c=>{
+    const e=estadoCupon(c);
+    if(filter==="activos" && e!=="disponible")return false;
+    if(filter!=="todos" && filter!=="activos" && e!==filter)return false;
+    if(!query)return true;
+    return normalizeText(`${c.codigo||""} ${c.nombre||""} ${c.usuario_email||""} ${c.usuario_nombre||""} ${c.usuario_id||""}`).includes(query);
+  });
+  const activos=rows.filter(c=>estadoCupon(c)==="disponible");
+  const usados=rows.filter(c=>estadoCupon(c)==="usado");
+  const cancelados=rows.filter(c=>estadoCupon(c)==="cancelado");
+
+  const tabs=[
+    {id:"activos",label:"Activos"},
+    {id:"usado",label:"Usados"},
+    {id:"cancelado",label:"Cancelados"},
+    {id:"caducado",label:"Caducados"},
+    {id:"todos",label:"Todos"}
+  ];
+  const countFor=id=>id==="todos"?rows.length:id==="activos"?activos.length:rows.filter(c=>estadoCupon(c)===id).length;
+
+  return <div style={{animation:"fadeSlide .34s ease"}}>
+    <SectionHeader icon="🎟️" title="Cupones desbloqueados" sub="Códigos reales del Camino de recompensas: revisar, copiar y marcar como usados" action={<Btn small col="ghost" onClick={load}>Actualizar</Btn>}/>
+    <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div className="icon3d" style={{fontSize:"2rem"}}>🎟️</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:950,fontSize:"1rem"}}>Control de cupones reales</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Los cupones ya no están en la tienda. Se desbloquean en el Camino y aquí puedes copiarlos, marcarlos como usados, cancelarlos o reactivarlos.</div>
+        </div>
+      </div>
+    </Card>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:8,marginBottom:12}}>
+      <StatCard icon="🎟️" label="Activos" value={activos.length} col="gold"/>
+      <StatCard icon="✅" label="Usados" value={usados.length} col="green"/>
+      <StatCard icon="🚫" label="Cancelados" value={cancelados.length} col="red"/>
+      <StatCard icon="📋" label="Total" value={rows.length} col="blue"/>
+    </div>
+
+    <Card style={{marginBottom:12,padding:12,background:"rgba(255,244,214,.78)",boxShadow:"none"}}>
+      <Input label="Buscar cupón" value={q} onChange={setQ} placeholder="código, email, cliente..."/>
+      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:2}}>
+        {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setFilter(t.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===t.id?T.gold:T.g300}`,background:filter===t.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===t.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>{t.label} ({countFor(t.id)})</button>)}
+      </div>
+    </Card>
+
+    {loading?<Spinner/>:filtered.length===0?<EmptyState icon="🎟️" title="Sin cupones" sub="No hay cupones en esta vista."/>:<div style={{display:"grid",gap:10}}>
+      {filtered.map(c=>{
+        const e=estadoCupon(c);
+        return <Card key={c.id||c.codigo} style={{background:e==="usado"?"linear-gradient(180deg,#D8BE87,#C7A66B)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${e==="disponible"?T.gold:T.g300}`}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
+            <div style={{minWidth:0,flex:1}}>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>
+                <Badge col={estadoColor(e)}>{e}</Badge>
+                <Badge col="gold">{descCupon(c)}%</Badge>
+                <Badge col="blue">{c.origen||"camino"}</Badge>
+              </div>
+              <div style={{fontWeight:950,color:T.g800}}>{c.nombre||`Cupón ${descCupon(c)}%`}</div>
+              <div style={{fontSize:".78rem",fontWeight:900,color:T.textSub,marginTop:3}}>👤 {clienteCupon(c)} · {c.usuario_email||"sin email"}</div>
+              <div style={{fontSize:".76rem",fontWeight:950,color:T.g800,marginTop:6,background:"rgba(255,244,214,.62)",borderRadius:10,padding:"7px 9px",letterSpacing:".4px"}}>Código: {c.codigo}</div>
+              <div style={{fontSize:".7rem",fontWeight:850,color:T.textSub,marginTop:5}}>Creado: {c.created_at?new Date(c.created_at).toLocaleString("es-ES"):"sin fecha"}{c.used_at?` · usado: ${new Date(c.used_at).toLocaleString("es-ES")}`:""}</div>
+              {c.descripcion&&<div style={{fontSize:".74rem",fontWeight:850,color:T.textSub,marginTop:6,lineHeight:1.35}}>{c.descripcion}</div>}
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginTop:10}}>
+            <Btn small col="ghost" onClick={()=>copyCode(c.codigo)}>Copiar</Btn>
+            <Btn small col="green" disabled={e==="usado"} onClick={()=>setEstado(c,"usado")}>Usado</Btn>
+            <Btn small col="red" disabled={e==="cancelado"} onClick={()=>setEstado(c,"cancelado")}>Cancelar</Btn>
+            <Btn small col="gold" disabled={e==="disponible"} onClick={()=>setEstado(c,"disponible")}>Reactivar</Btn>
+          </div>
+        </Card>;
+      })}
+    </div>}
   </div>;
 }
 
@@ -10341,6 +10486,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
     {id:"tienda_items",icon:"🎁",label:"Premios",sub:"Premios, cupones, objetos y canjes editables",staff:false,group:"tienda"},
     {id:"stock",icon:"📦",label:"Stock",sub:"Inventario interno y productos de trabajo",staff:true,group:"tienda"},
     {id:"pedidos",icon:"📋",label:"Pedidos",sub:"Canjes y entregas de tienda",staff:true,group:"tienda"},
+    {id:"cupones_admin",icon:"🎟️",label:"Cupones",sub:"Cupones del Camino: copiar, usar, cancelar o reactivar",staff:true,group:"tienda"},
     {id:"tienda_ajustes",icon:"⚙️",label:"Ajustes",sub:"Activación de tienda, canjes y reglas básicas",staff:false,group:"tienda"},
 
     {id:"juegos_admin",icon:"🎮",label:"Juegos",sub:"Zona de control para Arcade, rankings, retos y recompensas",staff:true,group:"juegos"},
@@ -10458,6 +10604,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
       {tab==="tienda_items"&&(isAdmin?<GestionTienda user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El staff puede gestionar stock y pedidos, pero no editar premios ni cupones de tienda."/> )}
       {tab==="stock"&&<Inventario showToast={showToast}/>}
       {tab==="pedidos"&&<GestionPedidos user={user} showToast={showToast}/>}
+      {tab==="cupones_admin"&&<GestionCuponesAdmin user={user} showToast={showToast}/>}
       {tab==="tienda_ajustes"&&(isAdmin?<GestionTiendaAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="Los ajustes de tienda y canjes sólo debería tocarlos el administrador."/> )}
 
       {tab==="juegos_admin"&&<GestionJuegosAdmin user={user} showToast={showToast}/>}
@@ -11619,6 +11766,7 @@ function Particles(){
 function AppCore(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
+  const [navHistory,setNavHistory]=useState([]);
   const [communityTab,setCommunityTab]=useState("feed");
   const [toast,setToast]=useState({show:false,msg:""});
   const [ptsPopup,setPtsPopup]=useState({show:false,pts:0});
@@ -11845,12 +11993,40 @@ function AppCore(){
     if(blocked[id]){showToast("Esta sección está desactivada temporalmente");SFX.error();return;}
     const communityMap={feed:"feed",foro:"foro",noticias:"noticias",musica:"musica",comunidad:communityTab||"feed"};
     const target=communityMap[id]?"comunidad":id;
-    if(communityMap[id]) setCommunityTab(communityMap[id]);
-    if(target===page){SFX.tab();}
-    else{playNavSound(id);}
+    const nextCommunity=communityMap[id]||communityTab;
+    const changed=target!==page || nextCommunity!==communityTab;
+    if(changed){
+      setNavHistory(prev=>{
+        const last=prev[prev.length-1];
+        if(last?.page===page && last?.communityTab===communityTab)return prev;
+        return [...prev.slice(-18),{page,communityTab}];
+      });
+      playNavSound(id);
+    }else{
+      SFX.tab();
+    }
+    if(communityMap[id]) setCommunityTab(nextCommunity);
     setPage(target);
   };
-  const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");};
+  const goBack=()=>{
+    setNavHistory(prev=>{
+      const last=prev[prev.length-1];
+      if(!last){SFX.error();return prev;}
+      setHelperPage(null);
+      setPage(last.page||"dashboard");
+      setCommunityTab(last.communityTab||"feed");
+      SFX.tab();
+      return prev.slice(0,-1);
+    });
+  };
+  const goHome=()=>{
+    setHelperPage(null);
+    setNavHistory([]);
+    setCommunityTab("feed");
+    setPage("dashboard");
+    playNavSound("dashboard");
+  };
+  const logout=()=>{supabase?.auth.signOut();setUser(null);setPage("dashboard");setNavHistory([]);};
 
   if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/><SafetyVersionPanel user={null} settings={appSettings} checkingSession sessionWarning={sessionWarning}/></div>;
   if(!user)return (
@@ -11890,7 +12066,7 @@ function AppCore(){
     citas:<Citas {...sp} onNavigate={navTo}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
-    tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión > Ajustes."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión > Ajustes."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTycoon={openTycoonPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
+    tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión &gt; Ajustes."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión &gt; Ajustes."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTycoon={openTycoonPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
     ranking:<Ranking user={currentUser}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
@@ -11903,8 +12079,9 @@ function AppCore(){
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
       <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.22), inset 0 -1px 0 ${clinicAccent}55`}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button className="brand-home-button" onClick={()=>navTo("dashboard")} title="Ir al inicio" style={{display:"inline-flex",alignItems:"center",gap:7,border:"none",background:"transparent",padding:0,cursor:"pointer",fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)"}}><span className="brand-scissors" style={{fontSize:"1.3rem"}}>{appSettings?.branding?.emoji_principal||"✂️"}</span><span>{appSettings?.branding?.nombre_tienda||BRAND.name}</span></button>
+        <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+          {navHistory.length>0&&<button className="header-action-pro" onClick={goBack} title="Volver a la pestaña anterior" style={{background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,.22)",borderRadius:12,width:32,height:32,cursor:"pointer",color:T.white,fontWeight:950,fontSize:"1rem",display:"grid",placeItems:"center",boxShadow:"0 4px 12px rgba(0,0,0,.16)"}}>←</button>}
+          <button className="brand-home-button" onClick={goHome} title="Ir al inicio" style={{display:"inline-flex",alignItems:"center",gap:7,border:"none",background:"transparent",padding:0,cursor:"pointer",fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)",minWidth:0}}><span className="brand-scissors" style={{fontSize:"1.3rem"}}>{appSettings?.branding?.emoji_principal||"✂️"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{appSettings?.branding?.nombre_tienda||BRAND.name}</span></button>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -12015,4 +12192,4 @@ export default function App(){
   );
 }
 
-// RastaCuts 2.9.4h admin shop nav access
+// RastaCuts 2.9.4m coupons admin and navigation
