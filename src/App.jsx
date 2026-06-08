@@ -6661,6 +6661,49 @@ function isCouponPathReward(item={}){
   const slot=String(item.slot||"").toLowerCase();
   return cat==="cupones"||tipo.includes("coupon")||tipo.includes("cupon")||slot.includes("coupon")||slot.includes("cupon");
 }
+
+function couponDiscountFromReward(item={}){
+  const raw=String(item.valor||item.descuento||item.discount||item.nombre||"");
+  const found=raw.match(/\d+/);
+  return Math.max(1,Math.min(90,Number(found?.[0]||10)));
+}
+
+function rewardCouponCode(user,item={}){
+  const discount=couponDiscountFromReward(item);
+  const uid=String(user?.id||user?.email||"USER").replace(/[^a-z0-9]/gi,"").slice(0,4).toUpperCase()||"USER";
+  const key=String(item.item_key||item.nombre||"CUPON").replace(/[^a-z0-9]/gi,"").slice(-5).toUpperCase()||"CUPON";
+  return `RASTA${discount}-${uid}-${key}`;
+}
+
+async function ensureRewardCouponForUser(user,item={}){
+  if(!user?.id||!isCouponPathReward(item)||!item?.item_key)return null;
+  const codigo=rewardCouponCode(user,item);
+  const descuento=couponDiscountFromReward(item);
+  try{
+    const existing=await dbGet("user_coupons",`?usuario_id=eq.${user.id}&item_key=eq.${item.item_key}&select=*&limit=1`);
+    if(Array.isArray(existing)&&existing.length)return existing[0];
+  }catch{}
+  try{
+    const rows=await dbPost("user_coupons",{
+      usuario_id:String(user.id),
+      usuario_email:user.email||null,
+      usuario_nombre:user.nombre||user.name||null,
+      item_key:item.item_key,
+      codigo,
+      nombre:item.nombre||`Cupón ${descuento}%`,
+      descripcion:item.descripcion||`Cupón desbloqueado en el Camino de recompensas.`,
+      descuento,
+      origen:"camino_recompensas",
+      estado:"disponible",
+      usado:false,
+      created_at:new Date().toISOString()
+    });
+    return Array.isArray(rows)?rows?.[0]||null:rows;
+  }catch(e){
+    console.warn("No se pudo crear cupón de recompensa",e);
+    return null;
+  }
+}
 function rewardActionLabel(item={},owned=false,reached=false,active=false){
   if(isAvatarPathReward(item)) return owned?(active?"Equipado":"Equipar"):(reached?"Desbloquear estilo":"Silueta bloqueada");
   if(isCouponPathReward(item)) return owned?"Cupón desbloqueado":(reached?"Desbloquear cupón":"Cupón bloqueado");
@@ -6762,13 +6805,17 @@ async function reveal(item){
     try{
       await supabase.from("user_cosmetics").upsert({usuario_id:String(user.id),item_key:item.item_key,created_at:new Date().toISOString()},{onConflict:"usuario_id,item_key"});
     }catch{}
+    let couponRow=null;
+    if(isCouponPathReward(item)){
+      couponRow=await ensureRewardCouponForUser(user,item);
+    }
     const keys=[...new Set([...owned,item.item_key])];
     saveLocalOwnedCosmetics(user,keys);
     setOwned(keys);
-    recordPointMovement(user.id,{amount:-price,type:"spend",reason:`Desbloqueo: ${item.nombre}`,source:isCouponPathReward(item)?"camino_cupones":"camino_avatar",balance:nuevos,meta:{item_key:item.item_key}});
+    recordPointMovement(user.id,{amount:-price,type:"spend",reason:`Desbloqueo: ${item.nombre}`,source:isCouponPathReward(item)?"camino_cupones":"camino_avatar",balance:nuevos,meta:{item_key:item.item_key,coupon_code:couponRow?.codigo||null}});
     setUser?.(u=>({...u,puntos:nuevos}));
     SFX.success();
-    showToast?.(`${item.nombre} desbloqueado por ${price} pts`);
+    showToast?.(couponRow?.codigo?`${item.nombre} desbloqueado: ${couponRow.codigo}`:`${item.nombre} desbloqueado por ${price} pts`);
     if(isAvatarPathReward(item)) apply(item,true);
   }
 
@@ -6848,6 +6895,53 @@ async function reveal(item){
 }
 
 
+function UserRewardCouponsCard({user,showToast}){
+  const [rows,setRows]=useState([]);
+  const [loading,setLoading]=useState(true);
+
+  useEffect(()=>{load();},[user?.id]);
+
+  async function load(){
+    if(!user?.id){setRows([]);setLoading(false);return;}
+    setLoading(true);
+    try{
+      const data=await dbGet("user_coupons",`?usuario_id=eq.${user.id}&order=created_at.desc&select=*`);
+      setRows(Array.isArray(data)?data:[]);
+    }catch{
+      setRows([]);
+    }
+    setLoading(false);
+  }
+
+  async function copyCode(code){
+    try{await navigator.clipboard.writeText(code);showToast?.("Código de cupón copiado");SFX.success();}
+    catch{showToast?.(code);}
+  }
+
+  return <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF8E2,#E6CF9B)",border:`2px solid ${T.gold}`}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:10}}>
+      <div>
+        <div style={{fontWeight:950,color:T.g800}}>🎟️ Mis cupones desbloqueados</div>
+        <div style={{fontSize:".76rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>Los cupones grandes ya no viven en la tienda. Se desbloquean en el Camino y quedan guardados aquí.</div>
+      </div>
+      <Badge col={rows.some(r=>!r.usado&&r.estado!=="usado")?"gold":"green"}>{rows.filter(r=>!r.usado&&r.estado!=="usado").length} activos</Badge>
+    </div>
+    {loading?<Spinner/>:rows.length===0?<div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>Aún no tienes cupones desbloqueados. Mira el Camino de recompensas: hay uno potente a mitad y otro al final.</div>:
+      <div style={{display:"grid",gap:8}}>
+        {rows.slice(0,4).map(c=>{
+          const used=c.usado||c.estado==="usado";
+          return <div key={c.id||c.codigo} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"center",background:used?"rgba(80,60,40,.14)":"rgba(255,244,214,.72)",border:`1px solid ${used?T.g200:T.gold}`,borderRadius:14,padding:"9px 10px",opacity:used?0.65:1}}>
+            <div style={{minWidth:0}}>
+              <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.nombre||`Cupón ${c.descuento||""}%`}</div>
+              <div style={{fontSize:".72rem",fontWeight:900,color:T.textSub}}>Código: <b style={{color:T.g800}}>{c.codigo}</b> · {Number(c.descuento||0)}%</div>
+            </div>
+            <Btn small col={used?"ghost":"gold"} disabled={used} onClick={()=>copyCode(c.codigo)}>{used?"Usado":"Copiar"}</Btn>
+          </div>;
+        })}
+      </div>}
+  </Card>;
+}
+
 function Perfil({user,setUser,onLogout,showToast,showPoints}){
   const [tab,setTab]=useState("resumen");
   const [ownedCosmetics,setOwnedCosmetics]=useState(localOwnedCosmetics(user));
@@ -6909,6 +7003,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
             <div><div style={{fontSize:"1.35rem"}}>🎁</div><div style={{fontWeight:950,color:T.g800}}>Camino</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>recompensas</div></div>
           </div>
         </Card>
+        <UserRewardCouponsCard user={user} showToast={showToast}/>
         <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${privacy.modo_incognito?T.blue:T.g300}`}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:10}}>
             <div><div style={{fontWeight:950,color:T.g800}}>🕶️ Privacidad del perfil</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Controla cómo te ven otros clientes en rankings, foro y comentarios.</div></div>
