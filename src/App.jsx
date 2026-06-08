@@ -4476,6 +4476,9 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
                     <div style={{minWidth:0}}>
                       <div style={{fontWeight:950,color:T.g800,fontSize:".94rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.nombre}</div>
                       <div style={{fontSize:"0.78rem",color:T.textSub,marginTop:3,fontWeight:820,lineHeight:1.35}}>{p.descripcion}</div>
+                      {gameVoucher&&<div style={{marginTop:7,background:"rgba(38,63,77,.10)",border:`1px solid ${T.g200}`,borderRadius:12,padding:"7px 9px",fontSize:".76rem",fontWeight:950,color:T.g800,lineHeight:1.35}}>
+                        🎰 Vale de juego: pagas <b>{precio} pts</b> y recibes <b>+{gameVoucherAmount(p)} tiradas extra</b> para el Gacha. Se suma al momento y se puede repetir.
+                      </div>}
                     </div>
                     <div style={{fontWeight:950,color:T.orange,fontSize:"1.02rem",whiteSpace:"nowrap"}}>{realMoney?(precioEuros?`${precioEuros.toFixed(2)} €`:"Consultar"): `${precio} pts`}</div>
                   </div>
@@ -4484,14 +4487,15 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
                     {gameVoucher&&<Badge col="blue">+{gameVoucherAmount(p)} tiradas</Badge>}
                     {realMoney&&<Badge col="blue">Pago en tienda</Badge>}
                     <Badge col={p.rareza==="epico"?"pink":p.rareza==="raro"?"blue":p.rareza==="legendario"?"gold":"green"}>{rarityLabel(p.rareza||"comun")}</Badge>
-                    <Badge col="ghost">{rarityPriceRange(p.rareza||"comun")}</Badge>
+                    {gameVoucher&&<Badge col="green">Canje repetible</Badge>}
+                    {!gameVoucher&&!realMoney&&<Badge col="ghost">{rarityPriceRange(p.rareza||"comun")}</Badge>}
                     {stockLimitado&&<Badge col={agotado?"red":"green"}>Stock {Number(p.stock)||0}</Badge>}
                   </div>
                   <div style={{marginTop:10}}>
                     {agotado?<div style={{textAlign:"center",fontSize:"0.78rem",color:T.red,fontWeight:950}}>Agotado</div>:
                     <div style={{display:"grid",gridTemplateColumns:ok?"1fr 1fr":"1fr",gap:8}}>
                       <Btn full small col="ghost" onClick={()=>addCart(p)}>🛒 Añadir</Btn>
-                      {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>{realMoney?"Solicitar":gameVoucher?"Comprar":isAvatarPersonalizationItem(p)?"Desbloquear":"Canjear"}</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} pts</div>}
+                      {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>{realMoney?"Solicitar":gameVoucher?`Comprar +${gameVoucherAmount(p)} tiradas`:isAvatarPersonalizationItem(p)?"Desbloquear":"Canjear"}</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} pts</div>}
                     </div>}
                   </div>
                 </div>
@@ -7282,7 +7286,7 @@ function GestionTienda({user,showToast}){
     setShowEdit(true);
   }
   function openGachaVoucher(){
-    setForm({...empty,item_key:`gacha_10_${Date.now()}`,nombre:"Vale 10 tiradas Gacha",descripcion:"Añade 10 tiradas extra al Gacha Barber. Se aplica al momento y se puede comprar todas las veces que quieras.",categoria:"juegos",tipo:"gacha_pulls",icono:"🎰",puntos_precio:"10",stock:"",rareza:"comun",slot:"gacha_pulls",valor:"10",juego_bonus_tipo:"gacha_pulls",juego_bonus_cantidad:"10"});
+    setForm({...empty,item_key:`gacha_10_${Date.now()}`,nombre:"Vale 10 tiradas Gacha",descripcion:"Canje claro: pagas 5 puntos y recibes 10 tiradas extra para el Gacha Barber. Se aplica al momento y puedes comprarlo tantas veces como quieras.",categoria:"juegos",tipo:"gacha_pulls",icono:"🎰",puntos_precio:"5",stock:"",rareza:"comun",slot:"gacha_pulls",valor:"10",juego_bonus_tipo:"gacha_pulls",juego_bonus_cantidad:"10"});
     setShowEdit(true);
   }
   function openRealProduct(){
@@ -7392,10 +7396,13 @@ function GestionTienda({user,showToast}){
                 <Badge col={item.activo?"green":"red"}>{item.activo?"activo":"oculto"}</Badge>
               </div>
               <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:3}}>{item.descripcion}</div>
+              {isGameVoucherItem(item)&&<div style={{marginTop:7,background:"rgba(38,63,77,.10)",border:`1px solid ${T.g200}`,borderRadius:12,padding:"7px 9px",fontSize:".76rem",fontWeight:950,color:T.g800,lineHeight:1.35}}>
+                Configuración visible: <b>{item.puntos_precio||0} pts</b> → <b>+{gameVoucherAmount(item)} tiradas Gacha</b>. Compra repetible y aplicada al momento.
+              </div>}
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                <Badge col="gold">{isRealMoneyProduct(item)?(itemEuroPrice(item)?`${itemEuroPrice(item).toFixed(2)} €`:"Producto €"):`${item.puntos_precio} pts`}</Badge>
+                <Badge col="gold">{isRealMoneyProduct(item)?(itemEuroPrice(item)?`${itemEuroPrice(item).toFixed(2)} €`:"Producto €"):isGameVoucherItem(item)?`${item.puntos_precio||0} pts → +${gameVoucherAmount(item)} tiradas`:`${item.puntos_precio} pts`}</Badge>
                 <Badge col="blue">{shopCategoryLabel(itemShopCategory(item))}</Badge>
-                {isGameVoucherItem(item)&&<Badge col="blue">+{gameVoucherAmount(item)} tiradas</Badge>}
+                {isGameVoucherItem(item)&&<Badge col="green">Vale Gacha repetible</Badge>}
                 <Badge col={item.rareza==="epico"?"pink":item.rareza==="raro"?"blue":item.rareza==="legendario"?"gold":"green"}>{rarityLabel(item.rareza||"comun")}</Badge>
                 {item.stock!==null&&item.stock!==undefined&&<Badge col={Number(item.stock)>0?"green":"red"}>Stock {item.stock}</Badge>}
               </div>
@@ -7414,7 +7421,7 @@ function GestionTienda({user,showToast}){
         <Input label="Descripción" value={form.descripcion} onChange={v=>setForm(f=>({...f,descripcion:v}))}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           <Input label="Icono" value={form.icono} onChange={v=>setForm(f=>({...f,icono:v}))}/>
-          <Input label="Precio puntos" value={form.puntos_precio} onChange={v=>setForm(f=>({...f,puntos_precio:v}))} type="number"/>
+          <Input label="Precio en puntos" value={form.puntos_precio} onChange={v=>setForm(f=>({...f,puntos_precio:v}))} type="number"/>
         </div>
         <Input label="Precio euros opcional (sólo productos reales)" value={form.precio_euros} onChange={v=>setForm(f=>({...f,precio_euros:v}))} placeholder="9.99"/>
         <Select label="Categoría" value={form.categoria} onChange={v=>setForm(f=>({...f,categoria:v}))} options={[
@@ -7432,6 +7439,10 @@ function GestionTienda({user,showToast}){
           {value:"producto_real",label:"Producto real €"},
           {value:"canje",label:"Canje/premio"}
         ]}/>
+        {form.tipo==="gacha_pulls"&&<Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+          <div style={{fontWeight:950,color:T.g800}}>🎰 Ejemplo claro</div>
+          <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>Precio en puntos = lo que paga el usuario. Tiradas/cantidad que añade = lo que recibe en el Gacha. Para tu vale actual: <b>5 puntos</b> y <b>10 tiradas</b>.</div>
+        </Card>}
         <Select label="Rareza" value={form.rareza} onChange={v=>setForm(f=>({...f,rareza:v}))} options={[
           {value:"comun",label:"Común"},
           {value:"raro",label:"Raro"},
@@ -7441,11 +7452,11 @@ function GestionTienda({user,showToast}){
         <Input label="Stock vacío = ilimitado" value={form.stock} onChange={v=>setForm(f=>({...f,stock:v}))} type="number"/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           <Input label="Slot avatar/juego" value={form.slot} onChange={v=>setForm(f=>({...f,slot:v}))} placeholder="aura, bg, frame, gacha_pulls..."/>
-          <Input label="Valor" value={form.valor} onChange={v=>setForm(f=>({...f,valor:v}))} placeholder="warm, flame, 10..."/>
+          <Input label="Valor que se aplica" value={form.valor} onChange={v=>setForm(f=>({...f,valor:v}))} placeholder="warm, flame, 10..."/>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           <Input label="Tipo bonus juego" value={form.juego_bonus_tipo} onChange={v=>setForm(f=>({...f,juego_bonus_tipo:v}))} placeholder="gacha_pulls"/>
-          <Input label="Cantidad bonus juego" value={form.juego_bonus_cantidad} onChange={v=>setForm(f=>({...f,juego_bonus_cantidad:v}))} type="number"/>
+          <Input label="Tiradas/cantidad que añade" value={form.juego_bonus_cantidad} onChange={v=>setForm(f=>({...f,juego_bonus_cantidad:v}))} type="number"/>
         </div>
         <Select label="Estado" value={form.activo} onChange={v=>setForm(f=>({...f,activo:v}))} options={[{value:"true",label:"Activo"},{value:"false",label:"Oculto"}]}/>
         <div style={{position:"sticky",bottom:"calc(10px + env(safe-area-inset-bottom))",zIndex:8,marginTop:14,padding:"10px 0 0",background:"linear-gradient(180deg,rgba(255,248,230,0),#FFF8E6 38%,#FFF8E6)"}}>
