@@ -86,6 +86,8 @@ import {
   bgGradient,
   makeId,
   shadeHex,
+  avatarColorForAccessory,
+  avatarAuraColor,
   HAIR_STYLES,
   CLEAN_AVATAR_OPTIONS,
   cleanPick,
@@ -143,41 +145,6 @@ function PublicProfileModal({profile,onClose}){
 const AVATAR_LAYER_ENGINE_VERSION="RASTACUTS_2_1_5_BARBER_POLISH";
 
 
-function avatarColorForAccessory(value){
-  const map={
-    none:"transparent",
-    earring:"#D7B64C",
-    hoopGold:"#D7B64C",
-    glasses:"#17110A",
-    glassesGold:"#D7B64C",
-    bandana:"#A72822",
-    bandanaGreen:"#5F8E22",
-    cap:"#17110A",
-    capBlack:"#17110A",
-    capGold:"#D7B64C",
-    crown:"#D7B64C",
-    piercing:"#D7B64C",
-    flowers:"#E66A9A",
-    headphones:"#263F4D"
-  };
-  return map[value]||"#D7B64C";
-}
-
-
-function avatarAuraColor(value){
-  const map={
-    none:"transparent",
-    warm:"rgba(212,175,55,.55)",
-    flame:"rgba(240,106,59,.62)",
-    ocean:"rgba(95,215,255,.52)",
-    vip:"rgba(255,241,168,.78)",
-    green:"rgba(95,142,34,.55)",
-    red:"rgba(167,40,34,.55)",
-    gold:"rgba(215,182,76,.65)",
-    neon:"rgba(85,215,255,.62)"
-  };
-  return map[value]||"rgba(212,175,55,.45)";
-}
 
 function AvatarFigure({config,size=80,animated=false}){
   const cfg=normalizeAvatarConfig(config);
