@@ -1802,7 +1802,7 @@ function Auth({onLogin,showToast,settings}){
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
           <LandingFeature icon="📅" title="Reservas" sub="Elige tratamientos y guarda tu cita." accent="#D4AF37"/>
           <LandingFeature icon="🎮" title="Juegos" sub="Arcade, récords, Top 10 y puntos." accent="#4F602D"/>
-          <LandingFeature icon="🛍️" title="Tienda" sub="Canjea puntos por premios y extras." accent="#B99A45"/>
+          <LandingFeature icon="🛍️" title="Tienda" sub="Canjea puntos por vales de juegos y extras controlados." accent="#B99A45"/>
           <LandingFeature icon="🌐" title="Actualidad" sub="Noticias tipo shorts, debate y comunidad." accent="#263F4D"/>
           <div style={{gridColumn:"1 / -1"}}>
             <LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico, ska y rock para descubrir sin ruido comercial." accent="#4E3A76"/>
@@ -4119,7 +4119,7 @@ function Foro({user,showToast}){
 // TIENDA
 
 function shopCategoryLabel(cat){
-  return {todo:"Todo",estilo:"Estilo avatar",cupones:"Cupones",avatar:"Avatar",marcos:"Marcos",fondos:"Fondos",auras:"Auras",complementos:"Complementos",perfil:"Perfil",juegos:"Juegos",productos:"Productos €",premios:"Premios"}[cat]||cat||"Premios";
+  return {todo:"Todo",juegos:"Tienda juegos",productos:"Productos €",estilo:"Camino avatar",cupones:"Cupones desbloqueables",avatar:"Avatar",marcos:"Marcos",fondos:"Fondos",auras:"Auras",complementos:"Complementos",perfil:"Perfil",premios:"Premios ocultos"}[cat]||cat||"Tienda juegos";
 }
 function itemShopCategory(p){
   const slot=String(p.slot||"");
@@ -4190,7 +4190,7 @@ function RewardNodeIcon({item,user,currentConfig,locked=false}){
 }
 
 
-const SHOP_PHASE_LABEL = "F131B · tienda y canjes serios";
+const SHOP_PHASE_LABEL = "2.9.4k · tienda juegos + recompensas";
 
 function rewardRarityLabel(item={}){
   const r=String(item.rareza||item.rarity||"comun").toLowerCase();
@@ -4255,7 +4255,7 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
           <div style={{fontSize:".74rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:T.textSub}}>{SHOP_PHASE_LABEL}</div>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.72rem",lineHeight:1,color:T.g800}}>Tienda y canjes</div>
           <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>
-            Estilo de avatar, vales de juegos y productos reales separados sin mezclar economías.
+            Tienda separada: aquí sólo se compran vales de juegos y productos reales. Estilos, fondos y cupones viven en el Camino de recompensas.
           </div>
         </div>
         <div style={{display:"grid",gap:6,justifyItems:"end"}}>
@@ -4267,7 +4267,7 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
         <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
           <div style={{fontSize:"1.35rem"}}>🛍️</div>
           <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{info.active}</div>
-          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>premios activos</div>
+          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>artículos activos</div>
         </div>
         <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
           <div style={{fontSize:"1.35rem"}}>✅</div>
@@ -4295,10 +4295,8 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
         </div>
       )}
       <div className="shop-action-row" style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
-        {onFilter&&<Btn small onClick={()=>onFilter("todos")}>🎁 Todos</Btn>}
-        {onFilter&&<Btn small onClick={()=>onFilter("descuentos")}>🏷️ Descuentos</Btn>}
-        {onFilter&&<Btn small onClick={()=>onFilter("avatar")}>🧑 Estilo</Btn>}
-        {onFilter&&<Btn small onClick={()=>onFilter("juegos")}>🎮 Juegos</Btn>}
+        {onFilter&&<Btn small onClick={()=>onFilter("todos")}>✨ Todo</Btn>}
+        {onFilter&&<Btn small onClick={()=>onFilter("juegos")}>🎮 Tienda juegos</Btn>}
         {onFilter&&<Btn small onClick={()=>onFilter("productos")}>🧴 Productos €</Btn>}
       </div>
     </Card>
@@ -4316,15 +4314,11 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
   async function load(){
     setLoading(true);
-    let data=await dbGet("tienda_items","?activo=eq.true&order=puntos_precio.asc&select=*");
-    if(!Array.isArray(data)||!data.length){
-      data=await dbGet("premios","?activo=eq.true&order=puntos_precio.asc&select=*");
-    }
+    const data=await dbGet("tienda_items","?activo=eq.true&order=puntos_precio.asc&select=*");
     const pedidosRows=await dbGet("tienda_pedidos",`?usuario_id=eq.${user.id}&order=created_at.desc&limit=8&select=*`);
     const baseItems=Array.isArray(data)?data:[];
-    const hasAvatar=baseItems.some(p=>String(p.categoria||"").toLowerCase()==="avatar"||String(p.tipo||"").includes("avatar")||String(p.tipo||"").includes("perfil"));
-    const merged=hasAvatar?baseItems:[...baseItems,...avatarShopFallbackItems()];
-    setProductos(merged);
+    const tiendaItems=baseItems.filter(p=>isGameVoucherItem(p)||isRealMoneyProduct(p)||["juegos","productos"].includes(itemShopCategory(p)));
+    setProductos(tiendaItems);
     setPedidos(Array.isArray(pedidosRows)?pedidosRows:[]);
     setLoading(false);
   }
@@ -4408,21 +4402,14 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
   const cats=[
     {id:"todo",label:"Todo",icon:"✨"},
-    {id:"estilo",label:"Estilo avatar",icon:"🎭"},
-    {id:"juegos",label:"Juegos",icon:"🎮"},
-    {id:"productos",label:"Productos €",icon:"🧴"},
-    {id:"cupones",label:"Cupones",icon:"🎟️"},
-    {id:"marcos",label:"Marcos",icon:"🖼️"},
-    {id:"fondos",label:"Fondos",icon:"🌄"},
-    {id:"auras",label:"Auras",icon:"✨"},
-    {id:"perfil",label:"Perfil",icon:"🏷️"},
-    {id:"premios",label:"Premios",icon:"🎁"}
+    {id:"juegos",label:"Tienda juegos",icon:"🎮"},
+    {id:"productos",label:"Productos €",icon:"🧴"}
   ];
-  const visibles=cat==="todo"?productos:cat==="estilo"?productos.filter(p=>isAvatarPersonalizationItem(p)||itemShopCategory(p)==="estilo"):productos.filter(p=>itemShopCategory(p)===cat || String(p.categoria||"premios")===cat);
+  const visibles=cat==="todo"?productos:productos.filter(p=>itemShopCategory(p)===cat || String(p.categoria||"").toLowerCase()===cat);
 
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🛍️" title="Tienda" sub={`Tienes ${user.puntos||0} pts`}/>
+      <SectionHeader icon="🛍️" title="Tienda juegos" sub={`Vales de juegos con puntos y productos reales separados · Tienes ${user.puntos||0} pts`}/>
       {/* FASE131B_SHOP_COMMAND_CENTER */}
       <ShopCommandCenter
         user={user}
@@ -4433,7 +4420,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
       <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>Puntos de fidelidad</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0}</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Cosméticos de avatar/perfil con economía dura. Tycoon y RC quedan aparte.</div></div>
+          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>Puntos de fidelidad</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0}</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los fondos, estilos y cupones están en Perfil > Camino. Aquí sólo van vales de juegos y productos reales.</div></div>
           <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
@@ -4455,7 +4442,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
         </button>)}
       </div>
 
-      {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin premios todavía" sub="Pronto habrá novedades en esta categoría."/>
+      {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin artículos todavía" sub="Aquí irán vales de juegos o productos reales. Los estilos y cupones están en el Camino de recompensas."/>
         :visibles.map(p=>{
           const precio=itemPointPrice(p);
           const precioEuros=itemEuroPrice(p);
@@ -6588,10 +6575,10 @@ function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPo
   useEffect(()=>{load();},[user.id]);
   async function load(){
     setLoading(true);
-    let catalog=COSMETIC_CATALOG_FALLBACK;
+    let catalog=mergeRewardPathItems(COSMETIC_CATALOG_FALLBACK);
     try{
       const {data,error}=await supabase.from("avatar_cosmetics").select("*").eq("activo",true).order("puntos_precio",{ascending:true});
-      if(!error && data?.length) catalog=data;
+      if(!error && data?.length) catalog=mergeRewardPathItems(data);
     }catch{}
     let keys=localOwnedCosmetics(user);
     try{
@@ -6627,7 +6614,7 @@ function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPo
       <Badge col="gold">{user.puntos||0} pts</Badge>
     </div>
     <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:8}}>{cats.map(c=><button key={c.id} onClick={()=>setCat(c.id)} style={{whiteSpace:"nowrap",border:`2px solid ${cat===c.id?T.gold:T.g200}`,background:cat===c.id?T.gradGold:"rgba(255,244,214,.8)",borderRadius:999,padding:"7px 12px",fontWeight:950,color:cat===c.id?T.g900:T.g700,cursor:"pointer"}}>{c.label}</button>)}</div>
-    {loading?<Spinner/>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{shown.map(item=>{const has=owned.includes(item.item_key);const active=normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;return <div key={item.item_key} style={{background:active?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"rgba(255,244,214,.72)",border:`2px solid ${active?T.gold:T.g200}`,borderRadius:18,padding:10,boxShadow:"0 8px 18px rgba(20,8,4,.1)"}}>
+    {loading?<Spinner/>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{shown.map(item=>{const has=owned.includes(item.item_key);const active=isAvatarPathReward(item)&&normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;return <div key={item.item_key} style={{background:active?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"rgba(255,244,214,.72)",border:`2px solid ${active?T.gold:T.g200}`,borderRadius:18,padding:10,boxShadow:"0 8px 18px rgba(20,8,4,.1)"}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:6,alignItems:"center",marginBottom:8}}><Badge col={rarityColor(item.rareza)}>{rarityLabel(item.rareza)}</Badge><b style={{color:T.orange,fontSize:".78rem"}}>{item.puntos_precio} pts</b></div>
       <div style={{display:"flex",justifyContent:"center",margin:"4px 0 8px"}}><Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(item)}} size={92}/></div>
       <div style={{fontWeight:950,color:T.g800,fontSize:".84rem",lineHeight:1.1}}>{item.nombre}</div>
@@ -6662,6 +6649,23 @@ function levelFromPoints(points=0){
   return {...current,next,progress:pct,xp};
 }
 function rewardLevelFor(points=0){return levelFromPoints(points).level;}
+function isAvatarPathReward(item={}){
+  const slot=String(item.slot||"");
+  const tipo=String(item.tipo||"").toLowerCase();
+  const cat=String(item.categoria||"").toLowerCase();
+  return ["accessory","frame","aura","bg","profileTitle","nameColor","profileCard","sticker"].includes(slot)||cat==="avatar"||tipo.includes("avatar")||tipo.includes("perfil")||tipo.includes("cosmetico");
+}
+function isCouponPathReward(item={}){
+  const tipo=String(item.tipo||"").toLowerCase();
+  const cat=String(item.categoria||"").toLowerCase();
+  const slot=String(item.slot||"").toLowerCase();
+  return cat==="cupones"||tipo.includes("coupon")||tipo.includes("cupon")||slot.includes("coupon")||slot.includes("cupon");
+}
+function rewardActionLabel(item={},owned=false,reached=false,active=false){
+  if(isAvatarPathReward(item)) return owned?(active?"Equipado":"Equipar"):(reached?"Desbloquear estilo":"Silueta bloqueada");
+  if(isCouponPathReward(item)) return owned?"Cupón desbloqueado":(reached?"Desbloquear cupón":"Cupón bloqueado");
+  return owned?"Desbloqueado":(reached?"Desbloquear":"Bloqueado");
+}
 function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}){
   const preview=normalizeAvatarConfig({...currentConfig,...cosmeticPatch(item)},user.avatar);
   const locked=!owned&&!reached;
@@ -6703,6 +6707,15 @@ function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}
     </div>
   </button>;
 }
+const REWARD_PATH_EXTRA_ITEMS=[
+  {item_key:"reward_coupon_10_mid",nombre:"Cupón 10% descuento",descripcion:"Gran premio de mitad del camino. Descuento desbloqueable para usar en una visita.",categoria:"cupones",tipo:"reward_coupon",icono:"🎟️",puntos_precio:500,rareza:"raro",slot:"coupon_discount",valor:"10",activo:true},
+  {item_key:"reward_coupon_20_final",nombre:"Cupón premium 20%",descripcion:"Gran premio final del camino. Cupón especial desbloqueable para una visita importante.",categoria:"cupones",tipo:"reward_coupon",icono:"🏆",puntos_precio:1500,rareza:"legendario",slot:"coupon_discount",valor:"20",activo:true}
+];
+function mergeRewardPathItems(catalog=[]){
+  const map=new Map();
+  [...(catalog||[]),...REWARD_PATH_EXTRA_ITEMS].forEach(x=>{if(x?.item_key)map.set(x.item_key,{...x});});
+  return [...map.values()].filter(x=>x.activo!==false);
+}
 function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
   const [items,setItems]=useState(COSMETIC_CATALOG_FALLBACK);
   const [owned,setOwned]=useState(localOwnedCosmetics(user));
@@ -6713,10 +6726,10 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
 
   async function load(){
     setLoading(true);
-    let catalog=COSMETIC_CATALOG_FALLBACK;
+    let catalog=mergeRewardPathItems(COSMETIC_CATALOG_FALLBACK);
     try{
       const {data,error}=await supabase.from("avatar_cosmetics").select("*").eq("activo",true).order("puntos_precio",{ascending:true});
-      if(!error && data?.length) catalog=data;
+      if(!error && data?.length) catalog=mergeRewardPathItems(data);
     }catch{}
     let keys=localOwnedCosmetics(user);
     try{
@@ -6732,10 +6745,14 @@ function AvatarRewardPath({user,setUser,currentConfig,onApply,showToast}){
 
 async function reveal(item){
     if(!item)return;
-    if(owned.includes(item.item_key)){apply(item);return;}
+    if(owned.includes(item.item_key)){
+      if(isAvatarPathReward(item)) apply(item);
+      else showToast?.(`${item.nombre} ya está desbloqueado`);
+      return;
+    }
     const price=Number(item.puntos_precio||0);
     if((user.puntos||0)<price){
-      showToast?.(`Necesitas ${price} puntos para desbloquear esta silueta`);
+      showToast?.(`Necesitas ${price} puntos para este desbloqueable`);
       SFX.error();
       return;
     }
@@ -6748,11 +6765,11 @@ async function reveal(item){
     const keys=[...new Set([...owned,item.item_key])];
     saveLocalOwnedCosmetics(user,keys);
     setOwned(keys);
-    recordPointMovement(user.id,{amount:-price,type:"spend",reason:`Desbloqueo: ${item.nombre}`,source:"camino_avatar",balance:nuevos,meta:{item_key:item.item_key}});
+    recordPointMovement(user.id,{amount:-price,type:"spend",reason:`Desbloqueo: ${item.nombre}`,source:isCouponPathReward(item)?"camino_cupones":"camino_avatar",balance:nuevos,meta:{item_key:item.item_key}});
     setUser?.(u=>({...u,puntos:nuevos}));
     SFX.success();
     showToast?.(`${item.nombre} desbloqueado por ${price} pts`);
-    apply(item,true);
+    if(isAvatarPathReward(item)) apply(item,true);
   }
 
   async function apply(item,skipToast=false){
@@ -6767,14 +6784,14 @@ async function reveal(item){
   const selectedItem=selected||items[0];
   const selectedOwned=selectedItem?owned.includes(selectedItem.item_key):false;
   const selectedReached=selectedItem?(user.puntos||0)>=Number(selectedItem.puntos_precio||0):false;
-  const selectedActive=selectedItem?normalizeAvatarConfig(currentConfig,user.avatar)[selectedItem.slot]===selectedItem.valor:false;
+  const selectedActive=selectedItem&&isAvatarPathReward(selectedItem)?normalizeAvatarConfig(currentConfig,user.avatar)[selectedItem.slot]===selectedItem.valor:false;
   const next=items.find(i=>!owned.includes(i.item_key) && Number(i.puntos_precio||0)>(user.puntos||0)) || items.find(i=>!owned.includes(i.item_key));
 
   return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`,overflow:"hidden",padding:14}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:10}}>
       <div style={{minWidth:0}}>
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.34rem",color:T.g800}}>🎁 Camino de recompensas</div>
-        <div style={{fontSize:".76rem",fontWeight:850,color:T.textSub,lineHeight:1.25}}>Línea de desbloqueos: siluetas, coste en puntos web y objetos equipables. Tycoon aparte.</div>
+        <div style={{fontSize:".76rem",fontWeight:850,color:T.textSub,lineHeight:1.25}}>Línea de desbloqueos: estilos, fondos, auras y cupones grandes. La tienda queda para juegos y productos reales.</div>
       </div>
       <div style={{textAlign:"right"}}>
         <Badge col="gold">Nv. {lvl.level}</Badge>
@@ -6790,7 +6807,7 @@ async function reveal(item){
       <div style={{height:12,background:"rgba(110,53,24,.18)",borderRadius:999,overflow:"hidden"}}>
         <div style={{height:"100%",width:`${lvl.progress}%`,background:T.gradGold,borderRadius:999,transition:"width .35s ease"}}/>
       </div>
-      {next&&<div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,marginTop:7}}>Próxima silueta: <b style={{color:T.g800}}>{next.puntos_precio} pts</b></div>}
+      {next&&<div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,marginTop:7}}>Próximo desbloqueable: <b style={{color:T.g800}}>{next.puntos_precio} pts</b></div>}
     </div>
 
     {loading?<Spinner/>:<>
@@ -6800,7 +6817,7 @@ async function reveal(item){
           {items.map((item)=>{
             const reached=(user.puntos||0)>=Number(item.puntos_precio||0);
             const has=owned.includes(item.item_key);
-            const active=normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;
+            const active=isAvatarPathReward(item)&&normalizeAvatarConfig(currentConfig,user.avatar)[item.slot]===item.valor;
             return <RewardSilhouette key={item.item_key} item={item} user={user} currentConfig={currentConfig} owned={has} reached={reached} active={active} onClick={()=>{SFX.tab();setSelected(item);}}/>;
           })}
         </div>
@@ -6809,7 +6826,7 @@ async function reveal(item){
       {selectedItem&&<div style={{display:"grid",gridTemplateColumns:"74px 1fr",gap:10,alignItems:"center",background:"rgba(255,248,225,.72)",border:`2px solid ${selectedReached?T.gold:T.g200}`,borderRadius:18,padding:10}}>
         <div style={{width:68,height:68,borderRadius:"50%",display:"grid",placeItems:"center",background:selectedReached?"linear-gradient(145deg,#FFF4D6,#E6C27A)":"linear-gradient(145deg,#16100C,#3A2A1D)",overflow:"hidden",boxShadow:"inset 0 8px 18px rgba(0,0,0,.18)"}}>
           <div style={{filter:selectedReached||selectedOwned?"none":"grayscale(1) brightness(0)",opacity:selectedReached||selectedOwned?1:.78}}>
-            <Av av={user.avatar} config={{...currentConfig,...cosmeticPatch(selectedItem)}} size={62}/>
+            <RewardNodeIcon item={selectedItem} user={user} currentConfig={currentConfig} locked={!selectedReached&&!selectedOwned}/>
           </div>
         </div>
         <div style={{minWidth:0}}>
@@ -6822,8 +6839,8 @@ async function reveal(item){
           <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,margin:"4px 0 8px",lineHeight:1.2}}>
             {selectedItem.puntos_precio} pts · {rarityLabel(selectedItem.rareza||"comun")}
           </div>
-          {selectedOwned?<Btn small full col={selectedActive?"ghost":"gold"} onClick={()=>apply(selectedItem)}>{selectedActive?"Equipado":"Equipar"}</Btn>:
-            <Btn small full col={selectedReached?"gold":"ghost"} disabled={!selectedReached} onClick={()=>reveal(selectedItem)}>{selectedReached?"Desbloquear":"Silueta bloqueada"}</Btn>}
+          {selectedOwned?<Btn small full col={selectedActive?"ghost":"gold"} disabled={!isAvatarPathReward(selectedItem)} onClick={()=>isAvatarPathReward(selectedItem)?apply(selectedItem):null}>{rewardActionLabel(selectedItem,true,selectedReached,selectedActive)}</Btn>:
+            <Btn small full col={selectedReached?"gold":"ghost"} disabled={!selectedReached} onClick={()=>reveal(selectedItem)}>{rewardActionLabel(selectedItem,false,selectedReached,false)}</Btn>}
         </div>
       </div>}
     </>}
@@ -7265,7 +7282,7 @@ function Comunidad(props){
 
 function GestionTienda({user,showToast}){
   if(!isAdminUser(user)) return <EmptyState icon="🔒" title="Sólo admin" sub="La tienda editable sólo puede gestionarla el administrador."/>;
-  const empty={id:null,item_key:"",nombre:"",descripcion:"",categoria:"premios",tipo:"canje",icono:"🎁",puntos_precio:"100",precio_euros:"",stock:"",activo:"true",rareza:"comun",slot:"",valor:"",juego_bonus_tipo:"",juego_bonus_cantidad:""};
+  const empty={id:null,item_key:"",nombre:"",descripcion:"",categoria:"juegos",tipo:"gacha_pulls",icono:"🎰",puntos_precio:"5",precio_euros:"",stock:"",activo:"true",rareza:"comun",slot:"gacha_pulls",valor:"10",juego_bonus_tipo:"gacha_pulls",juego_bonus_cantidad:"10"};
   const [items,setItems]=useState([]);
   const [loading,setLoading]=useState(true);
   const [showEdit,setShowEdit]=useState(false);
@@ -7277,7 +7294,8 @@ function GestionTienda({user,showToast}){
   async function load(){
     setLoading(true);
     const data=await dbGet("tienda_items","?order=created_at.desc&select=*");
-    setItems(Array.isArray(data)?data:[]);
+    const rows=Array.isArray(data)?data:[];
+    setItems(rows.filter(x=>isGameVoucherItem(x)||isRealMoneyProduct(x)||["juegos","productos"].includes(itemShopCategory(x))));
     setLoading(false);
   }
 
@@ -7361,23 +7379,20 @@ function GestionTienda({user,showToast}){
 
   const cats=[
     {id:"todo",label:"Todo"},
-    {id:"cupones",label:"Cupones"},
-    {id:"avatar",label:"Avatar"},
-    {id:"juegos",label:"Juegos"},
-    {id:"productos",label:"Productos €"},
-    {id:"premios",label:"Premios"}
+    {id:"juegos",label:"Tienda juegos"},
+    {id:"productos",label:"Productos €"}
   ];
-  const visibles=filter==="todo"?items:items.filter(i=>String(i.categoria||"premios")===filter);
+  const visibles=filter==="todo"?items:items.filter(i=>itemShopCategory(i)===filter || String(i.categoria||"").toLowerCase()===filter);
 
   return(
     <div style={{animation:"fadeSlide .34s ease"}}>
-      <SectionHeader icon="🛍️" title="Tienda editable" sub={`${items.length} productos configurados`} action={<div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}><Btn small col="gold" onClick={openNew}>+ Producto</Btn><Btn small col="dark" onClick={openGachaVoucher}>+ Vale Gacha</Btn><Btn small col="ghost" onClick={openRealProduct}>+ Producto €</Btn></div>}/>
+      <SectionHeader icon="🛍️" title="Tienda juegos" sub={`${items.length} artículos configurados`} action={<div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}><Btn small col="gold" onClick={openNew}>+ Producto</Btn><Btn small col="dark" onClick={openGachaVoucher}>+ Vale Gacha</Btn><Btn small col="ghost" onClick={openRealProduct}>+ Producto €</Btn></div>}/>
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2rem"}}>🛠️</div>
           <div style={{flex:1}}>
-            <div style={{fontWeight:950,fontSize:"1rem"}}>Administra premios sin tocar código</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Crea cupones, objetos de avatar, extras de juegos o premios. La tienda del cliente lee desde Supabase.</div>
+            <div style={{fontWeight:950,fontSize:"1rem"}}>Administra vales de juegos y productos</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Crea vales de Gacha u otros extras de juegos. Los estilos, fondos y cupones van en Perfil > Camino de recompensas.</div>
           </div>
         </div>
       </Card>
@@ -7386,7 +7401,7 @@ function GestionTienda({user,showToast}){
         {cats.map(c=><button key={c.id} onClick={()=>{SFX.tab();setFilter(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===c.id?T.gold:T.g300}`,background:filter===c.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>{c.label}</button>)}
       </div>
 
-      {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin productos" sub="Crea el primer producto de tienda."/>:
+      {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin artículos" sub="Crea un vale de Gacha o un producto real."/>:
         visibles.map(item=><Card key={item.id} style={{marginBottom:10,background:item.activo?"linear-gradient(180deg,#FFF4D6,#E9D9B7)":"linear-gradient(180deg,#E6CF9B,#D8BE87)",opacity:item.activo?1:.72}}>
           <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
             <div className="icon3d" style={{fontSize:"2rem"}}>{item.icono||"🎁"}</div>
@@ -7425,11 +7440,8 @@ function GestionTienda({user,showToast}){
         </div>
         <Input label="Precio euros opcional (sólo productos reales)" value={form.precio_euros} onChange={v=>setForm(f=>({...f,precio_euros:v}))} placeholder="9.99"/>
         <Select label="Categoría" value={form.categoria} onChange={v=>setForm(f=>({...f,categoria:v}))} options={[
-          {value:"cupones",label:"Cupones"},
-          {value:"avatar",label:"Avatar"},
-          {value:"juegos",label:"Juegos"},
-          {value:"productos",label:"Productos reales €"},
-          {value:"premios",label:"Premios"}
+          {value:"juegos",label:"Tienda juegos"},
+          {value:"productos",label:"Productos reales €"}
         ]}/>
         <Select label="Tipo" value={form.tipo} onChange={v=>setForm(f=>({...f,tipo:v}))} options={[
           {value:"cupon",label:"Cupón"},
