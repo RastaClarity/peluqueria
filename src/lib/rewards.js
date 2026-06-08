@@ -17,6 +17,30 @@ function readPointHistory(uid){
 function writePointHistory(uid,items){
   try{localStorage.setItem(pointHistoryKey(uid),JSON.stringify((Array.isArray(items)?items:[]).slice(0,80)));}catch{}
 }
+
+async function readPointHistoryFromDb(uid,limit=60){
+  if(!uid)return readPointHistory(uid);
+  try{
+    const safeLimit=Math.max(1,Math.min(100,Number(limit)||60));
+    const rows=await dbGet("puntos_movimientos",`?usuario_id=eq.${uid}&order=created_at.desc&limit=${safeLimit}&select=*`);
+    if(Array.isArray(rows)&&rows.length){
+      return rows.map(r=>({
+        id:r.id||`db_${r.created_at}_${r.amount}`,
+        created_at:r.created_at,
+        amount:Number(r.amount)||0,
+        type:r.type||"info",
+        reason:r.reason||"Movimiento",
+        source:r.source||"supabase",
+        balance:r.balance,
+        meta:r.meta||{}
+      }));
+    }
+  }catch(e){
+    console.warn("No se pudo cargar historial de puntos desde Supabase",e);
+  }
+  return readPointHistory(uid);
+}
+
 function recordPointMovement(uid,{amount=0,type="info",reason="",source="",balance=null,meta={},usuario_email=null,usuario_nombre=null,entidad_tipo=null,entidad_id=null}={}){
   if(!uid)return;
 
@@ -308,6 +332,7 @@ export {
   addWebPointsToday,
   webPointsRemainingToday,
   readPointHistory,
+  readPointHistoryFromDb,
   recordPointMovement,
   clearPointHistory,
   awardWebPoints,
