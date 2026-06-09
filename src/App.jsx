@@ -1481,8 +1481,7 @@ function HelperHeroMascotFaceCrop({size=54}={}){
         </linearGradient>
       </defs>
 
-      {/* mini aureola sólo en la cabeza */}
-      <circle cx="60" cy="54" r="31" fill="rgba(255,214,107,.10)" />
+      {/* RastaHelp 2.9.6d: sin aureola ni fondo, sólo dibujo sticker */}
 
       {/* rastas laterales, como el Rasta grande */}
       <g strokeLinecap="round" fill="none">
@@ -1764,17 +1763,12 @@ function RastaFaceAvatar({size=66,speaking=false,settings=null,forceInternal=fal
       }}
     >
       <div
+        aria-hidden="true"
         style={{
+          display:"none",
           position:"absolute",
-          left:"50%",
-          top:"43%",
-          width:size*0.62,
-          height:size*0.62,
-          transform:"translate(-50%,-50%)",
-          borderRadius:"50%",
-          background:"radial-gradient(circle,rgba(255,214,107,.18) 0%,rgba(255,214,107,.08) 44%,transparent 72%)",
-          filter:"blur(2px)",
-          zIndex:0,
+          inset:0,
+          background:"transparent",
           pointerEvents:"none"
         }}
       />
@@ -12366,6 +12360,106 @@ function Particles(){
   return <div aria-hidden="true" style={{position:"fixed",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:0}}>{[...Array(10)].map((_,i)=><div key={i} style={{position:"absolute",left:`${6+i*10}%`,bottom:"-10%",fontSize:i%3===0?"1.35rem":"1rem",opacity:.09,animation:`floatUp ${13+i*2}s linear ${i*1.4}s infinite`}}>{items[i%items.length]}</div>)}</div>;
 }
 
+
+function GlobalUIPolishPatch(){
+  return <style>{`
+    /* Rasta Cuts 2.9.6d · polish global + RastaHelp sticker limpio */
+    :root{
+      --rc-font-body: Inter, Nunito, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --rc-font-title: "Baloo 2", Nunito, Inter, system-ui, sans-serif;
+      --rc-radius-card: 20px;
+      --rc-shadow-soft: 0 12px 28px rgba(20,8,4,.16);
+      --rc-shadow-card: 0 8px 18px rgba(20,8,4,.18);
+    }
+    html,body,#root{
+      font-family:var(--rc-font-body)!important;
+      text-rendering:optimizeLegibility;
+      -webkit-font-smoothing:antialiased;
+    }
+    .app-shell{
+      letter-spacing:.005em;
+    }
+    .studio-panel{
+      border-radius:var(--rc-radius-card)!important;
+      box-shadow:var(--rc-shadow-card)!important;
+    }
+    .studio-panel, .modal-panel-pro{
+      color:var(--rc-text,#1A0F08)!important;
+    }
+    .section-title-pro,
+    .community-title-pro,
+    .home-title-pro{
+      font-family:var(--rc-font-title)!important;
+      letter-spacing:.01em;
+    }
+    .nav-tab-pro span,
+    .header-action-pro,
+    button{
+      font-family:var(--rc-font-body)!important;
+    }
+
+    /* Helper sin recuadro: sólo el dibujo y una sombra de sticker */
+    .rasta-helper-fixed-safe,
+    .rasta-helper-fixed-safe *,
+    .rasta-helper-fixed-safe button[aria-label],
+    .rasta-helper-fixed-safe .rasta-face-avatar,
+    .rasta-helper-fixed-safe .helper-hero-face-crop{
+      background:transparent!important;
+      background-color:transparent!important;
+      border-color:transparent!important;
+      box-shadow:none!important;
+    }
+    .rasta-helper-fixed-safe .rasta-face-avatar{
+      overflow:visible!important;
+      border:0!important;
+      filter:none!important;
+      width:54px!important;
+      height:54px!important;
+    }
+    .rasta-helper-fixed-safe .rasta-face-avatar::before,
+    .rasta-helper-fixed-safe .rasta-face-avatar::after,
+    .rasta-helper-fixed-safe .rasta-face-avatar > div:first-child{
+      content:none!important;
+      display:none!important;
+      opacity:0!important;
+      background:transparent!important;
+      box-shadow:none!important;
+    }
+    .rasta-helper-fixed-safe .helper-hero-face-crop{
+      overflow:visible!important;
+      border-radius:0!important;
+      filter:drop-shadow(0 9px 12px rgba(0,0,0,.28))!important;
+      transform:translate(-50%,-50%) scale(1.08)!important;
+    }
+    .rasta-helper-fixed-safe .helper-hero-face-crop circle[fill*="255,214,107"],
+    .rasta-helper-fixed-safe .helper-hero-face-crop circle[fill*="#FFF"],
+    .rasta-helper-fixed-safe .helper-hero-face-crop rect[fill="transparent"]{
+      display:none!important;
+    }
+    .rasta-helper-fixed-safe button[aria-label]{
+      width:78px!important;
+      height:78px!important;
+      padding:0!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+    }
+    .rasta-helper-fixed-safe button[aria-label] > div{
+      background:transparent!important;
+      box-shadow:none!important;
+    }
+    .rasta-helper-fixed-safe button[aria-label] > div > div:last-child{
+      transform:scale(.82);
+      transform-origin:center;
+      box-shadow:0 5px 12px rgba(20,8,4,.20)!important;
+    }
+    @media(max-width:520px){
+      .rasta-helper-fixed-safe .rasta-face-avatar{width:50px!important;height:50px!important;}
+      .rasta-helper-fixed-safe button[aria-label]{width:72px!important;height:72px!important;}
+    }
+  `}</style>;
+}
+
 function AppCore(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
@@ -12789,10 +12883,11 @@ export default function App(){
   return (
     <MobileRuntimeGuard>
       <RastaCutsErrorBoundary>
+        <GlobalUIPolishPatch/>
         <AppCore/>
       </RastaCutsErrorBoundary>
     </MobileRuntimeGuard>
   );
 }
 
-// RastaCuts 2.9.6a navigation and structure close
+// RastaCuts 2.9.6d UI polish global + RastaHelp sticker clean
