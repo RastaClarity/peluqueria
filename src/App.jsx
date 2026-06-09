@@ -4758,7 +4758,7 @@ function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${T
 const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gacha:0};
 const ARCADE_GAMES=[
   {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda con los RC globales de Rasta Cuts",pts:0},
-  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de RC, XP y premios: 50 tiradas al día",pts:GAME_DAILY_REWARDS.gacha},
+  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Gacha equilibrado: RC, XP, tiradas extra y RP raro",pts:GAME_DAILY_REWARDS.gacha},
   {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Llega a 100 puntos y termina",pts:GAME_DAILY_REWARDS.stitch},
   {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Peine protector, bloques y agujeros",pts:GAME_DAILY_REWARDS.runner},
   {id:"jump",icon:"🌤️",title:"Rasta Jump",desc:"Recoge utensilios y evita tijeras",pts:GAME_DAILY_REWARDS.jump},
@@ -5393,37 +5393,76 @@ function DreadStitchGame({onWin,user}){
 
 function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){ 
   const uid=user?.id||"anon";
-  const SYMBOLS={scissors:{icon:'✂️',name:'Tijeras'},comb:{icon:'🪮',name:'Peines'},hook:{icon:'🪝',name:'Ganchillos'},band:{icon:'🧵',name:'Gomas'},ticket:{icon:'🎟️',name:'Ticket dorado'},gem:{icon:'💎',name:'Cristal'},coin:{icon:'🪙',name:'Moneda'}};
-  const normal=['scissors','comb','hook','band','coin'];
+  const SYMBOLS={
+    scissors:{icon:'✂️',name:'Tijeras'},
+    comb:{icon:'🪮',name:'Peines'},
+    hook:{icon:'🪝',name:'Ganchillos'},
+    band:{icon:'🧵',name:'Gomas'},
+    ticket:{icon:'🎟️',name:'Ticket dorado'},
+    gem:{icon:'💎',name:'Cristal'},
+    coin:{icon:'🪙',name:'Moneda'},
+    star:{icon:'⭐',name:'XP'},
+    clover:{icon:'🍀',name:'Suerte'}
+  };
+  const normal=['scissors','comb','hook','band','coin','star','clover'];
+  const PRIZE_TABLE=[
+    {id:'xp_base',chance:'45%',label:'Sin premio grande',desc:'+2 XP por participar',key:null,rp:0,rc:0,xp:2,rarity:'base'},
+    {id:'rc_small',chance:'22%',label:'RC pequeño',desc:'+15 RC y +5 XP',key:'coin',rp:0,rc:15,xp:5,rarity:'comun'},
+    {id:'rc_medium',chance:'14%',label:'RC medio',desc:'+30 RC y +8 XP',key:'scissors',rp:0,rc:30,xp:8,rarity:'comun'},
+    {id:'rc_good',chance:'8%',label:'RC bueno',desc:'+60 RC y +12 XP',key:'comb',rp:0,rc:60,xp:12,rarity:'raro'},
+    {id:'rc_big',chance:'5%',label:'RC grande',desc:'+100 RC y +20 XP',key:'band',rp:0,rc:100,xp:20,rarity:'raro'},
+    {id:'extra_pulls',chance:'3%',label:'Tiradas extra',desc:'+3 tiradas extra y +25 XP',key:'hook',rp:0,rc:0,xp:25,extraPulls:3,rarity:'epico'},
+    {id:'gem_prize',chance:'2%',label:'Cristales',desc:'+200 RC y +40 XP',key:'gem',rp:0,rc:200,xp:40,rarity:'epico'},
+    {id:'ticket_gold',chance:'0,8%',label:'Ticket dorado',desc:'+2 RP, +300 RC y +70 XP',key:'ticket',rp:2,rc:300,xp:70,rarity:'legendario'},
+    {id:'legendary',chance:'0,2%',label:'Premio legendario',desc:'+10 RP, +800 RC y +120 XP',key:'ticket',rp:10,rc:800,xp:120,extraPulls:10,rarity:'legendario'}
+  ];
   const [reels,setReels]=useState(['scissors','comb','hook']);
   const [spinning,setSpinning]=useState(false);
   const [result,setResult]=useState(null);
   const [pulls,setPulls]=useState(()=>getGachaPullsToday(uid));
   const [extraPulls,setExtraPullsState]=useState(()=>getGachaExtraPulls(uid));
   const [claimed,setClaimed]=useState(false);
+  const [showOdds,setShowOdds]=useState(false);
+  const [history,setHistory]=useState(()=>readGachaLocalHistory(uid));
   const dailyLimit=Math.max(1,parseInt(settings?.puntos?.gacha_tiradas_dia??GACHA_DAILY_PULL_LIMIT,10)||GACHA_DAILY_PULL_LIMIT);
+
+  function historyKey(){return `gacha_history_${uid}`;}
+  function readGachaLocalHistory(){try{return JSON.parse(localStorage.getItem(historyKey())||"[]");}catch{return [];}}
+  function writeGachaLocalHistory(items){try{localStorage.setItem(historyKey(),JSON.stringify((items||[]).slice(0,25)));}catch{}}
+  function addHistory(row){const next=[{id:`gacha_${Date.now()}`,created_at:new Date().toISOString(),...row},...history].slice(0,25);setHistory(next);writeGachaLocalHistory(next);}
+
   useEffect(()=>{
     const reload=()=>setExtraPullsState(getGachaExtraPulls(uid));
     window.addEventListener("rasta-gacha-pulls-updated",reload);
     return()=>window.removeEventListener("rasta-gacha-pulls-updated",reload);
   },[uid]);
+
   const normalPullsLeft=Math.max(0,dailyLimit-pulls);
   const pullsLeft=normalPullsLeft+Math.max(0,extraPulls);
+  const progress=Math.min(100,(pulls/dailyLimit)*100);
+
   function pickPrize(){
-    const r=Math.random();
-    if(r<1/5000)return{rp:10,rc:800,xp:120,key:'ticket',label:'Premio legendario: 3 tickets dorados'};
-    if(r<1/5000+1/500)return{rp:0,rc:400,xp:90,key:'gem',label:'Premio raro: 3 cristales'};
-    if(r<1/5000+1/500+1/200)return{rp:0,rc:220,xp:60,key:'hook',label:'Premio bueno: 3 ganchillos'};
-    if(r<1/5000+1/500+1/200+1/100)return{rp:0,rc:120,xp:40,key:'band',label:'Premio: 3 gomas'};
-    if(r<1/5000+1/500+1/200+1/100+1/30)return{rp:0,rc:60,xp:25,key:'comb',label:'Premio pequeño: 3 peines'};
-    if(r<1/5000+1/500+1/200+1/100+1/30+1/10)return{rp:0,rc:25,xp:10,key:'scissors',label:'Mini premio: 3 tijeras'};
-    return{rp:0,rc:0,xp:2,key:null,label:'Sin premio grande, pero ganas 2 XP'};
+    const r=Math.random()*100;
+    if(r<45)return {...PRIZE_TABLE[0],spinLabel:'Participación: +2 XP'};
+    if(r<67)return {...PRIZE_TABLE[1],spinLabel:'Premio común: +15 RC'};
+    if(r<81)return {...PRIZE_TABLE[2],spinLabel:'Premio común: +30 RC'};
+    if(r<89)return {...PRIZE_TABLE[3],spinLabel:'Premio raro: +60 RC'};
+    if(r<94)return {...PRIZE_TABLE[4],spinLabel:'Premio raro: +100 RC'};
+    if(r<97)return {...PRIZE_TABLE[5],spinLabel:'Premio épico: +3 tiradas'};
+    if(r<99)return {...PRIZE_TABLE[6],spinLabel:'Premio épico: cristales'};
+    if(r<99.8)return {...PRIZE_TABLE[7],spinLabel:'Premio legendario: ticket dorado'};
+    return {...PRIZE_TABLE[8],spinLabel:'PREMIO LEGENDARIO RASTA'};
   }
+
   function randomReels(){return [0,1,2].map(()=>normal[Math.floor(Math.random()*normal.length)]);}
+  function safeNoMatch(){let out=randomReels();if(out[0]===out[1]&&out[1]===out[2])out[2]=normal[(normal.indexOf(out[2])+1)%normal.length];return out;}
+  function rarityBadgeColor(r){return r==='legendario'?'gold':r==='epico'?'pink':r==='raro'?'blue':'green';}
+
   function spin(){
     if(spinning)return;
-    if(pullsLeft<=0){SFX.error();setResult({pts:0,key:null,label:'Límite diario alcanzado'});return;}
-    if(normalPullsLeft>0){
+    if(pullsLeft<=0){SFX.error();setResult({id:'no_pulls',rp:0,rc:0,xp:0,key:null,label:'Sin tiradas disponibles',spinLabel:'Sin tiradas disponibles',rarity:'base'});return;}
+    const usedExtra=normalPullsLeft<=0;
+    if(!usedExtra){
       const nextPulls=pulls+1;setPulls(nextPulls);setGachaPullsToday(uid,nextPulls);
     }else{
       const nextExtra=Math.max(0,extraPulls-1);setExtraPullsState(nextExtra);setGachaExtraPulls(uid,nextExtra);
@@ -5431,28 +5470,39 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){
     setSpinning(true);setResult(null);setClaimed(false);
     let ticks=0;const final=pickPrize();
     const spinTimer=setInterval(()=>{
-      ticks++;setReels(randomReels());playTone(220+ticks*16,'triangle',0.045,0.035);
-      if(ticks>=18){
+      ticks++;setReels(randomReels());playTone(220+ticks*14,'triangle',0.042,0.032);
+      if(ticks>=20){
         clearInterval(spinTimer);
         let out;
-        if((final.rp||final.rc)>0 && final.key) out=[final.key,final.key,final.key];
-        else{out=randomReels();if(out[0]===out[1]&&out[1]===out[2]) out[2]=normal[(normal.indexOf(out[2])+1)%normal.length];}
-        setReels(out);setResult(final);setSpinning(false);
-        (final.rp||final.rc||final.xp)?SFX.success():SFX.error();
+        if(final.key) out=[final.key,final.key,final.key];
+        else out=safeNoMatch();
+        setReels(out);
+        setResult({...final,usedExtra});
+        setSpinning(false);
+        final.rarity==='base'?SFX.tab():SFX.success();
       }
-    },90);
+    },82);
   }
+
   async function claim(){
-    if(claimed)return;
+    if(claimed||!result)return;
     const rp=Number(result?.rp||0);
     const rc=Number(result?.rc||0);
     const xp=Number(result?.xp||0);
-    if(rp<=0&&rc<=0&&xp<=0)return;
+    const bonusPulls=Number(result?.extraPulls||0);
+    if(rp<=0&&rc<=0&&xp<=0&&bonusPulls<=0)return;
     setClaimed(true);
-    SFX.success();
+    if(bonusPulls>0){
+      const next=addGachaExtraPulls(uid,bonusPulls);
+      setExtraPullsState(next);
+      try{window.dispatchEvent(new CustomEvent("rasta-gacha-pulls-updated"));}catch{}
+    }
     if(rp>0) await onWin?.(rp);
-    if((rc>0||xp>0)&&onCurrencyWin) await onCurrencyWin({rc,xp,reason:result?.label||"Gacha Barber"});
+    if((rc>0||xp>0)&&onCurrencyWin) await onCurrencyWin({rc,xp,reason:result?.spinLabel||"Gacha Barber"});
+    addHistory({label:result.spinLabel||result.label,rarity:result.rarity,rp,rc,xp,extraPulls:bonusPulls,usedExtra:!!result.usedExtra});
+    SFX.success();
   }
+
   async function buyPulls(){
     if(!onBuyPulls)return;
     const ok=await onBuyPulls(5,10);
@@ -5460,29 +5510,59 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){
       const next=addGachaExtraPulls(uid,10);
       setExtraPullsState(next);
       try{window.dispatchEvent(new CustomEvent("rasta-gacha-pulls-updated"));}catch{}
-      setResult({pts:0,key:null,label:'Has comprado 10 tiradas extra por 5 puntos'});
+      setResult({id:'shop_pulls',rp:0,rc:0,xp:0,key:null,label:'Has comprado 10 tiradas extra por 5 RP',spinLabel:'10 tiradas extra compradas',rarity:'raro'});
+      addHistory({label:'Compra de 10 tiradas extra',rarity:'raro',rp:-5,rc:0,xp:0,extraPulls:10});
       SFX.collect();
     }
   }
+
   return <Card style={{background:'linear-gradient(180deg,#271006,#5C3317 55%,#D4AF37)',border:`2px solid ${T.gold}`,color:T.white}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:12}}>
-      <div><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><div style={{fontSize:'.7rem',fontWeight:850,opacity:.78,marginTop:2}}>{dailyLimit} diarias + {extraPulls} extra</div></div>
-      <Badge col={pullsLeft>0?'gold':'red'}>{pullsLeft}/{dailyLimit}</Badge>
+      <div><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><div style={{fontSize:'.72rem',fontWeight:850,opacity:.82,marginTop:2}}>RP raro · RC frecuente · XP siempre útil</div></div>
+      <Badge col={pullsLeft>0?'gold':'red'}>{pullsLeft} tiradas</Badge>
     </div>
-    <div style={{fontSize:'.82rem',fontWeight:800,opacity:.86,lineHeight:1.45,marginBottom:12}}>Junta 3 símbolos iguales. Si ganas, cobras sin salir del juego y puedes seguir tirando.</div>
-    <div style={{height:8,background:'rgba(255,244,214,.22)',borderRadius:999,overflow:'hidden',marginBottom:14}}><div style={{height:'100%',width:`${Math.min(100,(pulls/dailyLimit)*100)}%`,background:T.gradGold,borderRadius:999,transition:'width .25s ease'}}/></div>
+
+    <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12,textAlign:'center'}}>
+      <div style={{background:'rgba(255,248,230,.18)',border:'1px solid rgba(255,244,214,.28)',borderRadius:14,padding:8,fontWeight:950}}><div style={{fontSize:'.64rem',opacity:.8}}>Diarias</div>{normalPullsLeft}/{dailyLimit}</div>
+      <div style={{background:'rgba(255,248,230,.18)',border:'1px solid rgba(255,244,214,.28)',borderRadius:14,padding:8,fontWeight:950}}><div style={{fontSize:'.64rem',opacity:.8}}>Extras</div>{extraPulls}</div>
+      <div style={{background:'rgba(255,248,230,.18)',border:'1px solid rgba(255,244,214,.28)',borderRadius:14,padding:8,fontWeight:950}}><div style={{fontSize:'.64rem',opacity:.8}}>Coste vale</div>5 RP</div>
+    </div>
+
+    <div style={{height:8,background:'rgba(255,244,214,.22)',borderRadius:999,overflow:'hidden',marginBottom:14}}><div style={{height:'100%',width:`${progress}%`,background:T.gradGold,borderRadius:999,transition:'width .25s ease'}}/></div>
+
     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
       {reels.map((key,i)=><div key={i} style={{height:106,borderRadius:22,display:'grid',placeItems:'center',background:'linear-gradient(180deg,#FFF8E6,#E8C477)',border:'3px solid rgba(255,244,214,.75)',boxShadow:'inset 0 8px 18px rgba(0,0,0,.16),0 10px 20px rgba(0,0,0,.22)',fontSize:'2.6rem',animation:spinning?'rewardPulsePro .38s infinite':'none'}}>{SYMBOLS[key]?.icon}</div>)}
     </div>
-    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${(result.rp||result.rc||result.xp)?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{(result.rp||result.rc||result.xp)>0?`Premio: ${result.rp?`+${result.rp} RP `:''}${result.rc?`+${result.rc} RC `:''}${result.xp?`+${result.xp} XP`:''}. Puedes cobrar y seguir jugando.`:pullsLeft<=0?'Sin tiradas. Puedes comprar vales en la tienda o 10 por 5 RP aquí.':extraPulls>0?'Usando tiradas extra compradas en tienda o arcade.':'Puedes volver a tirar mientras te queden tiradas.'}</div>{(result.rp||result.rc||result.xp)>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar premio'}</Btn></div>}</Card>}
+
+    {result&&<Card style={{background:'rgba(255,248,230,.92)',border:`2px solid ${result.rarity==='legendario'?T.gold:result.rarity==='epico'?T.pink:T.g300}`,marginBottom:12}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}><div style={{fontWeight:950,color:T.g800}}>{result.spinLabel||result.label}</div><Badge col={rarityBadgeColor(result.rarity)}>{result.rarity||'base'}</Badge></div>
+      <div style={{fontSize:'.82rem',fontWeight:820,color:T.textSub,marginTop:5,lineHeight:1.38}}>
+        {(result.rp||result.rc||result.xp||result.extraPulls)>0?`Premio: ${result.rp?`+${result.rp} RP `:''}${result.rc?`+${result.rc} RC `:''}${result.xp?`+${result.xp} XP `:''}${result.extraPulls?`+${result.extraPulls} tiradas`:''}`:pullsLeft<=0?'Sin tiradas. Compra vales en Tienda juegos o usa el botón de 10 tiradas por 5 RP.':'No salió premio grande, pero el Gacha ya está equilibrado para dar XP de participación.'}
+      </div>
+      {(result.rp||result.rc||result.xp||result.extraPulls)>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar premio'}</Btn></div>}
+    </Card>}
+
     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
       <Btn full col={pullsLeft>0?'gold':'ghost'} disabled={spinning||pullsLeft<=0} onClick={spin}>{spinning?'Girando...':pullsLeft>0?'🎰 Tirar':'Sin tiradas'}</Btn>
       <Btn full col='ghost' disabled={spinning||Number(user?.puntos||0)<5} onClick={buyPulls}>🛒 10 tiradas · 5 RP</Btn>
     </div>
-    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{dailyLimit}. Extras disponibles: {extraPulls}. El Gacha reparte sobre todo RC y XP; sólo premios raros dan RP.</div>
+
+    <div style={{marginTop:10,display:'flex',gap:8,flexWrap:'wrap',alignItems:'center',justifyContent:'space-between'}}>
+      <div style={{fontSize:'.72rem',fontWeight:820,opacity:.82,lineHeight:1.35}}>Regla: RC y XP son frecuentes; RP sólo aparece en premios raros para no romper la economía.</div>
+      <button onClick={()=>setShowOdds(v=>!v)} style={{border:'1px solid rgba(255,244,214,.38)',background:'rgba(255,248,230,.18)',color:T.white,borderRadius:999,padding:'7px 10px',fontWeight:950,cursor:'pointer'}}>{showOdds?'Ocultar':'Ver'} probabilidades</button>
+    </div>
+
+    {showOdds&&<Card style={{marginTop:10,background:'rgba(255,248,230,.94)',border:`1px solid ${T.g200}`}}>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Tabla de premios</div>
+      <div style={{display:'grid',gap:7}}>{PRIZE_TABLE.map(p=><div key={p.id} style={{display:'grid',gridTemplateColumns:'58px 1fr auto',gap:8,alignItems:'center',fontSize:'.78rem',fontWeight:850,color:T.textSub}}><Badge col={rarityBadgeColor(p.rarity)}>{p.chance}</Badge><span><b style={{color:T.g800}}>{p.label}</b><br/>{p.desc}</span><span style={{fontSize:'1.15rem'}}>{p.key?SYMBOLS[p.key]?.icon:'▫️'}</span></div>)}</div>
+    </Card>}
+
+    {history.length>0&&<Card style={{marginTop:10,background:'rgba(255,248,230,.88)',border:`1px solid ${T.g200}`}}>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Últimos premios</div>
+      <div style={{display:'grid',gap:6}}>{history.slice(0,5).map(h=><div key={h.id} style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:'.78rem',fontWeight:850,color:T.textSub}}><span>{h.label}</span><span style={{whiteSpace:'nowrap'}}>{h.rp?`${h.rp>0?'+':''}${h.rp} RP `:''}{h.rc?`+${h.rc} RC `:''}{h.xp?`+${h.xp} XP`:''}{h.extraPulls?` +${h.extraPulls}🎰`:''}</span></div>)}</div>
+    </Card>}
   </Card>;
 }
-
 function ArcadeInfoPanel({onOpenGacha}){
   const [open,setOpen]=useState(false);
   return <div style={{marginBottom:14}}>
@@ -5531,7 +5611,7 @@ function ArcadeInfoPanel({onOpenGacha}){
         <div style={{display:"grid",gap:8,fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.42}}>
           <div>Los récords sirven para competir y volver a intentarlo. Los puntos reales, en cambio, se cobran de forma limitada para que la tienda y los desbloqueos sigan teniendo valor.</div>
           <div>Cada juego puede entregar puntos una vez al día. Después puedes rejugar para mejorar marca, pero no para farmear puntos sin límite.</div>
-          <div>El Gacha Barber es la máquina de premios: casi siempre no toca nada, pero puede soltar recompensas raras si juntas tres símbolos iguales.</div>
+          <div>El Gacha Barber reparte sobre todo RC y XP. Los RP quedan reservados para premios raros para que la economía no se rompa.</div>
         </div>
         <div style={{marginTop:11,display:"flex",justifyContent:"flex-start"}}>
           <Btn small col="gold" onClick={onOpenGacha}>🎰 Abrir Gacha Barber</Btn>
