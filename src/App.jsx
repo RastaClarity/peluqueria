@@ -6741,13 +6741,26 @@ function PerfilNewsActivity({user}){
 
 // MISIONES Y TROFEOS
 const MISSION_DEFS=[
-  {key:"daily_game",period:"day",icon:"🎮",title:"Una partida al día",desc:"Guarda una partida de Arcade hoy",goal:1,points:2,type:"gamesToday"},
-  {key:"daily_news_comment",period:"day",icon:"💬",title:"Opina en Actualidad",desc:"Comenta una noticia hoy",goal:1,points:3,type:"commentsToday"},
-  {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy",goal:1,points:1,type:"likesToday"},
-  {key:"weekly_arcade_3",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 3 partidas esta semana",goal:3,points:6,type:"gamesWeek"},
-  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana",goal:5,points:8,type:"commentsWeek"},
-  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana",goal:3,points:6,type:"mixedWeek"},
+  {key:"daily_arcade",period:"day",icon:"🎮",title:"Una partida al día",desc:"Juega y guarda una partida de Arcade hoy.",goal:1,rp:5,rc:50,xp:10,points:5,type:"gamesToday",action:"juegos",actionLabel:"Ir al Arcade"},
+  {key:"daily_gacha",period:"day",icon:"🎰",title:"Tirada Gacha",desc:"Haz al menos una tirada en el Gacha Barber hoy.",goal:1,rp:0,rc:35,xp:10,points:0,type:"gachaToday",action:"juegos",actionLabel:"Ir al Gacha"},
+  {key:"daily_news_comment",period:"day",icon:"💬",title:"Opina en Actualidad",desc:"Comenta una noticia hoy.",goal:1,rp:3,rc:0,xp:20,points:3,type:"commentsToday",action:"noticias",actionLabel:"Ir a Actualidad"},
+  {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy.",goal:1,rp:1,rc:0,xp:5,points:1,type:"likesToday",action:"noticias",actionLabel:"Ir a Actualidad"},
+  {key:"daily_tycoon",period:"day",icon:"🏪",title:"Turno Tycoon",desc:"Atiende clientes o guarda actividad del Tycoon hoy.",goal:1,rp:0,rc:80,xp:15,points:0,type:"tycoonToday",action:"juegos",actionLabel:"Ir al Tycoon"},
+  {key:"weekly_arcade_5",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 5 partidas esta semana.",goal:5,rp:8,rc:180,xp:50,points:8,type:"gamesWeek",action:"juegos",actionLabel:"Ir al Arcade"},
+  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana.",goal:5,rp:8,rc:0,xp:75,points:8,type:"commentsWeek",action:"noticias",actionLabel:"Ir a Actualidad"},
+  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana.",goal:3,rp:6,rc:120,xp:40,points:6,type:"mixedWeek",action:"dashboard",actionLabel:"Ver Inicio"},
+  {key:"weekly_tycoon",period:"week",icon:"💈",title:"Peluquería activa",desc:"Juega o guarda actividad del Tycoon 3 veces esta semana.",goal:3,rp:5,rc:250,xp:60,points:5,type:"tycoonWeek",action:"juegos",actionLabel:"Ir al Tycoon"},
 ];
+function missionRewards(m){
+  const parts=[];
+  const rp=Number(m.rp??m.points??0)||0;
+  const rc=Number(m.rc||0)||0;
+  const xp=Number(m.xp||0)||0;
+  if(rp>0)parts.push(`+${rp} RP`);
+  if(rc>0)parts.push(`+${rc} RC`);
+  if(xp>0)parts.push(`+${xp} XP`);
+  return parts.length?parts.join(" · "):"Recompensa";
+}
 const TROPHY_DEFS=[
   {key:"first_game",icon:"🎮",title:"Primer arcade",desc:"Guarda tu primera partida",condition:s=>s.gamesAll>=1},
   {key:"first_comment",icon:"💬",title:"Primera opinión",desc:"Deja tu primer comentario en Actualidad",condition:s=>s.commentsAll>=1},
@@ -6768,25 +6781,25 @@ function missionValue(def,stats){
 }
 function clampPct(v,g){return Math.max(0,Math.min(100,(Number(v||0)/Math.max(1,g))*100));}
 async function safeList(table,query){try{const r=await dbGet(table,query);return Array.isArray(r)?r:[];}catch{return [];}}
-function MissionCard({m,value,claimed,onClaim}){
+function MissionCard({m,value,claimed,onClaim,onGo}){
   const done=value>=m.goal;
   const pct=clampPct(value,m.goal);
   return <Card style={{marginBottom:10,padding:12,background:done?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"linear-gradient(180deg,#FFF4D6,#F5E6C8)",border:`2px solid ${done?T.gold:T.g200}`}}>
     <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
       <div style={{width:42,height:42,borderRadius:16,display:"grid",placeItems:"center",fontSize:"1.35rem",background:done?T.gradGold:"rgba(255,244,214,.82)",boxShadow:"0 8px 16px rgba(20,8,4,.14)"}}>{m.icon}</div>
       <div style={{flex:1,minWidth:0}}>
-        <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"baseline"}}><div style={{fontWeight:950,color:T.g800,lineHeight:1.1}}>{m.title}</div><div style={{fontWeight:950,color:done?T.orange:T.g600,fontSize:".82rem"}}>+{m.points} pts</div></div>
+        <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"baseline"}}><div style={{fontWeight:950,color:T.g800,lineHeight:1.1}}>{m.title}</div><div style={{fontWeight:950,color:done?T.orange:T.g600,fontSize:".76rem",textAlign:"right"}}>{missionRewards(m)}</div></div>
         <div style={{fontSize:".78rem",fontWeight:750,color:T.textSub,marginTop:3}}>{m.desc}</div>
         <div style={{display:"flex",justifyContent:"space-between",fontSize:".72rem",fontWeight:900,color:T.g700,marginTop:8}}><span>Progreso</span><span>{Math.min(value,m.goal)}/{m.goal}</span></div>
         <div style={{height:8,background:"rgba(110,53,24,.16)",borderRadius:999,overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:`${pct}%`,background:done?T.gradGold:T.gradClient,borderRadius:999,transition:"width .3s ease"}}/></div>
       </div>
     </div>
     {claimed?<div style={{marginTop:9,fontSize:".78rem",fontWeight:900,color:T.g700,background:"rgba(255,244,214,.72)",borderRadius:12,padding:"8px 10px"}}>Reclamado</div>
-      :done?<div style={{marginTop:9}}><Btn full small col="gold" onClick={onClaim}>Reclamar +{m.points}</Btn></div>
-      :<div style={{marginTop:9,fontSize:".76rem",fontWeight:800,color:T.textSub}}>Completa el objetivo para reclamarlo.</div>}
+      :done?<div style={{marginTop:9}}><Btn full small col="gold" onClick={onClaim}>Reclamar {missionRewards(m)}</Btn></div>
+      :<div style={{marginTop:9,display:"grid",gap:7}}><div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>Completa el objetivo para reclamarlo.</div>{m.action&&<Btn full small col="ghost" onClick={onGo}>{m.actionLabel||"Ir a completar"}</Btn>}</div>}
   </Card>;
 }
-function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
+function ObjetivosTrofeos({user,setUser,showToast,showPoints,onNavigate=null}){
   const [loading,setLoading]=useState(true);
   const [stats,setStats]=useState({});
   const [claimed,setClaimed]=useState({});
@@ -6798,7 +6811,7 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
     setLoading(true);
     const uid=encodeURIComponent(String(user.id));
     const day=startOfDayISO(),week=startOfWeekISO();
-    const [gamesAll,gamesToday,gamesWeek,commentsAll,commentsToday,commentsWeek,likesAll,likesToday,likesWeek,claims,trophyRows]=await Promise.all([
+    const [gamesAll,gamesToday,gamesWeek,commentsAll,commentsToday,commentsWeek,likesAll,likesToday,likesWeek,tycoonToday,tycoonWeek,gachaToday,claims,trophyRows]=await Promise.all([
       safeList("game_scores",`?usuario_id=eq.${uid}&select=game_id,score,created_at`),
       safeList("game_scores",`?usuario_id=eq.${uid}&created_at=gte.${day}&select=game_id,score,created_at`),
       safeList("game_scores",`?usuario_id=eq.${uid}&created_at=gte.${week}&select=game_id,score,created_at`),
@@ -6808,6 +6821,9 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
       safeList("news_likes",`?usuario_id=eq.${uid}&select=news_category,created_at`),
       safeList("news_likes",`?usuario_id=eq.${uid}&created_at=gte.${day}&select=news_category,created_at`),
       safeList("news_likes",`?usuario_id=eq.${uid}&created_at=gte.${week}&select=news_category,created_at`),
+      safeList("economy_movements",`?usuario_id=eq.${uid}&source=eq.tycoon&created_at=gte.${day}&select=id,created_at`),
+      safeList("economy_movements",`?usuario_id=eq.${uid}&source=eq.tycoon&created_at=gte.${week}&select=id,created_at`),
+      safeList("game_scores",`?usuario_id=eq.${uid}&game_id=eq.gacha&created_at=gte.${day}&select=game_id,created_at`),
       safeList("user_mission_claims",`?usuario_id=eq.${uid}&select=mission_key,period_key`),
       safeList("user_trophies",`?usuario_id=eq.${uid}&select=trophy_key`),
     ]);
@@ -6815,6 +6831,7 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
       gamesAll:gamesAll.length,gamesToday:gamesToday.length,gamesWeek:gamesWeek.length,
       commentsAll:commentsAll.length,commentsToday:commentsToday.length,commentsWeek:commentsWeek.length,
       likesAll:likesAll.length,likesToday:likesToday.length,likesWeek:likesWeek.length,
+      tycoonToday:tycoonToday.length,tycoonWeek:tycoonWeek.length,gachaToday:gachaToday.length,
       stitchAll:(gamesAll||[]).filter(g=>g.game_id==="stitch").length,
       categoriesAll:countUnique(commentsAll,"news_category"),
     };
@@ -6838,13 +6855,43 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
     const key=`${m.key}_${period}`;
     if(claimed[key])return;
     const value=missionValue(m,stats);
-    if(value<m.goal){showToast?.("Todavía falta progreso para este objetivo");return;}
+    if(value<m.goal){showToast?.("Todavía falta progreso para esta misión");return;}
+    const rp=Number(m.rp??m.points??0)||0;
+    const rc=Number(m.rc||0)||0;
+    const xp=Number(m.xp||0)||0;
     try{
-      const {error}=await supabase.from("user_mission_claims").insert({usuario_id:String(user.id),mission_key:m.key,period_key:period,puntos:m.points});
-      if(error){showToast?.("Objetivo ya reclamado o no disponible");return;}
-      await awardWebPoints({user,setUser,showToast,showPoints,points:m.points,reason:"Objetivo"});
+      const {error}=await supabase.from("user_mission_claims").insert({
+        usuario_id:String(user.id),
+        mission_key:m.key,
+        period_key:period,
+        puntos:rp,
+        rc,
+        xp,
+        created_at:new Date().toISOString()
+      });
+      if(error){showToast?.("Misión ya reclamada o no disponible");return;}
+      if(rp>0){
+        await awardWebPoints({user,setUser,showToast,showPoints,points:rp,reason:"Misión"});
+      }
+      if(rc>0||xp>0){
+        const nextRc=(Number(user.rc)||0)+rc;
+        const nextXp=userXP(user)+xp;
+        const nextLevel=avatarLevelFromXP(nextXp);
+        const patch={};
+        if(rc>0)patch.rc=nextRc;
+        if(xp>0){patch.xp=nextXp;patch.avatar_level=nextLevel;}
+        await dbPatch("usuarios",`?id=eq.${user.id}`,patch);
+        if(rc>0)await dbPost("economy_movements",{usuario_id:String(user.id),usuario_email:user.email||null,usuario_nombre:user.nombre||null,currency:"rc",amount:rc,type:"earn",reason:`Misión: ${m.title}`,source:"mission",balance:nextRc,meta:{mission_key:m.key,period_key:period}});
+        if(xp>0)await dbPost("economy_movements",{usuario_id:String(user.id),usuario_email:user.email||null,usuario_nombre:user.nombre||null,currency:"xp",amount:xp,type:"earn",reason:`Misión: ${m.title}`,source:"mission",balance:nextXp,meta:{mission_key:m.key,period_key:period,avatar_level:nextLevel}});
+        setUser?.(u=>({...u,...patch}));
+      }
       setClaimed(v=>({...v,[key]:true}));
-    }catch{showToast?.("No se pudo reclamar el objetivo");}
+      SFX.success();
+      showToast?.(`Misión completada: ${missionRewards(m)}`);
+    }catch(e){
+      console.warn("No se pudo reclamar misión",e);
+      showToast?.("No se pudo reclamar la misión");
+    }
   }
   const unlockedCount=Object.values(trophies).filter(Boolean).length;
   const available=MISSION_DEFS.filter(m=>missionValue(m,stats)>=m.goal&&!claimed[`${m.key}_${missionPeriodKey(m)}`]).length;
@@ -6857,9 +6904,24 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints}){
       <button onClick={()=>setTab("missions")} style={{border:`2px solid ${tab==="missions"?T.gold:T.g200}`,borderRadius:14,padding:"9px 10px",fontWeight:950,cursor:"pointer",background:tab==="missions"?T.gradGold:"rgba(255,244,214,.72)",color:tab==="missions"?T.g900:T.g700}}>Objetivos</button>
       <button onClick={()=>setTab("trophies")} style={{border:`2px solid ${tab==="trophies"?T.gold:T.g200}`,borderRadius:14,padding:"9px 10px",fontWeight:950,cursor:"pointer",background:tab==="trophies"?T.gradGold:"rgba(255,244,214,.72)",color:tab==="trophies"?T.g900:T.g700}}>Trofeos {unlockedCount}/{TROPHY_DEFS.length}</button>
     </div>
-    {loading?<Spinner/>:tab==="missions"?<div>{MISSION_DEFS.map(m=><MissionCard key={m.key} m={m} value={missionValue(m,stats)} claimed={!!claimed[`${m.key}_${missionPeriodKey(m)}`]} onClaim={()=>claimMission(m)}/>)}</div>
+    {loading?<Spinner/>:tab==="missions"?<div>{MISSION_DEFS.map(m=><MissionCard key={m.key} m={m} value={missionValue(m,stats)} claimed={!!claimed[`${m.key}_${missionPeriodKey(m)}`]} onClaim={()=>claimMission(m)} onGo={()=>m.action&&onNavigate?.(m.action)}/>)}</div>
       :<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>{TROPHY_DEFS.map(t=>{const on=!!trophies[t.key];return <div key={t.key} style={{border:`2px solid ${on?T.gold:T.g200}`,borderRadius:18,padding:12,background:on?"linear-gradient(180deg,#FFF8E1,#F6E5BE)":"rgba(255,244,214,.58)",opacity:on?1:.55,textAlign:"center"}}><div style={{fontSize:"2rem",filter:on?"drop-shadow(0 6px 8px rgba(212,175,55,.35))":"grayscale(1)"}}>{t.icon}</div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem",lineHeight:1.1}}>{t.title}</div><div style={{fontSize:".7rem",fontWeight:800,color:T.textSub,marginTop:4,lineHeight:1.25}}>{t.desc}</div></div>})}</div>}
   </Card>;
+}
+
+
+function MisionesPage({user,setUser,showToast,showPoints,onNavigate}){
+  return <div>
+    <SectionHeader icon="🎯" title="Misiones" sub="Objetivos diarios y semanales para ganar RP, RC y XP sin romper la economía."/>
+    <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)",border:`2px solid ${T.g300}`}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
+        <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>RP</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>Tienda y cupones</div></div>
+        <div><div style={{fontSize:"1.35rem"}}>🪙</div><div style={{fontWeight:950,color:T.g800}}>RC</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>Juegos y Tycoon</div></div>
+        <div><div style={{fontSize:"1.35rem"}}>⭐</div><div style={{fontWeight:950,color:T.g800}}>XP</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>Nivel de avatar</div></div>
+      </div>
+    </Card>
+    <ObjetivosTrofeos user={user} setUser={setUser} showToast={showToast} showPoints={showPoints} onNavigate={onNavigate}/>
+  </div>;
 }
 
 
@@ -7238,7 +7300,7 @@ function UserRewardCouponsCard({user,showToast}){
   </Card>;
 }
 
-function Perfil({user,setUser,onLogout,showToast,showPoints}){
+function Perfil({user,setUser,onLogout,showToast,showPoints,onNavigate}){
   const [tab,setTab]=useState("resumen");
   const [ownedCosmetics,setOwnedCosmetics]=useState(localOwnedCosmetics(user));
   const [privacy,setPrivacy]=useState(normalizePrivacy(user));
@@ -7339,7 +7401,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
 
       {tab==="roles"&&<AvatarLevelRolesPanel user={user}/>}
 
-      {tab==="logros"&&<ObjetivosTrofeos user={user} setUser={setUser} showToast={showToast} showPoints={showPoints}/>}
+      {tab==="logros"&&<ObjetivosTrofeos user={user} setUser={setUser} showToast={showToast} showPoints={showPoints} onNavigate={onNavigate}/>}
 
       <Btn full col="red" onClick={onLogout}>🚪 Cerrar sesión</Btn>
     </div>
@@ -11187,6 +11249,7 @@ function helperPageKey(page){
   if(page==="arcade"||page==="juegos"||page==="tops")return "arcade";
   if(page==="tienda")return "tienda";
   if(page==="perfil")return "perfil";
+  if(page==="misiones")return "misiones";
   if(page==="foro")return "foro";
   if(page==="feed")return "feed";
   if(page==="noticias")return "noticias";
@@ -11197,7 +11260,7 @@ function helperMood(page){
   if(page==="dashboard")return "welcome";
   if(page==="arcade"||page==="tops"||String(page).startsWith("game_"))return "arcade";
   if(page==="noticias"||page==="comunidad"||page==="feed"||page==="foro")return "noticias";
-  if(page==="perfil"||page==="cartera"||page==="carrito")return "success";
+  if(page==="perfil"||page==="cartera"||page==="carrito"||page==="misiones")return "success";
   if(page==="notificaciones")return "noticias";
   return "idle";
 }
@@ -11212,6 +11275,7 @@ function helperTitle(page){
   if(page==="arcade"||page==="juegos")return "Rasta Arcade";
   if(page==="tienda")return "Rasta en tienda";
   if(page==="perfil")return "Tu estilo, mi pana";
+  if(page==="misiones")return "Misiones del día";
   if(page==="cartera")return "Rasta cartera";
   if(page==="carrito")return "Rasta carrito";
   if(page==="notificaciones")return "Rasta campana";
@@ -11236,6 +11300,7 @@ function rastaPageHelpIntro(page){
     clientes:"Estás en Clientes. Aquí se revisa información de clientes y actividad.",
     usuarios:"Estás en Usuarios. Aquí el admin gestiona perfiles, roles y datos básicos.",
     perfil:"Estás en Perfil. Aquí editas avatar, privacidad, nombre y opciones de cuenta.",
+    misiones:"Estás en Misiones. Aquí ves objetivos diarios y semanales para ganar RP, RC y XP de forma controlada.",
     inventario:"Estás en Stock. Aquí se revisa inventario y productos.",
     caja:"Estás en Caja. Aquí se revisan ingresos, ventas y actividad económica.",
     ranking:"Estás en Ranking. Aquí se comparan puntos y progreso entre clientes.",
@@ -11297,6 +11362,7 @@ function rastaElementHelp(target,page){
   if(t.includes("fuente")||t.includes("leer fuente"))return "Abre la fuente original de la noticia fuera de la app.";
   if(t.includes("abrir debate"))return "Abre la conversación de esa noticia para poder leer o comentar.";
   if(t.includes("actualizar"))return "Actualiza los datos de esta sección para traer contenido o rankings más recientes.";
+  if(t.includes("misiones")||t.includes("objetivos"))return "Abre Misiones: objetivos diarios y semanales para ganar RP, RC y XP sin farmear sin límite.";
   if(t.includes("perfil"))return "Entra en tu perfil para editar avatar, privacidad, nombre y opciones de cuenta.";
   if(t.includes("comunidad"))return "Abre Comunidad: tablón, foro y actualidad.";
   if(t.includes("inicio"))return "Vuelve al inicio, donde se ve el resumen general de la app.";
@@ -11317,7 +11383,7 @@ function rastaElementHelp(target,page){
   return rastaPageHelpIntro(page);
 }
 
-function HelperMascot({page,settings=null}){
+function HelperMascot({page,settings=null,onOpenMissions=null}){
   const key=helperPageKey(page);
   const baseTips=HELP_TIPS[key]||HELP_TIPS.dashboard;
   const dailyTip=getDailyRastaTip(key);
@@ -11592,6 +11658,7 @@ function HelperMascot({page,settings=null}){
               <button onClick={toggleHelp} style={{border:"none",background:helpMode?"linear-gradient(180deg,#4F602D,#26331D)":"linear-gradient(180deg,#D4AF37,#A8662B)",color:helpMode?T.white:T.g900,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer",boxShadow:"0 6px 12px rgba(20,8,4,.16)"}}>
                 {helpMode?"✅ Ayuda ON":"🧭 Activar ayuda"}
               </button>
+              <button onClick={(e)=>{e.stopPropagation();setHelpMode(false);setOpen(false);onOpenMissions?.();playRastaVoice("happy");SFX.success();}} style={{border:"none",background:"linear-gradient(180deg,#26331D,#4F602D)",color:T.white,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer",boxShadow:"0 6px 12px rgba(20,8,4,.16)"}}>🎯 Misiones</button>
               {!helpMode&&<button onClick={rareToday} style={{border:"none",background:"linear-gradient(180deg,#24110A,#6E3518)",color:T.white,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer",boxShadow:"0 6px 12px rgba(20,8,4,.16)"}}>💡 Tip diario</button>}
               {helpMode&&<button onClick={(e)=>{e.stopPropagation();setContextTip(rastaPageHelpIntro(page));}} style={{border:`1px solid ${T.g200}`,background:"#fff7e2",color:T.g800,borderRadius:999,padding:"7px 11px",fontWeight:950,cursor:"pointer"}}>Esta página</button>}
             </div>
@@ -11678,6 +11745,7 @@ function pageTheme(page,communityTab,role){
   if(["clientes","inventario","caja","usuarios","gestion"].includes(key)) return PAGE_THEMES.admin;
   if(key==="tops") return PAGE_THEMES.ranking||PAGE_THEMES.juegos;
   if(key==="musica") return PAGE_THEMES.noticias||PAGE_THEMES.comunidad;
+  if(key==="misiones") return PAGE_THEMES.retos||PAGE_THEMES.dashboard;
   return PAGE_THEMES[key]||PAGE_THEMES[page]||PAGE_THEMES.dashboard;
 }
 
@@ -12384,8 +12452,8 @@ function AppCore(){
     citas:<Citas {...sp} onNavigate={navTo}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
-    tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión &gt; Ajustes."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión &gt; Ajustes."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTycoon={openTycoonPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,
-    ranking:<Ranking user={currentUser}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout}/>,
+    tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión &gt; Ajustes."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión &gt; Ajustes."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTycoon={openTycoonPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,misiones:<MisionesPage {...sp} onNavigate={navTo}/>,
+    ranking:<Ranking user={currentUser}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout} onNavigate={navTo}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
     cupones:<Cupones user={currentUser} showToast={showToast}/>,
@@ -12417,7 +12485,7 @@ function AppCore(){
       <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
         <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${clinicAccent}99,${clinicAccent2}77,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${clinicAccent}44`,opacity:.92}}/>
         {pages[ap]||pages["dashboard"]}
-        <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)} settings={appSettings}/>
+        <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)} settings={appSettings} onOpenMissions={()=>navTo("misiones")}/>
       </div>
       <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"var(--rc-card-strong)",borderTop:`2px solid ${clinicAccent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>{
