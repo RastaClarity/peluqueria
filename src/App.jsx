@@ -6884,15 +6884,18 @@ function PerfilNewsActivity({user}){
 
 // MISIONES Y TROFEOS
 const MISSION_DEFS=[
-  {key:"daily_arcade",period:"day",icon:"🎮",title:"Una partida al día",desc:"Juega y guarda una partida de Arcade hoy.",goal:1,rp:5,rc:50,xp:10,points:5,type:"gamesToday",action:"juegos",actionLabel:"Ir al Arcade"},
-  {key:"daily_gacha",period:"day",icon:"🎰",title:"Tirada Gacha",desc:"Haz al menos una tirada en el Gacha Barber hoy.",goal:1,rp:0,rc:35,xp:10,points:0,type:"gachaToday",action:"juegos",actionLabel:"Ir al Gacha"},
-  {key:"daily_news_comment",period:"day",icon:"💬",title:"Opina en Actualidad",desc:"Comenta una noticia hoy.",goal:1,rp:3,rc:0,xp:20,points:3,type:"commentsToday",action:"noticias",actionLabel:"Ir a Actualidad"},
-  {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy.",goal:1,rp:1,rc:0,xp:5,points:1,type:"likesToday",action:"noticias",actionLabel:"Ir a Actualidad"},
-  {key:"daily_tycoon",period:"day",icon:"🏪",title:"Turno Tycoon",desc:"Atiende clientes o guarda actividad del Tycoon hoy.",goal:1,rp:0,rc:80,xp:15,points:0,type:"tycoonToday",action:"juegos",actionLabel:"Ir al Tycoon"},
-  {key:"weekly_arcade_5",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 5 partidas esta semana.",goal:5,rp:8,rc:180,xp:50,points:8,type:"gamesWeek",action:"juegos",actionLabel:"Ir al Arcade"},
-  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana.",goal:5,rp:8,rc:0,xp:75,points:8,type:"commentsWeek",action:"noticias",actionLabel:"Ir a Actualidad"},
-  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana.",goal:3,rp:6,rc:120,xp:40,points:6,type:"mixedWeek",action:"dashboard",actionLabel:"Ver Inicio"},
-  {key:"weekly_tycoon",period:"week",icon:"💈",title:"Peluquería activa",desc:"Juega o guarda actividad del Tycoon 3 veces esta semana.",goal:3,rp:5,rc:250,xp:60,points:5,type:"tycoonWeek",action:"juegos",actionLabel:"Ir al Tycoon"},
+  // Economía austera 2.9.6h:
+  // Las misiones sólo empujan al usuario a usar la app.
+  // No deben ser la fuente principal de RC ni pueden imprimir RP sin control.
+  {key:"daily_arcade",period:"day",icon:"🎮",title:"Una partida al día",desc:"Juega y guarda una partida de Arcade hoy. Premio pequeño para mantener el hábito.",goal:1,rp:2,rc:3,xp:5,points:2,type:"gamesToday",action:"juegos",actionLabel:"Ir al Arcade"},
+  {key:"daily_gacha",period:"day",icon:"🎰",title:"Tirada Gacha",desc:"Haz una tirada en el Gacha Barber hoy. No da RP, sólo una ayuda pequeña.",goal:1,rp:0,rc:1,xp:3,points:0,type:"gachaToday",action:"juegos",actionLabel:"Ir al Gacha"},
+  {key:"daily_news_comment",period:"day",icon:"💬",title:"Opina en Actualidad",desc:"Comenta una noticia hoy. Participar suma, pero sin regalar economía.",goal:1,rp:1,rc:0,xp:5,points:1,type:"commentsToday",action:"noticias",actionLabel:"Ir a Actualidad"},
+  {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy. Premio simbólico de XP.",goal:1,rp:0,rc:0,xp:2,points:0,type:"likesToday",action:"noticias",actionLabel:"Ir a Actualidad"},
+  {key:"daily_tycoon",period:"day",icon:"🏪",title:"Turno Tycoon",desc:"Atiende clientes o guarda actividad del Tycoon hoy. El RC fuerte lo genera el propio Tycoon, no la misión.",goal:1,rp:0,rc:3,xp:5,points:0,type:"tycoonToday",action:"juegos",actionLabel:"Ir al Tycoon"},
+  {key:"weekly_arcade_5",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 5 partidas esta semana. Recompensa semanal moderada.",goal:5,rp:4,rc:10,xp:20,points:4,type:"gamesWeek",action:"juegos",actionLabel:"Ir al Arcade"},
+  {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana. Premio centrado en XP.",goal:5,rp:3,rc:0,xp:25,points:3,type:"commentsWeek",action:"noticias",actionLabel:"Ir a Actualidad"},
+  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana.",goal:3,rp:3,rc:5,xp:15,points:3,type:"mixedWeek",action:"dashboard",actionLabel:"Ver Inicio"},
+  {key:"weekly_tycoon",period:"week",icon:"💈",title:"Peluquería activa",desc:"Juega o guarda actividad del Tycoon 3 veces esta semana. Bonus pequeño porque el Tycoon ya genera RC.",goal:3,rp:2,rc:10,xp:20,points:2,type:"tycoonWeek",action:"juegos",actionLabel:"Ir al Tycoon"},
 ];
 function missionRewards(m){
   const parts=[];
@@ -7055,7 +7058,7 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints,onNavigate=null}){
 
 function MisionesPage({user,setUser,showToast,showPoints,onNavigate}){
   return <div>
-    <SectionHeader icon="🎯" title="Misiones" sub="Objetivos diarios y semanales para ganar RP, RC y XP sin romper la economía."/>
+    <SectionHeader icon="🎯" title="Misiones" sub="Objetivos diarios y semanales con recompensas pequeñas. Los RP y RC se mantienen controlados para no romper la economía."/>
     <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)",border:`2px solid ${T.g300}`}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
         <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>RP</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>Tienda y cupones</div></div>
