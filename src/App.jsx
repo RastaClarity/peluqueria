@@ -117,6 +117,78 @@ function avatarLevelName(level){
   if(l>=5)return "Aprendiz Rasta";
   return "Cliente Nuevo";
 }
+
+function avatarLevelXPRequired(level){
+  const l=Math.max(1,Number(level)||1);
+  return Math.round(Math.pow(l-1,2)*120);
+}
+function avatarLevelProgress(xp){
+  const clean=Math.max(0,Number(xp)||0);
+  const level=avatarLevelFromXP(clean);
+  const current=avatarLevelXPRequired(level);
+  const next=avatarLevelXPRequired(level+1);
+  const span=Math.max(1,next-current);
+  const pct=Math.max(0,Math.min(100,Math.round(((clean-current)/span)*100)));
+  return {level,current,next,pct,remaining:Math.max(0,next-clean)};
+}
+const AVATAR_ROLE_TREE=[
+  {level:1,title:"Cliente Nuevo",icon:"🌱",skill:"Acceso básico a perfil, rankings y tienda."},
+  {level:5,title:"Aprendiz Rasta",icon:"🪮",skill:"Desbloquea identidad de jugador y primeras insignias."},
+  {level:10,title:"Barbero Callejero",icon:"✂️",skill:"Rango visible fuerte para rankings, foro y comunidad."},
+  {level:20,title:"Maestro del Fade",icon:"🔥",skill:"Rango avanzado para eventos, temporadas y retos premium."},
+  {level:30,title:"Leyenda Rasta Cuts",icon:"👑",skill:"Rango legendario reservado para los usuarios más activos."},
+];
+function avatarUnlockedRoles(level){
+  const l=Math.max(1,Number(level)||1);
+  return AVATAR_ROLE_TREE.filter(r=>l>=r.level);
+}
+function AvatarLevelRolesPanel({user,compact=false}){
+  const xp=userXP(user);
+  const progress=avatarLevelProgress(xp);
+  const lvl=Number(user?.avatar_level||progress.level);
+  const roleName=avatarLevelName(lvl);
+  const unlocked=avatarUnlockedRoles(lvl);
+  const nextRole=AVATAR_ROLE_TREE.find(r=>r.level>lvl)||null;
+  return <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)",border:`2px solid ${T.g300}`}}>
+    <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",marginBottom:12}}>
+      <div>
+        <div style={{fontWeight:950,color:T.g800,fontSize:"1.02rem"}}>⭐ Nivel de avatar y roles</div>
+        <div style={{fontSize:".78rem",fontWeight:820,color:T.textSub,lineHeight:1.35}}>La XP no se gasta. Sube tu nivel jugando, completando retos y usando el Tycoon.</div>
+      </div>
+      <div style={{textAlign:"right"}}>
+        <Badge col="gold">Nivel {lvl}</Badge>
+        <div style={{fontSize:".72rem",fontWeight:900,color:T.g700,marginTop:6}}>{roleName}</div>
+      </div>
+    </div>
+    <div style={{background:"rgba(75,48,27,.14)",height:12,borderRadius:999,overflow:"hidden",border:`1px solid ${T.g200}`}}>
+      <div style={{height:"100%",width:`${progress.pct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F,#A72822)",borderRadius:999,transition:"width .45s ease"}}/>
+    </div>
+    <div style={{display:"flex",justifyContent:"space-between",gap:10,marginTop:7,fontSize:".74rem",fontWeight:850,color:T.textSub}}>
+      <span>{xp} XP</span>
+      <span>{progress.remaining} XP para nivel {lvl+1}</span>
+    </div>
+    {!compact&&<>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:8,marginTop:12}}>
+        {AVATAR_ROLE_TREE.map(r=>{
+          const ok=lvl>=r.level;
+          return <div key={r.level} style={{border:`2px solid ${ok?T.gold:T.g200}`,background:ok?"linear-gradient(180deg,#FFF8E1,#F3E2B5)":"rgba(255,244,214,.42)",borderRadius:16,padding:10,opacity:ok?1:.62}}>
+            <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}>
+              <div style={{fontSize:"1.35rem"}}>{ok?r.icon:"🔒"}</div>
+              <Badge col={ok?"gold":"blue"}>Nv. {r.level}</Badge>
+            </div>
+            <div style={{fontWeight:950,color:T.g800,marginTop:7,fontSize:".86rem"}}>{r.title}</div>
+            <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub,lineHeight:1.32,marginTop:4}}>{ok?r.skill:`Se desbloquea al llegar al nivel ${r.level}.`}</div>
+          </div>;
+        })}
+      </div>
+      <div style={{marginTop:12,background:"rgba(255,244,214,.60)",border:`1px solid ${T.g200}`,borderRadius:16,padding:11}}>
+        <div style={{fontWeight:950,color:T.g800}}>🎮 Cómo subir más rápido</div>
+        <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:4}}>Gacha da XP casi siempre, los juegos dan XP por actividad y el Tycoon puede alimentar la progresión. Los RP se reservan para premios importantes y los RC para jugar/mejorar.</div>
+        {nextRole&&<div style={{fontSize:".78rem",fontWeight:900,color:T.g700,marginTop:8}}>Siguiente rango: {nextRole.icon} {nextRole.title} en nivel {nextRole.level}</div>}
+      </div>
+    </>}
+  </Card>;
+}
 function formatCurrencyBadge(user){return `💎 ${userRP(user)} RP · 🪙 ${userRC(user)} RC · ⭐ Nv. ${Number(user?.avatar_level||avatarLevelFromXP(userXP(user)))}`;}
 
 function PublicProfileModal({profile,onClose}){
@@ -7108,6 +7180,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
     {id:"resumen",icon:"👤",label:"Resumen"},
     {id:"editar",icon:"🎨",label:"Editor"},
     {id:"camino",icon:"🎁",label:"Camino"},
+    {id:"roles",icon:"⭐",label:"Roles"},
     {id:"logros",icon:"🏆",label:"Logros"},
   ];
   return(
@@ -7127,7 +7200,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
         </div>
       </Card>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
+      <div style={{display:"grid",gridTemplateColumns:`repeat(${tabs.length},1fr)`,gap:8,marginBottom:12}}>
         {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${tab===t.id?T.gold:T.g300}`,background:tab===t.id?T.gradGold:"rgba(255,244,214,.82)",color:tab===t.id?T.g900:T.g700,borderRadius:16,padding:"9px 4px",fontWeight:950,cursor:"pointer",boxShadow:tab===t.id?"0 10px 22px rgba(212,175,55,.24)":"0 5px 12px rgba(20,8,4,.1)"}}>
           <div style={{fontSize:"1.1rem",lineHeight:1}}>{t.icon}</div>
           <div style={{fontSize:".68rem",marginTop:3}}>{t.label}</div>
@@ -7136,12 +7209,14 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
 
       {tab==="resumen"&&<>
         <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
-            <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>{user.puntos||0}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div></div>
-            <div><div style={{fontSize:"1.35rem"}}>🏆</div><div style={{fontWeight:950,color:T.g800}}>{nivel}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>nivel</div></div>
-            <div><div style={{fontSize:"1.35rem"}}>🎁</div><div style={{fontWeight:950,color:T.g800}}>Camino</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>recompensas</div></div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,textAlign:"center"}}>
+            <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>{user.puntos||0}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>RP</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>🪙</div><div style={{fontWeight:950,color:T.g800}}>{user.rc||0}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>RC</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>⭐</div><div style={{fontWeight:950,color:T.g800}}>{userXP(user)}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>XP</div></div>
+            <div><div style={{fontSize:"1.35rem"}}>🏆</div><div style={{fontWeight:950,color:T.g800}}>Nv. {user?.avatar_level||avatarLevelFromXP(userXP(user))}</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>nivel</div></div>
           </div>
         </Card>
+        <AvatarLevelRolesPanel user={user} compact/>
         <UserRewardCouponsCard user={user} showToast={showToast}/>
         <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${privacy.modo_incognito?T.blue:T.g300}`}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:10}}>
@@ -7173,6 +7248,8 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
       </Card>}
 
       {tab==="camino"&&<AvatarRewardPath user={user} setUser={setUser} currentConfig={cfg} onApply={(newCfg)=>{const clean=normalizeAvatarV3(newCfg,user.id||user.avatar||0);setForm(f=>({...f,avatarConfig:clean,avatar_config:clean}));setOwnedCosmetics(localOwnedCosmetics(user));}} showToast={showToast} showPoints={showPoints}/>}
+
+      {tab==="roles"&&<AvatarLevelRolesPanel user={user}/>}
 
       {tab==="logros"&&<ObjetivosTrofeos user={user} setUser={setUser} showToast={showToast} showPoints={showPoints}/>}
 
