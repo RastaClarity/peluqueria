@@ -256,7 +256,7 @@ function AvatarLevelRolesPanel({user,compact=false}){
       <AvatarBadgesPanel user={user}/>
       <div style={{marginTop:12,background:"rgba(255,244,214,.60)",border:`1px solid ${T.g200}`,borderRadius:16,padding:11}}>
         <div style={{fontWeight:950,color:T.g800}}>🎮 Cómo subir más rápido</div>
-        <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:4}}>Gacha da XP casi siempre, los juegos dan XP por actividad y el Tycoon puede alimentar la progresión. Los RP se reservan para premios importantes y los RC para jugar/mejorar.</div>
+        <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:4}}>Gacha da sobre todo azar, RC y XP pequeños. Los juegos/misiones dan RP de forma controlada y el Tycoon alimenta la progresión con RC.</div>
         {nextRole&&<div style={{fontSize:".78rem",fontWeight:900,color:T.g700,marginTop:8}}>Siguiente rango: {nextRole.icon} {nextRole.title} en nivel {nextRole.level}</div>}
       </div>
     </>}
@@ -4758,7 +4758,7 @@ function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${T
 const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gacha:0};
 const ARCADE_GAMES=[
   {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda con los RC globales de Rasta Cuts",pts:0},
-  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Gacha equilibrado: RC, XP, tiradas extra y RP raro",pts:GAME_DAILY_REWARDS.gacha},
+  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Gacha seguro: no reparte RP, sólo RC, XP y tiradas extra",pts:GAME_DAILY_REWARDS.gacha},
   {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Llega a 100 puntos y termina",pts:GAME_DAILY_REWARDS.stitch},
   {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Peine protector, bloques y agujeros",pts:GAME_DAILY_REWARDS.runner},
   {id:"jump",icon:"🌤️",title:"Rasta Jump",desc:"Recoge utensilios y evita tijeras",pts:GAME_DAILY_REWARDS.jump},
@@ -5406,15 +5406,15 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){
   };
   const normal=['scissors','comb','hook','band','coin','star','clover'];
   const PRIZE_TABLE=[
-    {id:'xp_base',chance:'45%',label:'Sin premio grande',desc:'+2 XP por participar',key:null,rp:0,rc:0,xp:2,rarity:'base'},
-    {id:'rc_small',chance:'22%',label:'RC pequeño',desc:'+15 RC y +5 XP',key:'coin',rp:0,rc:15,xp:5,rarity:'comun'},
-    {id:'rc_medium',chance:'14%',label:'RC medio',desc:'+30 RC y +8 XP',key:'scissors',rp:0,rc:30,xp:8,rarity:'comun'},
-    {id:'rc_good',chance:'8%',label:'RC bueno',desc:'+60 RC y +12 XP',key:'comb',rp:0,rc:60,xp:12,rarity:'raro'},
-    {id:'rc_big',chance:'5%',label:'RC grande',desc:'+100 RC y +20 XP',key:'band',rp:0,rc:100,xp:20,rarity:'raro'},
-    {id:'extra_pulls',chance:'3%',label:'Tiradas extra',desc:'+3 tiradas extra y +25 XP',key:'hook',rp:0,rc:0,xp:25,extraPulls:3,rarity:'epico'},
-    {id:'gem_prize',chance:'2%',label:'Cristales',desc:'+200 RC y +40 XP',key:'gem',rp:0,rc:200,xp:40,rarity:'epico'},
-    {id:'ticket_gold',chance:'0,8%',label:'Ticket dorado',desc:'+2 RP, +300 RC y +70 XP',key:'ticket',rp:2,rc:300,xp:70,rarity:'legendario'},
-    {id:'legendary',chance:'0,2%',label:'Premio legendario',desc:'+10 RP, +800 RC y +120 XP',key:'ticket',rp:10,rc:800,xp:120,extraPulls:10,rarity:'legendario'}
+    {id:'empty',chance:'52%',label:'Sin premio',desc:'No sale premio. El Gacha es azar y no imprime RP.',key:null,rp:0,rc:0,xp:0,rarity:'base'},
+    {id:'xp_small',chance:'14%',label:'XP pequeña',desc:'+3 XP',key:'star',rp:0,rc:0,xp:3,rarity:'comun'},
+    {id:'rc_small',chance:'13%',label:'RC pequeño',desc:'+5 RC',key:'coin',rp:0,rc:5,xp:0,rarity:'comun'},
+    {id:'xp_medium',chance:'8%',label:'XP media',desc:'+8 XP',key:'clover',rp:0,rc:0,xp:8,rarity:'comun'},
+    {id:'rc_medium',chance:'6%',label:'RC medio',desc:'+10 RC',key:'scissors',rp:0,rc:10,xp:0,rarity:'comun'},
+    {id:'rc_xp_mix',chance:'4%',label:'Mezcla arcade',desc:'+10 RC y +5 XP',key:'comb',rp:0,rc:10,xp:5,rarity:'raro'},
+    {id:'extra_pull',chance:'2%',label:'Tirada extra',desc:'+1 tirada extra',key:'hook',rp:0,rc:0,xp:0,extraPulls:1,rarity:'raro'},
+    {id:'rc_good',chance:'0,8%',label:'RC bueno',desc:'+25 RC y +10 XP',key:'gem',rp:0,rc:25,xp:10,rarity:'epico'},
+    {id:'extra_pack',chance:'0,2%',label:'Pack de tiradas',desc:'+3 tiradas extra y +20 XP',key:'ticket',rp:0,rc:0,xp:20,extraPulls:3,rarity:'legendario'}
   ];
   const [reels,setReels]=useState(['scissors','comb','hook']);
   const [spinning,setSpinning]=useState(false);
@@ -5443,15 +5443,15 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){
 
   function pickPrize(){
     const r=Math.random()*100;
-    if(r<45)return {...PRIZE_TABLE[0],spinLabel:'Participación: +2 XP'};
-    if(r<67)return {...PRIZE_TABLE[1],spinLabel:'Premio común: +15 RC'};
-    if(r<81)return {...PRIZE_TABLE[2],spinLabel:'Premio común: +30 RC'};
-    if(r<89)return {...PRIZE_TABLE[3],spinLabel:'Premio raro: +60 RC'};
-    if(r<94)return {...PRIZE_TABLE[4],spinLabel:'Premio raro: +100 RC'};
-    if(r<97)return {...PRIZE_TABLE[5],spinLabel:'Premio épico: +3 tiradas'};
-    if(r<99)return {...PRIZE_TABLE[6],spinLabel:'Premio épico: cristales'};
-    if(r<99.8)return {...PRIZE_TABLE[7],spinLabel:'Premio legendario: ticket dorado'};
-    return {...PRIZE_TABLE[8],spinLabel:'PREMIO LEGENDARIO RASTA'};
+    if(r<52)return {...PRIZE_TABLE[0],spinLabel:'Sin premio'};
+    if(r<66)return {...PRIZE_TABLE[1],spinLabel:'Premio común: +3 XP'};
+    if(r<79)return {...PRIZE_TABLE[2],spinLabel:'Premio común: +5 RC'};
+    if(r<87)return {...PRIZE_TABLE[3],spinLabel:'Premio común: +8 XP'};
+    if(r<93)return {...PRIZE_TABLE[4],spinLabel:'Premio común: +10 RC'};
+    if(r<97)return {...PRIZE_TABLE[5],spinLabel:'Premio raro: +10 RC y +5 XP'};
+    if(r<99)return {...PRIZE_TABLE[6],spinLabel:'Premio raro: +1 tirada extra'};
+    if(r<99.8)return {...PRIZE_TABLE[7],spinLabel:'Premio épico: +25 RC y +10 XP'};
+    return {...PRIZE_TABLE[8],spinLabel:'Premio legendario: +3 tiradas extra'};
   }
 
   function randomReels(){return [0,1,2].map(()=>normal[Math.floor(Math.random()*normal.length)]);}
@@ -5518,7 +5518,7 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){
 
   return <Card style={{background:'linear-gradient(180deg,#271006,#5C3317 55%,#D4AF37)',border:`2px solid ${T.gold}`,color:T.white}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:12}}>
-      <div><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><div style={{fontSize:'.72rem',fontWeight:850,opacity:.82,marginTop:2}}>RP raro · RC frecuente · XP siempre útil</div></div>
+      <div><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><div style={{fontSize:'.72rem',fontWeight:850,opacity:.82,marginTop:2}}>No da RP · RC/XP bajos · azar real</div></div>
       <Badge col={pullsLeft>0?'gold':'red'}>{pullsLeft} tiradas</Badge>
     </div>
 
@@ -5537,7 +5537,7 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){
     {result&&<Card style={{background:'rgba(255,248,230,.92)',border:`2px solid ${result.rarity==='legendario'?T.gold:result.rarity==='epico'?T.pink:T.g300}`,marginBottom:12}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}><div style={{fontWeight:950,color:T.g800}}>{result.spinLabel||result.label}</div><Badge col={rarityBadgeColor(result.rarity)}>{result.rarity||'base'}</Badge></div>
       <div style={{fontSize:'.82rem',fontWeight:820,color:T.textSub,marginTop:5,lineHeight:1.38}}>
-        {(result.rp||result.rc||result.xp||result.extraPulls)>0?`Premio: ${result.rp?`+${result.rp} RP `:''}${result.rc?`+${result.rc} RC `:''}${result.xp?`+${result.xp} XP `:''}${result.extraPulls?`+${result.extraPulls} tiradas`:''}`:pullsLeft<=0?'Sin tiradas. Compra vales en Tienda juegos o usa el botón de 10 tiradas por 5 RP.':'No salió premio grande, pero el Gacha ya está equilibrado para dar XP de participación.'}
+        {(result.rp||result.rc||result.xp||result.extraPulls)>0?`Premio: ${result.rc?`+${result.rc} RC `:''}${result.xp?`+${result.xp} XP `:''}${result.extraPulls?`+${result.extraPulls} tiradas`:''}`:pullsLeft<=0?'Sin tiradas. Compra vales en Tienda juegos o usa el botón de 10 tiradas por 5 RP.':'No salió premio. Es normal: el Gacha no reparte RP y protege la economía.'}
       </div>
       {(result.rp||result.rc||result.xp||result.extraPulls)>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar premio'}</Btn></div>}
     </Card>}
@@ -5548,7 +5548,7 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){
     </div>
 
     <div style={{marginTop:10,display:'flex',gap:8,flexWrap:'wrap',alignItems:'center',justifyContent:'space-between'}}>
-      <div style={{fontSize:'.72rem',fontWeight:820,opacity:.82,lineHeight:1.35}}>Regla: RC y XP son frecuentes; RP sólo aparece en premios raros para no romper la economía.</div>
+      <div style={{fontSize:'.72rem',fontWeight:820,opacity:.82,lineHeight:1.35}}>Regla: el Gacha no reparte RP. Lo normal es no ganar nada o recibir RC/XP pequeño. Los RP sólo se consiguen por misiones, acciones limitadas y recompensas controladas.</div>
       <button onClick={()=>setShowOdds(v=>!v)} style={{border:'1px solid rgba(255,244,214,.38)',background:'rgba(255,248,230,.18)',color:T.white,borderRadius:999,padding:'7px 10px',fontWeight:950,cursor:'pointer'}}>{showOdds?'Ocultar':'Ver'} probabilidades</button>
     </div>
 
@@ -5611,7 +5611,7 @@ function ArcadeInfoPanel({onOpenGacha}){
         <div style={{display:"grid",gap:8,fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.42}}>
           <div>Los récords sirven para competir y volver a intentarlo. Los puntos reales, en cambio, se cobran de forma limitada para que la tienda y los desbloqueos sigan teniendo valor.</div>
           <div>Cada juego puede entregar puntos una vez al día. Después puedes rejugar para mejorar marca, pero no para farmear puntos sin límite.</div>
-          <div>El Gacha Barber reparte sobre todo RC y XP. Los RP quedan reservados para premios raros para que la economía no se rompa.</div>
+          <div>El Gacha Barber no reparte RP. Sirve para azar suave, RC, XP y alguna tirada extra sin romper la economía.</div>
         </div>
         <div style={{marginTop:11,display:"flex",justifyContent:"flex-start"}}>
           <Btn small col="gold" onClick={onOpenGacha}>🎰 Abrir Gacha Barber</Btn>
@@ -6304,7 +6304,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
           </div>
           <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:820,lineHeight:1.35,marginTop:3}}>{g.desc}</div>
           <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:7}}>
-            {isTycoon?<Badge col="blue">🪙 usa RC global</Badge>:isGacha?<Badge col="gold">🎰 RC + XP + premios</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP/día</Badge>}
+            {isTycoon?<Badge col="blue">🪙 usa RC global</Badge>:isGacha?<Badge col="gold">🎰 RC + XP · sin RP</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP/día</Badge>}
             {isTycoon?<Badge col="green">⏱️ progreso real</Badge>:<Badge col="blue">🏆 récord {best}</Badge>}
           </div>
         </div>
@@ -11511,7 +11511,7 @@ const RASTA_DAILY_FUN_TIPS=[
   "Un staff no debería tener que tocar permisos para hacer su trabajo.",
   "El cliente no debe ver paneles internos ni información de gestión.",
   "Las recompensas pequeñas mantienen movimiento si están bien equilibradas.",
-  "El Gacha tiene sentido si es divertido, limitado y no rompe la economía.",
+  "El Gacha tiene sentido si es divertido, limitado y no genera RP por tiradas.",
   "Los tops por juego motivan más cuando cada juego tiene identidad propia.",
   "Una ficha de cliente debe servir para recordar historial, no para cambiar roles."
 ];
@@ -12130,7 +12130,7 @@ function WalletPanel({show,onClose,user}){
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>Límite diario normal RP</span><span>{todayEarned}/{dailyMax} RP</span></div>
         <div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F)",borderRadius:999}}/></div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 RP/día. El Gacha reparte sobre todo RC y XP; los descuentos y cupones usan RP.</div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 RP/día. El Gacha no reparte RP; da RC, XP o tiradas extra. Los descuentos, cupones y vales usan RP.</div>
       </Card>
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{fontWeight:950,color:T.g800}}>Economías separadas</div>
