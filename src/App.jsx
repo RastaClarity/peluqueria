@@ -4448,7 +4448,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
       <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>RastaPoints</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0} RP</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los fondos, estilos y cupones están en Perfil &gt; Camino. Aquí sólo van vales de juegos y productos reales.</div></div>
+          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>RastaPoints</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0} RP</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los fondos, estilos y cupones están en Perfil &gt; Camino. Aquí van vales de juegos y productos reales. Los RC se usan en Tycoon y progresión de juegos.</div></div>
           <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
@@ -4563,7 +4563,7 @@ function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${ui
 function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
 const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gacha:0};
 const ARCADE_GAMES=[
-  {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda en tiempo real con moneda RC propia",pts:0},
+  {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda con los RC globales de Rasta Cuts",pts:0},
   {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de RC, XP y premios: 50 tiradas al día",pts:GAME_DAILY_REWARDS.gacha},
   {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Llega a 100 puntos y termina",pts:GAME_DAILY_REWARDS.stitch},
   {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Peine protector, bloques y agujeros",pts:GAME_DAILY_REWARDS.runner},
@@ -5527,11 +5527,16 @@ function tycoonEconomy(state){
   const netHour=Math.max(0,grossHour-upkeepHour);
   return {hall,salon,storage,bathroom,chill,terrace,totalStock,capacity,stockRatio,servicePower,clientsHour,rcClient,grossHour,upkeepHour,netHour};
 }
-function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
+function RastaCutsTycoonGame({user,setUser,showToast,standalone=false,onExit}){
   const [state,setState]=useState(()=>loadTycoonState(user));
   const [tab,setTab]=useState("mapa");
   const [inspect,setInspect]=useState(null);
   const [nowTick,setNowTick]=useState(()=>Date.now());
+  const tycoonRcSyncRef=useRef(null);
+  const tycoonRcPendingDeltaRef=useRef(0);
+  const tycoonRcLatestBalanceRef=useRef(null);
+  const tycoonRcCommitTimerRef=useRef(null);
+  const tycoonRcHydratingRef=useRef(false);
   const economy=useMemo(()=>tycoonEconomy(state),[state]);
   const selectedId=TYCOON_ROOM_DEFS[state.selectedRoom]?state.selectedRoom:"salon";
   const selectedRoom=state.rooms?.[selectedId]||tycoonBaseRoom(selectedId);
@@ -5541,6 +5546,48 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
   const maxQueue=1+Math.floor((state.rooms?.hall?.level||1)/4);
   const activeQueue=(state.buildQueue||[]).filter(t=>Number(t.endAt||0)>Date.now());
   const queueFull=activeQueue.length>=maxQueue;
+
+  async function commitTycoonRcBalance(balance,delta,reason="Movimiento Tycoon"){
+    if(!user?.id)return;
+    const cleanBalance=Math.max(0,Math.round(Number(balance)||0));
+    const cleanDelta=Math.round(Number(delta)||0);
+    try{
+      await dbPatch("usuarios",`?id=eq.${user.id}`,{rc:cleanBalance});
+      if(cleanDelta!==0){
+        await dbPost("economy_movements",{
+          usuario_id:String(user.id),
+          usuario_email:user.email||null,
+          usuario_nombre:user.nombre||null,
+          currency:"rc",
+          amount:cleanDelta,
+          type:cleanDelta>0?"earn":"spend",
+          reason,
+          source:"tycoon",
+          balance:cleanBalance,
+          meta:{game:"tycoon",local_save:true}
+        });
+      }
+    }catch(e){
+      console.warn("No se pudo sincronizar RC del Tycoon",e);
+    }
+  }
+
+  function queueTycoonRcSync(balance,delta,reason){
+    if(!user?.id)return;
+    const cleanBalance=Math.max(0,Math.round(Number(balance)||0));
+    const cleanDelta=Math.round(Number(delta)||0);
+    tycoonRcPendingDeltaRef.current+=cleanDelta;
+    tycoonRcLatestBalanceRef.current=cleanBalance;
+    setUser?.(u=>u?({...u,rc:cleanBalance}):u);
+    if(tycoonRcCommitTimerRef.current)clearTimeout(tycoonRcCommitTimerRef.current);
+    tycoonRcCommitTimerRef.current=setTimeout(()=>{
+      const pending=tycoonRcPendingDeltaRef.current;
+      const latest=tycoonRcLatestBalanceRef.current;
+      tycoonRcPendingDeltaRef.current=0;
+      commitTycoonRcBalance(latest,pending,reason|| (pending>=0?"Ingresos Tycoon":"Gasto Tycoon"));
+    },650);
+  }
+
   function pushLog(prev,msg){return [{t:Date.now(),msg},...(prev.log||[])].slice(0,26);}
   function mutate(fn){
     setState(prev=>{
@@ -5550,6 +5597,46 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
       return next;
     });
   }
+
+  useEffect(()=>{
+    if(!user?.id)return;
+    setState(prev=>{
+      const globalRc=userRC(user);
+      const localRc=Math.max(0,Math.round(Number(prev.rc)||0));
+      const targetRc=Math.max(localRc,globalRc);
+      tycoonRcSyncRef.current=targetRc;
+      if(localRc>globalRc){
+        setUser?.(u=>u?({...u,rc:localRc}):u);
+        commitTycoonRcBalance(localRc,localRc-globalRc,"Migración de RC del Tycoon");
+      }
+      if(globalRc>localRc){
+        tycoonRcHydratingRef.current=true;
+        const next={...prev,rc:globalRc,lifetimeRC:Math.max(Number(prev.lifetimeRC||0),globalRc),log:pushLog(prev,"El Tycoon se sincronizó con tus RC globales.")};
+        saveTycoonState(user,next);
+        return next;
+      }
+      return prev;
+    });
+  },[user?.id]);
+
+  useEffect(()=>{
+    if(!user?.id)return;
+    const current=Math.max(0,Math.round(Number(state.rc)||0));
+    if(tycoonRcSyncRef.current===null){tycoonRcSyncRef.current=current;return;}
+    const prev=tycoonRcSyncRef.current;
+    if(tycoonRcHydratingRef.current){
+      if(current!==prev)return;
+      tycoonRcHydratingRef.current=false;
+      return;
+    }
+    if(current===prev)return;
+    const delta=current-prev;
+    tycoonRcSyncRef.current=current;
+    queueTycoonRcSync(current,delta,delta>=0?"Ingresos Tycoon":"Gasto Tycoon");
+  },[state.rc,user?.id]);
+
+  useEffect(()=>()=>{if(tycoonRcCommitTimerRef.current)clearTimeout(tycoonRcCommitTimerRef.current);},[]);
+
   useEffect(()=>{saveTycoonState(user,state);},[state,user?.id]);
   useEffect(()=>{const clock=setInterval(()=>setNowTick(Date.now()),1000);return()=>clearInterval(clock);},[]);
   useEffect(()=>{
@@ -5767,7 +5854,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     </div>;
   }
   const guideTexts=[
-    "Esto no es el Arcade normal: aquí construyes el estudio con moneda propia RC. No toca los puntos reales de la web.",
+    "Esto no es el Arcade normal: aquí construyes el estudio usando tus RC globales. No toca tus RP valiosos.",
     "El mapa es la vista tipo Travian: pulsa un edificio, entra en su sala y usa los objetos clicables.",
     "La peluquería aumenta lo que cobras por cliente. El hall atrae gente. El almacén evita que se pare la economía.",
     "Cada mejora entra en Obras y tarda tiempo real. Más adelante se puede hacer que Supabase guarde esto online.",
@@ -5805,7 +5892,7 @@ function RastaCutsTycoonGame({user,showToast,standalone=false,onExit}){
     {tab==="stock"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:8}}>📦 Almacén visual</div><div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,marginBottom:12}}>Capacidad según almacén: {economy.capacity}. Si el stock cae, baja la entrada de clientes.</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:8}}>{Object.entries(state.stock||{}).map(([k,v])=><MiniStat key={k} icon={k==="wax"?"🧴":k==="shampoo"?"🫧":k==="towels"?"🧺":"🥤"} label={{wax:"Cera",shampoo:"Champú",towels:"Toallas",drinks:"Bebidas"}[k]||k} value={Math.floor(v)}/>)}</div><div style={{marginTop:12,display:"flex",gap:8,flexWrap:"wrap"}}><Btn col="gold" onClick={restock}>Reponer stock</Btn><Btn col="ghost" onClick={()=>enterRoom("storage")}>Entrar al almacén</Btn></div></Card>}
     {tab==="equipo"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:10}}>👥 Equipo y decoración</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))",gap:8,marginBottom:12}}><MiniStat icon="💈" label="Barberos" value={state.staff?.barbers||0}/><MiniStat icon="🧹" label="Ayudantes" value={state.staff?.assistants||0}/><MiniStat icon="🧾" label="Caja" value={state.staff?.cashiers||0}/><MiniStat icon="⚙️" label="Servicio" value={economy.servicePower.toFixed(1)}/></div><div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}><Btn col="green" onClick={()=>hire("barbers")}>Barbero 390 RC</Btn><Btn col="green" onClick={()=>hire("assistants")}>Ayudante 210 RC</Btn><Btn col="ghost" onClick={()=>hire("cashiers")}>Caja 280 RC</Btn></div><div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Hall / escaparate</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(125px,1fr))",gap:8}}><Btn small col="ghost" onClick={()=>buyDecor("plants")}>🌿 Planta 90</Btn><Btn small col="ghost" onClick={()=>buyDecor("posters")}>🖼️ Póster 120</Btn><Btn small col="ghost" onClick={()=>buyDecor("lights")}>💡 Luces 180</Btn><Btn small col="ghost" onClick={()=>buyDecor("vitrine")}>🧴 Vitrina 260</Btn></div></Card>}
     {tab==="obras"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}><div><div style={{fontWeight:950,color:T.g800}}>🔨 Cola de obras</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>Máximo actual: {maxQueue}. Sube el Hall para mejorar la gestión.</div></div><Badge col="gold">{activeQueue.length}/{maxQueue}</Badge></div>{activeQueue.length===0?<EmptyState icon="🔨" title="No hay obras en marcha" sub="Entra en una sala o usa el mapa para iniciar mejoras."/>:<div style={{display:"grid",gap:9}}>{activeQueue.map(t=>{const total=Math.max(1,Number(t.endAt)-Number(t.startedAt));const left=Math.max(0,Number(t.endAt)-nowTick);const pct=clampNum(100-(left/total*100),0,100);return <div key={t.id} style={{background:"rgba(255,244,214,.65)",border:`1.5px solid ${T.g300}`,borderRadius:16,padding:12}}><div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}><b style={{color:T.g800}}>{t.label}</b><Badge col="gold">{tycoonFormatTime(left)}</Badge></div><div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden",marginTop:9}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#263F4D,#B99A45)",borderRadius:999}}/></div></div>;})}</div>}</Card>}
-    {tab==="guia"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:12}}><div style={{fontSize:"2.2rem"}}>🧔🏽‍♂️</div><div><div style={{fontWeight:950,color:T.g800}}>Guía de Rasta</div><div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>{guideTexts[state.guideStep%guideTexts.length]}</div><div style={{marginTop:10}}><Btn small col="gold" onClick={()=>mutate(prev=>({...prev,guideStep:(prev.guideStep||0)+1}))}>Siguiente consejo</Btn></div></div></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:10}}>{[{icon:"💰",t:"Economía RC",d:"Los RC sólo pertenecen al Tycoon. Sirven para stock, mejoras, equipo y decoración."},{icon:"🗺️",t:"Mapa",d:"Es la vista principal tipo Travian. Pulsa edificios para entrar o ver requisitos."},{icon:"🏠",t:"Salas",d:"Cada sala tiene objetos clicables. La escena cambia según el tipo de zona."},{icon:"📦",t:"Stock",d:"Sin productos no se atienden clientes y los RC/h bajan."},{icon:"🔨",t:"Obras",d:"Las mejoras tardan tiempo real y se completan solas."},{icon:"📈",t:"Progreso",d:"Hall atrae clientes, Peluquería sube ingresos, Almacén sostiene la economía."}].map(x=><div key={x.t} style={{background:"rgba(255,255,255,.38)",border:`1px solid ${T.g200}`,borderRadius:16,padding:12}}><div style={{fontWeight:950,color:T.g800}}>{x.icon} {x.t}</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>{x.d}</div></div>)}</div><div style={{marginTop:12,display:"flex",justifyContent:"flex-end"}}><Btn small col="red" onClick={resetGame}>Reiniciar Tycoon</Btn></div></Card>}
+    {tab==="guia"&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}><div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:12}}><div style={{fontSize:"2.2rem"}}>🧔🏽‍♂️</div><div><div style={{fontWeight:950,color:T.g800}}>Guía de Rasta</div><div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>{guideTexts[state.guideStep%guideTexts.length]}</div><div style={{marginTop:10}}><Btn small col="gold" onClick={()=>mutate(prev=>({...prev,guideStep:(prev.guideStep||0)+1}))}>Siguiente consejo</Btn></div></div></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:10}}>{[{icon:"💰",t:"Economía RC",d:"Los RC son globales. Los ganas en Gacha, Arcade y Tycoon, y aquí sirven para stock, mejoras, equipo y decoración."},{icon:"🗺️",t:"Mapa",d:"Es la vista principal tipo Travian. Pulsa edificios para entrar o ver requisitos."},{icon:"🏠",t:"Salas",d:"Cada sala tiene objetos clicables. La escena cambia según el tipo de zona."},{icon:"📦",t:"Stock",d:"Sin productos no se atienden clientes y los RC/h bajan."},{icon:"🔨",t:"Obras",d:"Las mejoras tardan tiempo real y se completan solas."},{icon:"📈",t:"Progreso",d:"Hall atrae clientes, Peluquería sube ingresos, Almacén sostiene la economía."}].map(x=><div key={x.t} style={{background:"rgba(255,255,255,.38)",border:`1px solid ${T.g200}`,borderRadius:16,padding:12}}><div style={{fontWeight:950,color:T.g800}}>{x.icon} {x.t}</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>{x.d}</div></div>)}</div><div style={{marginTop:12,display:"flex",justifyContent:"flex-end"}}><Btn small col="red" onClick={resetGame}>Reiniciar Tycoon</Btn></div></Card>}
     <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)"}}><div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Registro</div><div style={{display:"grid",gap:6,maxHeight:190,overflow:"auto"}}>{(state.log||[]).slice(0,12).map((l,i)=><div key={i} style={{fontSize:".75rem",fontWeight:820,color:T.textSub,lineHeight:1.35,borderBottom:`1px solid ${T.g200}`,paddingBottom:5}}>{new Date(l.t).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})} · {l.msg}</div>)}</div></Card>
   </div>;
 }
@@ -5922,7 +6009,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
         {activeGame==="jump"&&<PlatformJumpGame user={user} onWin={pts=>handleWin("jump",pts)}/>} 
         {activeGame==="stitch"&&<DreadStitchGame user={user} onWin={pts=>handleWin("stitch",pts)}/>} 
         {activeGame==="gacha"&&<GachaSlotsGame user={user} settings={settings} onWin={pts=>handleWin("gacha",pts)} onCurrencyWin={awardGameCurrencyPrize} onBuyPulls={buyGachaPulls}/>} 
-        {activeGame==="tycoon"&&<RastaCutsTycoonGame user={user} showToast={showToast}/>} 
+        {activeGame==="tycoon"&&<RastaCutsTycoonGame user={user} setUser={setUser} showToast={showToast}/>} 
       </div>
     );
   }
@@ -5966,7 +6053,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
                   <div style={{fontWeight:950,fontSize:"1rem",color:T.g800}}>{g.title}</div>
                   <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800,lineHeight:1.35}}>{g.desc}</div>
                   <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:5}}>
-                    {g.id==="tycoon"?<span style={{fontSize:"0.74rem",color:T.orange,fontWeight:950}}>🏪 moneda propia RC · sin puntos reales</span>:<span style={{fontSize:"0.74rem",color:T.orange,fontWeight:950}}>🏅 máx. +{g.pts} pts/día</span>}
+                    {g.id==="tycoon"?<span style={{fontSize:"0.74rem",color:T.orange,fontWeight:950}}>🏪 usa RC global · sin gastar RP</span>:<span style={{fontSize:"0.74rem",color:T.orange,fontWeight:950}}>🏅 máx. +{g.pts} pts/día</span>}
                     {g.id==="tycoon"?<span style={{fontSize:"0.74rem",color:T.g700,fontWeight:950}}>⏱️ progreso en tiempo real</span>:<span style={{fontSize:"0.74rem",color:T.g700,fontWeight:950}}>📈 tu récord semana: {best}</span>}
                   </div>
                 </div>
@@ -12121,7 +12208,7 @@ function AppCore(){
       <div className="rc-standalone-shell" data-rc-theme={uiTheme} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",minHeight:"100vh",background:uiTheme==="day"?"radial-gradient(circle at top,#FFF1D7 0,#FAF2E3 52%,#F1E6FF 100%)":"radial-gradient(circle at 50% 12%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 12% 80%,rgba(47,107,66,.22),transparent 28%),radial-gradient(circle at 88% 76%,rgba(167,40,34,.18),transparent 26%),linear-gradient(180deg,#050403,#130B06 48%,#080604)",color:"var(--rc-text,#EAF6FF)"}}>
         
         <Particles/>
-        <RastaCutsTycoonGame user={currentUser} showToast={showToast} standalone onExit={closeTycoonPage}/>
+        <RastaCutsTycoonGame user={currentUser} setUser={setUser} showToast={showToast} standalone onExit={closeTycoonPage}/>
         <Toast msg={toast.msg} show={toast.show}/>
       </div>
     );
