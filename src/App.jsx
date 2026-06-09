@@ -3918,13 +3918,13 @@ function SocialFeed({user,setUser,showToast,showPoints}){
   }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="📌" title="Tablón de anuncios" sub="Noticias, promociones y avisos oficiales de la tienda"/>
+      <SectionHeader icon="📌" title="Tablón oficial" sub="Avisos de Rasta Cuts. Para debatir usa el Foro y para noticias usa Actualidad."/>
       <Card style={{marginBottom:16,background:'linear-gradient(180deg,#E9D9B7 0%,#DEC79A 100%)',border:`2px solid ${T.g300}`,boxShadow:'0 10px 24px rgba(20,8,4,.16)'}}>
-        <div style={{fontWeight:900,fontSize:'.92rem',color:T.g800,marginBottom:8}}>📣 Nuevo anuncio</div>
+        <div style={{fontWeight:950,fontSize:'.96rem',color:T.g800,marginBottom:8}}>📣 Nuevo anuncio oficial</div>
         {canPost? <>
           <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Escribe una promoción, aviso, norma, actualización o evento..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:T.g150,resize:"none",outline:"none",boxShadow:'inset 0 2px 8px rgba(20,8,4,.06)'}}/>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10,gap:8}}>
-            <span style={{fontSize:"0.8rem",color:T.g700,fontWeight:900}}>Solo admin/staff pueden publicar y comentar aquí</span>
+            <span style={{fontSize:"0.8rem",color:T.g700,fontWeight:900}}>Sólo admin/staff publican. Los usuarios reaccionan con likes.</span>
             <Btn small col="dark" onClick={publish} style={{fontWeight:900,letterSpacing:'.4px'}}>📌 Publicar</Btn>
           </div>
         </> : <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Este feed ahora funciona como tablón oficial. Puedes leer anuncios y dar me gusta; para debatir o abrir temas usa la pestaña Foro.</div>}
@@ -7725,7 +7725,7 @@ function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=
     <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F4E0B4)",border:`1.5px solid ${T.g200}`,boxShadow:"0 10px 22px rgba(20,8,4,.10)",marginBottom:10}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:220}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.42rem",color:T.g800,lineHeight:1}}>Centro de comunidad</div>
+          <div style={{fontFamily:"'Baloo 2','Plus Jakarta Sans','Outfit',system-ui,sans-serif",fontSize:"1.35rem",fontWeight:950,color:T.g800,lineHeight:1}}>Centro de comunidad</div>
           <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.38,marginTop:4}}>
             {comunidad.mensaje_comunidad||"Participa con respeto, usa el tablón para enterarte de novedades y el foro para hablar con la comunidad."}
           </div>
@@ -7743,26 +7743,91 @@ function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=
   </div>;
 }
 
+
+function ComunidadPerfiles({user,showToast}={}){
+  const [profiles,setProfiles]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [q,setQ]=useState("");
+  const [selected,setSelected]=useState(null);
+  useEffect(()=>{load();},[]);
+  async function load(){
+    setLoading(true);
+    try{
+      const rows=await dbGet("usuarios","?select=*&order=puntos.desc&limit=80");
+      const enriched=await enrichProfilesWithAvatarConfigs(Array.isArray(rows)?rows:[]);
+      setProfiles(enriched.filter(p=>!isBannedProfile(p)));
+    }catch(e){
+      console.warn("No se pudieron cargar perfiles de comunidad",e);
+      showToast?.("No se pudieron cargar perfiles");
+    }
+    setLoading(false);
+  }
+  const clean=normalizeText(q);
+  const visibles=profiles.filter(p=>{
+    if(!clean)return true;
+    return normalizeText(`${p.nombre||""} ${p.email||""} ${avatarLevelName(p.avatar_level||avatarLevelFromXP(userXP(p)))}`).includes(clean);
+  });
+  return <div style={{animation:"fadeSlide .32s ease"}}>
+    <SectionHeader icon="👥" title="Perfiles de comunidad" sub="Usuarios, niveles, insignias y progreso visible sin mezclarlo con el tablón ni el foro." action={<Btn small col="ghost" onClick={load}>↻</Btn>}/>
+    <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E7C4)",border:`1.5px solid ${T.g200}`}}>
+      <Input label="Buscar usuario" value={q} onChange={setQ} placeholder="Nombre, email, nivel o rol..."/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        <StatCard icon="👥" label="Perfiles" value={profiles.length} col="blue"/>
+        <StatCard icon="⭐" label="Nivel medio" value={profiles.length?Math.round(profiles.reduce((s,p)=>s+Number(p.avatar_level||avatarLevelFromXP(userXP(p))),0)/profiles.length):0} col="pink"/>
+        <StatCard icon="💎" label="RP total" value={profiles.reduce((s,p)=>s+Number(p.puntos||0),0)} col="gold"/>
+      </div>
+    </Card>
+    {loading?<Spinner/>:visibles.length===0?<EmptyState icon="👥" title="Sin perfiles" sub="Prueba otra búsqueda o espera a que haya más actividad."/>:
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(158px,1fr))",gap:10}}>
+        {visibles.map(p=><Card key={p.id||p.email} hover onClick={()=>setSelected(p)} style={{padding:12,background:"linear-gradient(180deg,#FFF8E6,#E9D9B7)",border:`1.5px solid ${T.g200}`}}>
+          <div style={{display:"flex",gap:9,alignItems:"center"}}>
+            <PublicAvatar profile={p} currentUser={user} size={42}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:950,color:T.g800,fontSize:".86rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(p,user)}</div>
+              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub,textTransform:"uppercase"}}>{publicRoleLabel(p,user)}</div>
+            </div>
+          </div>
+          <div style={{marginTop:9}}><AvatarMiniIdentity profile={p} currentUser={user} limit={3} showCurrency/></div>
+        </Card>)}
+      </div>
+    }
+    <Modal show={!!selected} onClose={()=>setSelected(null)} title={selected?publicName(selected,user):"Perfil"}>
+      {selected&&<div>
+        <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:14}}>
+          <PublicAvatar profile={selected} currentUser={user} size={64}/>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontWeight:950,color:T.g800,fontSize:"1rem"}}>{publicName(selected,user)}</div>
+            <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub}}>{avatarLevelName(selected.avatar_level||avatarLevelFromXP(userXP(selected)))}</div>
+            <AvatarMiniIdentity profile={selected} currentUser={user} limit={4} showCurrency/>
+          </div>
+        </div>
+        <AvatarBadgesPanel user={selected}/>
+      </div>}
+    </Modal>
+  </div>;
+}
+
 function Comunidad(props){
   const {initialTab="feed",showToast,settings}=props;
   const sec=settings?.secciones||{};
   const [sub,setSub]=useState(initialTab||"feed");
   useEffect(()=>{setSub(initialTab||"feed");},[initialTab]);
   const tabs=[
-    {id:"feed",icon:"📌",label:"Tablón",sub:"Anuncios oficiales, promociones y novedades de la tienda.",enabled:true},
-    {id:"foro",icon:"🗣️",label:"Foro",sub:"Temas abiertos, dudas, votaciones y conversación entre usuarios.",enabled:sec.foro_activo!==false},
-    {id:"noticias",icon:"📰",label:"Actualidad",sub:"Curiosidades, rural, comida, sitios, peluquería y negocios locales.",enabled:sec.noticias_activas!==false},
+    {id:"feed",icon:"📌",label:"Tablón",sub:"Anuncios oficiales de Rasta Cuts: novedades, promociones, normas, eventos y cambios importantes.",enabled:true},
+    {id:"foro",icon:"🗣️",label:"Foro",sub:"Temas abiertos por usuarios: dudas, propuestas, votaciones y conversación real.",enabled:sec.foro_activo!==false},
+    {id:"noticias",icon:"📰",label:"Actualidad",sub:"Noticias y curiosidades con comentarios: rural, comida, sitios, peluquería y negocios locales.",enabled:sec.noticias_activas!==false},
+    {id:"perfiles",icon:"👥",label:"Perfiles",sub:"Descubre usuarios, niveles, insignias, RP, RC y progreso visible de la comunidad.",enabled:true},
     {id:"musica",icon:"🎧",label:"Música",sub:"Reggae, rap clásico, ska y rock con enlaces rápidos para descubrir buena música.",enabled:sec.musica_activa!==false},
   ].filter(t=>t.enabled);
   const active=tabs.find(t=>t.id===sub)||tabs[0]||{id:"feed",icon:"📌",label:"Tablón"};
   return <div style={{animation:"fadeSlide .32s ease"}}>
-    <Card style={{marginBottom:14,background:"linear-gradient(160deg,#24110A,#5C3317 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.6)",color:T.white,padding:"18px 16px"}}>
+    <Card style={{marginBottom:14,background:"linear-gradient(145deg,#162015 0%,#355533 48%,#D7B64C 118%)",border:"2px solid rgba(255,244,214,.62)",color:T.white,padding:"18px 16px",boxShadow:"0 16px 34px rgba(18,8,4,.26)"}}>
       <div style={{display:"flex",gap:12,alignItems:"center",justifyContent:"space-between"}}>
-        <div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.8rem",lineHeight:1}}>Comunidad</div>
-          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.82)",lineHeight:1.35}}>Un solo sitio para leer, participar, descubrir música y volver a tus hilos sin perderte entre pestañas.</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontFamily:"'Baloo 2','Plus Jakarta Sans','Outfit',system-ui,sans-serif",fontSize:"1.72rem",fontWeight:950,lineHeight:1,letterSpacing:"-.3px"}}>Comunidad Rasta</div>
+          <div style={{fontSize:".86rem",fontWeight:850,color:"rgba(255,244,214,.88)",lineHeight:1.42,marginTop:5}}>Tablón oficial, foro, actualidad y perfiles separados para que se entienda rápido dónde leer, participar o buscar a la gente.</div>
         </div>
-        <div className="icon3d" style={{fontSize:"2.1rem"}}>🌐</div>
+        <div className="icon3d" style={{fontSize:"2.25rem"}}>🌐</div>
       </div>
     </Card>
     <ComunidadCentroPanel tabs={tabs} activeId={active.id} onSelect={(id)=>{SFX.tab();setSub(id);}} settings={settings}/>
@@ -7779,6 +7844,7 @@ function Comunidad(props){
     {active.id==="feed"&&<SocialFeed {...props}/>} 
     {active.id==="foro"&&<Foro {...props}/>} 
     {active.id==="noticias"&&<Noticias {...props}/>} 
+    {active.id==="perfiles"&&<ComunidadPerfiles {...props}/>} 
     {active.id==="musica"&&<MusicaComunidad {...props}/>} 
   </div>;
 }
@@ -12611,7 +12677,7 @@ function AppCore(){
   };
 
   return(
-    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-rc-theme={uiTheme} data-page={ap} data-community={communityTab} style={{fontFamily:"'Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:theme.shell,minHeight:"100vh",maxWidth:"var(--app-max-width,480px)",width:"100%",margin:"0 auto",paddingBottom:"var(--app-bottom-pad,82px)",position:"relative",boxShadow:`0 0 0 1px rgba(148,232,255,.18),0 0 42px rgba(0,0,0,.28),0 0 36px ${clinicAccent}22`,"--shineA":`color-mix(in srgb, ${clinicAccent} 28%, transparent)`,"--shineB":`color-mix(in srgb, ${clinicAccent2} 22%, transparent)`,"--shineSpeed":"7.2s","--pageGlowA":`color-mix(in srgb, ${clinicAccent} 20%, transparent)`,"--pageGlowB":`color-mix(in srgb, ${clinicAccent2} 18%, transparent)`,"--pageMark":theme.mark,"--pageMarkColor":`${clinicAccent}18`,"--pageAccent":clinicAccent,"--pageAccent2":clinicAccent2,"--pageShellModern":theme.shell}}>
+    <div className={`app-shell page-${ap} theme-${ap==="comunidad"?communityTab:ap}`} data-rc-theme={uiTheme} data-page={ap} data-community={communityTab} style={{fontFamily:"'Plus Jakarta Sans','Inter','Outfit',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:theme.shell,minHeight:"100vh",maxWidth:"var(--app-max-width,480px)",width:"100%",margin:"0 auto",paddingBottom:"var(--app-bottom-pad,82px)",position:"relative",boxShadow:`0 0 0 1px rgba(148,232,255,.18),0 0 42px rgba(0,0,0,.28),0 0 36px ${clinicAccent}22`,"--shineA":`color-mix(in srgb, ${clinicAccent} 28%, transparent)`,"--shineB":`color-mix(in srgb, ${clinicAccent2} 22%, transparent)`,"--shineSpeed":"7.2s","--pageGlowA":`color-mix(in srgb, ${clinicAccent} 20%, transparent)`,"--pageGlowB":`color-mix(in srgb, ${clinicAccent2} 18%, transparent)`,"--pageMark":theme.mark,"--pageMarkColor":`${clinicAccent}18`,"--pageAccent":clinicAccent,"--pageAccent2":clinicAccent2,"--pageShellModern":theme.shell}}>
       
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
