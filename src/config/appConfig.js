@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.6c: más legible, crema suave, verde rasta como acento y menos marrón pesado.
+  // Paleta 2.9.6d: crema suave, verde rasta como acento, más contraste y lectura.
   g900:"#100B07",
   g800:"#1E140C",
   g700:"#332113",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_6C_COMMUNITY_UI_POLISH";
-const APP_VERSION_SHORT = "2.9.6c";
+const APP_VERSION = "RASTACUTS_2_9_6D_UI_POLISH_GLOBAL_RASTAHELP";
+const APP_VERSION_SHORT = "2.9.6d";
 const APP_BUILD_DATE = "2026-06-09";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
