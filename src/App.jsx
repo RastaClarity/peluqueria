@@ -102,12 +102,31 @@ import { Btn, Card, Input, Select, Badge, Modal, Spinner, EmptyState, SectionHea
 let musicButtonClickTimer=null;
 let musicButtonLastTap=0;
 
+function userRP(u){return Math.max(0,Number(u?.puntos||0)||0);}
+function userRC(u){return Math.max(0,Number(u?.rc??u?.rasta_coins??0)||0);}
+function userXP(u){return Math.max(0,Number(u?.xp??u?.avatar_xp??0)||0);}
+function avatarLevelFromXP(xp){
+  const clean=Math.max(0,Number(xp)||0);
+  return Math.max(1,Math.floor(Math.sqrt(clean/120))+1);
+}
+function avatarLevelName(level){
+  const l=Math.max(1,Number(level)||1);
+  if(l>=30)return "Leyenda Rasta Cuts";
+  if(l>=20)return "Maestro del Fade";
+  if(l>=10)return "Barbero Callejero";
+  if(l>=5)return "Aprendiz Rasta";
+  return "Cliente Nuevo";
+}
+function formatCurrencyBadge(user){return `💎 ${userRP(user)} RP · 🪙 ${userRC(user)} RC · ⭐ Nv. ${Number(user?.avatar_level||avatarLevelFromXP(userXP(user)))}`;}
+
 function PublicProfileModal({profile,onClose}){
   if(!profile)return null;
   const hidden=isPrivateProfile(profile);
   const cfg=normalizeAvatarV3(profile.avatar_config||profile.avatarConfig,profile.id||profile.avatar||0);
-  const pts=Number(profile.puntos||0);
-  const nivel=pts>=1000?"VIP":pts>=500?"Oro":pts>=200?"Plata":"Bronce";
+  const pts=userRP(profile);
+  const rc=userRC(profile);
+  const xp=userXP(profile);
+  const nivel=avatarLevelName(profile.avatar_level||avatarLevelFromXP(xp));
   if(hidden){
     return <Modal show={!!profile} onClose={onClose} title="Perfil privado">
       <div style={{textAlign:"center",padding:"8px 0 4px"}}>
@@ -126,7 +145,7 @@ function PublicProfileModal({profile,onClose}){
       <div style={{display:"flex",justifyContent:"center",marginBottom:10}}><Av av={profile.avatar} config={cfg} size={96}/></div>
       <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",color:T.g800}}>{profile.nombre||"Cliente Rasta"}</div>
       <div style={{display:"flex",justifyContent:"center",gap:8,flexWrap:"wrap",marginTop:10}}>
-        <Badge col="gold">{nivel}</Badge><Badge col="green">{pts} pts</Badge>
+        <Badge col="gold">{nivel}</Badge><Badge col="green">💎 {pts} RP</Badge><Badge col="blue">🪙 {rc} RC</Badge>
       </div>
       <Card style={{marginTop:14,textAlign:"left",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
         <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🎭 Estilo</div>
@@ -1446,6 +1465,9 @@ function toAppUser(u){
     email:u.email,
     rol:normalizeRole(u.role || u.rol),
     puntos:u.puntos||0,
+    rc:Number(u.rc??u.rasta_coins??0)||0,
+    xp:Number(u.xp??u.avatar_xp??0)||0,
+    avatar_level:Number(u.avatar_level)||avatarLevelFromXP(Number(u.xp??u.avatar_xp??0)||0),
     avatar:u.avatar||0,
     avatarConfig,
     avatar_config:avatarConfig,
@@ -1703,7 +1725,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
         </div>
         {user&&(
           <div style={{display:"flex",gap:8,justifyContent:"center",alignItems:"center",marginBottom:10,flexWrap:"wrap"}}>
-            <Badge col="gold">👑 {user.puntos||0} pts</Badge>
+            <Badge col="gold">💎 {user.puntos||0} RP</Badge><Badge col="blue">🪙 {user.rc||0} RC</Badge>
             <Badge col="green">🎮 Arcade activo</Badge>
           </div>
         )}
@@ -1802,7 +1824,7 @@ function Auth({onLogin,showToast,settings}){
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
           <LandingFeature icon="📅" title="Reservas" sub="Elige tratamientos y guarda tu cita." accent="#D4AF37"/>
           <LandingFeature icon="🎮" title="Juegos" sub="Arcade, récords, Top 10 y puntos." accent="#4F602D"/>
-          <LandingFeature icon="🛍️" title="Tienda" sub="Canjea puntos por vales de juegos y extras controlados." accent="#B99A45"/>
+          <LandingFeature icon="🛍️" title="Tienda" sub="Canjea RP por vales, gana RC en juegos y sube XP." accent="#B99A45"/>
           <LandingFeature icon="🌐" title="Actualidad" sub="Noticias tipo shorts, debate y comunidad." accent="#263F4D"/>
           <div style={{gridColumn:"1 / -1"}}>
             <LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico, ska y rock para descubrir sin ruido comercial." accent="#4E3A76"/>
@@ -2082,7 +2104,7 @@ function ClientDashboard({user,onNavigate,settings}){
     }
     load();
   },[user.id]);
-  const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Oro":user.puntos>=200?"Plata":"Bronce";
+  const nivel=avatarLevelName(user?.avatar_level||avatarLevelFromXP(userXP(user)));
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <RastaLandingHero compact user={user} onNavigate={onNavigate} settings={settings}/>
@@ -2099,12 +2121,12 @@ function ClientDashboard({user,onNavigate,settings}){
           <div>
             <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.78rem",fontWeight:800}}>Hola de nuevo</div>
             <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
-            <div style={{marginTop:6,display:"flex",gap:6,flexWrap:"wrap"}}><Badge col="gold">{nivel}</Badge><Badge col="green">{user.puntos||0} pts</Badge></div>
+            <div style={{marginTop:6,display:"flex",gap:6,flexWrap:"wrap"}}><Badge col="gold">{nivel}</Badge><Badge col="green">💎 {user.puntos||0} RP</Badge><Badge col="blue">🪙 {user.rc||0} RC</Badge></div>
           </div>
           <Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={58}/>
         </div>
         <div style={{marginTop:14,height:8,background:"rgba(255,255,255,0.25)",borderRadius:50,overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${Math.min(((user.puntos||0)/1000)*100,100)}%`,background:"linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)",borderRadius:50,transition:"width 0.6s ease"}}/>
+          <div style={{height:"100%",width:`${Math.min((userXP(user)%120)/120*100,100)}%`,background:"linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)",borderRadius:50,transition:"width 0.6s ease"}}/>
         </div>
       </Card>
 
@@ -4230,7 +4252,10 @@ function canUserRedeem(user,item,settings={}){
   return {ok:true,reason:"Canjear"};
 }
 function shopRedemptionTips(user={},items=[]){
-  const pts=Number(user?.puntos||0);
+  const pts=userRP(user);
+  const rc=userRC(user);
+  const xp=userXP(user);
+  const lvl=Number(user?.avatar_level||avatarLevelFromXP(xp));
   const list=(items||[]).filter(x=>x?.activo!==false);
   const affordable=list.filter(x=>Number(x.puntos_precio||x.precio_puntos||x.precio||0)<=pts);
   const next=list
@@ -4246,7 +4271,10 @@ function shopRedemptionTips(user={},items=[]){
 
 function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
   const info=shopRedemptionTips(user,items);
-  const pts=Number(user?.puntos||0);
+  const pts=userRP(user);
+  const rc=userRC(user);
+  const xp=userXP(user);
+  const lvl=Number(user?.avatar_level||avatarLevelFromXP(xp));
   const next=info.next;
   return (
     <Card className="shop-command-center" style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`1.5px solid ${T.g200}`,marginBottom:14}}>
@@ -4409,7 +4437,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🛍️" title="Tienda juegos" sub={`Vales de juegos con puntos y productos reales separados · Tienes ${user.puntos||0} pts`}/>
+      <SectionHeader icon="🛍️" title="Tienda juegos" sub={`Vales de juegos con RP y productos reales separados · Tienes ${user.puntos||0} RP`}/>
       {/* FASE131B_SHOP_COMMAND_CENTER */}
       <ShopCommandCenter
         user={user}
@@ -4420,7 +4448,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
       <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>Puntos de fidelidad</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0}</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los fondos, estilos y cupones están en Perfil &gt; Camino. Aquí sólo van vales de juegos y productos reales.</div></div>
+          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>RastaPoints</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0} RP</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los fondos, estilos y cupones están en Perfil &gt; Camino. Aquí sólo van vales de juegos y productos reales.</div></div>
           <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
@@ -4533,10 +4561,10 @@ function Cupones({user,showToast}){
 const TODAY_KEY=()=>new Date().toISOString().split("T")[0];
 function getPlayedToday(gid,uid){return localStorage.getItem(`played_${gid}_${uid}_${TODAY_KEY()}`)==="1";}
 function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${TODAY_KEY()}`,"1");}
-const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gacha:50};
+const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gacha:0};
 const ARCADE_GAMES=[
   {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda en tiempo real con moneda RC propia",pts:0},
-  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de premios: 50 tiradas al día",pts:GAME_DAILY_REWARDS.gacha},
+  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de RC, XP y premios: 50 tiradas al día",pts:GAME_DAILY_REWARDS.gacha},
   {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Llega a 100 puntos y termina",pts:GAME_DAILY_REWARDS.stitch},
   {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Peine protector, bloques y agujeros",pts:GAME_DAILY_REWARDS.runner},
   {id:"jump",icon:"🌤️",title:"Rasta Jump",desc:"Recoge utensilios y evita tijeras",pts:GAME_DAILY_REWARDS.jump},
@@ -5169,7 +5197,7 @@ function DreadStitchGame({onWin,user}){
   </Card>;
 }
 
-function GachaSlotsGame({user,onWin,settings,onBuyPulls}){ 
+function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){ 
   const uid=user?.id||"anon";
   const SYMBOLS={scissors:{icon:'✂️',name:'Tijeras'},comb:{icon:'🪮',name:'Peines'},hook:{icon:'🪝',name:'Ganchillos'},band:{icon:'🧵',name:'Gomas'},ticket:{icon:'🎟️',name:'Ticket dorado'},gem:{icon:'💎',name:'Cristal'},coin:{icon:'🪙',name:'Moneda'}};
   const normal=['scissors','comb','hook','band','coin'];
@@ -5189,13 +5217,13 @@ function GachaSlotsGame({user,onWin,settings,onBuyPulls}){
   const pullsLeft=normalPullsLeft+Math.max(0,extraPulls);
   function pickPrize(){
     const r=Math.random();
-    if(r<1/5000)return{pts:50,key:'ticket',label:'Premio gordo: 3 tickets dorados'};
-    if(r<1/5000+1/500)return{pts:20,key:'gem',label:'Premio raro: 3 cristales'};
-    if(r<1/5000+1/500+1/200)return{pts:10,key:'hook',label:'Premio bueno: 3 ganchillos'};
-    if(r<1/5000+1/500+1/200+1/100)return{pts:5,key:'band',label:'Premio: 3 gomas'};
-    if(r<1/5000+1/500+1/200+1/100+1/30)return{pts:2,key:'comb',label:'Premio pequeño: 3 peines'};
-    if(r<1/5000+1/500+1/200+1/100+1/30+1/10)return{pts:1,key:'scissors',label:'Mini premio: 3 tijeras'};
-    return{pts:0,key:null,label:'Sin premio esta vez'};
+    if(r<1/5000)return{rp:10,rc:800,xp:120,key:'ticket',label:'Premio legendario: 3 tickets dorados'};
+    if(r<1/5000+1/500)return{rp:0,rc:400,xp:90,key:'gem',label:'Premio raro: 3 cristales'};
+    if(r<1/5000+1/500+1/200)return{rp:0,rc:220,xp:60,key:'hook',label:'Premio bueno: 3 ganchillos'};
+    if(r<1/5000+1/500+1/200+1/100)return{rp:0,rc:120,xp:40,key:'band',label:'Premio: 3 gomas'};
+    if(r<1/5000+1/500+1/200+1/100+1/30)return{rp:0,rc:60,xp:25,key:'comb',label:'Premio pequeño: 3 peines'};
+    if(r<1/5000+1/500+1/200+1/100+1/30+1/10)return{rp:0,rc:25,xp:10,key:'scissors',label:'Mini premio: 3 tijeras'};
+    return{rp:0,rc:0,xp:2,key:null,label:'Sin premio grande, pero ganas 2 XP'};
   }
   function randomReels(){return [0,1,2].map(()=>normal[Math.floor(Math.random()*normal.length)]);}
   function spin(){
@@ -5213,18 +5241,23 @@ function GachaSlotsGame({user,onWin,settings,onBuyPulls}){
       if(ticks>=18){
         clearInterval(spinTimer);
         let out;
-        if(final.pts>0) out=[final.key,final.key,final.key];
+        if((final.rp||final.rc)>0 && final.key) out=[final.key,final.key,final.key];
         else{out=randomReels();if(out[0]===out[1]&&out[1]===out[2]) out[2]=normal[(normal.indexOf(out[2])+1)%normal.length];}
         setReels(out);setResult(final);setSpinning(false);
-        final.pts>0?SFX.success():SFX.error();
+        (final.rp||final.rc||final.xp)?SFX.success():SFX.error();
       }
     },90);
   }
   async function claim(){
-    if(!result?.pts||claimed)return;
+    if(claimed)return;
+    const rp=Number(result?.rp||0);
+    const rc=Number(result?.rc||0);
+    const xp=Number(result?.xp||0);
+    if(rp<=0&&rc<=0&&xp<=0)return;
     setClaimed(true);
     SFX.success();
-    await onWin(result.pts);
+    if(rp>0) await onWin?.(rp);
+    if((rc>0||xp>0)&&onCurrencyWin) await onCurrencyWin({rc,xp,reason:result?.label||"Gacha Barber"});
   }
   async function buyPulls(){
     if(!onBuyPulls)return;
@@ -5247,12 +5280,12 @@ function GachaSlotsGame({user,onWin,settings,onBuyPulls}){
     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
       {reels.map((key,i)=><div key={i} style={{height:106,borderRadius:22,display:'grid',placeItems:'center',background:'linear-gradient(180deg,#FFF8E6,#E8C477)',border:'3px solid rgba(255,244,214,.75)',boxShadow:'inset 0 8px 18px rgba(0,0,0,.16),0 10px 20px rgba(0,0,0,.22)',fontSize:'2.6rem',animation:spinning?'rewardPulsePro .38s infinite':'none'}}>{SYMBOLS[key]?.icon}</div>)}
     </div>
-    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${result.pts?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{result.pts>0?`Premio: ${result.pts} puntos reales. Puedes cobrar y seguir jugando.`:pullsLeft<=0?'Sin tiradas. Puedes comprar vales en la tienda o 10 por 5 puntos aquí.':extraPulls>0?'Usando tiradas extra compradas en tienda o arcade.':'Puedes volver a tirar mientras te queden tiradas.'}</div>{result.pts>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar '+result.pts+' puntos'}</Btn></div>}</Card>}
+    {result&&<Card style={{background:'rgba(255,248,230,.9)',border:`2px solid ${(result.rp||result.rc||result.xp)?T.gold:T.g300}`,marginBottom:12}}><div style={{fontWeight:950,color:T.g800}}>{result.label}</div><div style={{fontSize:'.82rem',fontWeight:800,color:T.textSub,marginTop:4}}>{(result.rp||result.rc||result.xp)>0?`Premio: ${result.rp?`+${result.rp} RP `:''}${result.rc?`+${result.rc} RC `:''}${result.xp?`+${result.xp} XP`:''}. Puedes cobrar y seguir jugando.`:pullsLeft<=0?'Sin tiradas. Puedes comprar vales en la tienda o 10 por 5 RP aquí.':extraPulls>0?'Usando tiradas extra compradas en tienda o arcade.':'Puedes volver a tirar mientras te queden tiradas.'}</div>{(result.rp||result.rc||result.xp)>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar premio'}</Btn></div>}</Card>}
     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
       <Btn full col={pullsLeft>0?'gold':'ghost'} disabled={spinning||pullsLeft<=0} onClick={spin}>{spinning?'Girando...':pullsLeft>0?'🎰 Tirar':'Sin tiradas'}</Btn>
-      <Btn full col='ghost' disabled={spinning||Number(user?.puntos||0)<5} onClick={buyPulls}>🛒 10 tiradas · 5 pts</Btn>
+      <Btn full col='ghost' disabled={spinning||Number(user?.puntos||0)<5} onClick={buyPulls}>🛒 10 tiradas · 5 RP</Btn>
     </div>
-    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{dailyLimit}. Extras disponibles: {extraPulls}. Los vales de tienda se pueden comprar tantas veces como quieras.</div>
+    <div style={{marginTop:10,fontSize:'.72rem',fontWeight:800,opacity:.78,lineHeight:1.35}}>Tiradas usadas hoy: {pulls}/{dailyLimit}. Extras disponibles: {extraPulls}. El Gacha reparte sobre todo RC y XP; sólo premios raros dan RP.</div>
   </Card>;
 }
 
@@ -5843,15 +5876,34 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
   }
 
 
+  async function awardGameCurrencyPrize({rc=0,xp=0,reason="Gacha Barber"}={}){
+    if(!user?.id)return false;
+    const addRc=Math.max(0,Number(rc)||0);
+    const addXp=Math.max(0,Number(xp)||0);
+    if(addRc<=0&&addXp<=0)return false;
+    const nextRc=userRC(user)+addRc;
+    const nextXp=userXP(user)+addXp;
+    const nextLevel=avatarLevelFromXP(nextXp);
+    try{
+      await dbPatch("usuarios",`?id=eq.${user.id}`,{rc:nextRc,xp:nextXp,avatar_level:nextLevel});
+      if(addRc>0) await dbPost("economy_movements",{usuario_id:String(user.id),usuario_email:user.email||null,usuario_nombre:user.nombre||null,currency:"rc",amount:addRc,type:"earn",reason,source:"gacha",balance:nextRc,meta:{game:"gacha"}});
+      if(addXp>0) await dbPost("economy_movements",{usuario_id:String(user.id),usuario_email:user.email||null,usuario_nombre:user.nombre||null,currency:"xp",amount:addXp,type:"earn",reason,source:"gacha",balance:nextXp,meta:{game:"gacha",avatar_level:nextLevel}});
+    }catch(e){console.warn("No se pudo guardar economía RC/XP",e);}
+    setUser?.(u=>({...u,rc:nextRc,xp:nextXp,avatar_level:nextLevel}));
+    showToast(`${addRc?`+${addRc} RC `:""}${addXp?`+${addXp} XP`:""}`.trim());
+    return true;
+  }
+
+
   async function buyGachaPulls(cost=5,amount=10){
     if(!user?.id)return false;
     const actual=Number(user.puntos||0);
-    if(actual<cost){showToast(`Necesitas ${cost} puntos para comprar ${amount} tiradas`);SFX.error();return false;}
+    if(actual<cost){showToast(`Necesitas ${cost} RP para comprar ${amount} tiradas`);SFX.error();return false;}
     const nuevos=Math.max(0,actual-cost);
     try{await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});}catch{}
     setUser?.(u=>({...u,puntos:nuevos}));
-    recordPointMovement(user.id,{amount:-cost,type:"spend",reason:`Compra ${amount} tiradas Gacha`,source:"gacha",balance:nuevos,meta:{cost,amount}});
-    showToast(`Compradas ${amount} tiradas extra por ${cost} puntos`);
+    recordPointMovement(user.id,{amount:-cost,type:"spend",reason:`Compra ${amount} tiradas Gacha`,source:"gacha",balance:nuevos,meta:{cost,amount,currency:"rp"}});
+    showToast(`Compradas ${amount} tiradas extra por ${cost} RP`);
     return true;
   }
 
@@ -5869,7 +5921,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
         {activeGame==="runner"&&<RastaRunnerGame user={user} onWin={pts=>handleWin("runner",pts)}/>} 
         {activeGame==="jump"&&<PlatformJumpGame user={user} onWin={pts=>handleWin("jump",pts)}/>} 
         {activeGame==="stitch"&&<DreadStitchGame user={user} onWin={pts=>handleWin("stitch",pts)}/>} 
-        {activeGame==="gacha"&&<GachaSlotsGame user={user} settings={settings} onWin={pts=>handleWin("gacha",pts)} onBuyPulls={buyGachaPulls}/>} 
+        {activeGame==="gacha"&&<GachaSlotsGame user={user} settings={settings} onWin={pts=>handleWin("gacha",pts)} onCurrencyWin={awardGameCurrencyPrize} onBuyPulls={buyGachaPulls}/>} 
         {activeGame==="tycoon"&&<RastaCutsTycoonGame user={user} showToast={showToast}/>} 
       </div>
     );
@@ -6963,7 +7015,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
     setUser(u=>({...u,...next}));
     SFX.success();showToast(next.modo_incognito?"Modo incógnito activado":"Privacidad actualizada");
   }
-  const nivel=user.puntos>=1000?"VIP":user.puntos>=500?"Oro":user.puntos>=200?"Plata":"Bronce";
+  const nivel=avatarLevelName(user?.avatar_level||avatarLevelFromXP(userXP(user)));
   const cfg=normalizeAvatarV3(form.avatarConfig||form.avatar_config,user.id||form.avatar||0);
   const tabs=[
     {id:"resumen",icon:"👤",label:"Resumen"},
@@ -11413,7 +11465,10 @@ function WalletPanel({show,onClose,user}){
     return()=>{alive=false;window.removeEventListener("rasta-points-history-updated",reload);};
   },[user?.id,show]);
   if(!show)return null;
-  const pts=Number(user?.puntos||0);
+  const pts=userRP(user);
+  const rc=userRC(user);
+  const xp=userXP(user);
+  const lvl=Number(user?.avatar_level||avatarLevelFromXP(xp));
   const dailyMax=50;
   const todayEarned=getWebPointsToday(user?.id);
   const pct=Math.max(0,Math.min(100,Math.round(todayEarned/dailyMax*100)));
@@ -11424,32 +11479,36 @@ function WalletPanel({show,onClose,user}){
   return <div style={{position:"fixed",inset:0,background:"rgba(10,7,4,.62)",zIndex:710,display:"flex",justifyContent:"center",alignItems:"flex-start",padding:"64px 12px 90px"}} onClick={onClose}>
     <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,maxHeight:"calc(100dvh - 128px)",overflowY:"auto",background:"linear-gradient(180deg,#FFF8E6,#F3E2BC)",border:`2px solid ${T.g300}`,borderRadius:24,boxShadow:"0 24px 60px rgba(0,0,0,.34)",padding:14,animation:"fadeSlide .22s ease"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
-        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>👛 Cartera</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>Puntos web separados del Tycoon y de pagos futuros.</div></div>
+        <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>👛 Cartera</div><div style={{fontSize:".78rem",fontWeight:850,color:T.textSub}}>RP, RC y XP separados para tienda, juegos y progresión.</div></div>
         <button onClick={onClose} style={{background:T.g150,border:"none",borderRadius:"50%",width:36,height:36,fontWeight:950,color:T.g700,cursor:"pointer"}}>×</button>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
-        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>⭐</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>{pts}</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Puntos disponibles</div></Card>
-        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>💳</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>0,00 €</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>Saldo futuro</div></Card>
+        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>💎</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>{pts}</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>RP · RastaPoints</div></Card>
+        <Card style={{padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}><div style={{fontSize:"1.6rem"}}>🪙</div><div style={{fontWeight:950,color:T.g800,fontSize:"1.3rem"}}>{rc}</div><div style={{fontSize:".76rem",fontWeight:850,color:T.textSub}}>RC · RastaCoins</div></Card>
       </div>
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}>
-        <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>Límite diario normal</span><span>{todayEarned}/{dailyMax} pts</span></div>
+        <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>⭐ Avatar</span><span>Nivel {lvl}</span></div>
+        <div style={{fontSize:".82rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>XP actual: <b>{xp}</b> · Rango: <b>{avatarLevelName(lvl)}</b>. La XP no se gasta, sólo sube nivel.</div>
+      </Card>
+      <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>Límite diario normal RP</span><span>{todayEarned}/{dailyMax} RP</span></div>
         <div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F)",borderRadius:999}}/></div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 puntos/día completando todo perfecto. Gacha, RC del Tycoon, compras y devoluciones quedan aparte.</div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 RP/día. El Gacha reparte sobre todo RC y XP; los descuentos y cupones usan RP.</div>
       </Card>
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{fontWeight:950,color:T.g800}}>Economías separadas</div>
-        <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:6}}>Puntos web: avatar, perfil, tienda y comunidad. RC: sólo Tycoon. Dinero real futuro: pagos, reservas o saldo, siempre separado.</div>
+        <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:6}}>RP: tienda, cupones, avatar y recompensas valiosas. RC: juegos, Gacha, Tycoon y mejoras futuras. XP: nivel de avatar, roles e insignias, nunca se gasta.</div>
       </Card>
 
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF8E6,#E9D8B4)",border:`2px solid ${T.g300}`}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9}}>
           <div>
-            <div style={{fontWeight:950,color:T.g800}}>📜 Historial de puntos</div>
+            <div style={{fontWeight:950,color:T.g800}}>📜 Historial de RP</div>
             <div style={{fontSize:".74rem",fontWeight:820,color:T.textSub}}>Últimos movimientos guardados en este navegador.</div>
           </div>
           <Btn small col="ghost" onClick={clear} disabled={!history.length}>Limpiar</Btn>
         </div>
-        {history.length===0?<EmptyState icon="📜" title="Sin historial todavía" sub="A partir de ahora se registrarán ganancias, gastos y devoluciones."/>:
+        {history.length===0?<EmptyState icon="📜" title="Sin historial todavía" sub="A partir de ahora se registrarán ganancias, gastos y devoluciones de RP."/>:
           <div style={{display:"grid",gap:7,maxHeight:260,overflowY:"auto",paddingRight:2}}>
             {history.slice(0,30).map(m=><div key={m.id} style={{display:"grid",gridTemplateColumns:"30px 1fr auto",gap:8,alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${T.g200}`}}>
               <div style={{width:28,height:28,borderRadius:999,background:"rgba(255,244,214,.78)",display:"grid",placeItems:"center",border:`1px solid ${T.g200}`}}>{movIcon(m)}</div>
@@ -11457,7 +11516,7 @@ function WalletPanel({show,onClose,user}){
                 <div style={{fontSize:".8rem",fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.reason||"Movimiento"}</div>
                 <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{fmtDate(m.created_at)} · {m.source||m.type}{m.balance!==null&&m.balance!==undefined?` · saldo ${m.balance}`:""}</div>
               </div>
-              <div style={{fontWeight:950,color:movColor(m),fontSize:".86rem",whiteSpace:"nowrap"}}>{m.amount>0?"+":""}{m.amount} pts</div>
+              <div style={{fontWeight:950,color:movColor(m),fontSize:".86rem",whiteSpace:"nowrap"}}>{m.amount>0?"+":""}{m.amount} RP</div>
             </div>)}
           </div>}
       </Card>
