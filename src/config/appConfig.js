@@ -1,36 +1,36 @@
 const T = {
-  // Paleta mate pirata/rasta: menos brillo, más lectura y contraste cálido.
-  g900:"#130B06",
-  g800:"#21140C",
-  g700:"#332013",
-  g600:"#4B301B",
-  g500:"#6B4524",
-  g400:"#8A5A2E",
-  g300:"#A87945",
-  g200:"#C6A06A",
-  g150:"#D8BE87",
-  g100:"#C7A66B",
-  g50:"#E8D3A2",
+  // Paleta 2.9.6c: más legible, crema suave, verde rasta como acento y menos marrón pesado.
+  g900:"#100B07",
+  g800:"#1E140C",
+  g700:"#332113",
+  g600:"#4A321D",
+  g500:"#6A482A",
+  g400:"#8B643C",
+  g300:"#B08A55",
+  g200:"#D1B779",
+  g150:"#E4D09A",
+  g100:"#EFE1B7",
+  g50:"#FFF4D6",
 
   pink:"#8F2E24",
-  gold:"#B99A45",
-  orange:"#A8662B",
-  red:"#672018",
-  blue:"#263F4D",
+  gold:"#C9A43D",
+  orange:"#B56E2B",
+  red:"#7A221B",
+  blue:"#236B66",
 
-  ink:"#120806",
-  panel:"#E6CF9B",
-  panel2:"#D8BE87",
+  ink:"#100B07",
+  panel:"#F3E4BD",
+  panel2:"#E4D09A",
 
   text:"#1A0F08",
-  textSub:"#5B3A20",
-  white:"#F0E0B8",
+  textSub:"#654626",
+  white:"#FFF4D6",
 
-  gradAdmin:"linear-gradient(135deg,#130B06,#21140C 62%,#3A2414)",
-  gradStaff:"linear-gradient(135deg,#21140C,#4B301B 62%,#6B4524)",
-  gradClient:"linear-gradient(135deg,#26331D,#4F602D 58%,#7C6A35)",
-  gradGold:"linear-gradient(135deg,#6B4D1F,#B99A45 62%,#D8BE87)",
-  gradPink:"linear-gradient(135deg,#42130F,#7A241B 62%,#A24A2D)",
+  gradAdmin:"linear-gradient(135deg,#100B07,#21140C 62%,#3A2414)",
+  gradStaff:"linear-gradient(135deg,#1F2A17,#3F5A29 62%,#7C6A35)",
+  gradClient:"linear-gradient(135deg,#1F2A17,#4F602D 58%,#9A7A2F)",
+  gradGold:"linear-gradient(135deg,#7A5720,#C9A43D 62%,#F1D58F)",
+  gradPink:"linear-gradient(135deg,#42130F,#7A241B 62%,#B65C38)",
 };
 
 const BRAND = {
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_6B_POWER_HOME";
-const APP_VERSION_SHORT = "2.9.6b";
+const APP_VERSION = "RASTACUTS_2_9_6C_COMMUNITY_UI_POLISH";
+const APP_VERSION_SHORT = "2.9.6c";
 const APP_BUILD_DATE = "2026-06-09";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
