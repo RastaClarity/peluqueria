@@ -6094,16 +6094,13 @@ function RastaCutsTycoonGame({user,setUser,showToast,standalone=false,onExit}){
 
 function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOpenTycoon,settings}){
   const [activeGame,setActiveGame]=useState(null);
-  const [boardGame,setBoardGame]=useState("runner");
-  const [topMode,setTopMode]=useState("weekly");
-  const [leaderboard,setLeaderboard]=useState([]);
-  const [lbLoading,setLbLoading]=useState(false);
-  const [boardTick,setBoardTick]=useState(0);
+  const [category,setCategory]=useState("destacados");
   const arcadeActiva=settings?.secciones?.arcade_activo!==false;
   const gachaActiva=settings?.secciones?.gacha_activo!==false;
   const gameDailyCap=Math.max(0,parseInt(settings?.puntos?.limite_diario_juegos??GAME_DAILY_CAP,10)||GAME_DAILY_CAP);
   const GAMES=ARCADE_GAMES.filter(g=>g.id!=="gacha"||gachaActiva);
-  if(!arcadeActiva)return <DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión &gt; Ajustes."/>;
+  const uid=user?.id||"anon";
+
   useEffect(()=>{
     if(activeGame) startGameMusic(activeGame);
     else stopGameMusic();
@@ -6111,51 +6108,37 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
   },[activeGame]);
 
   useEffect(()=>{
-    setHelperPage?.(activeGame?`game_${activeGame}`:"arcade");
+    setHelperPage?.(activeGame?"game":"arcade");
     return ()=>setHelperPage?.(null);
   },[activeGame,setHelperPage]);
 
-  useEffect(()=>{
-    let alive=true;
-    async function loadBoard(){
-      setLbLoading(true);
-      const remote=await loadSupabaseGameLeaderboard(boardGame,topMode);
-      const local=getLocalGameLeaderboard(boardGame);
-      const rows=remote.length?remote:dedupeBestScores(local);
-      if(alive){setLeaderboard(rows);setLbLoading(false);}
-    }
-    loadBoard();
-    return()=>{alive=false;};
-  },[boardGame,topMode,boardTick,user?.id]);
+  if(!arcadeActiva)return <DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión &gt; Ajustes."/>;
 
   async function handleWin(gameId,score){
-    const alreadyPlayed=getPlayedToday(gameId,user.id);
+    const alreadyPlayed=getPlayedToday(gameId,uid);
     const rawScore=Math.max(0,Number(score)||0);
     const maxReward=GAME_DAILY_REWARDS[gameId]||10;
-    const remaining=Math.max(0,gameDailyCap-getDailyGamePointsTotal(user.id));
+    const remaining=Math.max(0,gameDailyCap-getDailyGamePointsTotal(uid));
     const reward=Math.min(maxReward,rawScore,remaining);
     saveLocalGameScore(gameId,user,rawScore);
     try{ await dbPost("game_scores",{usuario_id:user.id,usuario_nombre:user.nombre,usuario_avatar:user.avatar,usuario_avatar_config:normalizeAvatarV3(user.avatarConfig||user.avatar_config,user.id||user.avatar||0),game_id:gameId,score:rawScore,week:weekKey()}); }catch{}
-    setBoardGame(gameId);
-    setBoardTick(t=>t+1);
     if(alreadyPlayed){
       SFX.success();
-      showToast(`Récord guardado. Los puntos de ${gameMeta(gameId).short} ya estaban cobrados hoy.`);
+      showToast(`Récord guardado. Los RP de ${gameMeta(gameId).short} ya estaban cobrados hoy.`);
       if(gameId!=="gacha")setActiveGame(null);
       return;
     }
-    markPlayedToday(gameId,user.id);
+    markPlayedToday(gameId,uid);
     if(reward<=0){
       SFX.success();
-      showToast(`Récord guardado. Límite diario de ${gameDailyCap} pts alcanzado.`);
+      showToast(`Récord guardado. Límite diario de ${gameDailyCap} RP alcanzado.`);
       if(gameId!=="gacha")setActiveGame(null);
       return;
     }
     const awarded=await awardWebPoints({user,setUser,showToast,showPoints,points:reward,reason:"Arcade"});
-    if(awarded>0)addDailyGamePointsTotal(user.id,awarded);
+    if(awarded>0)addDailyGamePointsTotal(uid,awarded);
     if(gameId!=="gacha")setActiveGame(null);
   }
-
 
   async function awardGameCurrencyPrize({rc=0,xp=0,reason="Gacha Barber"}={}){
     if(!user?.id)return false;
@@ -6174,7 +6157,6 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     showToast(`${addRc?`+${addRc} RC `:""}${addXp?`+${addXp} XP`:""}`.trim());
     return true;
   }
-
 
   async function buyGachaPulls(cost=5,amount=10){
     if(!user?.id)return false;
@@ -6208,62 +6190,106 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     );
   }
 
-  const selectedMeta=gameMeta(boardGame);
-  const weeklySelected=topMode==="weekly";
-  const myBest=getMyBestScore(boardGame,user.id);
-  const todayTotal=getDailyGamePointsTotal(user.id);
+  const todayTotal=getDailyGamePointsTotal(uid);
+  const todayPct=Math.min(100,Math.round((todayTotal/Math.max(1,gameDailyCap))*100));
+  const playedCount=GAMES.filter(g=>getPlayedToday(g.id,uid)).length;
+  const pendingCount=Math.max(0,GAMES.length-playedCount);
+  const extraPulls=getGachaExtraPulls(uid);
+  const categoryDefs=[
+    {id:"destacados",icon:"⭐",label:"Destacados",sub:"Lo principal para avanzar",ids:["tycoon","gacha","runner"]},
+    {id:"ranking",icon:"🏆",label:"Ranking",sub:"Juegos de marca y Top",ids:["runner","jump","stitch","memoria"]},
+    {id:"clasicos",icon:"🕹️",label:"Clásicos",sub:"Partidas rápidas",ids:["memoria","sopa","trivia"]},
+    {id:"todos",icon:"🎮",label:"Todos",sub:"Todo el Arcade",ids:GAMES.map(g=>g.id)}
+  ];
+  const activeCat=categoryDefs.find(x=>x.id===category)||categoryDefs[0];
+  const visibleGames=GAMES.filter(g=>activeCat.ids.includes(g.id));
+  const bestOverall=Math.max(0,...GAMES.filter(g=>g.id!=="tycoon"&&g.id!=="gacha").map(g=>getMyBestScore(g.id,uid)));
+
+  function GameCard({g,featured=false}){
+    const played=getPlayedToday(g.id,uid);
+    const best=getMyBestScore(g.id,uid);
+    const isTycoon=g.id==="tycoon";
+    const isGacha=g.id==="gacha";
+    const border=played?`1px solid ${T.g300}`:`2px solid ${featured?T.gold:T.g200}`;
+    const bg=played?"linear-gradient(180deg,#EBD8A8,#D7B777)":featured?"linear-gradient(135deg,#FFF8E6,#F3E0AA)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)";
+    return <Card style={{opacity:played&&!isTycoon?0.84:1,background:bg,border,position:"relative",overflow:"hidden"}} hover>
+      <div style={{position:"absolute",right:-16,top:-22,fontSize:"5rem",opacity:.08,transform:"rotate(-10deg)"}}>{g.icon}</div>
+      <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:14}}>
+        <div className="icon3d" style={{fontSize:featured?"2.8rem":"2.45rem"}}>{g.icon}</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+            <div style={{fontWeight:950,fontSize:featured?"1.06rem":".98rem",color:T.g800}}>{g.title}</div>
+            {played&&!isTycoon&&<Badge col="green">cobrado hoy</Badge>}
+            {isGacha&&extraPulls>0&&<Badge col="gold">+{extraPulls} tiradas</Badge>}
+          </div>
+          <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:820,lineHeight:1.35,marginTop:3}}>{g.desc}</div>
+          <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:7}}>
+            {isTycoon?<Badge col="blue">🪙 usa RC global</Badge>:isGacha?<Badge col="gold">🎰 RC + XP + premios</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP/día</Badge>}
+            {isTycoon?<Badge col="green">⏱️ progreso real</Badge>:<Badge col="blue">🏆 récord {best}</Badge>}
+          </div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
+          <Btn small col={featured?"gold":"green"} onClick={()=>isTycoon?onOpenTycoon?.():setActiveGame(g.id)}>{isTycoon?"Abrir Tycoon":played&&!isGacha?"Rejugar":"Jugar"}</Btn>
+          {!isTycoon&&<button onClick={()=>onOpenTops?.("games")} style={{border:"none",background:"transparent",color:T.g600,fontSize:".7rem",fontWeight:950,cursor:"pointer"}}>Ver top</button>}
+        </div>
+      </div>
+    </Card>;
+  }
+
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🎮" title="Rasta Arcade" sub="Elige un juego, mejora tu marca y entra en los rankings del estudio"/>
-      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#201208,#4F351B 56%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
-        <div style={{position:"absolute",right:-18,top:-30,fontSize:"7rem",opacity:.12,transform:"rotate(-10deg)"}}>🏆</div>
-        <div style={{position:"relative",zIndex:1}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",lineHeight:1}}>Rankings de clientes</div>
-          <div style={{fontSize:".8rem",fontWeight:800,opacity:.82,lineHeight:1.35,marginTop:3}}>Aquí están las estadísticas públicas de la comunidad: récords de juegos, puntos, tienda y participación.</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:12}}>
-            <button onClick={()=>onOpenTops?.("games")} style={{border:"2px solid rgba(255,244,214,.42)",borderRadius:18,padding:"13px 10px",background:"rgba(255,244,214,.16)",color:T.white,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
-              <div style={{fontSize:"1.75rem",lineHeight:1}}>🏆</div>
-              <div style={{fontSize:"1rem",marginTop:5}}>Top 10</div>
-              <div style={{fontSize:".68rem",opacity:.78,lineHeight:1.25}}>Récords por minijuego</div>
-            </button>
-            <button onClick={()=>onOpenTops?.("general")} style={{border:"2px solid rgba(255,244,214,.42)",borderRadius:18,padding:"13px 10px",background:"rgba(255,244,214,.16)",color:T.white,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
-              <div style={{fontSize:"1.75rem",lineHeight:1}}>👑</div>
-              <div style={{fontSize:"1rem",marginTop:5}}>Top general</div>
-              <div style={{fontSize:".68rem",opacity:.78,lineHeight:1.25}}>Clientes y actividad</div>
-            </button>
+      <SectionHeader icon="🎮" title="Rasta Arcade" sub="Juegos, rankings, RC, XP, Gacha y Tycoon en una zona más clara."/>
+
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#171008,#2B331A 48%,#C9A43D)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-22,top:-34,fontSize:"7rem",opacity:.12,transform:"rotate(-10deg)"}}>🎮</div>
+        <div style={{position:"relative",zIndex:1,display:"grid",gap:12}}>
+          <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+            <Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={54}/>
+            <div style={{flex:1,minWidth:220}}>
+              <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.62rem",lineHeight:1}}>Centro Arcade</div>
+              <div style={{fontSize:".82rem",fontWeight:850,opacity:.84,lineHeight:1.35}}>Juega para subir marca, cobrar recompensas diarias y mover tu economía de RP, RC y XP.</div>
+            </div>
+            <div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>
+              <Badge col="gold">💎 {Number(user?.puntos||0)} RP</Badge>
+              <Badge col="blue">🪙 {userRC(user)} RC</Badge>
+              <Badge col="green">⭐ Nv. {userLevel(user)}</Badge>
+            </div>
           </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8}}>
+            <div style={{background:"rgba(255,244,214,.16)",border:"1px solid rgba(255,244,214,.32)",borderRadius:16,padding:10}}><div style={{fontSize:".68rem",fontWeight:850,opacity:.78}}>RP Arcade hoy</div><div style={{fontSize:"1.22rem",fontWeight:950}}>{todayTotal}/{gameDailyCap}</div></div>
+            <div style={{background:"rgba(255,244,214,.16)",border:"1px solid rgba(255,244,214,.32)",borderRadius:16,padding:10}}><div style={{fontSize:".68rem",fontWeight:850,opacity:.78}}>Juegos cobrados</div><div style={{fontSize:"1.22rem",fontWeight:950}}>{playedCount}/{GAMES.length}</div></div>
+            <div style={{background:"rgba(255,244,214,.16)",border:"1px solid rgba(255,244,214,.32)",borderRadius:16,padding:10}}><div style={{fontSize:".68rem",fontWeight:850,opacity:.78}}>Mejor marca</div><div style={{fontSize:"1.22rem",fontWeight:950}}>{bestOverall}</div></div>
+          </div>
+          <div style={{height:9,background:"rgba(255,244,214,.18)",borderRadius:999,overflow:"hidden"}}><div style={{height:"100%",width:`${todayPct}%`,background:"linear-gradient(90deg,#FFF4D6,#C9A43D)",borderRadius:999,transition:"width .25s ease"}}/></div>
         </div>
       </Card>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr",gap:12,marginBottom:16}}>
-        {GAMES.map(g=>{
-          const played=getPlayedToday(g.id,user.id);
-          const best=getMyBestScore(g.id,user.id);
-          return(
-            <Card key={g.id} style={{opacity:played?0.76:1,background:played?"linear-gradient(180deg,#EBD8A8,#D7B777)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)",border:played?`1px solid ${T.g300}`:`2px solid ${T.gold}`}} hover>
-              <div style={{display:"flex",alignItems:"center",gap:14}}>
-                <div className="icon3d" style={{fontSize:"2.55rem"}}>{g.icon}</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontWeight:950,fontSize:"1rem",color:T.g800}}>{g.title}</div>
-                  <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:800,lineHeight:1.35}}>{g.desc}</div>
-                  <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:5}}>
-                    {g.id==="tycoon"?<span style={{fontSize:"0.74rem",color:T.orange,fontWeight:950}}>🏪 usa RC global · sin gastar RP</span>:<span style={{fontSize:"0.74rem",color:T.orange,fontWeight:950}}>🏅 máx. +{g.pts} pts/día</span>}
-                    {g.id==="tycoon"?<span style={{fontSize:"0.74rem",color:T.g700,fontWeight:950}}>⏱️ progreso en tiempo real</span>:<span style={{fontSize:"0.74rem",color:T.g700,fontWeight:950}}>📈 tu récord semana: {best}</span>}
-                  </div>
-                </div>
-                <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
-                  {played&&<Badge col="green">✅ cobrado hoy</Badge>}
-                  <Btn small col="gold" onClick={()=>g.id==="tycoon"?onOpenTycoon?.():setActiveGame(g.id)}>{g.id==="tycoon"?"🏪 Abrir juego":(played?"🔁 Rejugar":"▶ Jugar")}</Btn>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+        <button onClick={()=>onOpenTops?.("games")} style={{border:`2px solid ${T.g300}`,borderRadius:20,padding:"13px 12px",background:"linear-gradient(135deg,#FFF4D6,#EBD7A8)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 8px 18px rgba(20,8,4,.13)"}}><div style={{fontSize:"1.6rem"}}>🏆</div><div>Ranking semanal</div><div style={{fontSize:".72rem",color:T.textSub,marginTop:3}}>Top por minijuego</div></button>
+        <button onClick={()=>onOpenTops?.("general")} style={{border:`2px solid ${T.g300}`,borderRadius:20,padding:"13px 12px",background:"linear-gradient(135deg,#FFF4D6,#EBD7A8)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 8px 18px rgba(20,8,4,.13)"}}><div style={{fontSize:"1.6rem"}}>👑</div><div>Top general</div><div style={{fontSize:".72rem",color:T.textSub,marginTop:3}}>Actividad y comunidad</div></button>
       </div>
 
+      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF8E6,#F3E4BD)",border:`1.5px solid ${T.g200}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
+          <div><div style={{fontWeight:950,color:T.g800}}>🎯 Estado de hoy</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>Pendientes: {pendingCount}. Puedes rejugar sin cobrar RP para mejorar récord.</div></div>
+          <Btn small col="ghost" onClick={()=>setActiveGame("gacha")}>🎰 Gacha</Btn>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(100px,1fr))",gap:8}}>
+          {GAMES.filter(g=>g.id!=="tycoon").slice(0,7).map(g=>{const played=getPlayedToday(g.id,uid);return <div key={g.id} style={{border:`1px solid ${played?T.g200:T.gold}`,background:played?"rgba(185,154,69,.14)":"rgba(255,255,255,.42)",borderRadius:16,padding:9,textAlign:"center"}}><div style={{fontSize:"1.35rem"}}>{g.icon}</div><div style={{fontSize:".68rem",fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.title}</div><div style={{fontSize:".64rem",fontWeight:900,color:played?T.g600:T.orange}}>{played?"cobrado":"pendiente"}</div></div>})}
+        </div>
+      </Card>
+
+      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6,marginBottom:12}}>
+        {categoryDefs.map(c=><button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{minWidth:132,border:`2px solid ${category===c.id?T.gold:T.g200}`,borderRadius:18,padding:"10px 12px",background:category===c.id?"linear-gradient(135deg,#FFF4D6,#EBD081)":"rgba(255,244,214,.72)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:category===c.id?"0 8px 18px rgba(185,154,69,.22)":"0 5px 12px rgba(20,8,4,.08)"}}><div>{c.icon} {c.label}</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:2}}>{c.sub}</div></button>)}
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr",gap:12,marginBottom:16}}>
+        {visibleGames.map(g=><GameCard key={g.id} g={g} featured={activeCat.id==="destacados"}/>) }
+      </div>
     </div>
   );
 }
+
 
 // TOPS DE JUEGOS Y TOP GENERAL
 function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
