@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_6A_NAV_STRUCTURE_CLOSE";
-const APP_VERSION_SHORT = "2.9.6a";
+const APP_VERSION = "RASTACUTS_2_9_6B_POWER_HOME";
+const APP_VERSION_SHORT = "2.9.6b";
 const APP_BUILD_DATE = "2026-06-09";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
