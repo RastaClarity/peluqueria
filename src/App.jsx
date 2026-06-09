@@ -2239,76 +2239,118 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
 function ClientDashboard({user,onNavigate,settings}){
   const [proxCita,setProxCita]=useState(null);
   const [noticias,setNoticias]=useState([]);
+  const [homeData,setHomeData]=useState({orders:[],coupons:[],scores:[],claims:[]});
+  const [loadingHome,setLoadingHome]=useState(true);
+
   useEffect(()=>{
+    let alive=true;
+    async function safe(table,query){
+      try{const rows=await dbGet(table,query);return Array.isArray(rows)?rows:[];}catch{return [];}
+    }
     async function load(){
+      setLoadingHome(true);
       const today=new Date().toISOString().split("T")[0];
-      const [citas,news]=await Promise.all([
-        dbGet("citas",`?usuario_id=eq.${user.id}&fecha=gte.${today}&order=fecha.asc&limit=1&select=*`),
-        dbGet("publicaciones","?tipo=eq.correo&order=created_at.desc&limit=3&select=*"),
+      const uid=encodeURIComponent(String(user.id));
+      const [citas,news,orders,coupons,scores,claims]=await Promise.all([
+        safe("citas",`?usuario_id=eq.${uid}&fecha=gte.${today}&order=fecha.asc&limit=1&select=*`),
+        safe("publicaciones","?tipo=eq.correo&order=created_at.desc&limit=3&select=*"),
+        safe("tienda_pedidos",`?usuario_id=eq.${uid}&order=created_at.desc&limit=3&select=*`),
+        safe("user_coupons",`?usuario_id=eq.${uid}&estado=eq.disponible&order=created_at.desc&limit=3&select=*`),
+        safe("game_scores",`?usuario_id=eq.${uid}&order=created_at.desc&limit=5&select=*`),
+        safe("user_mission_claims",`?usuario_id=eq.${uid}&order=created_at.desc&limit=8&select=*`),
       ]);
-      setProxCita(citas?.[0]||null);setNoticias(news||[]);
+      if(!alive)return;
+      setProxCita(citas?.[0]||null);
+      setNoticias(news||[]);
+      setHomeData({orders:orders||[],coupons:coupons||[],scores:scores||[],claims:claims||[]});
+      setLoadingHome(false);
     }
     load();
+    return()=>{alive=false;};
   },[user.id]);
-  const nivel=avatarLevelName(user?.avatar_level||avatarLevelFromXP(userXP(user)));
+
+  const xp=userXP(user);
+  const progress=avatarLevelProgress(xp);
+  const nivel=avatarLevelName(user?.avatar_level||progress.level);
+  const pendingOrder=homeData.orders.find(o=>!["entregado","cancelado"].includes(String(o.estado||"").toLowerCase()));
+  const bestRecent=[...(homeData.scores||[])].sort((a,b)=>(Number(b.score)||Number(b.points)||0)-(Number(a.score)||Number(a.points)||0))[0];
+  const claimedToday=(homeData.claims||[]).filter(c=>String(c.period_key||"").includes(TODAY_KEY())).length;
+  const dailyPreview=MISSION_DEFS.filter(m=>m.period==="day").slice(0,3);
+
+  function Quick({icon,title,sub,to,col="green"}){
+    return <button onClick={()=>{SFX.tab();onNavigate?.(to);}} style={{textAlign:"left",border:`2px solid ${T.g300}`,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",borderRadius:18,padding:"12px 10px",cursor:"pointer",boxShadow:"0 7px 16px rgba(20,8,4,.12)",minHeight:104}}>
+      <div style={{fontSize:"1.55rem",lineHeight:1}}>{icon}</div>
+      <div style={{fontWeight:1000,color:T.g800,marginTop:7,fontSize:".9rem"}}>{title}</div>
+      <div style={{fontSize:".73rem",fontWeight:820,color:T.textSub,lineHeight:1.28,marginTop:3}}>{sub}</div>
+    </button>;
+  }
+
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <RastaLandingHero compact user={user} onNavigate={onNavigate} settings={settings}/>
-
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
-        {settings?.secciones?.noticias_activas!==false&&<LandingFeature icon="📰" title="Actualidad" sub="Noticias rápidas tipo shorts." accent="#263F4D"/>}
-        {settings?.secciones?.musica_activa!==false&&<LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico y novedades." accent="#4E3A76"/>}
-        <LandingFeature icon="🏆" title="Tops" sub="Rankings semanales y generales." accent="#D4AF37"/>
-        <LandingFeature icon="💬" title="Comunidad" sub="Foro, tablón y comentarios." accent="#4F602D"/>
-      </div>
-
-      <Card style={{background:"linear-gradient(135deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.4)",marginBottom:16,padding:"18px",color:T.white}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-          <div>
-            <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.78rem",fontWeight:800}}>Hola de nuevo</div>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
-            <div style={{marginTop:6,display:"flex",gap:6,flexWrap:"wrap"}}><Badge col="gold">{nivel}</Badge><Badge col="green">💎 {user.puntos||0} RP</Badge><Badge col="blue">🪙 {user.rc||0} RC</Badge></div>
+      <Card style={{background:"linear-gradient(145deg,#120806,#2B1A0D 46%,#B99A45)",border:"2px solid rgba(255,244,214,.42)",marginBottom:14,padding:"18px",color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-22,top:-28,fontSize:"7rem",opacity:.10}}>🏠</div>
+        <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
+          <Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={62}/>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{color:"rgba(255,255,255,0.78)",fontSize:"0.76rem",fontWeight:900}}>Inicio personal</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",lineHeight:1,color:T.white}}>Hola, {user.nombre?.split(" ")[0]||"cliente"}</div>
+            <div style={{marginTop:7,display:"flex",gap:6,flexWrap:"wrap"}}><Badge col="gold">{nivel}</Badge><Badge col="green">💎 {userRP(user)} RP</Badge><Badge col="blue">🪙 {userRC(user)} RC</Badge></div>
             <AvatarBadgesStrip user={user} limit={3} dark/>
           </div>
-          <Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={58}/>
         </div>
-        <div style={{marginTop:14,height:8,background:"rgba(255,255,255,0.25)",borderRadius:50,overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${Math.min((userXP(user)%120)/120*100,100)}%`,background:"linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)",borderRadius:50,transition:"width 0.6s ease"}}/>
+        <div style={{position:"relative",zIndex:1,marginTop:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:".72rem",fontWeight:900,color:"rgba(255,244,214,.82)",marginBottom:5}}><span>⭐ Nivel {progress.level}</span><span>{progress.remaining} XP para el siguiente</span></div>
+          <div style={{height:9,background:"rgba(255,255,255,0.25)",borderRadius:50,overflow:"hidden"}}><div style={{height:"100%",width:`${progress.pct}%`,background:"linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)",borderRadius:50,transition:"width 0.6s ease"}}/></div>
         </div>
       </Card>
 
-      {proxCita?(
-        <Card style={{marginBottom:16,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
-            <div>
-              <div style={{fontWeight:950,color:T.g800,marginBottom:6}}>📅 Tu próxima cita</div>
-              <div style={{fontWeight:900,color:T.g700}}>{proxCita.servicio_label||proxCita.servicio}</div>
-              <div style={{fontSize:"0.82rem",color:T.textSub,fontWeight:800,marginTop:2}}>{proxCita.fecha}</div>
-            </div>
-            <Badge col="green">{proxCita.hora}</Badge>
-          </div>
-        </Card>
-      ):(
-        <Card style={{marginBottom:16,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}} hover onClick={()=>onNavigate?.("citas")}>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <div style={{fontSize:"2rem"}}>📅</div>
-            <div style={{flex:1}}>
-              <div style={{fontWeight:950,color:T.g800}}>Reserva tu próxima visita</div>
-              <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Elige varios tratamientos y guarda tu cita en segundos.</div>
-            </div>
-            <Btn small col="gold" onClick={()=>onNavigate?.("citas")}>Reservar</Btn>
-          </div>
-        </Card>
-      )}
-
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:18}}>
-        {[["📅","Cita","citas"],["🎮","Arcade","juegos"],["🎁","Tienda","tienda"],["📩","Buzón","buzon"]].map(([icon,lbl,id])=>(
-          <Card key={lbl} onClick={()=>onNavigate?.(id)} style={{textAlign:"center",padding:"14px 8px",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",minHeight:92,border:`1.5px solid ${T.g300}`}} hover>
-            <div className="icon3d" style={{fontSize:"2rem"}}>{icon}</div>
-            <div style={{fontSize:"0.75rem",fontWeight:950,color:T.g700,marginTop:6}}>{lbl}</div>
-          </Card>
-        ))}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+        <StatCard icon="💎" label="RP" value={userRP(user).toLocaleString("es-ES")} col="gold"/>
+        <StatCard icon="🪙" label="RC" value={userRC(user).toLocaleString("es-ES")} col="blue"/>
+        <StatCard icon="⭐" label="Nivel" value={Number(user?.avatar_level||progress.level)} col="pink"/>
       </div>
+
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF8E6,#F1DCAA)",border:`2px solid ${T.gold}`}}>
+        <SectionHeader icon="🧭" title="Qué hacer ahora" sub="Accesos rápidos con sentido, no botones sueltos."/>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:9}}>
+          <Quick icon="🎯" title="Misiones" sub={`${claimedToday} reclamadas hoy. Mira lo que falta.`} to="misiones"/>
+          <Quick icon="🎮" title="Arcade" sub={bestRecent?`Última marca: ${Number(bestRecent.score)||Number(bestRecent.points)||0}`:"Juega para ganar RC y XP."} to="juegos"/>
+          <Quick icon="🛍️" title="Tienda juegos" sub="Vales, Gacha y productos separados." to="tienda"/>
+          <Quick icon="🌐" title="Comunidad" sub="Foro, tablón, noticias e insignias." to="comunidad"/>
+        </div>
+      </Card>
+
+      <div style={{display:"grid",gap:10,marginBottom:12}}>
+        {proxCita?(
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}} onClick={()=>onNavigate?.("citas")} hover>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+              <div><div style={{fontWeight:950,color:T.g800}}>📅 Tu próxima cita</div><div style={{fontWeight:900,color:T.g700,marginTop:3}}>{proxCita.servicio_label||proxCita.servicio||"Cita"}</div><div style={{fontSize:"0.8rem",color:T.textSub,fontWeight:850,marginTop:2}}>{proxCita.fecha}</div></div>
+              <Badge col="green">{proxCita.hora}</Badge>
+            </div>
+          </Card>
+        ):(
+          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}} hover onClick={()=>onNavigate?.("citas")}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}><div style={{fontSize:"2rem"}}>📅</div><div style={{flex:1}}><div style={{fontWeight:950,color:T.g800}}>Reserva tu próxima visita</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Elige tratamientos y deja la cita preparada.</div></div><Btn small col="gold" onClick={()=>onNavigate?.("citas")}>Reservar</Btn></div>
+          </Card>
+        )}
+
+        {(homeData.coupons||[]).length>0&&<Card style={{background:"linear-gradient(180deg,#FFF8E1,#F4D58D)",border:`2px solid ${T.gold}`}} onClick={()=>onNavigate?.("perfil")} hover>
+          <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:"2rem"}}>🎟️</div><div style={{flex:1}}><div style={{fontWeight:950,color:T.g800}}>Tienes {homeData.coupons.length} cupón disponible</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>Entra en Perfil para copiarlo o usarlo en tienda.</div></div><Badge col="gold">Cupón</Badge></div>
+        </Card>}
+
+        {pendingOrder&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}} onClick={()=>onNavigate?.("tienda")} hover>
+          <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:"2rem"}}>📦</div><div style={{flex:1}}><div style={{fontWeight:950,color:T.g800}}>Pedido en curso</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>{pendingOrder.item_nombre||"Pedido"} · {pendingOrder.estado||"pendiente"}</div></div><Badge col="blue">Pedido</Badge></div>
+        </Card>}
+      </div>
+
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+        <SectionHeader icon="🎯" title="Misiones rápidas" sub="El Inicio te recuerda dónde ganar RP, RC y XP." action={<Btn small col="ghost" onClick={()=>onNavigate?.("misiones")}>Ver todas</Btn>}/>
+        <div style={{display:"grid",gap:8}}>
+          {dailyPreview.map(m=><div key={m.key} style={{display:"flex",alignItems:"center",gap:10,background:"rgba(255,244,214,.62)",border:`1px solid ${T.g200}`,borderRadius:14,padding:"9px 10px"}}>
+            <div style={{fontSize:"1.35rem"}}>{m.icon}</div><div style={{flex:1,minWidth:0}}><div style={{fontWeight:950,color:T.g800,fontSize:".84rem"}}>{m.title}</div><div style={{fontSize:".72rem",fontWeight:800,color:T.textSub}}>{missionRewards(m)}</div></div><button onClick={()=>onNavigate?.(m.action||"misiones")} style={{border:0,borderRadius:12,padding:"7px 9px",fontWeight:950,background:T.gradGold,color:T.g900,cursor:"pointer",fontSize:".72rem"}}>Ir</button>
+          </div>)}
+        </div>
+      </Card>
 
       <ActualidadMini onNavigate={onNavigate}/>
 
@@ -2326,6 +2368,7 @@ function ClientDashboard({user,onNavigate,settings}){
     </div>
   );
 }
+
 
 
 // ACTUALIDAD MAGAZINE + COMUNIDAD
@@ -10998,20 +11041,53 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
 function InternalHomeDashboard({user,onNavigate,unread={}}={}){
   const role=normalizeRole(user?.rol||user?.role);
   const isAdmin=role===ROLES.ADMIN;
+  const [home,setHome]=useState({orders:[],coupons:[],movs:[],scores:[],comments:[],missions:[]});
+  const [loading,setLoading]=useState(true);
+
+  useEffect(()=>{
+    let alive=true;
+    async function safe(table,query){try{const rows=await dbGet(table,query);return Array.isArray(rows)?rows:[];}catch{return [];}}
+    async function load(){
+      setLoading(true);
+      const [orders,coupons,movs,scores,comments,missions]=await Promise.all([
+        safe("tienda_pedidos","?order=created_at.desc&limit=8&select=*"),
+        safe("user_coupons","?order=created_at.desc&limit=8&select=*"),
+        safe("economy_movements","?order=created_at.desc&limit=10&select=*"),
+        safe("game_scores","?order=created_at.desc&limit=10&select=*"),
+        safe("news_comments","?order=created_at.desc&limit=6&select=*"),
+        safe("user_mission_claims","?order=created_at.desc&limit=8&select=*"),
+      ]);
+      if(!alive)return;
+      setHome({orders,coupons,movs,scores,comments,missions});
+      setLoading(false);
+    }
+    load();
+    return()=>{alive=false;};
+  },[user?.id]);
+
+  const pendingOrders=home.orders.filter(o=>!["entregado","cancelado"].includes(String(o.estado||"").toLowerCase()));
+  const activeCoupons=home.coupons.filter(c=>String(c.estado||"").toLowerCase()==="disponible"||c.usado===false);
+  const rcMovs=home.movs.filter(m=>String(m.currency||"").toLowerCase()==="rc");
+  const rpMovs=home.movs.filter(m=>String(m.currency||"").toLowerCase()==="rp"||String(m.currency||"").toLowerCase()==="puntos");
+  const bestScore=[...home.scores].sort((a,b)=>(Number(b.score)||Number(b.points)||0)-(Number(a.score)||Number(a.points)||0))[0];
+
   const cards=[
-    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Panel interno con pedidos, cupones, citas, tienda, usuarios y seguridad.",col:"gold"},
-    {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Revisa la tienda como la ve un usuario y prueba vales, juegos y productos.",col:"green"},
-    {id:"juegos",icon:"🎮",title:"Arcade",sub:"Zona de juegos, Gacha, Tycoon, rankings y recompensas RC/XP.",col:"blue"},
-    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Acceso rápido a tareas diarias y semanales conectadas a RP, RC y XP.",col:"pink"},
-    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, actualidad, música, comentarios e insignias públicas.",col:"green"},
-    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, roles, insignias, cupones desbloqueados y cartera personal.",col:"gold"},
+    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Pedidos, cupones, citas, tienda, usuarios y seguridad."},
+    {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vista real de tienda juegos y productos €."},
+    {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP."},
+    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Diarias y semanales conectadas a RP/RC/XP."},
+    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, actualidad e insignias."},
+    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, roles, cupones y cartera."},
   ];
-  const stats=[
-    {icon:"🔔",label:"Avisos",value:(Number(unread?.admin||0)>0?`${unread.admin}`:"0"),col:Number(unread?.admin||0)>0?"red":"green"},
-    {icon:"💎",label:"RP",value:Number(user?.puntos||0).toLocaleString("es-ES"),col:"gold"},
-    {icon:"🪙",label:"RC",value:Number(user?.rc||0).toLocaleString("es-ES"),col:"blue"},
-    {icon:"⭐",label:"Nivel",value:Number(user?.avatar_level||1),col:"pink"},
-  ];
+
+  function QuickCard({c}){
+    return <button onClick={()=>{SFX.tab();onNavigate?.(c.id);}} style={{border:`2px solid ${T.g300}`,background:"rgba(255,244,214,.82)",borderRadius:18,padding:"13px 10px",cursor:"pointer",boxShadow:"0 7px 16px rgba(20,8,4,.12)",textAlign:"left",minHeight:112}}>
+      <div style={{fontSize:"1.55rem",lineHeight:1}}>{c.icon}</div>
+      <div style={{fontWeight:1000,color:T.g800,marginTop:6,fontSize:".92rem"}}>{c.title}</div>
+      <div style={{fontSize:".76rem",fontWeight:800,color:T.textSub,lineHeight:1.28,marginTop:3}}>{c.sub}</div>
+    </button>;
+  }
+
   return <div style={{animation:"fadeSlide .34s ease"}}>
     <Card style={{marginBottom:14,background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#D4AF37)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative"}}>
       <div style={{position:"absolute",right:-16,top:-24,fontSize:"7rem",opacity:.10}}>🏠</div>
@@ -11019,40 +11095,55 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
         <div className="icon3d" style={{fontSize:"2.4rem"}}>✂️</div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1}}>Inicio Rasta Cuts</div>
-          <div style={{fontSize:".82rem",fontWeight:850,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-            Centro rápido para moverte sin perderte. Desde aquí saltas a gestión, tienda, arcade, comunidad, misiones o perfil.
-          </div>
+          <div style={{fontSize:".82rem",fontWeight:850,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>Centro de mando rápido: pedidos, economía, comunidad, juegos y accesos importantes sin perderse.</div>
         </div>
         <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
       </div>
     </Card>
 
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
-      {stats.map(s=><StatCard key={s.label} icon={s.icon} label={s.label} value={s.value} col={s.col}/>) }
+      <StatCard icon="🔔" label="Avisos" value={(Number(unread?.admin||0)>0?`${unread.admin}`:"0")} col={Number(unread?.admin||0)>0?"red":"green"}/>
+      <StatCard icon="📦" label="Pedidos" value={pendingOrders.length} col="gold"/>
+      <StatCard icon="🎟️" label="Cupones" value={activeCoupons.length} col="pink"/>
+      <StatCard icon="⭐" label="Nivel" value={Number(user?.avatar_level||avatarLevelFromXP(userXP(user)))} col="blue"/>
     </div>
 
-    <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
-      <SectionHeader icon="🧭" title="Accesos rápidos" sub="La flecha de arriba vuelve atrás. Tocar Rasta Cuts arriba vuelve a este inicio."/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))",gap:10}}>
-        {cards.map(c=><button key={c.id} onClick={()=>{SFX.tab();onNavigate?.(c.id);}} style={{border:`2px solid ${T.g300}`,background:"rgba(255,244,214,.82)",borderRadius:18,padding:"13px 10px",cursor:"pointer",boxShadow:"0 7px 16px rgba(20,8,4,.12)",textAlign:"left"}}>
-          <div style={{fontSize:"1.55rem",lineHeight:1}}>{c.icon}</div>
-          <div style={{fontWeight:1000,color:T.g800,marginTop:6,fontSize:".92rem"}}>{c.title}</div>
-          <div style={{fontSize:".76rem",fontWeight:800,color:T.textSub,lineHeight:1.28,marginTop:3}}>{c.sub}</div>
-        </button>)}
-      </div>
+    <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF8E6,#F1DCAA)",border:`2px solid ${T.gold}`}}>
+      <SectionHeader icon="📌" title="Pendiente ahora" sub="Lo más importante que mirar antes de seguir trabajando."/>
+      {loading?<Spinner/>:<div style={{display:"grid",gap:8}}>
+        {pendingOrders[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.68)",borderRadius:14,padding:"10px",cursor:"pointer"}}><div style={{fontWeight:950,color:T.g800}}>📦 Pedido pendiente</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>{pendingOrders[0].cliente_nombre||pendingOrders[0].cliente_email||"Cliente"} · {pendingOrders[0].item_nombre||"Pedido"} · {pendingOrders[0].estado||"pendiente"}</div></button>}
+        {activeCoupons[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.68)",borderRadius:14,padding:"10px",cursor:"pointer"}}><div style={{fontWeight:950,color:T.g800}}>🎟️ Cupón disponible</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>{activeCoupons[0].usuario_nombre||activeCoupons[0].usuario_email||"Usuario"} · {activeCoupons[0].codigo||activeCoupons[0].nombre}</div></button>}
+        {bestScore&&<button onClick={()=>onNavigate?.("juegos")} style={{textAlign:"left",border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.68)",borderRadius:14,padding:"10px",cursor:"pointer"}}><div style={{fontWeight:950,color:T.g800}}>🏆 Última actividad arcade</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>{bestScore.usuario_nombre||bestScore.nombre||"Jugador"} · {bestScore.game_id||"juego"} · {Number(bestScore.score)||Number(bestScore.points)||0}</div></button>}
+        {!pendingOrders[0]&&!activeCoupons[0]&&!bestScore&&<div style={{fontSize:".82rem",fontWeight:850,color:T.textSub,background:"rgba(255,244,214,.58)",borderRadius:14,padding:12}}>No hay urgencias visibles. Puedes revisar tienda, comunidad o arcade desde accesos rápidos.</div>}
+      </div>}
     </Card>
 
+    <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <SectionHeader icon="🧭" title="Accesos rápidos" sub="La flecha vuelve atrás. Tocar Rasta Cuts arriba vuelve a este inicio."/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))",gap:10}}>{cards.map(c=><QuickCard key={c.id} c={c}/>)}</div>
+    </Card>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:10,marginBottom:12}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:1000,color:T.g800}}>💰 Economía reciente</div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,marginTop:3}}>Control rápido de RP/RC/XP sin entrar al panel largo.</div>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}><Badge col="gold">RP movs: {rpMovs.length}</Badge><Badge col="blue">RC movs: {rcMovs.length}</Badge><Badge col="pink">Misiones: {home.missions.length}</Badge></div>
+        <Btn small col="ghost" style={{marginTop:10}} onClick={()=>onNavigate?.("misiones")}>Ver misiones</Btn>
+      </Card>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontWeight:1000,color:T.g800}}>🌐 Comunidad reciente</div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,marginTop:3}}>Últimos comentarios y actividad social.</div>
+        <div style={{marginTop:10,fontSize:".82rem",fontWeight:900,color:T.g700}}>💬 {home.comments.length} comentarios recientes</div>
+        <Btn small col="ghost" style={{marginTop:10}} onClick={()=>onNavigate?.("comunidad")}>Abrir comunidad</Btn>
+      </Card>
+    </div>
+
     <Card style={{background:"linear-gradient(180deg,#FFF8E6,#F0D7A3)",border:`2px solid ${T.gold}`}}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <div style={{fontSize:"2rem"}}>🤙</div>
-        <div>
-          <div style={{fontWeight:1000,color:T.g800}}>RastaHelp también te lleva a Misiones</div>
-          <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>Abre el ayudante flotante y pulsa 🎯 Misiones para ir directo a las tareas diarias/semanales.</div>
-        </div>
-      </div>
+      <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:"2rem"}}>🤙</div><div><div style={{fontWeight:1000,color:T.g800}}>RastaHelp también abre Misiones</div><div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>El ayudante flotante sirve como acceso rápido para guiar al usuario cuando no sabe qué hacer.</div></div></div>
     </Card>
   </div>;
 }
+
 
 const NAV_CFG={
   admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"perfil",icon:"👤",label:"Perfil"}],
