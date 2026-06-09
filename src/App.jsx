@@ -142,6 +142,77 @@ function avatarUnlockedRoles(level){
   const l=Math.max(1,Number(level)||1);
   return AVATAR_ROLE_TREE.filter(r=>l>=r.level);
 }
+function avatarCurrentRole(level){
+  const l=Math.max(1,Number(level)||1);
+  return [...AVATAR_ROLE_TREE].reverse().find(r=>l>=r.level)||AVATAR_ROLE_TREE[0];
+}
+const AVATAR_BADGE_TREE=[
+  {id:"role_cliente",level:1,icon:"🌱",title:"Cliente Nuevo",desc:"Primer rango activo en Rasta Cuts.",color:"green"},
+  {id:"role_aprendiz",level:5,icon:"🪮",title:"Aprendiz Rasta",desc:"Primer salto real de progresión.",color:"gold"},
+  {id:"role_barbero",level:10,icon:"✂️",title:"Barbero Callejero",desc:"Insignia visible para rankings y comunidad.",color:"blue"},
+  {id:"role_maestro",level:20,icon:"🔥",title:"Maestro del Fade",desc:"Rango avanzado para usuarios muy activos.",color:"pink"},
+  {id:"role_leyenda",level:30,icon:"👑",title:"Leyenda Rasta Cuts",desc:"Insignia legendaria del camino.",color:"gold"},
+  {id:"rp_100",stat:"rp",min:100,icon:"💎",title:"Primer tesoro",desc:"Acumula 100 RP.",color:"green"},
+  {id:"rc_500",stat:"rc",min:500,icon:"🪙",title:"Bolsillo arcade",desc:"Acumula 500 RC para juegos y Tycoon.",color:"blue"},
+  {id:"xp_500",stat:"xp",min:500,icon:"⭐",title:"Avatar en marcha",desc:"Consigue 500 XP de avatar.",color:"gold"},
+  {id:"rc_2500",stat:"rc",min:2500,icon:"🏦",title:"Magnate RC",desc:"Acumula 2.500 RC.",color:"pink"},
+  {id:"xp_5000",stat:"xp",min:5000,icon:"🏆",title:"Camino serio",desc:"Consigue 5.000 XP de avatar.",color:"gold"},
+];
+function avatarBadgesForUser(user){
+  const xp=userXP(user);
+  const lvl=Number(user?.avatar_level||avatarLevelFromXP(xp));
+  const stats={rp:userRP(user),rc:userRC(user),xp};
+  return AVATAR_BADGE_TREE.map(b=>{
+    const unlocked=b.level?lvl>=b.level:stats[b.stat]>=b.min;
+    const progress=b.level?lvl:stats[b.stat];
+    const target=b.level||b.min||1;
+    const pct=Math.max(0,Math.min(100,Math.round((progress/target)*100)));
+    return {...b,unlocked,progress,target,pct};
+  });
+}
+function AvatarBadgesStrip({user,limit=5,dark=false}){
+  const unlocked=avatarBadgesForUser(user).filter(b=>b.unlocked).slice(0,limit);
+  if(!unlocked.length)return null;
+  return <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+    {unlocked.map(b=><span key={b.id} title={b.title} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 8px",borderRadius:999,border:`1px solid ${dark?"rgba(255,244,214,.45)":T.g300}`,background:dark?"rgba(255,244,214,.15)":"rgba(255,248,225,.85)",color:dark?T.white:T.g800,fontSize:".68rem",fontWeight:950,boxShadow:"0 4px 10px rgba(20,8,4,.12)"}}>{b.icon} {b.title}</span>)}
+  </div>;
+}
+function AvatarMiniIdentity({profile,currentUser=null,dark=false,limit=3,showCurrency=false}){
+  if(!profile)return null;
+  const hidden=isPrivateProfile(profile,currentUser);
+  return <div style={{marginTop:5}}>
+    <AvatarBadgesStrip user={profile} limit={limit} dark={dark}/>
+    {showCurrency&&!hidden&&<div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:5}}>
+      <span style={{fontSize:".62rem",fontWeight:900,opacity:dark ? .72 : .75,color:dark?T.white:T.textSub}}>💎 {userRP(profile)} RP</span>
+      <span style={{fontSize:".62rem",fontWeight:900,opacity:dark ? .72 : .75,color:dark?T.white:T.textSub}}>🪙 {userRC(profile)} RC</span>
+      <span style={{fontSize:".62rem",fontWeight:900,opacity:dark ? .72 : .75,color:dark?T.white:T.textSub}}>⭐ Nv. {Number(profile?.avatar_level||avatarLevelFromXP(userXP(profile)))}</span>
+    </div>}
+  </div>;
+}
+function AvatarBadgesPanel({user,compact=false}){
+  const badges=avatarBadgesForUser(user);
+  const unlocked=badges.filter(b=>b.unlocked).length;
+  return <div style={{marginTop:compact?10:14,background:"rgba(255,248,225,.68)",border:`1px solid ${T.g200}`,borderRadius:18,padding:12}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
+      <div>
+        <div style={{fontWeight:950,color:T.g800}}>🏅 Insignias visibles</div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35}}>Se enseñan en perfil, rankings y comunidad para que el progreso tenga identidad.</div>
+      </div>
+      <Badge col="gold">{unlocked}/{badges.length}</Badge>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(132px,1fr))",gap:8}}>
+      {badges.map(b=><div key={b.id} style={{border:`2px solid ${b.unlocked?T.gold:T.g200}`,background:b.unlocked?"linear-gradient(180deg,#FFF8E1,#F1D58F)":"rgba(255,244,214,.38)",borderRadius:16,padding:10,opacity:b.unlocked?1:.62}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+          <div style={{fontSize:"1.35rem"}}>{b.unlocked?b.icon:"🔒"}</div>
+          <Badge col={b.unlocked?(b.color||"gold"):"blue"}>{b.level?`Nv. ${b.level}`:`${b.min}`}</Badge>
+        </div>
+        <div style={{fontWeight:950,color:T.g800,fontSize:".82rem",marginTop:7}}>{b.title}</div>
+        <div style={{fontSize:".70rem",fontWeight:820,color:T.textSub,lineHeight:1.3,marginTop:4}}>{b.unlocked?b.desc:`Progreso: ${b.progress}/${b.target}`}</div>
+        {!b.unlocked&&<div style={{height:6,background:"rgba(75,48,27,.14)",borderRadius:999,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:`${b.pct}%`,background:T.gradGold,borderRadius:999}}/></div>}
+      </div>)}
+    </div>
+  </div>;
+}
 function AvatarLevelRolesPanel({user,compact=false}){
   const xp=userXP(user);
   const progress=avatarLevelProgress(xp);
@@ -167,6 +238,7 @@ function AvatarLevelRolesPanel({user,compact=false}){
       <span>{xp} XP</span>
       <span>{progress.remaining} XP para nivel {lvl+1}</span>
     </div>
+    {compact&&<AvatarBadgesStrip user={user}/>}
     {!compact&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:8,marginTop:12}}>
         {AVATAR_ROLE_TREE.map(r=>{
@@ -181,6 +253,7 @@ function AvatarLevelRolesPanel({user,compact=false}){
           </div>;
         })}
       </div>
+      <AvatarBadgesPanel user={user}/>
       <div style={{marginTop:12,background:"rgba(255,244,214,.60)",border:`1px solid ${T.g200}`,borderRadius:16,padding:11}}>
         <div style={{fontWeight:950,color:T.g800}}>🎮 Cómo subir más rápido</div>
         <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:4}}>Gacha da XP casi siempre, los juegos dan XP por actividad y el Tycoon puede alimentar la progresión. Los RP se reservan para premios importantes y los RC para jugar/mejorar.</div>
@@ -219,6 +292,7 @@ function PublicProfileModal({profile,onClose}){
       <div style={{display:"flex",justifyContent:"center",gap:8,flexWrap:"wrap",marginTop:10}}>
         <Badge col="gold">{nivel}</Badge><Badge col="green">💎 {pts} RP</Badge><Badge col="blue">🪙 {rc} RC</Badge>
       </div>
+      <div style={{display:"flex",justifyContent:"center"}}><AvatarBadgesStrip user={profile} limit={4}/></div>
       <Card style={{marginTop:14,textAlign:"left",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
         <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🎭 Estilo</div>
         <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub}}>{avatarStyleName(cfg)}</div>
@@ -2194,6 +2268,7 @@ function ClientDashboard({user,onNavigate,settings}){
             <div style={{color:"rgba(255,255,255,0.8)",fontSize:"0.78rem",fontWeight:800}}>Hola de nuevo</div>
             <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",color:T.white}}>{user.nombre?.split(" ")[0]}</div>
             <div style={{marginTop:6,display:"flex",gap:6,flexWrap:"wrap"}}><Badge col="gold">{nivel}</Badge><Badge col="green">💎 {user.puntos||0} RP</Badge><Badge col="blue">🪙 {user.rc||0} RC</Badge></div>
+            <AvatarBadgesStrip user={user} limit={3} dark/>
           </div>
           <Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={58}/>
         </div>
@@ -2522,7 +2597,7 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
     setLoading(true);
     try{
       const hadComment=comments.some(c=>String(c.usuario_id)===String(user.id));
-      const row={news_id:String(item.id),news_title:item.title,news_url:item.url,news_category:item.category,usuario_id:String(user.id),usuario_nombre:user.nombre,usuario_avatar:user.avatar||0,usuario_avatar_config:safeAvatarJson(user.avatarConfig||user.avatar_config),contenido:clean};
+      const row={news_id:String(item.id),news_title:item.title,news_url:item.url,news_category:item.category,usuario_id:String(user.id),usuario_nombre:user.nombre,usuario_avatar:user.avatar||0,usuario_avatar_config:safeAvatarJson(user.avatarConfig||user.avatar_config),usuario_puntos:Number(user.puntos||0),usuario_rc:Number(user.rc||0),usuario_xp:Number(user.xp||0),usuario_avatar_level:Number(user.avatar_level||avatarLevelFromXP(userXP(user))),contenido:clean};
       const {data,error}=await supabase.from("news_comments").insert(row).select("*").single();
       if(error){showToast?.("No se pudo comentar. Revisa que hayas ejecutado el SQL de actualidad.");setLoading(false);return;}
       setComments(c=>[...c,data]);setText("");onChanged?.(item.id,"comment");SFX.success();showToast?.("Comentario publicado");
@@ -2556,7 +2631,7 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
       </Card>
       <div style={{fontWeight:950,color:T.g800,margin:"4px 0 10px"}}>Comentarios</div>
       {comments.length===0?<EmptyState icon="💬" title="Sin comentarios todavía" sub="Sé el primero en abrir el hilo."/>:comments.map(c=><Card key={c.id} style={{marginBottom:9,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}>
-        <div style={{display:"flex",gap:9,alignItems:"center",marginBottom:7}}><PublicAvatar profile={{...c,nombre:c.usuario_nombre,avatar:c.usuario_avatar,avatar_config:c.usuario_avatar_config,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito}} size={32}/><div><div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{publicName({nombre:c.usuario_nombre,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito})}</div><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{formatNewsDate(c.created_at)}</div></div></div>
+        <div style={{display:"flex",gap:9,alignItems:"flex-start",marginBottom:7}}><PublicAvatar profile={{...c,nombre:c.usuario_nombre,avatar:c.usuario_avatar,avatar_config:c.usuario_avatar_config,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito,puntos:c.usuario_puntos,rc:c.usuario_rc,xp:c.usuario_xp,avatar_level:c.usuario_avatar_level}} size={32}/><div style={{flex:1,minWidth:0}}><div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{publicName({nombre:c.usuario_nombre,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito})}</div><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>{formatNewsDate(c.created_at)}</div><AvatarMiniIdentity profile={{...c,nombre:c.usuario_nombre,avatar:c.usuario_avatar,avatar_config:c.usuario_avatar_config,perfil_publico:c.perfil_publico,modo_incognito:c.modo_incognito,puntos:c.usuario_puntos,rc:c.usuario_rc,xp:c.usuario_xp,avatar_level:c.usuario_avatar_level}} limit={2}/></div></div>
         <div style={{fontSize:".88rem",fontWeight:750,color:T.text,lineHeight:1.45,whiteSpace:"pre-wrap"}}>{c.contenido}</div>
       </Card>)}
     </div>
@@ -3815,7 +3890,7 @@ function SocialFeed({user,setUser,showToast,showPoints}){
         const a=authorOf(p);
         return <Card key={p.id} style={{marginBottom:12,background:'linear-gradient(180deg,#EFE0BE 0%,#E4CFAB 100%)',border:`1.5px solid ${T.g200}`,boxShadow:'0 8px 18px rgba(20,8,4,.12)'}}>
           {p.imagen_url&&<img src={p.imagen_url} alt="" style={{width:"100%",borderRadius:14,marginBottom:10,objectFit:"cover",maxHeight:200}}/>}
-          <div onClick={()=>setSelectedProfile(a)} style={{display:'flex',alignItems:'center',gap:10,marginBottom:8,cursor:'pointer'}}><PublicAvatar profile={a} size={34}/><div><div style={{fontWeight:900,color:T.g800,fontSize:'.86rem'}}>{publicName(a)}</div><div style={{fontSize:'.68rem',fontWeight:800,color:T.textSub,textTransform:'uppercase'}}>{publicRoleLabel(a)}</div></div></div>
+          <div onClick={()=>setSelectedProfile(a)} style={{display:'flex',alignItems:'flex-start',gap:10,marginBottom:8,cursor:'pointer'}}><PublicAvatar profile={a} size={34}/><div style={{flex:1,minWidth:0}}><div style={{fontWeight:900,color:T.g800,fontSize:'.86rem'}}>{publicName(a)}</div><div style={{fontSize:'.68rem',fontWeight:800,color:T.textSub,textTransform:'uppercase'}}>{publicRoleLabel(a)}</div><AvatarMiniIdentity profile={a} currentUser={user} limit={2}/></div></div>
           <div style={{fontSize:"0.93rem",fontWeight:700,color:T.text,lineHeight:1.55,whiteSpace:'pre-wrap'}}>{p.contenido}</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
             <span style={{fontSize:"0.76rem",color:T.textSub,fontWeight:800}}>{p.created_at?new Date(p.created_at).toLocaleDateString("es-ES"):""}</span>
@@ -3926,8 +4001,8 @@ function Foro({user,showToast}){
   function voted(target_tipo,target_id){return votes.some(v=>String(v.target_tipo)===target_tipo&&String(v.target_id)===String(target_id));}
   function categoryLabel(id){return categories.find(c=>c.id===id)?.label||id||"General";}
   function categoryIcon(id){return categories.find(c=>c.id===id)?.icon||"💬";}
-  function topicAuthor(t){return {id:t.usuario_id,nombre:t.autor_nombre,avatar:t.autor_avatar,avatar_config:t.autor_avatar_config,perfil_publico:true,modo_incognito:false,role:"client"};}
-  function replyAuthor(r){return {id:r.usuario_id,nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,perfil_publico:true,modo_incognito:false,role:"client"};}
+  function topicAuthor(t){return {id:t.usuario_id,nombre:t.autor_nombre,avatar:t.autor_avatar,avatar_config:t.autor_avatar_config,perfil_publico:true,modo_incognito:false,role:"client",puntos:t.autor_puntos,rc:t.autor_rc,xp:t.autor_xp,avatar_level:t.autor_avatar_level};}
+  function replyAuthor(r){return {id:r.usuario_id,nombre:r.autor_nombre,avatar:r.autor_avatar,avatar_config:r.autor_avatar_config,perfil_publico:true,modo_incognito:false,role:"client",puntos:r.autor_puntos,rc:r.autor_rc,xp:r.autor_xp,avatar_level:r.autor_avatar_level};}
 
   function openReport(target_tipo,target){
     setReport({
@@ -3974,6 +4049,10 @@ function Foro({user,showToast}){
       autor_nombre:user.nombre||"Usuario",
       autor_avatar:user.avatar||0,
       autor_avatar_config:user.avatarConfig||user.avatar_config||null,
+      autor_puntos:Number(user.puntos||0),
+      autor_rc:Number(user.rc||0),
+      autor_xp:Number(user.xp||0),
+      autor_avatar_level:Number(user.avatar_level||avatarLevelFromXP(userXP(user))),
       titulo:title.trim(),
       contenido:body.trim(),
       categoria:category,
@@ -4002,6 +4081,10 @@ function Foro({user,showToast}){
       autor_nombre:user.nombre||"Usuario",
       autor_avatar:user.avatar||0,
       autor_avatar_config:user.avatarConfig||user.avatar_config||null,
+      autor_puntos:Number(user.puntos||0),
+      autor_rc:Number(user.rc||0),
+      autor_xp:Number(user.xp||0),
+      autor_avatar_level:Number(user.avatar_level||avatarLevelFromXP(userXP(user))),
       contenido:reply.trim(),
       likes:0
     });
@@ -4120,9 +4203,10 @@ function Foro({user,showToast}){
         </div>
         <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:8,cursor:"pointer"}} onClick={()=>setSelectedProfile(topicAuthor(shown))}>
           <PublicAvatar profile={topicAuthor(shown)} size={34}/>
-          <div>
+          <div style={{flex:1,minWidth:0}}>
             <div style={{fontWeight:950,color:T.g800}}>{publicName(topicAuthor(shown))}</div>
             <div style={{fontSize:".7rem",fontWeight:800,color:T.textSub}}>{shown.created_at?new Date(shown.created_at).toLocaleString("es-ES"):""}</div>
+            <AvatarMiniIdentity profile={topicAuthor(shown)} currentUser={user} limit={3}/>
           </div>
         </div>
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.42rem",color:T.g800,lineHeight:1.05}}>{shown.titulo||"Tema del foro"}</div>
@@ -4146,9 +4230,10 @@ function Foro({user,showToast}){
         return <Card key={r.id} style={{marginBottom:8,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`1.5px solid ${T.g200}`}}>
           <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6,cursor:"pointer"}} onClick={()=>setSelectedProfile(a)}>
             <PublicAvatar profile={a} size={30}/>
-            <div>
+            <div style={{flex:1,minWidth:0}}>
               <b style={{color:T.g800}}>{publicName(a)}</b>
               <div style={{fontSize:".66rem",fontWeight:800,color:T.textSub}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES"):""}</div>
+              <AvatarMiniIdentity profile={a} currentUser={user} limit={2}/>
             </div>
           </div>
           <div style={{fontSize:".86rem",fontWeight:750,lineHeight:1.45,whiteSpace:'pre-wrap'}}>{r.contenido}</div>
@@ -4183,7 +4268,7 @@ function Foro({user,showToast}){
               <Badge col="blue">{categoryIcon(t.categoria)} {categoryLabel(t.categoria)}</Badge>
             </div>
             <div style={{fontWeight:950,color:T.g800,lineHeight:1.2}}>{t.titulo||"Tema"}</div>
-            <div style={{fontSize:".75rem",fontWeight:800,color:T.textSub,marginTop:3}}>{publicName(a)} · 👍 {t.likes||0} · 💬 {respuestas}</div>
+            <div style={{fontSize:".75rem",fontWeight:800,color:T.textSub,marginTop:3}}>{publicName(a)} · 👍 {t.likes||0} · 💬 {respuestas}</div><AvatarMiniIdentity profile={a} currentUser={user} limit={2}/>
           </div>
         </div>
       </Card>;
@@ -6303,7 +6388,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
       <PublicAvatar profile={r} currentUser={user} size={40}/>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontWeight:950,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(r,user)}</div>
-        <div style={{fontSize:".68rem",fontWeight:800,opacity:.68}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):section==="general"?generalMeta.sub:"marca guardada"}</div>
+        <div style={{fontSize:".68rem",fontWeight:800,opacity:.68}}>{r.created_at?new Date(r.created_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):section==="general"?generalMeta.sub:"marca guardada"}</div><AvatarMiniIdentity profile={r} currentUser={user} dark limit={2}/>
       </div>
       <div style={{textAlign:"right"}}>
         <div style={{color:T.gold,fontWeight:950,fontSize:"1.12rem"}}>{Number(r.score)||0}</div>
@@ -6504,7 +6589,7 @@ function Ranking({user}){
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <div className="icon3d" style={{fontSize:i<3?"1.7rem":"1.1rem",minWidth:38,textAlign:"center",fontWeight:900}}>{medal}</div>
               <PublicAvatar profile={u} currentUser={user} size={42}/>
-              <div style={{flex:1}}><div style={{fontWeight:900}}>{publicName(u,user)}{isMe?" · tú":""}</div><div style={{fontSize:".72rem",color:T.textSub,fontWeight:800}}>{isPrivateProfile(u,user)?"Perfil en modo incógnito":avatarStyleName(normalizeAvatarConfig(u.avatar_config||u.avatarConfig,u.avatar))}</div></div>
+              <div style={{flex:1}}><div style={{fontWeight:900}}>{publicName(u,user)}{isMe?" · tú":""}</div><div style={{fontSize:".72rem",color:T.textSub,fontWeight:800}}>{isPrivateProfile(u,user)?"Perfil en modo incógnito":avatarStyleName(normalizeAvatarConfig(u.avatar_config||u.avatarConfig,u.avatar))}</div><AvatarMiniIdentity profile={u} currentUser={user} limit={2}/></div>
               <div style={{fontWeight:900,color:T.orange,fontSize:"1.02rem"}}>{u.score||0} pts</div>
             </div>
           </Card>
@@ -7193,8 +7278,10 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
             <div style={{fontSize:".74rem",color:"rgba(255,244,214,.82)",fontWeight:800,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.email}</div>
             <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
               <Badge col="gold">{nivel}</Badge>
-              <Badge col="green">{user.puntos||0} pts</Badge>
+              <Badge col="green">💎 {user.puntos||0} RP</Badge>
+              <Badge col="blue">🪙 {user.rc||0} RC</Badge>
             </div>
+            <AvatarBadgesStrip user={user} limit={3} dark/>
             <div style={{fontSize:".72rem",fontWeight:800,color:"rgba(255,244,214,.82)",marginTop:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{avatarStyleName(cfg)}</div>
           </div>
         </div>
@@ -7217,6 +7304,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints}){
           </div>
         </Card>
         <AvatarLevelRolesPanel user={user} compact/>
+        <AvatarBadgesPanel user={user} compact/>
         <UserRewardCouponsCard user={user} showToast={showToast}/>
         <Card style={{marginBottom:12,background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${privacy.modo_incognito?T.blue:T.g300}`}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:10}}>
