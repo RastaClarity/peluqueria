@@ -10994,9 +10994,69 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
 }
 
 
+
+function InternalHomeDashboard({user,onNavigate,unread={}}={}){
+  const role=normalizeRole(user?.rol||user?.role);
+  const isAdmin=role===ROLES.ADMIN;
+  const cards=[
+    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Panel interno con pedidos, cupones, citas, tienda, usuarios y seguridad.",col:"gold"},
+    {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Revisa la tienda como la ve un usuario y prueba vales, juegos y productos.",col:"green"},
+    {id:"juegos",icon:"🎮",title:"Arcade",sub:"Zona de juegos, Gacha, Tycoon, rankings y recompensas RC/XP.",col:"blue"},
+    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Acceso rápido a tareas diarias y semanales conectadas a RP, RC y XP.",col:"pink"},
+    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, actualidad, música, comentarios e insignias públicas.",col:"green"},
+    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, roles, insignias, cupones desbloqueados y cartera personal.",col:"gold"},
+  ];
+  const stats=[
+    {icon:"🔔",label:"Avisos",value:(Number(unread?.admin||0)>0?`${unread.admin}`:"0"),col:Number(unread?.admin||0)>0?"red":"green"},
+    {icon:"💎",label:"RP",value:Number(user?.puntos||0).toLocaleString("es-ES"),col:"gold"},
+    {icon:"🪙",label:"RC",value:Number(user?.rc||0).toLocaleString("es-ES"),col:"blue"},
+    {icon:"⭐",label:"Nivel",value:Number(user?.avatar_level||1),col:"pink"},
+  ];
+  return <div style={{animation:"fadeSlide .34s ease"}}>
+    <Card style={{marginBottom:14,background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#D4AF37)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative"}}>
+      <div style={{position:"absolute",right:-16,top:-24,fontSize:"7rem",opacity:.10}}>🏠</div>
+      <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
+        <div className="icon3d" style={{fontSize:"2.4rem"}}>✂️</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1}}>Inicio Rasta Cuts</div>
+          <div style={{fontSize:".82rem",fontWeight:850,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
+            Centro rápido para moverte sin perderte. Desde aquí saltas a gestión, tienda, arcade, comunidad, misiones o perfil.
+          </div>
+        </div>
+        <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
+      </div>
+    </Card>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
+      {stats.map(s=><StatCard key={s.label} icon={s.icon} label={s.label} value={s.value} col={s.col}/>) }
+    </div>
+
+    <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      <SectionHeader icon="🧭" title="Accesos rápidos" sub="La flecha de arriba vuelve atrás. Tocar Rasta Cuts arriba vuelve a este inicio."/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))",gap:10}}>
+        {cards.map(c=><button key={c.id} onClick={()=>{SFX.tab();onNavigate?.(c.id);}} style={{border:`2px solid ${T.g300}`,background:"rgba(255,244,214,.82)",borderRadius:18,padding:"13px 10px",cursor:"pointer",boxShadow:"0 7px 16px rgba(20,8,4,.12)",textAlign:"left"}}>
+          <div style={{fontSize:"1.55rem",lineHeight:1}}>{c.icon}</div>
+          <div style={{fontWeight:1000,color:T.g800,marginTop:6,fontSize:".92rem"}}>{c.title}</div>
+          <div style={{fontSize:".76rem",fontWeight:800,color:T.textSub,lineHeight:1.28,marginTop:3}}>{c.sub}</div>
+        </button>)}
+      </div>
+    </Card>
+
+    <Card style={{background:"linear-gradient(180deg,#FFF8E6,#F0D7A3)",border:`2px solid ${T.gold}`}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{fontSize:"2rem"}}>🤙</div>
+        <div>
+          <div style={{fontWeight:1000,color:T.g800}}>RastaHelp también te lleva a Misiones</div>
+          <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>Abre el ayudante flotante y pulsa 🎯 Misiones para ir directo a las tareas diarias/semanales.</div>
+        </div>
+      </div>
+    </Card>
+  </div>;
+}
+
 const NAV_CFG={
-  admin:[{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"perfil",icon:"👤",label:"Perfil"}],
-  staff:[{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"citas",icon:"📅",label:"Citas"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"clientes",icon:"👥",label:"Clientes"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"perfil",icon:"👤",label:"Perfil"}],
+  staff:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"perfil",icon:"👤",label:"Perfil"}],
   client:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"buzon",icon:"📩",label:"Buzón"},{id:"perfil",icon:"👤",label:"Perfil"}],
 };
 const GRAD_ROLE={admin:T.gradAdmin,staff:T.gradStaff,client:T.gradClient};
@@ -12417,7 +12477,7 @@ function AppCore(){
   if(checkingSession)return <div style={{fontFamily:"sans-serif",minHeight:"100vh",display:"grid",placeItems:"center",background:T.g100}}><Spinner/><SafetyVersionPanel user={null} settings={appSettings} checkingSession sessionWarning={sessionWarning}/></div>;
   if(!user)return (
     <>
-      <Auth onLogin={u=>{setUser(u);setPage(normalizeRole(u.rol||u.role)===ROLES.CLIENT?"dashboard":"gestion");}} showToast={showToast} settings={appSettings}/>
+      <Auth onLogin={u=>{setUser(u);setPage("dashboard");}} showToast={showToast} settings={appSettings}/>
       <SafetyVersionPanel user={null} settings={appSettings} checkingSession={false} sessionWarning={sessionWarning}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </>
@@ -12428,7 +12488,7 @@ function AppCore(){
   const sec=appSettings?.secciones||{};
   const nav=rawNav.filter(n=>!(n.id==="tienda"&&sec.tienda_activa===false)&&!(n.id==="juegos"&&sec.arcade_activo===false));
   const grad=GRAD_ROLE[role]||GRAD_ROLE.client;
-  const ap=(role!==ROLES.CLIENT && page==="dashboard")?"gestion":page;
+  const ap=page;
   const theme=pageTheme(ap,communityTab,role);
   const clinicAccent=uiTheme==="day"?"#23B6F2":"#43D6FF";
   const clinicAccent2=uiTheme==="day"?"#9C6BFF":"#9C7DFF";
@@ -12448,7 +12508,7 @@ function AppCore(){
   }
 
   const pages={
-    dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo} settings={appSettings}/>:<GestionAdmin {...sp}/>,
+    dashboard:role===ROLES.CLIENT?<ClientDashboard user={currentUser} onNavigate={navTo} settings={appSettings}/>:<InternalHomeDashboard user={currentUser} onNavigate={navTo} unread={unread}/>,
     citas:<Citas {...sp} onNavigate={navTo}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
@@ -12578,4 +12638,4 @@ export default function App(){
   );
 }
 
-// RastaCuts 2.9.4m coupons admin and navigation
+// RastaCuts 2.9.6a navigation and structure close
