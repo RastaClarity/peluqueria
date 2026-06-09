@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_5B_TYCOON_GLOBAL_RC";
-const APP_VERSION_SHORT = "2.9.5b";
+const APP_VERSION = "RASTACUTS_2_9_5C_AVATAR_ROLES_LEVELS";
+const APP_VERSION_SHORT = "2.9.5c";
 const APP_BUILD_DATE = "2026-06-09";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
