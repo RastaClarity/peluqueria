@@ -11143,18 +11143,22 @@ function HelperMascot({page,settings=null}){
 
   function endDrag(){
     const d=dragRef.current;
+    if(!d.down)return;
     dragRef.current={...d,down:false};
     const finalPos=d.last||pos;
     try{localStorage.setItem("rasta_helper_pos_v3",JSON.stringify(finalPos));}catch{}
     if(!d.moved){
       SFX.tab();
-      const nextOpen=!open;
-      playRastaVoice(nextOpen?"open":"close");
-      setOpen(nextOpen);
+      setOpen(v=>{
+        const nextOpen=!v;
+        playRastaVoice(nextOpen?"open":"close");
+        return nextOpen;
+      });
     }
   }
 
   function pointerDown(e){
+    if(e.pointerType==="mouse" && e.button!==0)return;
     e.preventDefault?.();
     beginDrag(e.clientX,e.clientY);
     try{e.currentTarget.setPointerCapture(e.pointerId);}catch{}
@@ -11172,6 +11176,7 @@ function HelperMascot({page,settings=null}){
   }
 
   function touchStart(e){
+    if(typeof window!=="undefined" && window.PointerEvent)return;
     const t=e.touches?.[0];
     if(!t)return;
     e.preventDefault?.();
@@ -11179,6 +11184,7 @@ function HelperMascot({page,settings=null}){
   }
 
   function touchMove(e){
+    if(typeof window!=="undefined" && window.PointerEvent)return;
     const t=e.touches?.[0];
     if(!t)return;
     e.preventDefault?.();
@@ -11186,6 +11192,7 @@ function HelperMascot({page,settings=null}){
   }
 
   function touchEnd(e){
+    if(typeof window!=="undefined" && window.PointerEvent)return;
     e.preventDefault?.();
     endDrag();
   }
