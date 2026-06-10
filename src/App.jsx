@@ -1862,7 +1862,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
           boxShadow:"0 12px 24px rgba(0,0,0,.25)"
         }}>
           <div style={{fontWeight:950,fontSize:compact?".94rem":"1.05rem",color:"#FFD66B"}}>{slogan}</div>
-          <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.32}}>Citas, tienda, arcade, rankings, noticias, música y avatar en una experiencia más viva.</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.32}}>Reserva, juega, sube tu avatar y vuelve cuando quieras. Menos panel frío, más estudio con vida.</div>
         </div>
         {user&&(
           <div style={{display:"flex",gap:8,justifyContent:"center",alignItems:"center",marginBottom:10,flexWrap:"wrap"}}>
@@ -1963,12 +1963,12 @@ function Auth({onLogin,showToast,settings}){
         <RastaLandingHero compact={false} settings={settings}/>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
-          <LandingFeature icon="📅" title="Reservas" sub="Elige tratamientos y guarda tu cita." accent="#D4AF37"/>
-          <LandingFeature icon="🎮" title="Juegos" sub="Arcade, récords, Top 10 y RP." accent="#4F602D"/>
-          <LandingFeature icon="🛍️" title="Tienda" sub="Canjea RP por vales, gana RC en juegos y sube XP." accent="#B99A45"/>
-          <LandingFeature icon="🌐" title="Actualidad" sub="Noticias tipo shorts, debate y comunidad." accent="#263F4D"/>
+          <LandingFeature icon="📅" title="Reservas" sub="Pide hora sin vueltas y deja claro qué corte quieres." accent="#D4AF37"/>
+          <LandingFeature icon="🎮" title="Juegos" sub="Minijuegos, récords y piques de barrio." accent="#4F602D"/>
+          <LandingFeature icon="🛍️" title="Tienda" sub="Vales, recompensas y extras sin líos raros." accent="#B99A45"/>
+          <LandingFeature icon="🌐" title="Actualidad" sub="Historias, curiosidades y charla del estudio." accent="#263F4D"/>
           <div style={{gridColumn:"1 / -1"}}>
-            <LandingFeature icon="🎧" title="Música" sub="Reggae, rap clásico, ska y rock para descubrir sin ruido comercial." accent="#4E3A76"/>
+            <LandingFeature icon="🎧" title="Música" sub="Reggae, rap, ska y temas con alma para el local." accent="#4E3A76"/>
           </div>
         </div>
 
@@ -1982,7 +1982,7 @@ function Auth({onLogin,showToast,settings}){
           </div>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800,marginBottom:4}}>{mode==="login"?"Entra al estudio":"Crea tu ficha de cliente"}</div>
           <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginBottom:14}}>
-            {mode==="login"?"Vuelve a tus RP, citas, juegos y comunidad.":"Regístrate para reservar, jugar, leer actualidad y desbloquear recompensas."}
+            {mode==="login"?"Vuelve a tu zona: reservas, arcade, avatar y recompensas.":"Crea tu perfil, entra al estudio y empieza a moverte por Rasta Cuts."}
           </div>
           {formError&&(
             <div style={{background:"#FFEBEE",border:"1.5px solid #8B0000",color:"#8B0000",borderRadius:12,padding:"10px 12px",fontWeight:800,fontSize:"0.82rem",marginBottom:14}}>
@@ -2006,7 +2006,7 @@ function Auth({onLogin,showToast,settings}){
         </Card>
 
         <div style={{textAlign:"center",color:"rgba(255,244,214,.84)",fontSize:".82rem",fontWeight:950,lineHeight:1.35,marginTop:16,padding:"12px 14px",border:"1px solid rgba(212,175,55,.25)",borderRadius:18,background:"rgba(255,244,214,.06)",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
-          {settings?.branding?.mensaje_login||"Forma parte de la comunidad Rasta Cuts: reserva, juega, participa y desbloquea recompensas."}
+          {settings?.branding?.mensaje_login||"Entra al estudio: reserva, juega, comenta y desbloquea cosas sin perderte entre menús."}
         </div>
       </div>
     </div>
@@ -2122,7 +2122,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
         <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2.25rem"}}>🧭</div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",lineHeight:1}}>Gestión real ordenada</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.45rem",lineHeight:1}}>Gestión al día</div>
             <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Lo urgente primero: citas, mensajes, canjes, stock, caja y moderación en una sola vista.</div>
             {updatedAt&&<div style={{marginTop:6,fontSize:".68rem",fontWeight:850,opacity:.72}}>Actualizado: {updatedAt.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}</div>}
           </div>
@@ -2322,7 +2322,7 @@ function ClientDashboard({user,onNavigate,settings}){
       <div style={{height:46,borderRadius:14,display:"grid",placeItems:"center",background:"linear-gradient(135deg,rgba(15,184,144,.22),rgba(224,184,79,.16))",border:"1px solid rgba(255,231,164,.18)",fontSize:"1.45rem"}}>📣</div>
       <div style={{minWidth:0}}>
         <div style={{fontWeight:950,color:"#FFF7DA",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.titulo||item.title||"Novedad Rasta Cuts"}</div>
-        <div style={{fontSize:".72rem",fontWeight:780,color:"rgba(255,247,218,.66)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.contenido||item.descripcion||"Actualización de comunidad"}</div>
+        <div style={{fontSize:".72rem",fontWeight:780,color:"rgba(255,247,218,.66)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.contenido||item.descripcion||"Movimiento del estudio"}</div>
       </div>
     </div>;
   }
@@ -2351,10 +2351,10 @@ function ClientDashboard({user,onNavigate,settings}){
           {['✂️','🎮','🎰','🛍️'].map((x,i)=><div key={x} style={{width:54,height:54,borderRadius:18,display:"grid",placeItems:"center",background:"rgba(3,8,7,.70)",border:"1px solid rgba(255,210,98,.22)",fontSize:"1.6rem",boxShadow:"0 12px 26px rgba(0,0,0,.32)",transform:`translateY(${i%2?12:0}px)`}}>{x}</div>)}
         </div>
         <div style={{position:"relative",zIndex:2,padding:"28px clamp(18px,4vw,42px)",maxWidth:720}}>
-          <Badge col="gold">Bienvenido a tu barbería virtual</Badge>
+          <Badge col="gold">Puerta abierta del estudio</Badge>
           <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(3.1rem,8vw,6.8rem)",lineHeight:.82,margin:"16px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)",letterSpacing:".02em"}}>RASTA CUTS</h1>
-          <div style={{fontSize:"clamp(1.05rem,2.2vw,1.45rem)",fontWeight:1000,color:"#FFE7A4",textTransform:"uppercase",letterSpacing:".02em"}}>Tu estilo. Tu arcade. Tu comunidad.</div>
-          <p style={{maxWidth:540,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"12px 0 18px"}}>Juega, sube de nivel, gana RC y XP, completa misiones y desbloquea recompensas sin perder de vista la peluquería real.</p>
+          <div style={{fontSize:"clamp(1.05rem,2.2vw,1.45rem)",fontWeight:1000,color:"#FFE7A4",textTransform:"uppercase",letterSpacing:".02em"}}>Cortes, retos y recompensas con rollo propio.</div>
+          <p style={{maxWidth:540,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"12px 0 18px"}}>Entra al estudio, echa unas partidas, cuida tu avatar y consigue recompensas sin romper la economía.</p>
           <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:18}}>
             <HeroButton to="juegos">🎮 Jugar ahora</HeroButton>
             <HeroButton to="misiones" variant="ghost">🎯 Ver misiones</HeroButton>
@@ -2378,30 +2378,30 @@ function ClientDashboard({user,onNavigate,settings}){
             boxShadow:"0 16px 38px rgba(0,0,0,.22)"
           }}>
             <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}>
-              <div><div style={{fontSize:".72rem",fontWeight:1000,color:"#E0B84F",textTransform:"uppercase",letterSpacing:".08em"}}>Evento de temporada</div><div style={{fontSize:"1.35rem",fontWeight:1000}}>Corte legendario</div><div style={{fontSize:".82rem",fontWeight:780,color:"rgba(255,247,218,.72)"}}>Completa misiones, sube en ranking y desbloquea recompensas.</div></div>
-              <button onClick={()=>onNavigate?.("misiones")} style={{border:"1px solid rgba(255,210,98,.48)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver evento →</button>
+              <div><div style={{fontSize:".72rem",fontWeight:1000,color:"#E0B84F",textTransform:"uppercase",letterSpacing:".08em"}}>Reto de temporada</div><div style={{fontSize:"1.35rem",fontWeight:1000}}>Corte legendario</div><div style={{fontSize:".82rem",fontWeight:780,color:"rgba(255,247,218,.72)"}}>Completa retos, sube en el ranking y desbloquea premios con cabeza.</div></div>
+              <button onClick={()=>onNavigate?.("misiones")} style={{border:"1px solid rgba(255,210,98,.48)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver reto →</button>
             </div>
           </div>
 
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12}}>
             <FeatureCard icon="🎮" title="Arcade" sub="Minijuegos, récords, RC, XP y ranking." to="juegos" tone="blue" art="🕹️"/>
-            <FeatureCard icon="🏪" title="Tycoon" sub="Gestiona tu estudio usando RC globales." to="juegos" tone="gold" art="🏗️"/>
-            <FeatureCard icon="🎰" title="Gacha" sub="Premios pequeños, tiradas extra y progreso sin RP gratis." to="juegos" tone="pink" art="🔮"/>
-            <FeatureCard icon="🛍️" title="Tienda juegos" sub="Vales de tiradas y extras separados de productos reales." to="tienda" tone="blue" art="🎫"/>
-            <FeatureCard icon="🧑‍🎤" title="Avatar" sub="Nivel, roles, insignias y recompensas del camino." to="perfil" tone="green" art="👑"/>
-            <FeatureCard icon="🌐" title="Comunidad" sub="Tablón, foro, actualidad y perfiles públicos." to="comunidad" tone="orange" art="👥"/>
+            <FeatureCard icon="🏪" title="Tycoon" sub="Monta tu barbería y gasta RC con cabeza." to="juegos" tone="gold" art="🏗️"/>
+            <FeatureCard icon="🎰" title="Gacha" sub="Suerte, tiradas y premios pequeños. Nada de RP regalados." to="juegos" tone="pink" art="🔮"/>
+            <FeatureCard icon="🛍️" title="Tienda juegos" sub="Vales para jugar y extras bien separados de la tienda real." to="tienda" tone="blue" art="🎫"/>
+            <FeatureCard icon="🧑‍🎤" title="Avatar" sub="Tu personaje, tu rol y tus insignias." to="perfil" tone="green" art="👑"/>
+            <FeatureCard icon="🌐" title="Comunidad" sub="Foro, tablón, historias y perfiles con vida." to="comunidad" tone="orange" art="👥"/>
           </div>
         </div>
 
         <aside style={{display:"grid",gap:12}}>
           <div style={{borderRadius:24,padding:16,background:"linear-gradient(160deg,rgba(7,16,13,.96),rgba(31,42,23,.88))",border:"1px solid rgba(255,210,98,.30)",color:"#FFF7DA",boxShadow:"0 16px 38px rgba(0,0,0,.24)"}}>
-            <div style={{fontWeight:1000,color:"#E0B84F",textTransform:"uppercase",fontSize:".78rem"}}>Recompensa diaria</div>
+            <div style={{fontWeight:1000,color:"#E0B84F",textTransform:"uppercase",fontSize:".78rem"}}>Ronda diaria</div>
             <div style={{fontSize:"3rem",margin:"12px 0",textAlign:"center",filter:"drop-shadow(0 0 18px rgba(224,184,79,.35))"}}>🎁</div>
-            <div style={{fontSize:".83rem",fontWeight:780,color:"rgba(255,247,218,.76)",lineHeight:1.4}}>Entra, revisa misiones y reclama progreso sin romper la economía.</div>
-            <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:14,width:"100%",border:"none",borderRadius:14,padding:"11px 12px",background:"linear-gradient(135deg,#E0B84F,#B97D22)",fontWeight:1000,color:"#201407",cursor:"pointer"}}>🎯 Ir a misiones</button>
+            <div style={{fontSize:".83rem",fontWeight:780,color:"rgba(255,247,218,.76)",lineHeight:1.4}}>Pasa por el estudio, revisa retos y suma un poco sin regalar la casa.</div>
+            <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:14,width:"100%",border:"none",borderRadius:14,padding:"11px 12px",background:"linear-gradient(135deg,#E0B84F,#B97D22)",fontWeight:1000,color:"#201407",cursor:"pointer"}}>🎯 Ver retos</button>
           </div>
           <div style={{borderRadius:24,padding:16,background:"linear-gradient(160deg,rgba(8,12,11,.96),rgba(17,37,31,.90))",border:"1px solid rgba(95,240,200,.26)",color:"#FFF7DA"}}>
-            <div style={{fontWeight:1000,color:"#5EF0C8",textTransform:"uppercase",fontSize:".78rem"}}>Tu progreso</div>
+            <div style={{fontWeight:1000,color:"#5EF0C8",textTransform:"uppercase",fontSize:".78rem"}}>Tu personaje</div>
             <div style={{marginTop:10,display:"flex",alignItems:"center",gap:10}}><Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={54}/><div><div style={{fontWeight:1000}}>{nivel}</div><div style={{fontSize:".75rem",fontWeight:800,color:"rgba(255,247,218,.70)"}}>{progress.remaining} XP para subir</div></div></div>
             <div style={{marginTop:12,height:9,borderRadius:999,background:"rgba(255,255,255,.12)",overflow:"hidden"}}><div style={{height:"100%",width:`${progress.pct}%`,borderRadius:999,background:"linear-gradient(90deg,#5EF0C8,#E0B84F,#B878FF)"}}/></div>
             <div style={{marginTop:10}}><AvatarBadgesStrip user={user} limit={3} dark/></div>
@@ -2412,18 +2412,18 @@ function ClientDashboard({user,onNavigate,settings}){
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:14}}>
         <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(18,29,22,.94))",border:"1px solid rgba(255,210,98,.25)",color:"#FFF7DA"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}><div style={{fontWeight:1000,color:"#E0B84F"}}>📰 Novedades</div><button onClick={()=>onNavigate?.("comunidad")} style={{border:"none",background:"transparent",color:"#5EF0C8",fontWeight:1000,cursor:"pointer"}}>Ver todas</button></div>
-          {(noticias||[]).slice(0,2).length?(noticias||[]).slice(0,2).map(n=><NewsMini key={n.id||n.titulo} item={n}/>):<div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,247,218,.68)",marginTop:12}}>Aún no hay novedades oficiales publicadas.</div>}
+          {(noticias||[]).slice(0,2).length?(noticias||[]).slice(0,2).map(n=><NewsMini key={n.id||n.titulo} item={n}/>):<div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,247,218,.68)",marginTop:12}}>Aún no hay nada nuevo colgado en el estudio.</div>}
         </div>
         <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(20,24,15,.94))",border:"1px solid rgba(95,240,200,.22)",color:"#FFF7DA"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}><div style={{fontWeight:1000,color:"#5EF0C8"}}>🎯 Misiones diarias</div><button onClick={()=>onNavigate?.("misiones")} style={{border:"none",background:"transparent",color:"#E0B84F",fontWeight:1000,cursor:"pointer"}}>Ver todas</button></div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}><div style={{fontWeight:1000,color:"#5EF0C8"}}>🎯 Retos diarios</div><button onClick={()=>onNavigate?.("misiones")} style={{border:"none",background:"transparent",color:"#E0B84F",fontWeight:1000,cursor:"pointer"}}>Ver todas</button></div>
           <div style={{display:"grid",gap:8,marginTop:12}}>{dailyPreview.map(m=><div key={m.key} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"center",padding:"9px 10px",borderRadius:14,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.08)"}}><div><div style={{fontWeight:930}}>{m.icon} {m.title}</div><div style={{fontSize:".70rem",fontWeight:760,color:"rgba(255,247,218,.62)"}}>{m.desc}</div></div><Badge col="gold">+{m.rp||0} RP</Badge></div>)}</div>
         </div>
         <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(28,20,13,.94))",border:"1px solid rgba(255,210,98,.24)",color:"#FFF7DA"}}>
-          <div style={{fontWeight:1000,color:"#E0B84F"}}>🏆 Actividad arcade</div>
+          <div style={{fontWeight:1000,color:"#E0B84F"}}>🏆 Movimiento arcade</div>
           <div style={{marginTop:12,display:"grid",gap:8}}>
-            <div style={{padding:12,borderRadius:16,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.08)"}}><div style={{fontWeight:1000}}>Última marca</div><div style={{fontSize:".85rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{bestRecent?`${bestRecent.game_id||"Juego"} · ${Number(bestRecent.score)||Number(bestRecent.points)||0}`:"Juega una partida para aparecer aquí."}</div></div>
-            {pendingOrder&&<div style={{padding:12,borderRadius:16,background:"rgba(224,184,79,.10)",border:"1px solid rgba(224,184,79,.22)"}}><div style={{fontWeight:1000}}>📦 Pedido en curso</div><div style={{fontSize:".8rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{pendingOrder.item_nombre||"Pedido"} · {pendingOrder.estado||"pendiente"}</div></div>}
-            {availableCoupons.length>0&&<div style={{padding:12,borderRadius:16,background:"rgba(95,240,200,.08)",border:"1px solid rgba(95,240,200,.20)"}}><div style={{fontWeight:1000}}>🎟️ Cupón disponible</div><div style={{fontSize:".8rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{availableCoupons[0].codigo||availableCoupons[0].nombre}</div></div>}
+            <div style={{padding:12,borderRadius:16,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.08)"}}><div style={{fontWeight:1000}}>Última partida</div><div style={{fontSize:".85rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{bestRecent?`${bestRecent.game_id||"Juego"} · ${Number(bestRecent.score)||Number(bestRecent.points)||0}`:"Juega una ronda y deja tu marca aquí."}</div></div>
+            {pendingOrder&&<div style={{padding:12,borderRadius:16,background:"rgba(224,184,79,.10)",border:"1px solid rgba(224,184,79,.22)"}}><div style={{fontWeight:1000}}>📦 Canje en marcha</div><div style={{fontSize:".8rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{pendingOrder.item_nombre||"Pedido"} · {pendingOrder.estado||"pendiente"}</div></div>}
+            {availableCoupons.length>0&&<div style={{padding:12,borderRadius:16,background:"rgba(95,240,200,.08)",border:"1px solid rgba(95,240,200,.20)"}}><div style={{fontWeight:1000}}>🎟️ Vale disponible</div><div style={{fontSize:".8rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{availableCoupons[0].codigo||availableCoupons[0].nombre}</div></div>}
           </div>
         </div>
       </div>
@@ -2433,7 +2433,7 @@ function ClientDashboard({user,onNavigate,settings}){
 
 // ACTUALIDAD MAGAZINE + COMUNIDAD
 const NEWS_CATEGORIES=[
-  {id:"todo",label:"Selección editorial",short:"Selección",icon:"✨",desc:"lo mejor para leer hoy"},
+  {id:"todo",label:"Lo destacado",short:"Selección",icon:"✨",desc:"lo que merece un vistazo"},
   {id:"curiosidades",label:"Curiosidades",short:"Curiosidades",icon:"💡",desc:"datos rápidos y sorprendentes"},
   {id:"rural",label:"Vida rural",short:"Rural",icon:"🌾",desc:"campo, granjas y producto local"},
   {id:"comer",label:"Comer bien",short:"Comer",icon:"🍽️",desc:"bares, restaurantes y gastronomía"},
@@ -3448,7 +3448,7 @@ function Inventario({showToast}){
 
 // CAJA
 function Caja({user,showToast}){
-  if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Zona interna" sub="Sólo admin y staff pueden usar facturación."/>;
+  if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Acceso interno" sub="Sólo admin y staff pueden acceder a facturación."/>;
   const [cobros,setCobros]=useState([]);
   const [citasRealizadas,setCitasRealizadas]=useState([]);
   const [showNew,setShowNew]=useState(false);
@@ -3978,16 +3978,16 @@ function SocialFeed({user,setUser,showToast,showPoints}){
   }
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="📌" title="Tablón oficial" sub="Avisos de Rasta Cuts. Para debatir usa el Foro y para noticias usa Actualidad."/>
+      <SectionHeader icon="📌" title="Tablón del estudio" sub="Novedades del local. Para charlar, mejor el foro. Para historias, actualidad."/>
       <Card style={{marginBottom:16,background:'linear-gradient(180deg,#E9D9B7 0%,#DEC79A 100%)',border:`2px solid ${T.g300}`,boxShadow:'0 10px 24px rgba(20,8,4,.16)'}}>
-        <div style={{fontWeight:950,fontSize:'.96rem',color:T.g800,marginBottom:8}}>📣 Nuevo anuncio oficial</div>
+        <div style={{fontWeight:950,fontSize:'.96rem',color:T.g800,marginBottom:8}}>📣 Nuevo aviso del estudio</div>
         {canPost? <>
           <textarea value={newPost} onChange={e=>setNewPost(e.target.value)} placeholder="Escribe una promoción, aviso, norma, actualización o evento..." rows={4} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"12px 13px",fontSize:"0.92rem",fontWeight:700,color:T.text,background:T.g150,resize:"none",outline:"none",boxShadow:'inset 0 2px 8px rgba(20,8,4,.06)'}}/>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10,gap:8}}>
             <span style={{fontSize:"0.8rem",color:T.g700,fontWeight:900}}>Sólo admin/staff publican. Los usuarios reaccionan con likes.</span>
             <Btn small col="dark" onClick={publish} style={{fontWeight:900,letterSpacing:'.4px'}}>📌 Publicar</Btn>
           </div>
-        </> : <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Este feed ahora funciona como tablón oficial. Puedes leer anuncios y dar me gusta; para debatir o abrir temas usa la pestaña Foro.</div>}
+        </> : <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub,lineHeight:1.45}}>Este tablón es para avisos rápidos. Puedes leer y dar like. Para debatir o abrir temas, entra al foro.</div>}
       </Card>
       {loading?<Spinner/>:posts.length===0?<EmptyState icon="📌" title="Sin anuncios" sub="Cuando el equipo publique novedades aparecerán aquí."/>:posts.map(p=>{
         const a=authorOf(p);
@@ -4262,7 +4262,7 @@ function Foro({user,showToast}){
         <div className="icon3d" style={{fontSize:"2rem"}}>🗣️</div>
         <div style={{flex:1}}>
           <div style={{fontWeight:950,fontSize:"1rem"}}>Foro de comunidad</div>
-          <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Abre temas, responde dudas, vota ideas y participa sin mezclarlo con el tablón oficial.</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Abre temas, responde dudas, vota ideas y habla sin llenar el tablón de ruido.</div>
         </div>
       </div>
     </Card>}
@@ -4541,7 +4541,7 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
       <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div>
           <div style={{fontSize:".74rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:T.textSub}}>{SHOP_PHASE_LABEL}</div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.72rem",lineHeight:1,color:T.g800}}>Tienda y canjes</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.72rem",lineHeight:1,color:T.g800}}>Tienda Rasta</div>
           <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>
             Tienda separada: aquí sólo se compran vales de juegos y productos reales. Estilos, fondos y cupones viven en el Camino de recompensas.
           </div>
@@ -4598,7 +4598,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
   const [cat,setCat]=useState("todo");
   const tiendaActiva=settings?.secciones?.tienda_activa!==false;
   useEffect(()=>{if(tiendaActiva)load();},[tiendaActiva]);
-  if(!tiendaActiva)return <DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión &gt; Ajustes."/>;
+  if(!tiendaActiva)return <DisabledSection icon="🛍️" title="Tienda cerrada" sub="La tienda está pausada desde Gestión."/>;
 
   async function load(){
     setLoading(true);
@@ -4708,7 +4708,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
       <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>RastaPoints</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0} RP</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los fondos, estilos y cupones están en Perfil &gt; Camino. Aquí van vales de juegos y productos reales. Los RC se usan en Tycoon y progresión de juegos.</div></div>
+          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>RastaPoints</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0} RP</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los estilos y vales grandes viven en el Camino del perfil. Aquí van vales de juego y productos reales. Los RC se usan en Tycoon y progreso.</div></div>
           <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
@@ -6271,7 +6271,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     return ()=>setHelperPage?.(null);
   },[activeGame,setHelperPage]);
 
-  if(!arcadeActiva)return <DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión &gt; Ajustes."/>;
+  if(!arcadeActiva)return <DisabledSection icon="🎮" title="Arcade desactivado" sub="El Arcade está pausado desde Gestión."/>;
 
   async function handleWin(gameId,score){
     const alreadyPlayed=getPlayedToday(gameId,uid);
@@ -6375,7 +6375,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
   const extraPulls=getGachaExtraPulls(uid);
   const categoryDefs=[
     {id:"destacados",icon:"⭐",label:"Destacados",sub:"Lo principal para avanzar",ids:["tycoon","gacha","runner"]},
-    {id:"ranking",icon:"🏆",label:"Ranking",sub:"Juegos de marca y Top",ids:["runner","jump","stitch","memoria"]},
+    {id:"ranking",icon:"🏆",label:"Ranking",sub:"Piques y Top",ids:["runner","jump","stitch","memoria"]},
     {id:"clasicos",icon:"🕹️",label:"Clásicos",sub:"Partidas rápidas",ids:["memoria","sopa","trivia"]},
     {id:"todos",icon:"🎮",label:"Todos",sub:"Todo el Arcade",ids:GAMES.map(g=>g.id)}
   ];
@@ -6416,7 +6416,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
 
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🎮" title="Rasta Arcade" sub="Juegos, rankings, RC, XP, Gacha y Tycoon en una zona más clara."/>
+      <SectionHeader icon="🎮" title="Arcade Rasta" sub="Juegos, piques, Gacha y Tycoon en una zona pensada para entrar y jugar."/>
 
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#171008,#2B331A 48%,#C9A43D)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
         <div style={{position:"absolute",right:-22,top:-34,fontSize:"7rem",opacity:.12,transform:"rotate(-10deg)"}}>🎮</div>
@@ -6425,7 +6425,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
             <Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={54}/>
             <div style={{flex:1,minWidth:220}}>
               <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.62rem",lineHeight:1}}>Centro Arcade</div>
-              <div style={{fontSize:".82rem",fontWeight:850,opacity:.84,lineHeight:1.35}}>Juega para subir marca, cobrar recompensas diarias y mover tu economía de RP, RC y XP.</div>
+              <div style={{fontSize:".82rem",fontWeight:850,opacity:.84,lineHeight:1.35}}>Juega, deja marca y mueve RP, RC y XP sin que parezca una hoja de cálculo.</div>
             </div>
             <div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>
               <Badge col="gold">💎 {Number(user?.puntos||0)} RP</Badge>
@@ -6444,7 +6444,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
         <button onClick={()=>onOpenTops?.("games")} style={{border:`2px solid ${T.g300}`,borderRadius:20,padding:"13px 12px",background:"linear-gradient(135deg,#FFF4D6,#EBD7A8)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 8px 18px rgba(20,8,4,.13)"}}><div style={{fontSize:"1.6rem"}}>🏆</div><div>Ranking semanal</div><div style={{fontSize:".72rem",color:T.textSub,marginTop:3}}>Top por minijuego</div></button>
-        <button onClick={()=>onOpenTops?.("general")} style={{border:`2px solid ${T.g300}`,borderRadius:20,padding:"13px 12px",background:"linear-gradient(135deg,#FFF4D6,#EBD7A8)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 8px 18px rgba(20,8,4,.13)"}}><div style={{fontSize:"1.6rem"}}>👑</div><div>Top general</div><div style={{fontSize:".72rem",color:T.textSub,marginTop:3}}>Actividad y comunidad</div></button>
+        <button onClick={()=>onOpenTops?.("general")} style={{border:`2px solid ${T.g300}`,borderRadius:20,padding:"13px 12px",background:"linear-gradient(135deg,#FFF4D6,#EBD7A8)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 8px 18px rgba(20,8,4,.13)"}}><div style={{fontSize:"1.6rem"}}>👑</div><div>Ranking general</div><div style={{fontSize:".72rem",color:T.textSub,marginTop:3}}>Juego y comunidad</div></button>
       </div>
 
       <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF8E6,#F3E4BD)",border:`1.5px solid ${T.g200}`}}>
@@ -6485,9 +6485,9 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
   const weekly=mode==="weekly";
   const GENERAL_KINDS=[
     {id:"total",icon:"💎",title:"General",sub:"RP actuales",unit:"RP"},
-    {id:"games",icon:"🎮",title:"Juegos",sub:"Récords acumulados en Arcade",unit:"RP"},
-    {id:"shop",icon:"🛍️",title:"Tienda",sub:"RP canjeados por cupones, avatar, juegos y premios",unit:"RP"},
-    {id:"community",icon:"🌐",title:"Comunidad",sub:"Temas, respuestas, votos y participación real",unit:"RP"},
+    {id:"games",icon:"🎮",title:"Juegos",sub:"Récords y piques de Arcade",unit:"RP"},
+    {id:"shop",icon:"🛍️",title:"Tienda",sub:"RP gastados en vales, avatar, juegos y premios",unit:"RP"},
+    {id:"community",icon:"🌐",title:"Comunidad",sub:"Foro, respuestas y participación",unit:"RP"},
   ];
   const generalMeta=GENERAL_KINDS.find(x=>x.id===generalKind)||GENERAL_KINDS[0];
 
@@ -6660,12 +6660,12 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
             </button>
             <button onClick={()=>{SFX.tab();setSection("general");}} style={{border:`2px solid ${section==="general"?T.gold:"rgba(255,244,214,.28)"}`,borderRadius:18,padding:"13px 10px",background:section==="general"?"rgba(255,244,214,.22)":"rgba(255,244,214,.10)",color:T.white,fontWeight:950,cursor:"pointer",boxShadow:section==="general"?"0 10px 24px rgba(185,154,69,.24)":"none"}}>
               <div style={{fontSize:"1.75rem",lineHeight:1}}>👑</div>
-              <div style={{fontSize:"1.05rem",marginTop:5}}>Top general</div>
+              <div style={{fontSize:"1.05rem",marginTop:5}}>Ranking general</div>
               <div style={{fontSize:".68rem",opacity:.76,lineHeight:1.25}}>clientes y actividad</div>
             </button>
           </div>
           <div style={{fontSize:".76rem",fontWeight:800,opacity:.82,lineHeight:1.35,marginTop:10}}>
-            {section==="games"?"Top 10 de récords del Arcade: semanal, histórico y por minijuego.":"Top general dividido en RP, juegos, tienda y comunidad."}
+            {section==="games"?"Top 10 de récords del Arcade: semanal, histórico y por minijuego.":"Ranking general dividido en RP, juegos, tienda y comunidad."}
           </div>
         </div>
       </Card>
@@ -6701,7 +6701,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
 
       {section==="general"&&<>
         <Card style={{marginBottom:12,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`2px solid ${T.g300}`}}>
-          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>Top general por categoría</div>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>Ranking general por categoría</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
             {GENERAL_KINDS.map(k=>{
               const active=generalKind===k.id;
@@ -6715,7 +6715,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
         </Card>
         <Card style={{background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
-            <div><div style={{fontWeight:950,fontSize:"1.05rem"}}>{generalMeta.icon} Top general · {generalMeta.title}</div><div style={{fontSize:".74rem",opacity:.78,fontWeight:800}}>{generalMeta.sub}</div></div>
+            <div><div style={{fontWeight:950,fontSize:"1.05rem"}}>{generalMeta.icon} Ranking general · {generalMeta.title}</div><div style={{fontSize:".74rem",opacity:.78,fontWeight:800}}>{generalMeta.sub}</div></div>
             <Badge col="gold">{generalRows.length}/10</Badge>
           </div>
           {generalLoading?<Spinner/>:generalRows.length===0?<EmptyState icon="👑" title="Sin datos todavía" sub="Cuando los clientes participen, jueguen o canjeen RP aparecerán aquí."/>:generalRows.map((r,i)=><RankRow key={`${r.user_id}-${generalKind}-${i}-${livePulse}`} r={r} i={i} unit={generalMeta.unit}/>)}
@@ -6808,7 +6808,7 @@ function Ranking({user}){
     return Number(u.puntos||0);
   }
   const cfg={
-    global:{icon:"🏆",title:"Top general",sub:"Puntos acumulados"},
+    global:{icon:"🏆",title:"Ranking general",sub:"Puntos acumulados"},
     semana:{icon:"⚡",title:"Top semana",sub:"Se reinicia semanalmente si guardas puntos_semana"},
     compras:{icon:"🛒",title:"Top compras",sub:"Puntos generados por compras"},
   };
@@ -6987,13 +6987,13 @@ const MISSION_DEFS=[
   // No deben ser la fuente principal de RC ni pueden imprimir RP sin control.
   {key:"daily_arcade",period:"day",icon:"🎮",title:"Una partida al día",desc:"Juega y guarda una partida de Arcade hoy. Premio pequeño para mantener el hábito.",goal:1,rp:2,rc:3,xp:5,points:2,type:"gamesToday",action:"juegos",actionLabel:"Ir al Arcade"},
   {key:"daily_gacha",period:"day",icon:"🎰",title:"Tirada Gacha",desc:"Haz una tirada en el Gacha Barber hoy. No da RP, sólo una ayuda pequeña.",goal:1,rp:0,rc:1,xp:3,points:0,type:"gachaToday",action:"juegos",actionLabel:"Ir al Gacha"},
-  {key:"daily_news_comment",period:"day",icon:"💬",title:"Opina en Actualidad",desc:"Comenta una noticia hoy. Participar suma, pero sin regalar economía.",goal:1,rp:1,rc:0,xp:5,points:1,type:"commentsToday",action:"noticias",actionLabel:"Ir a Actualidad"},
+  {key:"daily_news_comment",period:"day",icon:"💬",title:"Deja tu huella",desc:"Comenta algo del tablón o actualidad. Participar suma, pero sin regalar la tienda.",goal:1,rp:1,rc:0,xp:5,points:1,type:"commentsToday",action:"noticias",actionLabel:"Ir a Actualidad"},
   {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy. Premio simbólico de XP.",goal:1,rp:0,rc:0,xp:2,points:0,type:"likesToday",action:"noticias",actionLabel:"Ir a Actualidad"},
   {key:"daily_tycoon",period:"day",icon:"🏪",title:"Turno Tycoon",desc:"Atiende clientes o guarda actividad del Tycoon hoy. El RC fuerte lo genera el propio Tycoon, no la misión.",goal:1,rp:0,rc:3,xp:5,points:0,type:"tycoonToday",action:"juegos",actionLabel:"Ir al Tycoon"},
-  {key:"weekly_arcade_5",period:"week",icon:"🕹️",title:"Rutina Arcade",desc:"Guarda 5 partidas esta semana. Recompensa semanal moderada.",goal:5,rp:4,rc:10,xp:20,points:4,type:"gamesWeek",action:"juegos",actionLabel:"Ir al Arcade"},
+  {key:"weekly_arcade_5",period:"week",icon:"🕹️",title:"Pique Arcade",desc:"Guarda 5 partidas esta semana. Premio justo, sin pasarse.",goal:5,rp:4,rc:10,xp:20,points:4,type:"gamesWeek",action:"juegos",actionLabel:"Ir al Arcade"},
   {key:"weekly_comments_5",period:"week",icon:"🗣️",title:"Conversador semanal",desc:"Comenta 5 noticias esta semana. Premio centrado en XP.",goal:5,rp:3,rc:0,xp:25,points:3,type:"commentsWeek",action:"noticias",actionLabel:"Ir a Actualidad"},
-  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Comunidad viva",desc:"Haz 1 partida, 1 comentario y 1 like esta semana.",goal:3,rp:3,rc:5,xp:15,points:3,type:"mixedWeek",action:"dashboard",actionLabel:"Ver Inicio"},
-  {key:"weekly_tycoon",period:"week",icon:"💈",title:"Peluquería activa",desc:"Juega o guarda actividad del Tycoon 3 veces esta semana. Bonus pequeño porque el Tycoon ya genera RC.",goal:3,rp:2,rc:10,xp:20,points:2,type:"tycoonWeek",action:"juegos",actionLabel:"Ir al Tycoon"},
+  {key:"weekly_mixed",period:"week",icon:"🌐",title:"Barrio vivo",desc:"Juega, comenta y da un like esta semana.",goal:3,rp:3,rc:5,xp:15,points:3,type:"mixedWeek",action:"dashboard",actionLabel:"Ver Inicio"},
+  {key:"weekly_tycoon",period:"week",icon:"💈",title:"Tycoon en marcha",desc:"Entra al Tycoon 3 veces esta semana. Bonus pequeño porque el juego ya genera RC.",goal:3,rp:2,rc:10,xp:20,points:2,type:"tycoonWeek",action:"juegos",actionLabel:"Ir al Tycoon"},
 ];
 function missionRewards(m){
   const parts=[];
@@ -7010,7 +7010,7 @@ const TROPHY_DEFS=[
   {key:"first_comment",icon:"💬",title:"Primera opinión",desc:"Deja tu primer comentario en Actualidad",condition:s=>s.commentsAll>=1},
   {key:"news_liker",icon:"👍",title:"Buen radar",desc:"Da 5 likes a contenidos útiles",condition:s=>s.likesAll>=5},
   {key:"weekly_player",icon:"🔥",title:"Semana activa",desc:"Guarda 3 partidas en una misma semana",condition:s=>s.gamesWeek>=3},
-  {key:"commentator",icon:"🗣️",title:"Voz de la comunidad",desc:"Acumula 5 comentarios en Actualidad",condition:s=>s.commentsAll>=5},
+  {key:"commentator",icon:"🗣️",title:"Voz del barrio",desc:"Deja 5 comentarios en actualidad o comunidad",condition:s=>s.commentsAll>=5},
   {key:"stitch_apprentice",icon:"🪝",title:"Aprendiz del gancho",desc:"Guarda 3 partidas de Gancho Ninja",condition:s=>s.stitchAll>=3},
   {key:"category_explorer",icon:"🧭",title:"Explorador de temas",desc:"Comenta en 3 categorías distintas",condition:s=>s.categoriesAll>=3},
   {key:"arcade_regular",icon:"🏆",title:"Cliente de arcade",desc:"Guarda 15 partidas en total",condition:s=>s.gamesAll>=15},
@@ -7141,7 +7141,7 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints,onNavigate=null}){
   const available=MISSION_DEFS.filter(m=>missionValue(m,stats)>=m.goal&&!claimed[`${m.key}_${missionPeriodKey(m)}`]).length;
   return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${available?T.gold:T.g300}`}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:12}}>
-      <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🎯 Objetivos y trofeos</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Motivos claros para volver cada día sin regalar RP infinitos.</div></div>
+      <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🎯 Objetivos y trofeos</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Excusas buenas para volver cada día sin imprimir RP.</div></div>
       <Badge col={available?"gold":"green"}>{available} listos</Badge>
     </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
@@ -7156,7 +7156,7 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints,onNavigate=null}){
 
 function MisionesPage({user,setUser,showToast,showPoints,onNavigate}){
   return <div>
-    <SectionHeader icon="🎯" title="Misiones" sub="Objetivos diarios y semanales con recompensas pequeñas. Los RP y RC se mantienen controlados para no romper la economía."/>
+    <SectionHeader icon="🎯" title="Misiones" sub="Retos diarios y semanales con premio medido. RP y RC siguen bajo control."/>
     <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)",border:`2px solid ${T.g300}`}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,textAlign:"center"}}>
         <div><div style={{fontSize:"1.35rem"}}>💎</div><div style={{fontWeight:950,color:T.g800}}>RP</div><div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>Tienda y cupones</div></div>
@@ -7792,7 +7792,7 @@ function MusicaComunidad({showToast}){
     const isSka=hasWord(`${genero} ${artista} ${titulo}`,["ska","ska-p","skap"])||full.includes("ska punk");
     const isRap=hasWord(`${genero} ${artista} ${titulo}`,["rap","hiphop","hip-hop"])||full.includes("hip hop")||full.includes("hip-hop");
     if(filter==="todo")return true;
-    if(filter==="propia")return full.includes("propio")||full.includes("archivo")||String(item.tipo)==="archivo"||Boolean(item.audio_url);
+    if(filter==="propia")return full.includes("propio")||full.includes("audio")||full.includes("archivo")||String(item.tipo)==="archivo"||String(item.tipo)==="audio"||Boolean(item.audio_url);
     if(filter==="reggae")return full.includes("reggae")||full.includes("dancehall");
     if(filter==="rap")return isRap&&!isSka;
     if(filter==="ska")return isSka;
@@ -7829,8 +7829,8 @@ function MusicaComunidad({showToast}){
         <div style={{position:"absolute",right:-18,top:-28,fontSize:"7rem",opacity:.10,transform:"rotate(-12deg)"}}>🎧</div>
         <div style={{position:"relative",zIndex:1}}>
           <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,244,214,.72)"}}>Biblioteca Rasta Cuts</div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1,color:"#FFD66B",textShadow:"0 4px 12px rgba(0,0,0,.35)"}}>Biblioteca musical</div>
-          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35,marginTop:4}}>Selección editable desde admin: enlaces oficiales y archivos propios/libres subidos con permiso.</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1,color:"#FFD66B",textShadow:"0 4px 12px rgba(0,0,0,.35)"}}>Radio Rasta Cuts</div>
+          <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35,marginTop:4}}>Música del local: enlaces, artistas y audios propios o libres bien puestos.</div>
           <button onClick={reloadMusic} style={{marginTop:11,border:"1px solid rgba(255,244,214,.35)",background:"rgba(255,244,214,.12)",color:T.white,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>🔄 Cambiar selección</button>
         </div>
       </div>
@@ -7842,7 +7842,7 @@ function MusicaComunidad({showToast}){
       </div>
     </Card>
 
-    {loading?<Spinner/>:list.length===0?<EmptyState icon="🎧" title="Sin música en esta categoría" sub="Añade artistas, enlaces o archivos desde Gestión > Música."/>:
+    {loading?<Spinner/>:list.length===0?<EmptyState icon="🎧" title="Aquí aún no suena nada" sub="Añade artistas, enlaces o audios desde el panel de música."/>:
       <div style={{display:"grid",gap:12}}>
         {list.map(item=><Card key={item.id} style={{padding:0,overflow:"hidden",background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${item.destacado?T.gold:T.g300}`}} hover>
           <div style={{display:"grid",gridTemplateColumns:"88px 1fr",gap:0}}>
@@ -7858,7 +7858,7 @@ function MusicaComunidad({showToast}){
                 </div>
                 <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"flex-end"}}>
                   {item.destacado&&<Badge col="gold">Destacado</Badge>}
-                  <Badge col={item.tipo==="archivo"?"green":"blue"}>{item.tipo==="archivo"?"Audio":"Enlace"}</Badge>
+                  <Badge col={(item.tipo==="archivo"||item.tipo==="audio")?"green":"blue"}>{(item.tipo==="archivo"||item.tipo==="audio")?"Audio":"Enlace"}</Badge>
                 </div>
               </div>
               <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:8}}>{item.descripcion||"Música recomendada por Rasta Cuts."}</div>
@@ -7883,7 +7883,7 @@ function MusicaComunidad({showToast}){
 
     <Card style={{marginTop:14,background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`}}>
       <div style={{fontWeight:950,color:T.g800}}>📌 Nota legal sencilla</div>
-      <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Usa enlaces para música comercial. Sube archivos sólo si son tuyos, libres o tienes permiso para publicarlos.</div>
+      <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Para música comercial, mejor enlaces. Sube audios sólo si son tuyos, libres o tienes permiso.</div>
     </Card>
   </div>;
 }
@@ -7911,7 +7911,7 @@ function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=
   },[]);
   const comunidad=settings?.comunidad||{};
   const normas=[
-    "El tablón es para avisos oficiales de la tienda.",
+    "El tablón es para avisos del estudio.",
     "El foro es para dudas, propuestas, votaciones y charla entre usuarios.",
     "Los reportes sirven para mantener la comunidad limpia sin discusiones raras."
   ];
@@ -7926,9 +7926,9 @@ function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=
     <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F4E0B4)",border:`1.5px solid ${T.g200}`,boxShadow:"0 10px 22px rgba(20,8,4,.10)",marginBottom:10}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:220}}>
-          <div style={{fontFamily:"'Baloo 2','Plus Jakarta Sans','Outfit',system-ui,sans-serif",fontSize:"1.35rem",fontWeight:950,color:T.g800,lineHeight:1}}>Centro de comunidad</div>
+          <div style={{fontFamily:"'Baloo 2','Plus Jakarta Sans','Outfit',system-ui,sans-serif",fontSize:"1.35rem",fontWeight:950,color:T.g800,lineHeight:1}}>Barrio Rasta Cuts</div>
           <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.38,marginTop:4}}>
-            {comunidad.mensaje_comunidad||"Participa con respeto, usa el tablón para enterarte de novedades y el foro para hablar con la comunidad."}
+            {comunidad.mensaje_comunidad||"Lee el tablón, participa en el foro y mantén una comunidad respetuosa."}
           </div>
         </div>
         <div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>
@@ -7969,7 +7969,7 @@ function ComunidadPerfiles({user,showToast}={}){
     return normalizeText(`${p.nombre||""} ${p.email||""} ${avatarLevelName(p.avatar_level||avatarLevelFromXP(userXP(p)))}`).includes(clean);
   });
   return <div style={{animation:"fadeSlide .32s ease"}}>
-    <SectionHeader icon="👥" title="Perfiles de comunidad" sub="Usuarios, niveles, insignias y progreso visible sin mezclarlo con el tablón ni el foro." action={<Btn small col="ghost" onClick={load}>↻</Btn>}/>
+    <SectionHeader icon="👥" title="Gente del estudio" sub="Usuarios, niveles, insignias y progreso sin mezclarlo con el tablón ni el foro." action={<Btn small col="ghost" onClick={load}>↻</Btn>}/>
     <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#F6E7C4)",border:`1.5px solid ${T.g200}`}}>
       <Input label="Buscar usuario" value={q} onChange={setQ} placeholder="Nombre, email, nivel o rol..."/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
@@ -8014,10 +8014,10 @@ function Comunidad(props){
   const [sub,setSub]=useState(initialTab||"feed");
   useEffect(()=>{setSub(initialTab||"feed");},[initialTab]);
   const tabs=[
-    {id:"feed",icon:"📌",label:"Tablón",sub:"Anuncios oficiales de Rasta Cuts: novedades, promociones, normas, eventos y cambios importantes.",enabled:true},
+    {id:"feed",icon:"📌",label:"Tablón",sub:"Avisos del estudio: novedades, promos, normas, eventos y cambios importantes.",enabled:true},
     {id:"foro",icon:"🗣️",label:"Foro",sub:"Temas abiertos por usuarios: dudas, propuestas, votaciones y conversación real.",enabled:sec.foro_activo!==false},
     {id:"noticias",icon:"📰",label:"Actualidad",sub:"Noticias y curiosidades con comentarios: rural, comida, sitios, peluquería y negocios locales.",enabled:sec.noticias_activas!==false},
-    {id:"perfiles",icon:"👥",label:"Perfiles",sub:"Descubre usuarios, niveles, insignias, RP, RC y progreso visible de la comunidad.",enabled:true},
+    {id:"perfiles",icon:"👥",label:"Perfiles",sub:"Mira usuarios, niveles, insignias, RP, RC y progreso visible.",enabled:true},
     {id:"musica",icon:"🎧",label:"Música",sub:"Reggae, rap clásico, ska y rock con enlaces rápidos para descubrir buena música.",enabled:sec.musica_activa!==false},
   ].filter(t=>t.enabled);
   const active=tabs.find(t=>t.id===sub)||tabs[0]||{id:"feed",icon:"📌",label:"Tablón"};
@@ -8026,7 +8026,7 @@ function Comunidad(props){
       <div style={{display:"flex",gap:12,alignItems:"center",justifyContent:"space-between"}}>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontFamily:"'Baloo 2','Plus Jakarta Sans','Outfit',system-ui,sans-serif",fontSize:"1.72rem",fontWeight:950,lineHeight:1,letterSpacing:"-.3px"}}>Comunidad Rasta</div>
-          <div style={{fontSize:".86rem",fontWeight:850,color:"rgba(255,244,214,.88)",lineHeight:1.42,marginTop:5}}>Tablón oficial, foro, actualidad y perfiles separados para que se entienda rápido dónde leer, participar o buscar a la gente.</div>
+          <div style={{fontSize:".86rem",fontWeight:850,color:"rgba(255,244,214,.88)",lineHeight:1.42,marginTop:5}}>Tablón del estudio, foro, actualidad y perfiles separados para que se entienda rápido dónde leer, participar o buscar a la gente.</div>
         </div>
         <div className="icon3d" style={{fontSize:"2.25rem"}}>🌐</div>
       </div>
@@ -8810,10 +8810,10 @@ function GestionMusica({user,showToast}){
     {id:"rap",label:"Rap"},
     {id:"ska",label:"Ska"},
     {id:"rock",label:"Rock"},
-    {id:"archivo",label:"Archivos"}
+    {id:"archivo",label:"Audios"}
   ];
   const visibles=filter==="todo"?items:items.filter(i=>{
-    if(filter==="archivo")return String(i.tipo)==="archivo"||Boolean(i.audio_url);
+    if(filter==="archivo")return String(i.tipo)==="archivo"||String(i.tipo)==="audio"||Boolean(i.audio_url);
     return normalizeText(i.genero||"").includes(filter);
   });
 
@@ -8825,14 +8825,14 @@ function GestionMusica({user,showToast}){
           <div className="icon3d" style={{fontSize:"2rem"}}>🎧</div>
           <div style={{flex:1}}>
             <div style={{fontWeight:950,fontSize:"1rem"}}>Administra música sin tocar código</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Añade enlaces oficiales o sube audios propios/libres al bucket público musica.</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Añade enlaces del estudio o sube audios propios/libres al bucket público musica.</div>
           </div>
         </div>
       </Card>
 
       <Card style={{marginBottom:14,background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`}}>
         <div style={{fontWeight:950,color:T.g800}}>⚠️ Regla importante</div>
-        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>No subas MP3 comerciales descargados. Para artistas conocidos usa enlaces externos; para archivos, sólo música tuya, libre o con permiso.</div>
+        <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>No subas MP3 comerciales descargados. Para artistas conocidos usa enlaces externos; para audios, sólo música tuya, libre o con permiso.</div>
       </Card>
 
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
@@ -8863,7 +8863,7 @@ function GestionMusica({user,showToast}){
       }
 
       <Modal show={showEdit} onClose={()=>setShowEdit(false)} title={form.id?"Editar música":"Nueva música"}>
-        <Input label="Título" value={form.titulo} onChange={v=>setForm(f=>({...f,titulo:v}))} placeholder="Ej: Morodo - búsqueda oficial"/>
+        <Input label="Título" value={form.titulo} onChange={v=>setForm(f=>({...f,titulo:v}))} placeholder="Ej: Morodo - búsqueda del estudio"/>
         <Input label="Artista" value={form.artista} onChange={v=>setForm(f=>({...f,artista:v}))} placeholder="Morodo, Kase.O, base propia..."/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           <Input label="Icono" value={form.icono} onChange={v=>setForm(f=>({...f,icono:v}))}/>
@@ -8879,7 +8879,7 @@ function GestionMusica({user,showToast}){
         ]}/>
         <Select label="Tipo" value={form.tipo} onChange={v=>setForm(f=>({...f,tipo:v}))} options={[
           {value:"externo",label:"Enlace externo"},
-          {value:"archivo",label:"Archivo propio/libre"}
+          {value:"archivo",label:"Audio propio/libre"}
         ]}/>
         <Input label="Descripción" value={form.descripcion} onChange={v=>setForm(f=>({...f,descripcion:v}))}/>
         <Input label="YouTube URL" value={form.youtube_url} onChange={v=>setForm(f=>({...f,youtube_url:v}))} placeholder="https://www.youtube.com/..."/>
@@ -8975,7 +8975,7 @@ function GestionAgenda({showToast}){
 
   return(
     <div style={{animation:"fadeSlide .34s ease"}}>
-      <SectionHeader icon="🗓️" title="Agenda" sub={modo==="dia"?"Vista diaria ordenada por horas":"Vista semanal compacta"}/>
+      <SectionHeader icon="🗓️" title="Agenda" sub={modo==="dia"?"El día puesto en orden, hora por hora":"Vista semanal compacta"}/>
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",color:T.white}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2.2rem"}}>🗓️</div>
@@ -9089,7 +9089,7 @@ function GestionAgenda({showToast}){
 
 
 function GestionPedidos({user,showToast}){
-  if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Zona interna" sub="Sólo admin y staff pueden gestionar pedidos."/>;
+  if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Acceso interno" sub="Sólo admin y staff pueden acceder a pedidos."/>;
   const [pedidos,setPedidos]=useState([]);
   const [loading,setLoading]=useState(true);
   const [filter,setFilter]=useState("pendiente");
@@ -9269,7 +9269,7 @@ function GestionPedidos({user,showToast}){
 
 
 function GestionCuponesAdmin({user,showToast}){
-  if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Zona interna" sub="Sólo admin y staff pueden revisar cupones."/>;
+  if(!isInternalUser(user)) return <EmptyState icon="🔒" title="Acceso interno" sub="Sólo admin y staff pueden acceder a cupones."/>;
   const [rows,setRows]=useState([]);
   const [loading,setLoading]=useState(true);
   const [filter,setFilter]=useState("activos");
@@ -9900,7 +9900,7 @@ function GestionFacturacionPanel({user,showToast}){
           </div>
         </Card>
         <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
-          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🛍️ Tienda y canjes</div>
+          <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🛍️ Tienda Rasta</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
             Pedidos activos: <b style={{color:T.g800}}>{pedidosActivos.length}</b>. RP canjeados: <b style={{color:T.g800}}>{puntosCanjeados}</b>.
           </div>
@@ -10651,7 +10651,7 @@ function GestionAdminPanel({user,showToast}){
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Panel admin</div>
           <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-            Vista rápida de usuarios, roles, bloqueos, auditoría y ajustes globales.
+            Usuarios, roles y seguridad de la app.
           </div>
         </div>
         <Btn small col="ghost" onClick={load}>Actualizar</Btn>
@@ -10678,7 +10678,7 @@ function GestionAdminPanel({user,showToast}){
         <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>👑 Roles</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
-            Cambios de rol registrados: <b style={{color:T.g800}}>{cambiosRol.length}</b>. Revisa los cambios delicados desde Seguridad.
+            Cambios de rol registrados: <b style={{color:T.g800}}>{cambiosRol.length}</b>. Revisa los cambios importantes desde Seguridad.
           </div>
         </Card>
         <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
@@ -11042,7 +11042,7 @@ function GestionChecklist({user,showToast}){
     {
       id:"roles",icon:"🧪",title:"Pruebas por rol",items:[
         "Admin ve todas las secciones de Gestión",
-        "Staff no ve Admin ni ajustes delicados",
+        "Staff no ve Admin ni ajustes avanzados",
         "Staff sí ve agenda, citas, caja, stock, pedidos, comunidad y juegos",
         "Cliente no puede entrar en Gestión",
         "Modo incógnito sólo oculta a usuarios normales, no a admin/staff"
@@ -11149,49 +11149,49 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
   const [gestionGroup,setGestionGroup]=useState("principal");
 
   const tabs=[
-    {id:"resumen",icon:"🏠",label:"Resumen",sub:"Vista principal con próximas citas, avisos y accesos rápidos",staff:true,group:"principal"},
-    {id:"agenda",icon:"🗓️",label:"Agenda",sub:"Vista diaria ordenada por horas",staff:true,group:"principal"},
-    {id:"citas",icon:"📅",label:"Citas",sub:"Reservas pendientes, confirmadas y propuestas",staff:true,group:"principal"},
-    {id:"clientes",icon:"👥",label:"Clientes",sub:"Clientes reales de tienda con citas registradas",staff:true,group:"principal"},
+    {id:"resumen",icon:"🏠",label:"Resumen",sub:"Lo urgente del día sin abrir mil pestañas",staff:true,group:"principal"},
+    {id:"agenda",icon:"🗓️",label:"Agenda",sub:"El día puesto en orden, hora por hora",staff:true,group:"principal"},
+    {id:"citas",icon:"📅",label:"Citas",sub:"Reservas por revisar, confirmar o cerrar",staff:true,group:"principal"},
+    {id:"clientes",icon:"👥",label:"Clientes",sub:"Gente que ya ha pasado por el estudio",staff:true,group:"principal"},
 
-    {id:"facturacion",icon:"💰",label:"Resumen",sub:"Panel rápido de facturación, caja, cobros y actividad económica",staff:true,group:"facturacion"},
-    {id:"caja",icon:"🧾",label:"Caja",sub:"Cobros, ventas y registros concretos del día",staff:true,group:"facturacion"},
-    {id:"estadisticas",icon:"📊",label:"Estadísticas",sub:"Resumen gráfico de citas, ingresos, pedidos, puntos y comunidad",staff:true,group:"facturacion"},
+    {id:"facturacion",icon:"💰",label:"Resumen",sub:"Caja, cobros y movimiento del día sin rodeos",staff:true,group:"facturacion"},
+    {id:"caja",icon:"🧾",label:"Caja",sub:"Cada cobro y venta con su sitio",staff:true,group:"facturacion"},
+    {id:"estadisticas",icon:"📊",label:"Estadísticas",sub:"Números claros de citas, caja, pedidos, RP y comunidad",staff:true,group:"facturacion"},
 
-    {id:"tienda_resumen",icon:"🛍️",label:"Resumen",sub:"Vista rápida de tienda, canjes, pedidos y stock bajo",staff:true,group:"tienda"},
-    {id:"tienda_items",icon:"🎁",label:"Premios",sub:"Premios, cupones, objetos y canjes editables",staff:false,group:"tienda"},
-    {id:"stock",icon:"📦",label:"Stock",sub:"Inventario interno y productos de trabajo",staff:true,group:"tienda"},
-    {id:"pedidos",icon:"📋",label:"Pedidos",sub:"Canjes y entregas de tienda",staff:true,group:"tienda"},
-    {id:"cupones_admin",icon:"🎟️",label:"Cupones",sub:"Cupones del Camino: copiar, usar, cancelar o reactivar",staff:true,group:"tienda"},
-    {id:"tienda_ajustes",icon:"⚙️",label:"Ajustes",sub:"Activación de tienda, canjes y reglas básicas",staff:false,group:"tienda"},
+    {id:"tienda_resumen",icon:"🛍️",label:"Resumen",sub:"Canjes, pedidos y stock que conviene mirar",staff:true,group:"tienda"},
+    {id:"tienda_items",icon:"🎁",label:"Premios",sub:"Recompensas, vales y objetos que puedes preparar",staff:false,group:"tienda"},
+    {id:"stock",icon:"📦",label:"Stock",sub:"Material del local y productos que no pueden faltar",staff:true,group:"tienda"},
+    {id:"pedidos",icon:"📋",label:"Pedidos",sub:"Canjes para preparar y entregar",staff:true,group:"tienda"},
+    {id:"cupones_admin",icon:"🎟️",label:"Cupones",sub:"Vales desbloqueados: copiar, usar o dejar listos",staff:true,group:"tienda"},
+    {id:"tienda_ajustes",icon:"⚙️",label:"Ajustes",sub:"Encender o pausar tienda, canjes y reglas",staff:false,group:"tienda"},
 
-    {id:"juegos_admin",icon:"🎮",label:"Juegos",sub:"Zona de control para Arcade, rankings, retos y recompensas",staff:true,group:"juegos"},
+    {id:"juegos_admin",icon:"🎮",label:"Juegos",sub:"Arcade, rankings y premios",staff:true,group:"juegos"},
 
-    {id:"comunidad_resumen",icon:"🌐",label:"Resumen",sub:"Vista rápida de reportes, mensajes, foro, tablón, actualidad y música",staff:true,group:"comunidad"},
-    {id:"moderacion",icon:"🛡️",label:"Moderación",sub:"Reportes y control de comunidad",staff:true,group:"comunidad"},
-    {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Buzón privado de clientes",staff:true,group:"comunidad"},
-    {id:"musica_admin",icon:"🎧",label:"Música",sub:"Artistas, enlaces y audios propios",staff:false,group:"comunidad"},
-    {id:"comunidad_ajustes",icon:"⚙️",label:"Ajustes",sub:"Activación de foro, actualidad, música, mensajes y reportes",staff:false,group:"comunidad"},
+    {id:"comunidad_resumen",icon:"🌐",label:"Resumen",sub:"Mensajes, foro, tablón, música y avisos en una sola vista",staff:true,group:"comunidad"},
+    {id:"moderacion",icon:"🛡️",label:"Moderación",sub:"Reportes, moderación y convivencia",staff:true,group:"comunidad"},
+    {id:"mensajes",icon:"📩",label:(unread?.admin?`Mensajes (${unread.admin})`:"Mensajes"),sub:"Mensajes privados de clientes",staff:true,group:"comunidad"},
+    {id:"musica_admin",icon:"🎧",label:"Música",sub:"Artistas, playlists y audios del local",staff:false,group:"comunidad"},
+    {id:"comunidad_ajustes",icon:"⚙️",label:"Ajustes",sub:"Encender o pausar foro, noticias, música y mensajes",staff:false,group:"comunidad"},
 
-    {id:"admin_resumen",icon:"🔐",label:"Resumen",sub:"Vista rápida de usuarios, roles, bloqueos, auditoría y ajustes",staff:false,group:"admin"},
-    {id:"usuarios",icon:"👥",label:"Usuarios",sub:"Usuarios de la web: búsqueda, roles y bloqueos",staff:false,group:"admin"},
-    {id:"roles_permisos",icon:"👑",label:"Roles",sub:"Matriz clara de permisos admin, staff y cliente",staff:false,group:"admin"},
-    {id:"baneos",icon:"🚫",label:"Baneos",sub:"Usuarios bloqueados y desbloqueo rápido",staff:false,group:"admin"},
-    {id:"seguridad",icon:"🧾",label:"Auditoría",sub:"Registro de roles, bloqueos y cambios importantes",staff:false,group:"admin"},
-    {id:"supabase_rls",icon:"🧱",label:"Supabase",sub:"Preparación de seguridad real, RLS y tablas sensibles",staff:false,group:"admin"},
-    {id:"checklist",icon:"✅",label:"Checklist",sub:"Revisión final de Gestión antes de seguridad real",staff:false,group:"admin"},
-    {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Configuración interna global de la web",staff:false,group:"admin"},
+    {id:"admin_resumen",icon:"🔐",label:"Resumen",sub:"Usuarios, roles y seguridad de la app",staff:false,group:"admin"},
+    {id:"usuarios",icon:"👥",label:"Usuarios",sub:"Perfiles de la app, roles y bloqueos",staff:false,group:"admin"},
+    {id:"roles_permisos",icon:"👑",label:"Roles",sub:"Permisos de usuario y acceso",staff:false,group:"admin"},
+    {id:"baneos",icon:"🚫",label:"Baneos",sub:"Cuentas bloqueadas y vuelta atrás rápida",staff:false,group:"admin"},
+    {id:"seguridad",icon:"🧾",label:"Auditoría",sub:"Rastro de cambios importantes",staff:false,group:"admin"},
+    {id:"supabase_rls",icon:"🧱",label:"Supabase",sub:"Preparar la seguridad fuerte de Supabase",staff:false,group:"admin"},
+    {id:"checklist",icon:"✅",label:"Checklist",sub:"Repaso final antes de blindar Supabase",staff:false,group:"admin"},
+    {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Ajustes generales de Rasta Cuts",staff:false,group:"admin"},
   ].filter(t=>isAdmin||t.staff);
 
   const active=tabs.find(t=>t.id===tab)||tabs[0];
 
   const gestionGroups=[
-    {id:"principal",icon:"🏠",label:"Principal",sub:"Resumen, agenda, citas y clientes. Lo básico para trabajar cada día."},
-    {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y estadísticas. Todo lo económico en una zona clara."},
-    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Resumen, premios, stock, pedidos y ajustes de tienda."},
-    {id:"juegos",icon:"🎮",label:"Juegos",sub:"Arcade, rankings, retos y recompensas internas de juego."},
-    {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Resumen, moderación, mensajes, música y ajustes de comunidad."},
-    {id:"admin",icon:"🔐",label:"Admin",sub:"Resumen, usuarios, roles, baneos, auditoría, Supabase, checklist y ajustes globales."}
+    {id:"principal",icon:"🏠",label:"Principal",sub:"Agenda, reservas y clientes. Lo que se mira al abrir el local."},
+    {id:"facturacion",icon:"💰",label:"Facturación",sub:"Caja, cobros y resumen del negocio."},
+    {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Canjes, premios, stock y entregas. La tienda por dentro."},
+    {id:"juegos",icon:"🎮",label:"Juegos",sub:"Arcade, rankings, retos y premios de juego."},
+    {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Foro, mensajes, música y ambiente de comunidad."},
+    {id:"admin",icon:"🔐",label:"Admin",sub:"Usuarios, roles, bloqueos, Supabase y ajustes avanzados."}
   ].filter(g=>tabs.some(t=>t.group===g.id));
 
   const visibleTabs=tabs.filter(t=>t.group===gestionGroup);
@@ -11209,7 +11209,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
   },[role]);
 
   if(!canAccess){
-    return <EmptyState icon="🔒" title="Zona interna" sub="Sólo admin y staff pueden entrar en gestión."/>;
+    return <EmptyState icon="🔒" title="Acceso interno" sub="Sólo admin y staff pueden acceder a esta zona."/>;
   }
 
   function RestrictedCard({title,sub,icon="🔒"}){
@@ -11233,7 +11233,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
           <div style={{flex:1}}>
             <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1}}>Gestión</div>
             <div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-              Panel interno organizado por zonas: principal, facturación, tienda, juegos, comunidad y administración.
+              Herramientas principales para gestionar Rasta Cuts.
             </div>
           </div>
           <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
@@ -11340,12 +11340,12 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
   const progress=avatarLevelProgress(userXP(user));
 
   const cards=[
-    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Pedidos, cupones, citas, tienda, usuarios y seguridad.",tone:"gold",art:"✂️"},
+    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Pedidos, vales, citas, tienda y seguridad.",tone:"gold",art:"✂️"},
     {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vista real de tienda juegos y productos €.",tone:"blue",art:"🎟️"},
     {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP.",tone:"blue",art:"🕹️"},
-    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Diarias y semanales conectadas a RP/RC/XP.",tone:"green",art:"⚡"},
-    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, actualidad e insignias.",tone:"orange",art:"📣"},
-    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, roles, cupones y cartera.",tone:"pink",art:"👑"},
+    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Retos diarios y semanales sin regalar de más.",tone:"green",art:"⚡"},
+    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, historias y gente del estudio.",tone:"orange",art:"📣"},
+    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, rol, vales y cartera.",tone:"pink",art:"👑"},
   ];
 
   function AdminFeature({c}){
@@ -11389,8 +11389,8 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       </div>
       <div style={{position:"relative",zIndex:2,padding:"26px clamp(18px,4vw,42px)",maxWidth:690}}>
         <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
-        <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.65rem,7vw,5.6rem)",lineHeight:.82,margin:"14px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)"}}>CENTRO RASTA CUTS</h1>
-        <p style={{maxWidth:560,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Centro de control para pedidos, cupones, economía, comunidad y juegos con estética barber, tattoo y rasta.</p>
+        <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.65rem,7vw,5.6rem)",lineHeight:.82,margin:"14px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)"}}>GESTIÓN DEL LOCAL</h1>
+        <p style={{maxWidth:560,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Pedidos, vales, caja, comunidad y arcade desde un solo lugar.</p>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🔔 {Number(unread?.admin||0)} avisos</span>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>📦 {pendingOrders.length} pedidos</span>
@@ -11404,25 +11404,25 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
 
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
       <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(28,20,13,.94))",border:"1px solid rgba(255,210,98,.24)",color:"#FFF7DA"}}>
-        <div style={{fontWeight:1000,color:"#E0B84F"}}>📌 Pendiente ahora</div>
+        <div style={{fontWeight:1000,color:"#E0B84F"}}>📌 Ahora mismo</div>
         {loading?<Spinner/>:<div style={{display:"grid",gap:8,marginTop:12}}>
           {pendingOrders[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(255,210,98,.22)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>📦 Pedido pendiente</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{pendingOrders[0].cliente_nombre||pendingOrders[0].cliente_email||"Cliente"} · {pendingOrders[0].item_nombre||"Pedido"}</div></button>}
-          {activeCoupons[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(95,240,200,.20)",background:"rgba(95,240,200,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>🎟️ Cupón disponible</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{activeCoupons[0].usuario_nombre||activeCoupons[0].usuario_email||"Usuario"} · {activeCoupons[0].codigo||activeCoupons[0].nombre}</div></button>}
+          {activeCoupons[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(95,240,200,.20)",background:"rgba(95,240,200,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>🎟️ Vale disponible</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{activeCoupons[0].usuario_nombre||activeCoupons[0].usuario_email||"Usuario"} · {activeCoupons[0].codigo||activeCoupons[0].nombre}</div></button>}
           {bestScore&&<button onClick={()=>onNavigate?.("juegos")} style={{textAlign:"left",border:"1px solid rgba(255,255,255,.10)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>🏆 Última actividad arcade</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{bestScore.usuario_nombre||bestScore.nombre||"Jugador"} · {bestScore.game_id||"juego"} · {Number(bestScore.score)||Number(bestScore.points)||0}</div></button>}
-          {!pendingOrders[0]&&!activeCoupons[0]&&!bestScore&&<div style={{fontSize:".82rem",fontWeight:850,color:"rgba(255,247,218,.68)"}}>No hay urgencias visibles ahora mismo.</div>}
+          {!pendingOrders[0]&&!activeCoupons[0]&&!bestScore&&<div style={{fontSize:".82rem",fontWeight:850,color:"rgba(255,247,218,.68)"}}>Ahora está todo tranquilo.</div>}
         </div>}
       </div>
       <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(17,37,31,.90))",border:"1px solid rgba(95,240,200,.26)",color:"#FFF7DA"}}>
-        <div style={{fontWeight:1000,color:"#5EF0C8"}}>💰 Economía reciente</div>
-        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Resumen rápido de movimientos sin abrir tablas.</div>
+        <div style={{fontWeight:1000,color:"#5EF0C8"}}>💰 Movimiento reciente</div>
+        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Resumen rápido de actividad, recompensas y progreso.</div>
         <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:12}}><Badge col="gold">RP movs: {rpMovs.length}</Badge><Badge col="blue">RC movs: {rcMovs.length}</Badge><Badge col="pink">Misiones: {home.missions.length}</Badge></div>
-        <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:14,border:"1px solid rgba(255,210,98,.36)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver misiones →</button>
+        <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:14,border:"1px solid rgba(255,210,98,.36)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver retos →</button>
       </div>
       <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(20,24,15,.94))",border:"1px solid rgba(255,210,98,.22)",color:"#FFF7DA"}}>
-        <div style={{fontWeight:1000,color:"#E0B84F"}}>🌐 Comunidad reciente</div>
-        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Comentarios y actividad social.</div>
+        <div style={{fontWeight:1000,color:"#E0B84F"}}>🌐 Comunidad activa</div>
+        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Comentarios, foro y movimiento de la gente.</div>
         <div style={{marginTop:12,fontSize:".95rem",fontWeight:1000}}>💬 {home.comments.length} comentarios recientes</div>
-        <button onClick={()=>onNavigate?.("comunidad")} style={{marginTop:14,border:"1px solid rgba(95,240,200,.30)",background:"rgba(95,240,200,.12)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#5EF0C8",cursor:"pointer"}}>Abrir comunidad →</button>
+        <button onClick={()=>onNavigate?.("comunidad")} style={{marginTop:14,border:"1px solid rgba(95,240,200,.30)",background:"rgba(95,240,200,.12)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#5EF0C8",cursor:"pointer"}}>Entrar a comunidad →</button>
       </div>
     </div>
   </div>;
@@ -11540,27 +11540,27 @@ const RASTA_GENERAL_TIPS=[
   "En Perfil puedes ajustar tu avatar, tu privacidad y cómo apareces en rankings.",
   "Comunidad reúne tablón, foro, actualidad y música para no perderse entre pestañas.",
   "En Arcade puedes repetir partidas para mejorar récord, aunque los RP diarios tienen límite.",
-  "Top 10 enseña marcas por juego; Top general resume actividad global de clientes.",
+  "Top 10 enseña marcas por juego; Ranking general resume actividad global de clientes.",
   "Si una sección no queda clara, abre el modo ayuda y toca justo esa zona.",
   "La tienda tiene más sentido cuando los puntos se convierten en premios visibles.",
   "En Citas puedes elegir varios tratamientos y ver tiempo y precio aproximado.",
-  "Gestión es la zona interna para caja, citas, clientes, stock y permisos.",
+  "Gestión reúne caja, citas, clientes, stock y permisos.",
   "El modo incógnito oculta nombre y avatar público, pero mantiene tu personalización privada.",
   "Las noticias funcionan mejor cuando se leen rápido y se puede debatir sin salir de la app.",
   "El perfil público debe mostrar lo justo: avatar, nombre, RP y actividad sin datos personales.",
   "El ranking semanal sirve para picarse esta semana; el histórico guarda las mejores marcas.",
-  "Si el menú parece cargado, entra por Gestión: ahí está ordenado lo interno.",
+  "Desde Gestión puedes revisar caja, citas, pedidos y permisos.",
   "Cuando termines una cita, márcala como realizada para que luego cuente en historial y facturación.",
-  "Los juegos deben divertir y motivar, no regalar puntos sin control.",
+  "Los juegos tienen que picar y motivar, no regalar RP sin control.",
   "Una app útil se entiende tocando: reserva, juega, lee, participa y canjea.",
   "El avatar debe verse igual en Perfil, rankings, comunidad y clientes.",
   "Música es una biblioteca rápida para descubrir reggae, rap clásico, ska y rock sin ruido comercial.",
-  "El tablón es para avisos oficiales; el foro es para conversar.",
+  "El tablón es para avisos del estudio; el foro es para conversar.",
   "Si una noticia merece conversación, abre debate y deja un comentario útil.",
   "Los premios de tienda deben tener valor real para que los RP importen.",
   "El botón de Sonido activa música suave; con doble toque saltas a una canción aleatoria.",
   "Las citas pendientes necesitan respuesta: confirmar, proponer hora o cancelar.",
-  "El resumen de Gestión muestra lo importante sin entrar en cada pestaña.",
+  "El resumen de Gestión enseña lo urgente sin abrir todo.",
   "La comunidad funciona mejor si cada acción tiene sentido: like, comentario, debate o tema.",
   "El cliente sólo debería ver su parte; admin y staff ven herramientas de trabajo.",
   "Una pantalla limpia vale más que diez textos largos.",
@@ -11590,12 +11590,12 @@ const RASTA_RARE_CULTURE_TIPS=[
   "Tip de sonido: música suave mejor que melodías chillones en móvil.",
   "Tip de diseño: si algo tapa un botón en Android, hay que darle más margen inferior.",
   "Tip de citas: una cita sin estado claro genera confusión; pendiente, confirmada o cancelada.",
-  "Tip de facturación: primero control interno; luego ya se puede hacer más legal/formal.",
+  "Tip de caja: primero que cuadre por dentro; luego ya se pondrá más fino.",
   "Tip de admin: Usuarios es permisos; Clientes es historial y ficha comercial.",
   "Tip de foro: temas cortos y claros consiguen más respuestas.",
   "Tip de premios: personalización del avatar puede ser una recompensa muy buena.",
   "Tip de actualidad: el formato tipo shorts funciona mejor si la tarjeta respira.",
-  "Tip de música: los enlaces a búsquedas oficiales evitan links rotos al principio.",
+  "Tip de música: usar búsquedas evita links rotos al principio.",
   "Tip de app: menos texto, más iconos claros y explicaciones bajo demanda.",
   "Tip de Rasta: el modo ayuda debe explicar, no molestar."
 ];
@@ -11619,7 +11619,7 @@ const RASTA_DAILY_FUN_TIPS=[
   "Si el usuario no sabe qué tocar, el modo ayuda tiene que salvarlo.",
   "El mejor botón es el que se entiende antes de pulsarlo.",
   "Un cliente vuelve más si siente que tiene perfil, RP y progreso.",
-  "Los avisos oficiales van al tablón; las dudas y debates van al foro.",
+  "Los avisos del estudio van al tablón; las dudas y debates van al foro.",
   "Hoy puede ser buen día para descubrir un artista nuevo en Música.",
   "Un diseño moderno no es llenar de efectos, es que todo fluya mejor.",
   "Si algo se repite demasiado, hay que convertirlo en rotación diaria.",
@@ -11706,7 +11706,7 @@ function helperTitle(page){
   if(page==="game_memoria")return "Memoria con calma";
   if(page==="game_sopa")return "Sopa del día";
   if(page==="game_trivia")return "Trivia con estilo";
-  if(page==="arcade"||page==="juegos")return "Rasta Arcade";
+  if(page==="arcade"||page==="juegos")return "Arcade Rasta";
   if(page==="tienda")return "Rasta en tienda";
   if(page==="perfil")return "Tu estilo, mi pana";
   if(page==="misiones")return "Misiones del día";
@@ -11727,7 +11727,7 @@ function rastaPageHelpIntro(page){
     tops:"Estás en Tops. Aquí se ven rankings de juegos y estadísticas generales de clientes.",
     tienda:"Estás en Tienda. Aquí se canjean puntos por premios, productos, bonos o personalizaciones.",
     comunidad:"Estás en Comunidad. Aquí están tablón, foro y actualidad.",
-    feed:"Estás en Tablón. Sirve para anuncios oficiales, promociones y novedades de la tienda.",
+    feed:"Estás en Tablón. Sirve para anuncios del estudio, promociones y novedades de la tienda.",
     foro:"Estás en Foro. Aquí los usuarios pueden abrir temas, comentar y debatir.",
     noticias:"Estás en Actualidad. Desliza noticias, abre debate, mira fuentes o enlaces de YouTube.",
     citas:"Estás en Citas. Aquí se piden, confirman o cancelan reservas.",
@@ -11778,7 +11778,7 @@ function rastaElementHelp(target,page){
   if(t.includes("vaciar"))return "Vacía el carrito. Úsalo sólo si quieres quitar todos los artículos guardados.";
   if(t.includes("confirmación")||t.includes("confirmar carrito")||t==="confirmar")return "Confirma el carrito: descuenta puntos, registra pedidos y desbloquea personalización de avatar/perfil si corresponde.";
   if(t.includes("top 10"))return "Top 10 abre los rankings de minijuegos: semanal e histórico por cada juego.";
-  if(t.includes("top general"))return "Top general muestra estadísticas globales de clientes: puntos, juegos, tienda y comunidad.";
+  if(t.includes("top general"))return "Ranking general muestra estadísticas globales de clientes: puntos, juegos, tienda y comunidad.";
   if(t.includes("ver top")||t.includes("abrir top"))return "Este botón abre la página de rankings para ver los mejores jugadores y estadísticas.";
   if(t.includes("jugar ahora")||t==="jugar"||t.includes("▶ jugar")||t.includes("rejugar"))return "Abre el juego seleccionado. Puedes repetir para mejorar récord, aunque los RP sólo se cobran una vez al día.";
   if(t.includes("gacha"))return "Gacha Barber es una máquina de tiradas con límite diario. Sirve para premios, suerte y recompensas controladas.";
@@ -11792,7 +11792,7 @@ function rastaElementHelp(target,page){
   if(t.includes("responder"))return "Añade una respuesta al tema o conversación actual.";
   if(t.includes("comentar")||t.includes("comentario"))return "Abre o añade comentarios. Participar en comunidad puede servir para RP y actividad.";
   if(t.includes("me gusta")||t.includes("like")||t.includes("👍"))return "Pulsa una vez para dar like y vuelve a pulsar para quitarlo. Sólo cuenta un like activo por usuario y publicación, tema, respuesta o noticia.";
-  if(t.includes("youtube"))return "Abre una búsqueda o enlace de YouTube relacionado, normalmente para música o vídeos oficiales.";
+  if(t.includes("youtube"))return "Abre una búsqueda o enlace de YouTube relacionado, normalmente para música o vídeos relacionados.";
   if(t.includes("fuente")||t.includes("leer fuente"))return "Abre la fuente original de la noticia fuera de la app.";
   if(t.includes("abrir debate"))return "Abre la conversación de esa noticia para poder leer o comentar.";
   if(t.includes("actualizar"))return "Actualiza los datos de esta sección para traer contenido o rankings más recientes.";
@@ -12995,9 +12995,9 @@ function GlobalUIPolishPatch(){
     }
 
 
-    /* 2.9.7c · Visual Rework Real: fondo con dibujos, tarjetas con arte y títulos menos clásicos. */
+    /* 2.9.7e · Clean public copy: tono claro para clientes, staff y admin. */
     :root{
-      --rc-font-title:"Rye","Pirata One",Georgia,serif;
+      --rc-font-title:"Pirata One","Rye",Georgia,serif;
       --rc-wall-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%23fff4d6' stroke-opacity='.14' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M35 41l28 28M63 41L35 69M48 32v45'/%3E%3Cpath d='M190 38c22 0 35 14 35 32s-13 32-35 32-35-14-35-32 13-32 35-32z'/%3E%3Cpath d='M174 70h32M190 54v32'/%3E%3Cpath d='M42 176c22-22 44-22 66 0M51 188c16-12 32-12 48 0'/%3E%3Cpath d='M160 178l23-38 23 38-23 14zM183 140v52'/%3E%3Cpath d='M215 210l10 20 22 3-16 15 4 22-20-11-20 11 4-22-16-15 22-3z' transform='scale(.62) translate(112 102)'/%3E%3C/g%3E%3Cg fill='%23f0c85c' fill-opacity='.10'%3E%3Ccircle cx='118' cy='55' r='5'/%3E%3Ccircle cx='222' cy='154' r='4'/%3E%3Ccircle cx='78' cy='224' r='4'/%3E%3C/g%3E%3C/svg%3E");
       --rc-spray-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='%23fff4d6' fill-opacity='.10'%3E%3Ccircle cx='23' cy='40' r='2'/%3E%3Ccircle cx='41' cy='58' r='1.5'/%3E%3Ccircle cx='142' cy='34' r='2.5'/%3E%3Ccircle cx='126' cy='118' r='1.7'/%3E%3Ccircle cx='54' cy='138' r='2.2'/%3E%3Ccircle cx='88' cy='82' r='1.3'/%3E%3C/g%3E%3C/svg%3E");
     }
@@ -13468,7 +13468,7 @@ function AppCore(){
     citas:<Citas {...sp} onNavigate={navTo}/>,clientes:<Clientes {...sp}/>,inventario:<Inventario {...sp}/>,
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
-    tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda desactivada" sub="La tienda está apagada temporalmente desde Gestión &gt; Ajustes."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="Los juegos están apagados temporalmente desde Gestión &gt; Ajustes."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTycoon={openTycoonPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,misiones:<MisionesPage {...sp} onNavigate={navTo}/>,
+    tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda cerrada" sub="La tienda está pausada desde Gestión."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="El Arcade está pausado desde Gestión."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTycoon={openTycoonPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,misiones:<MisionesPage {...sp} onNavigate={navTo}/>,
     ranking:<Ranking user={currentUser}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout} onNavigate={navTo}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
