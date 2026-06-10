@@ -4550,7 +4550,7 @@ function RewardNodeIcon({item,user,currentConfig,locked=false}){
 }
 
 
-const SHOP_PHASE_LABEL = "2.9.4k · tienda juegos + recompensas";
+const SHOP_PHASE_LABEL = "Tienda Rasta";
 
 function rewardRarityLabel(item={}){
   const r=String(item.rareza||item.rarity||"comun").toLowerCase();
@@ -4610,60 +4610,43 @@ function shopRedemptionTips(user={},items=[]){
 function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
   const info=shopRedemptionTips(user,items);
   const pts=userRP(user);
-  const rc=userRC(user);
-  const xp=userXP(user);
-  const lvl=Number(user?.avatar_level||avatarLevelFromXP(xp));
   const next=info.next;
+  const lowStock=(items||[]).filter(x=>rewardStockState(x).level==="warn").length;
   return (
-    <Card className="shop-command-center" style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`1.5px solid ${T.g200}`,marginBottom:14}}>
-      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start",flexWrap:"wrap"}}>
+    <Card className="shop-command-center shop-visual-panel" style={{
+      position:"relative",
+      overflow:"hidden",
+      background:"linear-gradient(140deg,#110B06 0%,#102018 52%,#2E1A0B 100%)",
+      border:"1.5px solid rgba(240,200,92,.48)",
+      color:"#FFF4D6",
+      marginBottom:16,
+      boxShadow:"0 22px 46px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.10)"
+    }}>
+      <div className="shop-graffiti-glow" aria-hidden="true"/>
+      <div style={{position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"1.35fr .9fr",gap:14,alignItems:"center"}} className="shop-command-layout">
         <div>
-          <div style={{fontSize:".74rem",fontWeight:950,letterSpacing:".08em",textTransform:"uppercase",color:T.textSub}}>{SHOP_PHASE_LABEL}</div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.72rem",lineHeight:1,color:T.g800}}>Tienda Rasta</div>
-          <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:4}}>
-            Tienda separada: aquí sólo se compran vales de juegos y productos reales. Estilos, fondos y cupones viven en el Camino de recompensas.
+          <div style={{fontSize:".72rem",fontWeight:950,letterSpacing:".10em",textTransform:"uppercase",color:"rgba(255,244,214,.70)"}}>Tienda Rasta</div>
+          <div style={{fontFamily:"'Rye','Pirata One',Georgia,serif",fontSize:"1.95rem",lineHeight:1,color:"#FFE7A4",textShadow:"0 4px 18px rgba(0,0,0,.45)"}}>Vales y recompensas</div>
+          <div style={{fontSize:".86rem",fontWeight:850,color:"rgba(255,244,214,.84)",lineHeight:1.38,marginTop:6,maxWidth:560}}>
+            Compra tiradas, pide productos del estudio y revisa qué puedes canjear con tus RP.
           </div>
+          {next&&(
+            <div style={{marginTop:12,display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,244,214,.08)",border:"1px solid rgba(240,200,92,.34)",borderRadius:999,padding:"8px 11px",fontWeight:950,color:"#FFF4D6"}}>
+              <span>🎯</span><span>Próximo objetivo: {next.nombre||next.name||"recompensa"}</span><span style={{color:"#F2C85B"}}>faltan {info.missing} RP</span>
+            </div>
+          )}
         </div>
-        <div style={{display:"grid",gap:6,justifyItems:"end"}}>
-          <div className="shop-status-pill">💰 {pts} RP</div>
-          <div className="shop-status-pill">🎁 {info.affordable} canjeables</div>
+        <div className="shop-mini-stats" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+          <div className="shop-mini-stat"><b>{pts}</b><span>RP disponibles</span></div>
+          <div className="shop-mini-stat"><b>{info.affordable}</b><span>canjeables</span></div>
+          <div className="shop-mini-stat"><b>{info.active}</b><span>artículos</span></div>
+          <div className="shop-mini-stat"><b>{lowStock}</b><span>stock bajo</span></div>
         </div>
       </div>
-      <div className="shop-command-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginTop:12}}>
-        <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
-          <div style={{fontSize:"1.35rem"}}>🛍️</div>
-          <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{info.active}</div>
-          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>artículos activos</div>
-        </div>
-        <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
-          <div style={{fontSize:"1.35rem"}}>✅</div>
-          <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{info.affordable}</div>
-          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>listos para canjear</div>
-        </div>
-        <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
-          <div style={{fontSize:"1.35rem"}}>🎯</div>
-          <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{next?info.missing:0}</div>
-          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>RP para el próximo</div>
-        </div>
-        <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
-          <div style={{fontSize:"1.35rem"}}>📦</div>
-          <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{items.filter(x=>rewardStockState(x).level==="warn").length}</div>
-          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>stock bajo</div>
-        </div>
-      </div>
-      {next&&(
-        <div style={{marginTop:10,background:"rgba(47,107,66,.10)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10,display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-          <div>
-            <div style={{fontWeight:950,color:T.g800}}>Próximo objetivo: {next.icono||next.icon||"🎁"} {next.nombre||next.name||"recompensa"}</div>
-            <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>Te faltan {info.missing} RP.</div>
-          </div>
-          {onFilter&&<Btn small col="gold" onClick={()=>onFilter("canjeables")}>Ver canjeables</Btn>}
-        </div>
-      )}
-      <div className="shop-action-row" style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
-        {onFilter&&<Btn small onClick={()=>onFilter("todos")}>✨ Todo</Btn>}
-        {onFilter&&<Btn small onClick={()=>onFilter("juegos")}>🎮 Tienda juegos</Btn>}
-        {onFilter&&<Btn small onClick={()=>onFilter("productos")}>🧴 Productos €</Btn>}
+      <div className="shop-action-row" style={{position:"relative",zIndex:1,display:"flex",gap:8,marginTop:14,flexWrap:"wrap"}}>
+        {onFilter&&<Btn small col="gold" onClick={()=>onFilter("todos")}>Ver todo</Btn>}
+        {onFilter&&<Btn small col="dark" onClick={()=>onFilter("juegos")}>Vales de juego</Btn>}
+        {onFilter&&<Btn small col="ghost" onClick={()=>onFilter("productos")}>Productos €</Btn>}
       </div>
     </Card>
   );
@@ -4775,7 +4758,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🛍️" title="Tienda juegos" sub={`Vales de juegos con RP y productos reales separados · Tienes ${user.puntos||0} RP`}/>
+      <SectionHeader icon="🛍️" title="Tienda Rasta" sub={`Vales, productos y recompensas · Tienes ${user.puntos||0} RP`}/> 
       {/* FASE131B_SHOP_COMMAND_CENTER */}
       <ShopCommandCenter
         user={user}
@@ -4786,7 +4769,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
 
       <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>RastaPoints</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0} RP</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Los estilos y vales grandes viven en el Camino del perfil. Aquí van vales de juego y productos reales. Los RC se usan en Tycoon y progreso.</div></div>
+          <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>RastaPoints</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0} RP</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Canjea vales, pide productos del estudio y revisa tus últimos pedidos. Los RC quedan para juegos y progreso.</div></div>
           <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
@@ -4796,7 +4779,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
         {pedidos.slice(0,3).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",padding:"7px 0",borderTop:`1px solid ${T.g150}`}}>
           <div style={{minWidth:0}}>
             <div style={{fontWeight:900,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.item_nombre}</div>
-            <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{new Date(p.created_at).toLocaleDateString("es-ES")} · {p.puntos_coste||0} pts</div>
+            <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{new Date(p.created_at).toLocaleDateString("es-ES")} · {p.puntos_coste||0} RP</div>
           </div>
           <Badge col={p.estado==="entregado"?"green":p.estado==="cancelado"?"red":p.estado==="listo"?"blue":"gold"}>{p.estado}</Badge>
         </div>)}
@@ -4848,7 +4831,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
                     {agotado?<div style={{textAlign:"center",fontSize:"0.78rem",color:T.red,fontWeight:950}}>Agotado</div>:
                     <div style={{display:"grid",gridTemplateColumns:ok?"1fr 1fr":"1fr",gap:8}}>
                       <Btn full small col="ghost" onClick={()=>addCart(p)}>🛒 Añadir</Btn>
-                      {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>{realMoney?"Solicitar":gameVoucher?`Comprar +${gameVoucherAmount(p)} tiradas`:isAvatarPersonalizationItem(p)?"Desbloquear":"Canjear"}</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} pts</div>}
+                      {ok?<Btn full small col="gold" onClick={()=>canjear(p)}>{realMoney?"Solicitar":gameVoucher?`Comprar +${gameVoucherAmount(p)} tiradas`:isAvatarPersonalizationItem(p)?"Desbloquear":"Canjear"}</Btn>:<div style={{textAlign:"center",fontSize:"0.78rem",color:T.textSub,fontWeight:850,alignSelf:"center"}}>Faltan {precio-(user.puntos||0)} RP</div>}
                     </div>}
                   </div>
                 </div>
@@ -5694,7 +5677,7 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity
     {result&&<Card style={{background:'rgba(255,248,230,.92)',border:`2px solid ${result.rarity==='legendario'?T.gold:result.rarity==='epico'?T.pink:T.g300}`,marginBottom:12}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}><div style={{fontWeight:950,color:T.g800}}>{result.spinLabel||result.label}</div><Badge col={rarityBadgeColor(result.rarity)}>{result.rarity||'base'}</Badge></div>
       <div style={{fontSize:'.82rem',fontWeight:820,color:T.textSub,marginTop:5,lineHeight:1.38}}>
-        {(result.rp||result.rc||result.xp||result.extraPulls)>0?`Premio: ${result.rc?`+${result.rc} RC `:''}${result.xp?`+${result.xp} XP `:''}${result.extraPulls?`+${result.extraPulls} tiradas`:''}`:pullsLeft<=0?'Sin tiradas. Compra vales en Tienda juegos o usa el botón de 10 tiradas por 5 RP.':'No salió premio. Es normal: el Gacha no reparte RP y protege la economía.'}
+        {(result.rp||result.rc||result.xp||result.extraPulls)>0?`Premio: ${result.rc?`+${result.rc} RC `:''}${result.xp?`+${result.xp} XP `:''}${result.extraPulls?`+${result.extraPulls} tiradas`:''}`:pullsLeft<=0?'Sin tiradas. Compra vales en Tienda juegos o usa el botón de 10 tiradas por 5 RP.':'No ha salido premio esta vez. Prueba de nuevo cuando tengas tiradas.'}
       </div>
       {(result.rp||result.rc||result.xp||result.extraPulls)>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar premio'}</Btn></div>}
     </Card>}
@@ -5733,7 +5716,7 @@ function ArcadeInfoPanel({onOpenGacha}){
     }}>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10}}>
         <div style={{fontSize:".88rem",fontWeight:850,lineHeight:1.42,color:T.g800}}>
-          Este es el espacio para jugar, mejorar récords y conseguir RP diarios para avanzar en recompensas, avatar y descuentos de la tienda.
+          Juega, mejora récords y consigue recompensas diarias para avanzar en tu perfil.
         </div>
         <button
           onClick={()=>{SFX.tab();setOpen(v=>!v);}}
@@ -5766,7 +5749,7 @@ function ArcadeInfoPanel({onOpenGacha}){
         animation:"fadeSlide .22s ease"
       }}>
         <div style={{display:"grid",gap:8,fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.42}}>
-          <div>Los récords sirven para competir y volver a intentarlo. Los RP reales, en cambio, se cobran de forma limitada para que la tienda y los desbloqueos sigan teniendo valor.</div>
+          <div>Los récords sirven para competir, mejorar marcas y volver a intentarlo cada día.</div>
           <div>Cada juego puede entregar RP una vez al día. Después puedes rejugar para mejorar marca, pero no para farmear RP sin límite.</div>
           <div>El Gacha Barber no reparte RP. Mantiene premios pequeños, RC, XP y alguna tirada extra.</div>
         </div>
@@ -7064,7 +7047,7 @@ const MISSION_DEFS=[
   // No deben ser la fuente principal de RC ni pueden imprimir RP sin control.
   {key:"daily_arcade",period:"day",icon:"🎮",title:"Una partida al día",desc:"Juega y guarda una partida de Arcade hoy. Premio pequeño para mantener el hábito.",goal:1,rp:2,rc:3,xp:5,points:2,type:"gamesToday",action:"juegos",actionLabel:"Ir al Arcade"},
   {key:"daily_gacha",period:"day",icon:"🎰",title:"Tirada Gacha",desc:"Haz una tirada en el Gacha Barber hoy. No da RP, sólo una ayuda pequeña.",goal:1,rp:0,rc:1,xp:3,points:0,type:"gachaToday",action:"juegos",actionLabel:"Ir al Gacha"},
-  {key:"daily_news_comment",period:"day",icon:"💬",title:"Deja tu huella",desc:"Comenta algo del tablón o actualidad. Participar suma, pero sin regalar la tienda.",goal:1,rp:1,rc:0,xp:5,points:1,type:"commentsToday",action:"noticias",actionLabel:"Ir a Actualidad"},
+  {key:"daily_news_comment",period:"day",icon:"💬",title:"Deja tu huella",desc:"Comenta en el tablón o en actualidad y deja tu huella en la comunidad.",goal:1,rp:1,rc:0,xp:5,points:1,type:"commentsToday",action:"noticias",actionLabel:"Ir a Actualidad"},
   {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy. Premio simbólico de XP.",goal:1,rp:0,rc:0,xp:2,points:0,type:"likesToday",action:"noticias",actionLabel:"Ir a Actualidad"},
   {key:"daily_tycoon",period:"day",icon:"🏪",title:"Turno Tycoon",desc:"Atiende clientes o guarda actividad del Tycoon hoy. El RC fuerte lo genera el propio Tycoon, no la misión.",goal:1,rp:0,rc:3,xp:5,points:0,type:"tycoonToday",action:"juegos",actionLabel:"Ir al Tycoon"},
   {key:"weekly_arcade_5",period:"week",icon:"🕹️",title:"Pique Arcade",desc:"Guarda 5 partidas esta semana. Premio justo, sin pasarse.",goal:5,rp:4,rc:10,xp:20,points:4,type:"gamesWeek",action:"juegos",actionLabel:"Ir al Arcade"},
@@ -10262,7 +10245,7 @@ function GestionTiendaPanel({user,showToast}){
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Resumen de tienda</div>
           <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-            Control rápido de premios, pedidos, canjes, stock bajo y actividad de la tienda de RP.
+            Resumen de premios, pedidos, canjes y stock de la tienda.
           </div>
         </div>
         <Btn small col="ghost" onClick={load}>Actualizar</Btn>
@@ -10317,7 +10300,7 @@ function GestionTiendaAjustes({user,showToast}){
   const [saving,setSaving]=useState(false);
   const [settings,setSettings]=useState({
     secciones:{tienda_activa:true},
-    tienda:{canjes_activos:true,puntos_minimos_canje:0,mensaje_tienda:"Canjea tus puntos por recompensas de Rasta Cuts."}
+    tienda:{canjes_activos:true,puntos_minimos_canje:0,mensaje_tienda:"Canjea tus RP por recompensas de Rasta Cuts."}
   });
 
   async function safeList(table,query){
@@ -10332,7 +10315,7 @@ function GestionTiendaAjustes({user,showToast}){
     const rows=await safeList("app_settings","?setting_key=in.(secciones,tienda)&select=*");
     const next={
       secciones:{tienda_activa:true},
-      tienda:{canjes_activos:true,puntos_minimos_canje:0,mensaje_tienda:"Canjea tus puntos por recompensas de Rasta Cuts."}
+      tienda:{canjes_activos:true,puntos_minimos_canje:0,mensaje_tienda:"Canjea tus RP por recompensas de Rasta Cuts."}
     };
     rows.forEach(r=>{
       if(r.setting_key==="secciones") next.secciones={...next.secciones,...(r.setting_value||{})};
@@ -13307,6 +13290,67 @@ function GlobalUIPolishPatch(){
     @media(max-width:560px){
       .login-cyber-shell{padding:12px 10px 26px!important;}
       .login-cyber-shell .landing-feature-pro{min-height:86px!important;}
+    }
+
+
+    /* 2.9.7m · Store polish */
+    .shop-visual-panel::before{
+      content:"";
+      position:absolute;
+      inset:-40px -20px auto auto;
+      width:240px;
+      height:220px;
+      background:
+        radial-gradient(circle at 50% 50%,rgba(240,200,92,.22),transparent 48%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='160' viewBox='0 0 180 160'%3E%3Cg fill='none' stroke='%23F2C85B' stroke-opacity='.22' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M40 42h70l12 72H28L40 42Z'/%3E%3Cpath d='M58 44c3-24 36-24 40 0'/%3E%3Cpath d='M120 35l34 34M154 35l-34 34'/%3E%3Ccircle cx='137' cy='52' r='7'/%3E%3Cpath d='M47 113h60'/%3E%3C/g%3E%3C/svg%3E");
+      background-size:cover;
+      opacity:.7;
+      transform:rotate(-5deg);
+      pointer-events:none;
+    }
+    .shop-graffiti-glow{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 12% 20%,rgba(54,224,188,.16),transparent 26%),
+        radial-gradient(circle at 76% 72%,rgba(217,74,53,.18),transparent 30%),
+        repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 48px);
+      pointer-events:none;
+    }
+    .shop-mini-stat{
+      min-height:76px;
+      border-radius:18px;
+      padding:10px;
+      background:rgba(255,244,214,.08);
+      border:1px solid rgba(240,200,92,.28);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+    .shop-mini-stat b{
+      color:#FFE7A4;
+      font-size:1.08rem;
+      line-height:1;
+    }
+    .shop-mini-stat span{
+      margin-top:5px;
+      color:rgba(255,244,214,.72);
+      font-weight:850;
+      font-size:.70rem;
+      line-height:1.15;
+    }
+    .shop-reward-card{
+      transform:translateZ(0);
+      box-shadow:0 16px 36px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.35)!important;
+    }
+    .shop-reward-card:hover{
+      transform:translateY(-1px);
+      box-shadow:0 20px 42px rgba(0,0,0,.28),0 0 0 1px rgba(240,200,92,.18)!important;
+    }
+    @media(max-width:720px){
+      .shop-command-layout{grid-template-columns:1fr!important;}
+      .shop-mini-stats{grid-template-columns:repeat(2,1fr)!important;}
     }
 
 
