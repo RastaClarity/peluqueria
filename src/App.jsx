@@ -2040,12 +2040,12 @@ function Auth({onLogin,showToast,settings}){
         <RastaLandingHero compact={false} settings={settings}/>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
-          <LandingFeature icon="📅" title="Reservas" sub="Pide hora sin vueltas y deja claro qué corte quieres." accent="#D4AF37"/>
-          <LandingFeature icon="🎮" title="Juegos" sub="Minijuegos, récords y piques de barrio." accent="#4F602D"/>
-          <LandingFeature icon="🛍️" title="Tienda" sub="Vales, recompensas y extras sin líos raros." accent="#B99A45"/>
-          <LandingFeature icon="🌐" title="Actualidad" sub="Historias, curiosidades y charla del estudio." accent="#263F4D"/>
+          <LandingFeature icon="📅" title="Reservas" sub="Reserva tu hora y elige el servicio que necesitas." accent="#D4AF37"/>
+          <LandingFeature icon="🎮" title="Juegos" sub="Minijuegos, récords y recompensas." accent="#4F602D"/>
+          <LandingFeature icon="🛍️" title="Tienda" sub="Vales, recompensas y extras para tu perfil." accent="#B99A45"/>
+          <LandingFeature icon="🌐" title="Actualidad" sub="Noticias, historias y comunidad." accent="#263F4D"/>
           <div style={{gridColumn:"1 / -1"}}>
-            <LandingFeature icon="🎧" title="Música" sub="Reggae, rap, ska y temas con alma para el local." accent="#4E3A76"/>
+            <LandingFeature icon="🎧" title="Música" sub="Reggae, rap, ska y ambiente para el estudio." accent="#4E3A76"/>
           </div>
         </div>
 
@@ -2083,7 +2083,7 @@ function Auth({onLogin,showToast,settings}){
         </Card>
 
         <div style={{textAlign:"center",color:"rgba(255,244,214,.84)",fontSize:".82rem",fontWeight:950,lineHeight:1.35,marginTop:16,padding:"12px 14px",border:"1px solid rgba(212,175,55,.25)",borderRadius:18,background:"rgba(255,244,214,.06)",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
-          {settings?.branding?.mensaje_login||"Entra al estudio: reserva, juega, comenta y desbloquea cosas sin perderte entre menús."}
+          {settings?.branding?.mensaje_login||"Forma parte de la comunidad Rasta Cuts."}
         </div>
       </div>
     </div>
@@ -13248,6 +13248,67 @@ function GlobalUIPolishPatch(){
       .rc-art-card{padding-top:58px!important;min-height:150px!important;}
       .rc-art-card::before{height:48px;}
     }
+
+    /* 2.9.7l · Login readability fix
+       El login no debe heredar las tarjetas oscuras de la app interna. */
+    .login-cyber-shell{
+      color:#FFF7DA!important;
+    }
+    .login-cyber-shell .landing-feature-pro{
+      background:
+        linear-gradient(155deg,rgba(10,16,12,.96),rgba(22,13,7,.94))!important;
+      border:1px solid rgba(240,200,92,.42)!important;
+      color:#FFF7DA!important;
+      box-shadow:0 16px 34px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.10)!important;
+    }
+    .login-cyber-shell .landing-feature-pro div{
+      color:#FFF7DA!important;
+    }
+    .login-cyber-shell .landing-feature-pro div[style*="font-size: .72rem"],
+    .login-cyber-shell .landing-feature-pro div[style*="font-size:.72rem"]{
+      color:rgba(255,247,218,.84)!important;
+    }
+    .login-cyber-shell .landing-feature-pro .icon3d{
+      opacity:1!important;
+      filter:drop-shadow(0 0 12px rgba(240,200,92,.42))!important;
+    }
+    .login-cyber-shell .card,
+    .login-cyber-shell .studio-panel.card{
+      background:linear-gradient(180deg,#FFF6D8 0%,#EFD28F 100%)!important;
+      color:#160D07!important;
+      border:2px solid rgba(240,200,92,.72)!important;
+      box-shadow:0 22px 48px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.72)!important;
+    }
+    .login-cyber-shell .card label,
+    .login-cyber-shell .card div,
+    .login-cyber-shell .card span{
+      color:inherit;
+    }
+    .login-cyber-shell .card input,
+    .login-cyber-shell .card textarea,
+    .login-cyber-shell .card select{
+      background:#FFF9DF!important;
+      color:#160D07!important;
+      border:2px solid rgba(86,54,16,.35)!important;
+      box-shadow:inset 0 2px 0 rgba(255,255,255,.60)!important;
+    }
+    .login-cyber-shell .card input::placeholder{
+      color:rgba(22,13,7,.55)!important;
+    }
+    .login-cyber-shell .card button{
+      color:inherit;
+    }
+    .login-cyber-shell > div > div:last-child{
+      color:#FFF7DA!important;
+      background:rgba(5,8,6,.78)!important;
+      border:1px solid rgba(240,200,92,.35)!important;
+      text-shadow:0 2px 8px rgba(0,0,0,.45);
+    }
+    @media(max-width:560px){
+      .login-cyber-shell{padding:12px 10px 26px!important;}
+      .login-cyber-shell .landing-feature-pro{min-height:86px!important;}
+    }
+
 
   `}</style>;
 }
