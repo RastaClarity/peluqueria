@@ -1754,6 +1754,26 @@ function LandingFeature({icon,title,sub,accent="#D4AF37"}){
 }
 
 
+function RastaCardIllustration({type="arcade",accent="#F2C85B",size=118}={}){
+  const key=String(type||"").toLowerCase();
+  const dark="#07100D";
+  const cream="#FFF7DA";
+  const gold="#F2C85B";
+  const teal="#3EE6C7";
+  const red="#D94A35";
+  const purple="#B14CFF";
+  const common={width:size,height:Math.round(size*.78),viewBox:"0 0 160 126",fill:"none",style:{display:"block",overflow:"visible",filter:"drop-shadow(0 18px 20px rgba(0,0,0,.28))"},"aria-hidden":"true"};
+  const glow=<><circle cx="122" cy="24" r="42" fill={accent} opacity=".16"/><circle cx="38" cy="88" r="40" fill={teal} opacity=".10"/></>;
+  if(key.includes("tienda")||key.includes("shop")) return <svg {...common}>{glow}<path d="M50 48h70l10 58H40l10-58Z" fill="url(#bagG)" stroke={accent} strokeWidth="4"/><path d="M62 49c2-20 34-20 36 0" stroke={cream} strokeWidth="8" strokeLinecap="round" opacity=".85"/><path d="M30 74l42-8 9 32-42 8-9-32Z" fill={red} stroke={cream} strokeWidth="3"/><circle cx="51" cy="86" r="5" fill={gold}/><defs><linearGradient id="bagG" x1="43" y1="45" x2="126" y2="112"><stop stopColor="#3EE6C7"/><stop offset="1" stopColor="#12352B"/></linearGradient></defs></svg>;
+  if(key.includes("mis")||key.includes("reto")) return <svg {...common}>{glow}<circle cx="72" cy="66" r="43" fill="#101C15" stroke={cream} strokeWidth="5"/><circle cx="72" cy="66" r="30" fill={red} opacity=".95"/><circle cx="72" cy="66" r="17" fill={cream}/><circle cx="72" cy="66" r="7" fill={teal}/><path d="M116 14L95 60h24l-29 52 9-38H78l38-60Z" fill={gold} stroke="#3A2108" strokeWidth="3"/></svg>;
+  if(key.includes("comunidad")||key.includes("foro")) return <svg {...common}>{glow}<path d="M31 38h66c12 0 20 8 20 19v15c0 11-8 19-20 19H62l-26 19 7-19H31c-12 0-20-8-20-19V57c0-11 8-19 20-19Z" fill="url(#chatG)" stroke={accent} strokeWidth="4"/><path d="M77 22h43c10 0 17 7 17 16v12c0 9-7 16-17 16h-8l5 16-21-16H77c-10 0-17-7-17-16V38c0-9 7-16 17-16Z" fill="rgba(217,74,53,.92)" stroke={cream} strokeWidth="3"/><circle cx="48" cy="65" r="5" fill={cream}/><circle cx="66" cy="65" r="5" fill={cream}/><circle cx="84" cy="65" r="5" fill={cream}/><defs><linearGradient id="chatG" x1="14" y1="35" x2="116" y2="108"><stop stopColor="#1BC49B"/><stop offset="1" stopColor="#0D221C"/></linearGradient></defs></svg>;
+  if(key.includes("perfil")||key.includes("avatar")) return <svg {...common}>{glow}<circle cx="78" cy="52" r="35" fill="#D59463" stroke={accent} strokeWidth="4"/><path d="M42 56c-2-32 18-48 36-48s38 16 36 48c-17-19-55-19-72 0Z" fill="#2B170C"/><path d="M43 109c7-20 22-30 35-30s28 10 35 30" fill="url(#avaG)" stroke={cream} strokeWidth="4"/><circle cx="64" cy="55" r="5" fill={dark}/><path d="M91 51c7 3 10 8 10 8" stroke={dark} strokeWidth="4" strokeLinecap="round"/><path d="M68 70c8 7 20 7 28 0" stroke="#7A2D1E" strokeWidth="5" strokeLinecap="round"/><path d="M113 16l8 16 18 2-13 12 4 18-17-9-16 9 3-18-12-12 17-2 8-16Z" fill={gold} stroke="#3A2108" strokeWidth="3"/><defs><linearGradient id="avaG" x1="44" y1="78" x2="112" y2="116"><stop stopColor="#3EE6C7"/><stop offset="1" stopColor="#15291F"/></linearGradient></defs></svg>;
+  if(key.includes("gacha")) return <svg {...common}>{glow}<path d="M48 52h62l10 50H38l10-50Z" fill="#1A1528" stroke={purple} strokeWidth="4"/><circle cx="79" cy="42" r="31" fill="url(#orbG)" stroke={cream} strokeWidth="4"/><circle cx="66" cy="33" r="8" fill={cream} opacity=".55"/><circle cx="101" cy="84" r="10" fill={gold}/><circle cx="58" cy="88" r="8" fill={teal}/><path d="M58 104h44" stroke={accent} strokeWidth="6" strokeLinecap="round"/><defs><radialGradient id="orbG" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(66 28) rotate(52) scale(54)"><stop stopColor="#FFF7DA"/><stop offset=".45" stopColor="#B14CFF"/><stop offset="1" stopColor="#211037"/></radialGradient></defs></svg>;
+  if(key.includes("tycoon")||key.includes("local")||key.includes("gestion")) return <svg {...common}>{glow}<path d="M28 58h94v48H28V58Z" fill="url(#shopG)" stroke={accent} strokeWidth="4"/><path d="M38 30h74l18 30H20l18-30Z" fill={red} stroke={cream} strokeWidth="4"/><path d="M45 70h26v36H45V70Z" fill="#0B1412" stroke={teal} strokeWidth="3"/><path d="M83 73h26" stroke={cream} strokeWidth="5" strokeLinecap="round"/><path d="M83 89h20" stroke={gold} strokeWidth="5" strokeLinecap="round"/><path d="M36 46h90" stroke={gold} strokeWidth="6" strokeLinecap="round"/><defs><linearGradient id="shopG" x1="28" y1="58" x2="122" y2="106"><stop stopColor="#17382B"/><stop offset="1" stopColor="#3B270E"/></linearGradient></defs></svg>;
+  return <svg {...common}>{glow}<rect x="45" y="18" width="72" height="88" rx="16" fill="url(#gameG)" stroke={accent} strokeWidth="4"/><rect x="56" y="31" width="50" height="35" rx="8" fill="#07100D" stroke={teal} strokeWidth="3"/><circle cx="69" cy="84" r="9" fill={red}/><circle cx="95" cy="84" r="7" fill={gold}/><path d="M38 76h30" stroke={cream} strokeWidth="7" strokeLinecap="round"/><path d="M53 61v30" stroke={cream} strokeWidth="7" strokeLinecap="round"/><path d="M117 98c13-3 20-12 21-28" stroke={purple} strokeWidth="7" strokeLinecap="round"/><defs><linearGradient id="gameG" x1="45" y1="18" x2="117" y2="106"><stop stopColor="#223E66"/><stop offset="1" stopColor="#0E161B"/></linearGradient></defs></svg>;
+}
+
+
 function MiniRastaHelperFace({size=60,speaking=false}={}){
   return (
     <svg viewBox="0 0 120 120" width={size} height={size} style={{display:"block",overflow:"visible",filter:speaking?"drop-shadow(0 4px 6px rgba(0,0,0,.18))":"drop-shadow(0 3px 5px rgba(0,0,0,.14))"}} aria-hidden="true">
@@ -1919,7 +1939,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
           boxShadow:"0 12px 24px rgba(0,0,0,.25)"
         }}>
           <div style={{fontWeight:950,fontSize:compact?".94rem":"1.05rem",color:"#FFD66B"}}>{slogan}</div>
-          <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.32}}>Reserva, juega, sube tu avatar y vuelve cuando quieras. Menos panel frío, más estudio con vida.</div>
+          <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.32}}>Reserva, juega, sube tu avatar y vuelve cuando quieras. Tu estudio digital con recompensas, comunidad y estilo propio.</div>
         </div>
         {user&&(
           <div style={{display:"flex",gap:8,justifyContent:"center",alignItems:"center",marginBottom:10,flexWrap:"wrap"}}>
@@ -2346,13 +2366,13 @@ function ClientDashboard({user,onNavigate,settings}){
     }}>{children}</button>;
   }
 
-  function FeatureCard({icon,title,sub,to,tone="green",art}){
+  function FeatureCard({icon,title,sub,to,tone="green",art,artType}){
     const tones={
       green:["#0FB890","#144B32"],gold:["#E0B84F","#5A3D10"],blue:["#35B8D0","#123E52"],pink:["#B878FF","#39215F"],orange:["#E38B32","#613512"]
     };
     const [a,b]=tones[tone]||tones.green;
     return <button className={`rc-art-card rc-art-${tone||"green"}`} data-card-title={title} onClick={()=>{SFX.tab();onNavigate?.(to);}} style={{
-      minHeight:150,
+      minHeight:168,
       textAlign:"left",
       border:`1px solid ${a}55`,
       background:`linear-gradient(155deg,rgba(10,14,12,.92),${b}D9), radial-gradient(circle at 80% 12%,${a}44,transparent 42%)`,
@@ -2364,9 +2384,10 @@ function ClientDashboard({user,onNavigate,settings}){
       overflow:"hidden",
       boxShadow:"0 16px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.10)"
     }}>
-      <div className="rc-art-card-mark" style={{position:"absolute",right:10,top:6,fontSize:"3.8rem",opacity:.18,filter:`drop-shadow(0 0 16px ${a})`}}>{art||icon}</div>
-      <div style={{position:"relative",zIndex:1}}>
-        <div style={{fontSize:"1.8rem",lineHeight:1}}>{icon}</div>
+      <div style={{position:"absolute",right:-10,top:4,opacity:.98,transform:"rotate(-3deg)"}}><RastaCardIllustration type={artType||title||to} accent={a} size={132}/></div>
+      <div style={{position:"absolute",left:0,right:0,top:0,height:46,background:`linear-gradient(90deg,${a}24,rgba(255,255,255,.06),transparent)`,borderBottom:`1px solid ${a}22`}}/>
+      <div style={{position:"relative",zIndex:1,maxWidth:"64%"}}>
+        <div style={{fontSize:"1.35rem",lineHeight:1,width:42,height:42,borderRadius:15,display:"grid",placeItems:"center",background:"rgba(255,255,255,.08)",border:`1px solid ${a}33`}}>{icon}</div>
         <div className="rc-card-title" style={{fontWeight:1000,fontSize:"1.05rem",marginTop:10,color:a,textTransform:"uppercase",letterSpacing:".02em"}}>{title}</div>
         <div style={{fontSize:".78rem",fontWeight:800,lineHeight:1.35,color:"rgba(255,247,218,.82)",marginTop:5,maxWidth:190}}>{sub}</div>
         <div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:8,fontSize:".72rem",fontWeight:1000,color:"#FFE7A4",borderTop:`1px solid ${a}44`,paddingTop:8}}>Abrir <span>→</span></div>
@@ -2411,7 +2432,7 @@ function ClientDashboard({user,onNavigate,settings}){
           <Badge col="gold">Puerta abierta del estudio</Badge>
           <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(3.1rem,8vw,6.8rem)",lineHeight:.82,margin:"16px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)",letterSpacing:".02em"}}>RASTA CUTS</h1>
           <div style={{fontSize:"clamp(1.05rem,2.2vw,1.45rem)",fontWeight:1000,color:"#FFE7A4",textTransform:"uppercase",letterSpacing:".02em"}}>Cortes, retos y recompensas con rollo propio.</div>
-          <p style={{maxWidth:540,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"12px 0 18px"}}>Entra al estudio, echa unas partidas, cuida tu avatar y consigue recompensas sin romper la economía.</p>
+          <p style={{maxWidth:540,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"12px 0 18px"}}>Entra al estudio, echa unas partidas, cuida tu avatar y consigue recompensas con estilo propio.</p>
           <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:18}}>
             <HeroButton to="juegos">🎮 Jugar ahora</HeroButton>
             <HeroButton to="misiones" variant="ghost">🎯 Ver misiones</HeroButton>
@@ -2435,18 +2456,18 @@ function ClientDashboard({user,onNavigate,settings}){
             boxShadow:"0 16px 38px rgba(0,0,0,.22)"
           }}>
             <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}>
-              <div><div style={{fontSize:".72rem",fontWeight:1000,color:"#E0B84F",textTransform:"uppercase",letterSpacing:".08em"}}>Reto de temporada</div><div style={{fontSize:"1.35rem",fontWeight:1000}}>Corte legendario</div><div style={{fontSize:".82rem",fontWeight:780,color:"rgba(255,247,218,.72)"}}>Completa retos, sube en el ranking y desbloquea premios con cabeza.</div></div>
+              <div><div style={{fontSize:".72rem",fontWeight:1000,color:"#E0B84F",textTransform:"uppercase",letterSpacing:".08em"}}>Reto de temporada</div><div style={{fontSize:"1.35rem",fontWeight:1000}}>Corte legendario</div><div style={{fontSize:".82rem",fontWeight:780,color:"rgba(255,247,218,.72)"}}>Completa retos, sube en el ranking y desbloquea premios del estudio.</div></div>
               <button onClick={()=>onNavigate?.("misiones")} style={{border:"1px solid rgba(255,210,98,.48)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver reto →</button>
             </div>
           </div>
 
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12}}>
-            <FeatureCard icon="🎮" title="Arcade" sub="Minijuegos, récords, RC, XP y ranking." to="juegos" tone="blue" art="🕹️"/>
-            <FeatureCard icon="🏪" title="Tycoon" sub="Monta tu barbería y gasta RC con cabeza." to="juegos" tone="gold" art="🏗️"/>
-            <FeatureCard icon="🎰" title="Gacha" sub="Suerte, tiradas y premios pequeños. Nada de RP regalados." to="juegos" tone="pink" art="🔮"/>
-            <FeatureCard icon="🛍️" title="Tienda juegos" sub="Vales para jugar y extras bien separados de la tienda real." to="tienda" tone="blue" art="🎫"/>
-            <FeatureCard icon="🧑‍🎤" title="Avatar" sub="Tu personaje, tu rol y tus insignias." to="perfil" tone="green" art="👑"/>
-            <FeatureCard icon="🌐" title="Comunidad" sub="Foro, tablón, historias y perfiles con vida." to="comunidad" tone="orange" art="👥"/>
+            <FeatureCard icon="🎮" title="Arcade" sub="Minijuegos, récords, RC, XP y ranking." to="juegos" tone="blue" art="🕹️" artType="arcade"/>
+            <FeatureCard icon="🏪" title="Tycoon" sub="Mejora tu barbería paso a paso." to="juegos" tone="gold" art="🏗️" artType="tycoon"/>
+            <FeatureCard icon="🎰" title="Gacha" sub="Tiradas, suerte y premios pequeños." to="juegos" tone="pink" art="🔮" artType="gacha"/>
+            <FeatureCard icon="🛍️" title="Tienda juegos" sub="Vales, tiradas y recompensas." to="tienda" tone="blue" art="🎫" artType="tienda"/>
+            <FeatureCard icon="🧑‍🎤" title="Avatar" sub="Tu personaje, tu rol y tus insignias." to="perfil" tone="green" art="👑" artType="perfil"/>
+            <FeatureCard icon="🌐" title="Comunidad" sub="Foro, tablón, historias y comunidad." to="comunidad" tone="orange" art="👥" artType="comunidad"/>
           </div>
         </div>
 
@@ -2454,7 +2475,7 @@ function ClientDashboard({user,onNavigate,settings}){
           <div style={{borderRadius:24,padding:16,background:"linear-gradient(160deg,rgba(7,16,13,.96),rgba(31,42,23,.88))",border:"1px solid rgba(255,210,98,.30)",color:"#FFF7DA",boxShadow:"0 16px 38px rgba(0,0,0,.24)"}}>
             <div style={{fontWeight:1000,color:"#E0B84F",textTransform:"uppercase",fontSize:".78rem"}}>Ronda diaria</div>
             <div style={{fontSize:"3rem",margin:"12px 0",textAlign:"center",filter:"drop-shadow(0 0 18px rgba(224,184,79,.35))"}}>🎁</div>
-            <div style={{fontSize:".83rem",fontWeight:780,color:"rgba(255,247,218,.76)",lineHeight:1.4}}>Pasa por el estudio, revisa retos y suma un poco sin regalar la casa.</div>
+            <div style={{fontSize:".83rem",fontWeight:780,color:"rgba(255,247,218,.76)",lineHeight:1.4}}>Pasa por el estudio, revisa retos y suma progreso cada día.</div>
             <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:14,width:"100%",border:"none",borderRadius:14,padding:"11px 12px",background:"linear-gradient(135deg,#E0B84F,#B97D22)",fontWeight:1000,color:"#201407",cursor:"pointer"}}>🎯 Ver retos</button>
           </div>
           <div style={{borderRadius:24,padding:16,background:"linear-gradient(160deg,rgba(8,12,11,.96),rgba(17,37,31,.90))",border:"1px solid rgba(95,240,200,.26)",color:"#FFF7DA"}}>
@@ -5747,7 +5768,7 @@ function ArcadeInfoPanel({onOpenGacha}){
         <div style={{display:"grid",gap:8,fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.42}}>
           <div>Los récords sirven para competir y volver a intentarlo. Los RP reales, en cambio, se cobran de forma limitada para que la tienda y los desbloqueos sigan teniendo valor.</div>
           <div>Cada juego puede entregar RP una vez al día. Después puedes rejugar para mejorar marca, pero no para farmear RP sin límite.</div>
-          <div>El Gacha Barber no reparte RP. Sirve para azar suave, RC, XP y alguna tirada extra sin romper la economía.</div>
+          <div>El Gacha Barber no reparte RP. Mantiene premios pequeños, RC, XP y alguna tirada extra.</div>
         </div>
         <div style={{marginTop:11,display:"flex",justifyContent:"flex-start"}}>
           <Btn small col="gold" onClick={onOpenGacha}>🎰 Abrir Gacha Barber</Btn>
@@ -11397,12 +11418,12 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
   const progress=avatarLevelProgress(userXP(user));
 
   const cards=[
-    {id:"gestion",icon:"💈",title:"Local",sub:"Pedidos, citas, vales y tienda.",tone:"gold",art:"🏪"},
-    {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vista real de tienda juegos y productos €.",tone:"blue",art:"🎟️"},
-    {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP.",tone:"blue",art:"🕹️"},
-    {id:"misiones",icon:"🎯",title:"Retos",sub:"Misiones diarias, semanales y progreso.",tone:"green",art:"⚡"},
-    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, historias y gente del estudio.",tone:"orange",art:"📣"},
-    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, rol, vales y cartera.",tone:"pink",art:"👑"},
+    {id:"gestion",icon:"💈",title:"Local",sub:"Pedidos, citas, vales y tienda.",tone:"gold",art:"🏪",artType:"local"},
+    {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vales, productos y recompensas.",tone:"blue",art:"🎟️",artType:"tienda"},
+    {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP.",tone:"blue",art:"🕹️",artType:"arcade"},
+    {id:"misiones",icon:"🎯",title:"Retos",sub:"Diarios, semanales y progreso.",tone:"green",art:"⚡",artType:"misiones"},
+    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro e historias del estudio.",tone:"orange",art:"📣",artType:"comunidad"},
+    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, nivel, vales y cartera.",tone:"pink",art:"👑",artType:"perfil"},
   ];
 
   function AdminFeature({c}){
@@ -11410,7 +11431,7 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
     const [a,b]=tones[c.tone]||tones.green;
     return <button className={`rc-art-card rc-art-${c.tone||"green"}`} data-card-title={c.title} onClick={()=>{SFX.tab();onNavigate?.(c.id);}} style={{
       textAlign:"left",
-      minHeight:118,
+      minHeight:142,
       border:`1px solid ${a}55`,
       background:`linear-gradient(150deg,rgba(9,14,12,.96),${b}D9), radial-gradient(circle at 86% 12%,${a}33,transparent 42%)`,
       borderRadius:22,
@@ -11421,11 +11442,12 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       position:"relative",
       overflow:"hidden"
     }}>
-      <div className="rc-art-card-mark" style={{position:"absolute",right:8,top:4,fontSize:"3.4rem",opacity:.16}}>{c.art||c.icon}</div>
-      <div style={{position:"relative",zIndex:1}}>
-        <div style={{fontSize:"1.55rem"}}>{c.icon}</div>
-        <div className="rc-card-title" style={{fontWeight:1000,color:a,marginTop:7,textTransform:"uppercase",letterSpacing:".02em"}}>{c.title}</div>
-        <div style={{fontSize:".76rem",fontWeight:800,color:"rgba(255,247,218,.76)",lineHeight:1.35,marginTop:4}}>{c.sub}</div>
+      <div style={{position:"absolute",right:-8,top:4,opacity:.96,transform:"rotate(-3deg)"}}><RastaCardIllustration type={c.artType||c.id} accent={a} size={118}/></div>
+      <div style={{position:"absolute",left:0,right:0,top:0,height:42,background:`linear-gradient(90deg,${a}22,rgba(255,255,255,.06),transparent)`,borderBottom:`1px solid ${a}22`}}/>
+      <div style={{position:"relative",zIndex:1,maxWidth:"62%"}}>
+        <div style={{fontSize:"1.25rem",width:38,height:38,borderRadius:14,display:"grid",placeItems:"center",background:"rgba(255,255,255,.08)",border:`1px solid ${a}33`}}>{c.icon}</div>
+        <div className="rc-card-title" style={{fontWeight:1000,color:a,marginTop:9,textTransform:"uppercase",letterSpacing:".02em"}}>{c.title}</div>
+        <div style={{fontSize:".76rem",fontWeight:800,color:"rgba(255,247,218,.78)",lineHeight:1.35,marginTop:4}}>{c.sub}</div>
       </div>
     </button>;
   }
