@@ -2294,7 +2294,7 @@ function ClientDashboard({user,onNavigate,settings}){
       green:["#0FB890","#144B32"],gold:["#E0B84F","#5A3D10"],blue:["#35B8D0","#123E52"],pink:["#B878FF","#39215F"],orange:["#E38B32","#613512"]
     };
     const [a,b]=tones[tone]||tones.green;
-    return <button onClick={()=>{SFX.tab();onNavigate?.(to);}} style={{
+    return <button className={`rc-art-card rc-art-${tone||"green"}`} data-card-title={title} onClick={()=>{SFX.tab();onNavigate?.(to);}} style={{
       minHeight:150,
       textAlign:"left",
       border:`1px solid ${a}55`,
@@ -2307,10 +2307,10 @@ function ClientDashboard({user,onNavigate,settings}){
       overflow:"hidden",
       boxShadow:"0 16px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.10)"
     }}>
-      <div style={{position:"absolute",right:10,top:6,fontSize:"3.8rem",opacity:.18,filter:`drop-shadow(0 0 16px ${a})`}}>{art||icon}</div>
+      <div className="rc-art-card-mark" style={{position:"absolute",right:10,top:6,fontSize:"3.8rem",opacity:.18,filter:`drop-shadow(0 0 16px ${a})`}}>{art||icon}</div>
       <div style={{position:"relative",zIndex:1}}>
         <div style={{fontSize:"1.8rem",lineHeight:1}}>{icon}</div>
-        <div style={{fontWeight:1000,fontSize:"1.05rem",marginTop:10,color:a,textTransform:"uppercase",letterSpacing:".02em"}}>{title}</div>
+        <div className="rc-card-title" style={{fontWeight:1000,fontSize:"1.05rem",marginTop:10,color:a,textTransform:"uppercase",letterSpacing:".02em"}}>{title}</div>
         <div style={{fontSize:".78rem",fontWeight:800,lineHeight:1.35,color:"rgba(255,247,218,.82)",marginTop:5,maxWidth:190}}>{sub}</div>
         <div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:8,fontSize:".72rem",fontWeight:1000,color:"#FFE7A4",borderTop:`1px solid ${a}44`,paddingTop:8}}>Abrir <span>→</span></div>
       </div>
@@ -2328,8 +2328,8 @@ function ClientDashboard({user,onNavigate,settings}){
   }
 
   return(
-    <div className="premium-home" style={{animation:"fadeSlide 0.4s ease",display:"grid",gap:14}}>
-      <section style={{
+    <div className="premium-home rc-visual-rework" style={{animation:"fadeSlide 0.4s ease",display:"grid",gap:14}}>
+      <section className="rc-hero-wall rc-hero-client" style={{
         borderRadius:30,
         overflow:"hidden",
         position:"relative",
@@ -2340,7 +2340,7 @@ function ClientDashboard({user,onNavigate,settings}){
       }}>
         <div style={{position:"absolute",inset:0,opacity:.22,backgroundImage:"linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.04) 1px, transparent 1px)",backgroundSize:"42px 42px"}}/>
         <div style={{position:"absolute",right:-30,top:20,width:"52%",height:"82%",borderRadius:"34px 0 0 34px",background:"linear-gradient(145deg,rgba(255,210,98,.16),rgba(15,184,144,.08)), radial-gradient(circle at 48% 38%,rgba(255,242,190,.14),transparent 26%)",border:"1px solid rgba(255,210,98,.18)",transform:"skewX(-8deg)",boxShadow:"inset 0 0 70px rgba(0,0,0,.45)"}}/>
-        <div style={{position:"absolute",right:46,top:54,width:240,height:170,borderRadius:28,background:"linear-gradient(180deg,#2D1C0E,#0D1510)",border:"1px solid rgba(255,210,98,.30)",boxShadow:"0 20px 45px rgba(0,0,0,.38)",display:"grid",placeItems:"center",transform:"rotate(-2deg)"}}>
+        <div className="rc-hero-sign" style={{position:"absolute",right:46,top:54,width:240,height:170,borderRadius:28,background:"linear-gradient(180deg,#2D1C0E,#0D1510)",border:"1px solid rgba(255,210,98,.30)",boxShadow:"0 20px 45px rgba(0,0,0,.38)",display:"grid",placeItems:"center",transform:"rotate(-2deg)"}}>
           <div style={{textAlign:"center"}}>
             <div style={{fontSize:"2.8rem",filter:"drop-shadow(0 0 16px #D9B35C)"}}>💈</div>
             <div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.2rem",color:"#FFE7A4",lineHeight:.9,textShadow:"0 0 18px rgba(224,184,79,.5)"}}>RASTA</div>
@@ -11340,18 +11340,18 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
   const progress=avatarLevelProgress(userXP(user));
 
   const cards=[
-    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Pedidos, cupones, citas, tienda, usuarios y seguridad.",tone:"gold"},
-    {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vista real de tienda juegos y productos €.",tone:"blue"},
-    {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP.",tone:"blue"},
-    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Diarias y semanales conectadas a RP/RC/XP.",tone:"green"},
-    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, actualidad e insignias.",tone:"orange"},
-    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, roles, cupones y cartera.",tone:"pink"},
+    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Pedidos, cupones, citas, tienda, usuarios y seguridad.",tone:"gold",art:"✂️"},
+    {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vista real de tienda juegos y productos €.",tone:"blue",art:"🎟️"},
+    {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP.",tone:"blue",art:"🕹️"},
+    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Diarias y semanales conectadas a RP/RC/XP.",tone:"green",art:"⚡"},
+    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, actualidad e insignias.",tone:"orange",art:"📣"},
+    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, roles, cupones y cartera.",tone:"pink",art:"👑"},
   ];
 
   function AdminFeature({c}){
     const tones={green:["#0FB890","#143F2E"],gold:["#E0B84F","#5A3D10"],blue:["#35B8D0","#123E52"],pink:["#B878FF","#39215F"],orange:["#E38B32","#613512"]};
     const [a,b]=tones[c.tone]||tones.green;
-    return <button onClick={()=>{SFX.tab();onNavigate?.(c.id);}} style={{
+    return <button className={`rc-art-card rc-art-${c.tone||"green"}`} data-card-title={c.title} onClick={()=>{SFX.tab();onNavigate?.(c.id);}} style={{
       textAlign:"left",
       minHeight:118,
       border:`1px solid ${a}55`,
@@ -11364,17 +11364,17 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       position:"relative",
       overflow:"hidden"
     }}>
-      <div style={{position:"absolute",right:8,top:4,fontSize:"3.4rem",opacity:.16}}>{c.icon}</div>
+      <div className="rc-art-card-mark" style={{position:"absolute",right:8,top:4,fontSize:"3.4rem",opacity:.16}}>{c.art||c.icon}</div>
       <div style={{position:"relative",zIndex:1}}>
         <div style={{fontSize:"1.55rem"}}>{c.icon}</div>
-        <div style={{fontWeight:1000,color:a,marginTop:7,textTransform:"uppercase",letterSpacing:".02em"}}>{c.title}</div>
+        <div className="rc-card-title" style={{fontWeight:1000,color:a,marginTop:7,textTransform:"uppercase",letterSpacing:".02em"}}>{c.title}</div>
         <div style={{fontSize:".76rem",fontWeight:800,color:"rgba(255,247,218,.76)",lineHeight:1.35,marginTop:4}}>{c.sub}</div>
       </div>
     </button>;
   }
 
-  return <div className="premium-home" style={{animation:"fadeSlide .34s ease",display:"grid",gap:14}}>
-    <section style={{
+  return <div className="premium-home rc-visual-rework" style={{animation:"fadeSlide .34s ease",display:"grid",gap:14}}>
+    <section className="rc-hero-wall rc-hero-admin" style={{
       borderRadius:30,
       overflow:"hidden",
       position:"relative",
@@ -11384,13 +11384,13 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       boxShadow:"0 24px 60px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.10)"
     }}>
       <div style={{position:"absolute",inset:0,opacity:.22,backgroundImage:"linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.04) 1px, transparent 1px)",backgroundSize:"42px 42px"}}/>
-      <div style={{position:"absolute",right:34,top:44,width:250,height:160,borderRadius:28,background:"linear-gradient(180deg,#2D1C0E,#0D1510)",border:"1px solid rgba(255,210,98,.30)",boxShadow:"0 20px 45px rgba(0,0,0,.38)",display:"grid",placeItems:"center",transform:"rotate(-2deg)"}}>
-        <div style={{textAlign:"center"}}><div style={{fontSize:"2.4rem"}}>✂️</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.05rem",color:"#FFE7A4",lineHeight:.9}}>RASTA CUTS</div><div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".18em",fontSize:".64rem"}}>CONTROL PANEL</div></div>
+      <div className="rc-hero-sign" style={{position:"absolute",right:34,top:44,width:250,height:160,borderRadius:28,background:"linear-gradient(180deg,#2D1C0E,#0D1510)",border:"1px solid rgba(255,210,98,.30)",boxShadow:"0 20px 45px rgba(0,0,0,.38)",display:"grid",placeItems:"center",transform:"rotate(-2deg)"}}>
+        <div style={{textAlign:"center"}}><div style={{fontSize:"2.4rem"}}>✂️</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.05rem",color:"#FFE7A4",lineHeight:.9}}>RASTA CUTS</div><div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".18em",fontSize:".64rem"}}>BARBER STUDIO</div></div>
       </div>
       <div style={{position:"relative",zIndex:2,padding:"26px clamp(18px,4vw,42px)",maxWidth:690}}>
         <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
-        <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.65rem,7vw,5.6rem)",lineHeight:.82,margin:"14px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)"}}>RASTA CUTS HQ</h1>
-        <p style={{maxWidth:560,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Centro de control para pedidos, cupones, economía, comunidad y juegos con una estética más seria y urbana.</p>
+        <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.65rem,7vw,5.6rem)",lineHeight:.82,margin:"14px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)"}}>CENTRO RASTA CUTS</h1>
+        <p style={{maxWidth:560,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Centro de control para pedidos, cupones, economía, comunidad y juegos con estética barber, tattoo y rasta.</p>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🔔 {Number(unread?.admin||0)} avisos</span>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>📦 {pendingOrders.length} pedidos</span>
@@ -12992,6 +12992,174 @@ function GlobalUIPolishPatch(){
       .bottom-nav-pro{width:calc(100% - 16px)!important;border-radius:22px!important;}
       .nav-tab-pro{min-width:0!important;}
       .nav-tab-pro span{font-size:.54rem!important;}
+    }
+
+
+    /* 2.9.7c · Visual Rework Real: fondo con dibujos, tarjetas con arte y títulos menos clásicos. */
+    :root{
+      --rc-font-title:"Rye","Pirata One",Georgia,serif;
+      --rc-wall-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%23fff4d6' stroke-opacity='.14' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M35 41l28 28M63 41L35 69M48 32v45'/%3E%3Cpath d='M190 38c22 0 35 14 35 32s-13 32-35 32-35-14-35-32 13-32 35-32z'/%3E%3Cpath d='M174 70h32M190 54v32'/%3E%3Cpath d='M42 176c22-22 44-22 66 0M51 188c16-12 32-12 48 0'/%3E%3Cpath d='M160 178l23-38 23 38-23 14zM183 140v52'/%3E%3Cpath d='M215 210l10 20 22 3-16 15 4 22-20-11-20 11 4-22-16-15 22-3z' transform='scale(.62) translate(112 102)'/%3E%3C/g%3E%3Cg fill='%23f0c85c' fill-opacity='.10'%3E%3Ccircle cx='118' cy='55' r='5'/%3E%3Ccircle cx='222' cy='154' r='4'/%3E%3Ccircle cx='78' cy='224' r='4'/%3E%3C/g%3E%3C/svg%3E");
+      --rc-spray-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='%23fff4d6' fill-opacity='.10'%3E%3Ccircle cx='23' cy='40' r='2'/%3E%3Ccircle cx='41' cy='58' r='1.5'/%3E%3Ccircle cx='142' cy='34' r='2.5'/%3E%3Ccircle cx='126' cy='118' r='1.7'/%3E%3Ccircle cx='54' cy='138' r='2.2'/%3E%3Ccircle cx='88' cy='82' r='1.3'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .app-shell{
+      background:
+        radial-gradient(circle at 8% 4%,rgba(54,224,188,.22),transparent 24%),
+        radial-gradient(circle at 90% 10%,rgba(240,200,92,.18),transparent 26%),
+        radial-gradient(circle at 72% 92%,rgba(217,74,53,.12),transparent 30%),
+        var(--rc-wall-pattern),
+        linear-gradient(180deg,rgba(3,7,5,.98),rgba(8,13,9,.98))!important;
+      background-size:auto,auto,auto,260px 260px,auto!important;
+    }
+
+    .page-content-pro{
+      background:
+        linear-gradient(180deg,rgba(5,12,9,.72),rgba(5,7,6,.86)),
+        var(--rc-spray-pattern),
+        var(--rc-wall-pattern),
+        radial-gradient(circle at 20% 0%,rgba(54,224,188,.14),transparent 25%),
+        radial-gradient(circle at 85% 10%,rgba(240,200,92,.13),transparent 28%)!important;
+      background-size:auto,180px 180px,260px 260px,auto,auto!important;
+    }
+
+    .page-content-pro::before{
+      content:""!important;
+      display:block!important;
+      opacity:.34!important;
+      background:
+        linear-gradient(120deg,transparent 0 42%,rgba(240,200,92,.08) 44%,transparent 48%),
+        radial-gradient(circle at 20% 18%,rgba(54,224,188,.16),transparent 22%),
+        radial-gradient(circle at 82% 26%,rgba(217,74,53,.10),transparent 24%),
+        var(--rc-wall-pattern)!important;
+      background-size:auto,auto,auto,300px 300px!important;
+      mix-blend-mode:screen;
+    }
+
+    .rc-visual-rework .rc-hero-wall{
+      background:
+        linear-gradient(90deg,rgba(2,6,5,.96) 0%,rgba(8,18,13,.90) 45%,rgba(37,21,9,.68) 100%),
+        radial-gradient(circle at 76% 28%,rgba(240,200,92,.28),transparent 28%),
+        radial-gradient(circle at 26% 24%,rgba(54,224,188,.20),transparent 28%),
+        var(--rc-wall-pattern),
+        linear-gradient(135deg,#06100c,#102419 56%,#2a1709)!important;
+      background-size:auto,auto,auto,250px 250px,auto!important;
+    }
+
+    .rc-visual-rework .rc-hero-wall::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      z-index:1;
+      opacity:.38;
+      background:
+        radial-gradient(circle at 18% 12%,rgba(255,244,214,.12),transparent 18%),
+        linear-gradient(110deg,transparent 0 48%,rgba(240,200,92,.10) 49%,transparent 60%),
+        var(--rc-spray-pattern);
+      background-size:auto,auto,180px 180px;
+      mix-blend-mode:screen;
+    }
+
+    .rc-hero-sign{
+      background:
+        linear-gradient(155deg,rgba(48,28,12,.96),rgba(8,16,12,.96)),
+        var(--rc-wall-pattern)!important;
+      background-size:auto,180px 180px!important;
+      transform:rotate(-3deg)!important;
+      box-shadow:0 24px 55px rgba(0,0,0,.45),0 0 42px rgba(240,200,92,.16),inset 0 1px 0 rgba(255,255,255,.12)!important;
+    }
+    .rc-hero-sign::after{
+      content:"✦ tattoo flash ✦";
+      position:absolute;
+      left:18px;
+      right:18px;
+      bottom:12px;
+      text-align:center;
+      color:rgba(255,247,218,.58);
+      font-size:.64rem;
+      font-weight:950;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+    }
+
+    .premium-home h1{
+      font-family:"Rye","Pirata One",Georgia,serif!important;
+      font-weight:400!important;
+      letter-spacing:.025em!important;
+      -webkit-text-stroke:1px rgba(240,200,92,.22);
+      text-shadow:0 7px 0 rgba(0,0,0,.34),0 0 28px rgba(240,200,92,.26),0 0 42px rgba(54,224,188,.12)!important;
+    }
+
+    .rc-art-card{
+      padding-top:64px!important;
+      min-height:164px!important;
+      border-radius:24px!important;
+      isolation:isolate;
+      transform:translateZ(0);
+      background:
+        linear-gradient(160deg,rgba(5,9,7,.96),rgba(14,25,18,.94) 54%,rgba(43,25,10,.78)),
+        var(--rc-wall-pattern)!important;
+      background-size:auto,220px 220px!important;
+      box-shadow:0 20px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.10)!important;
+    }
+    .rc-art-card::before{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      top:0;
+      height:52px;
+      z-index:0;
+      background:
+        linear-gradient(90deg,rgba(240,200,92,.26),rgba(54,224,188,.12),rgba(217,74,53,.18)),
+        var(--rc-spray-pattern);
+      background-size:auto,140px 140px;
+      border-bottom:1px solid rgba(255,244,214,.14);
+      opacity:.95;
+    }
+    .rc-art-card::after{
+      content:attr(data-card-title);
+      position:absolute;
+      left:12px;
+      top:14px;
+      z-index:1;
+      font-family:"Rye","Pirata One",Georgia,serif;
+      color:rgba(255,247,218,.92);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:.68rem;
+      text-shadow:0 2px 8px rgba(0,0,0,.5);
+    }
+    .rc-art-card .rc-art-card-mark{
+      right:12px!important;
+      top:7px!important;
+      opacity:.42!important;
+      z-index:2!important;
+      filter:drop-shadow(0 0 18px rgba(240,200,92,.35))!important;
+    }
+    .rc-card-title{
+      font-family:"Rye","Pirata One",Georgia,serif!important;
+      font-size:1.08rem!important;
+      line-height:1.02!important;
+      letter-spacing:.02em!important;
+      color:#FFE7A4!important;
+      text-shadow:0 3px 12px rgba(0,0,0,.42),0 0 18px rgba(240,200,92,.18)!important;
+    }
+    .rc-art-gold{border-color:rgba(240,200,92,.45)!important;}
+    .rc-art-blue{border-color:rgba(54,224,188,.36)!important;}
+    .rc-art-pink{border-color:rgba(177,76,255,.38)!important;}
+    .rc-art-orange{border-color:rgba(217,74,53,.36)!important;}
+    .rc-art-green{border-color:rgba(75,220,144,.34)!important;}
+    .rc-art-gold::before{background:linear-gradient(90deg,rgba(240,200,92,.34),rgba(90,61,16,.22)),var(--rc-spray-pattern)!important;}
+    .rc-art-blue::before{background:linear-gradient(90deg,rgba(54,224,188,.28),rgba(18,62,82,.22)),var(--rc-spray-pattern)!important;}
+    .rc-art-pink::before{background:linear-gradient(90deg,rgba(177,76,255,.27),rgba(217,74,53,.14)),var(--rc-spray-pattern)!important;}
+    .rc-art-orange::before{background:linear-gradient(90deg,rgba(217,74,53,.27),rgba(240,200,92,.15)),var(--rc-spray-pattern)!important;}
+    .rc-art-green::before{background:linear-gradient(90deg,rgba(54,224,188,.22),rgba(75,220,144,.18)),var(--rc-spray-pattern)!important;}
+
+    @media(max-width:760px){
+      .rc-hero-sign{display:none!important;}
+      .rc-art-card{padding-top:58px!important;min-height:150px!important;}
+      .rc-art-card::before{height:48px;}
     }
 
   `}</style>;
