@@ -1,24 +1,24 @@
 const T = {
-  // Paleta 2.9.6k: hotfix estable. Luego hacemos rediseño visual de verdad.
-  g900:"#090807",
-  g800:"#11100C",
-  g700:"#1B1A12",
-  g600:"#2A2A1A",
-  g500:"#3D3B22",
-  g400:"#6D5B2B",
+  // Paleta 2.9.7a: base App Store. Fondo profundo, acentos graffiti/tattoo/rasta y mejor contraste.
+  g900:"#050706",
+  g800:"#07100D",
+  g700:"#101C15",
+  g600:"#182C20",
+  g500:"#29402D",
+  g400:"#5D5430",
   g300:"#B58B36",
-  g200:"#D8B75E",
+  g200:"#E0B84F",
   g150:"#E8D38A",
   g100:"#F2E3B2",
   g50:"#FFF4D6",
 
   pink:"#B14CFF",
-  gold:"#E0B84F",
+  gold:"#F0C85C",
   orange:"#D9822B",
-  red:"#A83224",
-  blue:"#28C7B7",
+  red:"#D94A35",
+  blue:"#36E0BC",
 
-  ink:"#090807",
+  ink:"#050706",
   panel:"#F3E4BD",
   panel2:"#E4D09A",
 
@@ -26,10 +26,10 @@ const T = {
   textSub:"#654626",
   white:"#FFF7DA",
 
-  gradAdmin:"linear-gradient(135deg,#090807,#11100C 55%,#4A2A0A)",
-  gradStaff:"linear-gradient(135deg,#090807,#15291F 55%,#6D5B2B)",
-  gradClient:"linear-gradient(135deg,#090807,#17382B 55%,#9A7A2F)",
-  gradGold:"linear-gradient(135deg,#7A5720,#E0B84F 62%,#FFE7A4)",
+  gradAdmin:"linear-gradient(135deg,#050706,#101C15 56%,#5A3510)",
+  gradStaff:"linear-gradient(135deg,#050706,#123024 56%,#76551E)",
+  gradClient:"linear-gradient(135deg,#050706,#10362A 55%,#8A6825)",
+  gradGold:"linear-gradient(135deg,#7A5720,#F0C85C 62%,#FFE7A4)",
   gradPink:"linear-gradient(135deg,#28123F,#6F38B8 62%,#C292FF)",
 };
 
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_6K_ARCADE_USERLEVEL_HOTFIX";
-const APP_VERSION_SHORT = "2.9.6k";
+const APP_VERSION = "RASTACUTS_2_9_7A_APP_STORE_UI_FOUNDATION";
+const APP_VERSION_SHORT = "2.9.7a";
 const APP_BUILD_DATE = "2026-06-10";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
