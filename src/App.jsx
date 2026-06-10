@@ -105,6 +105,7 @@ let musicButtonLastTap=0;
 function userRP(u){return Math.max(0,Number(u?.puntos||0)||0);}
 function userRC(u){return Math.max(0,Number(u?.rc??u?.rasta_coins??0)||0);}
 function userXP(u){return Math.max(0,Number(u?.xp??u?.avatar_xp??0)||0);}
+function userLevel(u){return Math.max(1,Number(u?.avatar_level||avatarLevelFromXP(userXP(u)))||1);}
 function avatarLevelFromXP(xp){
   const clean=Math.max(0,Number(xp)||0);
   return Math.max(1,Math.floor(Math.sqrt(clean/120))+1);
