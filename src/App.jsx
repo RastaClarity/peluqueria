@@ -2049,38 +2049,53 @@ function Auth({onLogin,showToast,settings}){
           </div>
         </div>
 
-        <Card style={{padding:"22px 18px",animation:"softPop3d 0.42s ease",background:"linear-gradient(180deg,#FFF4D6 0%,#F0D69C 100%)",border:"2px solid #B99A45",boxShadow:"0 18px 40px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.75)"}}>
-          <div style={{display:"flex",background:"rgba(36,17,10,.08)",borderRadius:14,padding:4,marginBottom:18}}>
+        <div style={{padding:"22px 18px",animation:"softPop3d 0.42s ease",background:"linear-gradient(180deg,rgba(8,14,11,.97) 0%,rgba(14,25,19,.99) 100%)",border:"1.5px solid rgba(212,175,55,.42)",borderRadius:24,boxShadow:"0 18px 40px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.05)"}}>
+          <div style={{display:"flex",background:"rgba(255,244,214,.06)",border:"1px solid rgba(212,175,55,.16)",borderRadius:14,padding:4,marginBottom:18}}>
             {["login","register"].map(m=>(
-              <button key={m} onClick={()=>{setMode(m);setFormError("");}} style={{flex:1,padding:"10px 8px",borderRadius:12,border:"none",background:mode===m?"linear-gradient(180deg,#24110A,#6E3518)": "transparent",color:mode===m?T.white:T.g800,fontWeight:950,fontSize:"0.86rem",cursor:"pointer",transition:"all 0.2s"}}>
+              <button key={m} onClick={()=>{setMode(m);setFormError("");}} style={{flex:1,padding:"10px 8px",borderRadius:12,border:"none",background:mode===m?"linear-gradient(180deg,#6E3518,#A54C1E)":"transparent",color:mode===m?"#FFF7DA":"rgba(255,244,214,.92)",boxShadow:mode===m?"0 8px 18px rgba(0,0,0,.22)":"none",fontWeight:950,fontSize:"0.9rem",cursor:"pointer",transition:"all 0.2s"}}>
                 {m==="login"?"Entrar":"Registrarse"}
               </button>
             ))}
           </div>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800,marginBottom:4}}>{mode==="login"?"Entra al estudio":"Crea tu ficha de cliente"}</div>
-          <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginBottom:14}}>
-            {mode==="login"?"Vuelve a tu zona: reservas, arcade, avatar y recompensas.":"Crea tu perfil, entra al estudio y empieza a moverte por Rasta Cuts."}
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.5rem",color:"#FFF4D6",marginBottom:6,letterSpacing:".02em"}}>{mode==="login"?"Entra al estudio":"Crea tu ficha de cliente"}</div>
+          <div style={{fontSize:".86rem",fontWeight:850,color:"rgba(255,244,214,.82)",lineHeight:1.45,marginBottom:16}}>
+            {mode==="login"?"Accede a tus reservas, tu arcade, tu avatar y tus recompensas.":"Crea tu perfil y empieza a moverte por Rasta Cuts desde hoy mismo."}
           </div>
           {formError&&(
-            <div style={{background:"#FFEBEE",border:"1.5px solid #8B0000",color:"#8B0000",borderRadius:12,padding:"10px 12px",fontWeight:800,fontSize:"0.82rem",marginBottom:14}}>
+            <div style={{background:"rgba(255,235,238,.98)",border:"1.5px solid #B42318",color:"#8B0000",borderRadius:12,padding:"10px 12px",fontWeight:800,fontSize:"0.82rem",marginBottom:14}}>
               {formError}
             </div>
           )}
           {mode==="login"?(
             <div>
-              <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
-              <Input label="Contraseña" value={pass} onChange={setPass} type="password" placeholder="••••••••"/>
-              <Btn full col="dark" onClick={handleLogin} disabled={loading}>{loading?"Entrando...":"Entrar al estudio"}</Btn>
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:".82rem",fontWeight:900,color:"#FFF4D6",marginBottom:6}}>Email</div>
+                <input value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="tu@email.com" style={{width:"100%",padding:"14px 16px",borderRadius:16,border:"1.5px solid rgba(212,175,55,.34)",outline:"none",fontSize:"1rem",fontWeight:800,background:"#FFF4D6",color:"#21140B",boxSizing:"border-box"}} />
+              </div>
+              <div style={{marginBottom:16}}>
+                <div style={{fontSize:".82rem",fontWeight:900,color:"#FFF4D6",marginBottom:6}}>Contraseña</div>
+                <input value={pass} onChange={e=>setPass(e.target.value)} type="password" placeholder="••••••••" style={{width:"100%",padding:"14px 16px",borderRadius:16,border:"1.5px solid rgba(212,175,55,.34)",outline:"none",fontSize:"1rem",fontWeight:800,background:"#FFF4D6",color:"#21140B",boxSizing:"border-box"}} />
+              </div>
+              <Btn full col="green" onClick={handleLogin} disabled={loading}>{loading?"Entrando...":"Entrar al estudio"}</Btn>
             </div>
           ):(
             <div>
-              <Input label="Nombre completo" value={name} onChange={setName} placeholder="Tu nombre"/>
-              <Input label="Email" value={email} onChange={setEmail} type="email" placeholder="tu@email.com"/>
-              <Input label="Contraseña" value={pass} onChange={setPass} type="password" placeholder="Mínimo 6 caracteres"/>
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:".82rem",fontWeight:900,color:"#FFF4D6",marginBottom:6}}>Nombre completo</div>
+                <input value={name} onChange={e=>setName(e.target.value)} placeholder="Tu nombre" style={{width:"100%",padding:"14px 16px",borderRadius:16,border:"1.5px solid rgba(212,175,55,.34)",outline:"none",fontSize:"1rem",fontWeight:800,background:"#FFF4D6",color:"#21140B",boxSizing:"border-box"}} />
+              </div>
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:".82rem",fontWeight:900,color:"#FFF4D6",marginBottom:6}}>Email</div>
+                <input value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="tu@email.com" style={{width:"100%",padding:"14px 16px",borderRadius:16,border:"1.5px solid rgba(212,175,55,.34)",outline:"none",fontSize:"1rem",fontWeight:800,background:"#FFF4D6",color:"#21140B",boxSizing:"border-box"}} />
+              </div>
+              <div style={{marginBottom:16}}>
+                <div style={{fontSize:".82rem",fontWeight:900,color:"#FFF4D6",marginBottom:6}}>Contraseña</div>
+                <input value={pass} onChange={e=>setPass(e.target.value)} type="password" placeholder="Mínimo 6 caracteres" style={{width:"100%",padding:"14px 16px",borderRadius:16,border:"1.5px solid rgba(212,175,55,.34)",outline:"none",fontSize:"1rem",fontWeight:800,background:"#FFF4D6",color:"#21140B",boxSizing:"border-box"}} />
+              </div>
               <Btn full col="green" onClick={handleRegister} disabled={loading}>{loading?"Registrando...":"Crear cuenta y entrar"}</Btn>
             </div>
           )}
-        </Card>
+        </div>
 
         <div style={{textAlign:"center",color:"rgba(255,244,214,.84)",fontSize:".82rem",fontWeight:950,lineHeight:1.35,marginTop:16,padding:"12px 14px",border:"1px solid rgba(212,175,55,.25)",borderRadius:18,background:"rgba(255,244,214,.06)",boxShadow:"0 10px 22px rgba(0,0,0,.18)"}}>
           {settings?.branding?.mensaje_login||"Forma parte de la comunidad Rasta Cuts."}
@@ -11441,27 +11456,19 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       position:"relative",
       minHeight:300,
       border:"1px solid rgba(255,210,98,.35)",
-      background:"linear-gradient(90deg,rgba(3,8,7,.96) 0%,rgba(12,23,18,.90) 46%,rgba(42,26,10,.70) 100%), radial-gradient(circle at 78% 30%,rgba(224,184,79,.24),transparent 34%), radial-gradient(circle at 70% 74%,rgba(17,207,155,.18),transparent 38%), linear-gradient(135deg,#07100D,#132719 54%,#2C1B0B)",
+      background:"linear-gradient(90deg,rgba(3,8,7,.96) 0%,rgba(12,23,18,.90) 50%,rgba(42,26,10,.70) 100%), radial-gradient(circle at 74% 36%,rgba(224,184,79,.22),transparent 34%), radial-gradient(circle at 30% 72%,rgba(17,207,155,.14),transparent 38%), linear-gradient(135deg,#07100D,#132719 54%,#2C1B0B)",
       boxShadow:"0 24px 60px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.10)"
     }}>
       <div style={{position:"absolute",inset:0,opacity:.22,backgroundImage:"linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.04) 1px, transparent 1px)",backgroundSize:"42px 42px"}}/>
-      <div className="rc-hero-sign rc-hero-rasta-logo" style={{position:"absolute",right:34,top:34,width:270,height:188,borderRadius:30,background:"linear-gradient(180deg,rgba(45,28,14,.94),rgba(7,16,13,.96))",border:"1px solid rgba(255,210,98,.30)",boxShadow:"0 20px 45px rgba(0,0,0,.38)",display:"grid",placeItems:"center",transform:"rotate(-2deg)",padding:14}}>
-        <div style={{textAlign:"center",display:"grid",placeItems:"center",gap:6}}>
-          <LoginHelperAvatar size={104} speaking/>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.95rem",color:"#FFE7A4",lineHeight:.88,textShadow:"0 5px 14px rgba(0,0,0,.35)"}}>RASTA CUTS</div>
-          <div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".16em",fontSize:".62rem",textTransform:"uppercase"}}>Barber · Tattoo · Arcade</div>
+      <div style={{position:"absolute",inset:"auto -10% -26% -10%",height:"48%",background:"radial-gradient(circle at 50% 30%,rgba(242,200,91,.22),transparent 58%)",filter:"blur(18px)",pointerEvents:"none"}}/>
+      <div style={{position:"relative",zIndex:2,padding:"24px clamp(18px,4vw,42px)",display:"grid",gap:14,placeItems:"center",textAlign:"center"}}>
+        <div style={{width:"100%",maxWidth:760,margin:"0 auto"}}>
+          <RastaBrandBannerImage compact={false}/>
         </div>
-      </div>
-      <div style={{position:"relative",zIndex:2,padding:"26px clamp(18px,4vw,42px)",maxWidth:690}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",margin:"6px 0 8px"}}>
-          <div style={{width:76,height:76,borderRadius:24,display:"grid",placeItems:"center",background:"linear-gradient(135deg,rgba(242,200,91,.22),rgba(62,230,199,.08))",border:"1px solid rgba(255,231,164,.34)",boxShadow:"0 16px 32px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.12)",overflow:"hidden"}}><LoginHelperAvatar size={70}/></div>
-          <div>
-            <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.9rem,7.4vw,6rem)",lineHeight:.82,margin:0,color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)",letterSpacing:".01em"}}>RASTA CUTS</h1>
-            <div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".18em",textTransform:"uppercase",fontSize:"clamp(.68rem,1.4vw,.86rem)",marginTop:5}}>Barber · Tattoo · Arcade</div>
-          </div>
-        </div>
-        <p style={{maxWidth:580,color:"rgba(255,247,218,.84)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Tu estudio digital: reservas, tienda, retos, comunidad y juego en un mismo sitio.</p>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <p style={{maxWidth:620,color:"rgba(255,247,218,.88)",fontWeight:850,lineHeight:1.5,margin:"-4px auto 4px",fontSize:"clamp(.92rem,1.5vw,1.05rem)"}}>
+          Tu estudio digital: reservas, tienda, retos, comunidad y juego en un mismo sitio.
+        </p>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🔔 {Number(unread?.admin||0)} avisos</span>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>📦 {pendingOrders.length} pedidos</span>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🎟️ {activeCoupons.length} cupones</span>
@@ -13693,7 +13700,7 @@ function AppCore(){
       <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
         <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${clinicAccent}99,${clinicAccent2}77,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${clinicAccent}44`,opacity:.92}}/>
         {pages[ap]||pages["dashboard"]}
-        <HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)} settings={appSettings} onOpenMissions={()=>navTo("misiones")}/>
+        {ap!=="dashboard"&&<HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)} settings={appSettings} onOpenMissions={()=>navTo("misiones")}/>}
       </div>
       <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"var(--rc-card-strong)",borderTop:`2px solid ${clinicAccent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>{
