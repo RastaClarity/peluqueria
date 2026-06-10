@@ -301,7 +301,7 @@ function PublicProfileModal({profile,onClose}){
       <Card style={{marginTop:10,textAlign:"left",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
         <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🏆 Resumen público</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,textAlign:"center"}}>
-          <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Puntos</div></div>
+          <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>RP</div></div>
           <div><div style={{fontSize:"1.4rem"}}>🔥</div><b>{profile.visitas||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Visitas</div></div>
           <div><div style={{fontSize:"1.4rem"}}>🎮</div><b>{profile.records||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Récords</div></div>
         </div>
@@ -1964,7 +1964,7 @@ function Auth({onLogin,showToast,settings}){
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
           <LandingFeature icon="📅" title="Reservas" sub="Elige tratamientos y guarda tu cita." accent="#D4AF37"/>
-          <LandingFeature icon="🎮" title="Juegos" sub="Arcade, récords, Top 10 y puntos." accent="#4F602D"/>
+          <LandingFeature icon="🎮" title="Juegos" sub="Arcade, récords, Top 10 y RP." accent="#4F602D"/>
           <LandingFeature icon="🛍️" title="Tienda" sub="Canjea RP por vales, gana RC en juegos y sube XP." accent="#B99A45"/>
           <LandingFeature icon="🌐" title="Actualidad" sub="Noticias tipo shorts, debate y comunidad." accent="#263F4D"/>
           <div style={{gridColumn:"1 / -1"}}>
@@ -1982,7 +1982,7 @@ function Auth({onLogin,showToast,settings}){
           </div>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800,marginBottom:4}}>{mode==="login"?"Entra al estudio":"Crea tu ficha de cliente"}</div>
           <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginBottom:14}}>
-            {mode==="login"?"Vuelve a tus puntos, citas, juegos y comunidad.":"Regístrate para reservar, jugar, leer actualidad y desbloquear recompensas."}
+            {mode==="login"?"Vuelve a tus RP, citas, juegos y comunidad.":"Regístrate para reservar, jugar, leer actualidad y desbloquear recompensas."}
           </div>
           {formError&&(
             <div style={{background:"#FFEBEE",border:"1.5px solid #8B0000",color:"#8B0000",borderRadius:12,padding:"10px 12px",fontWeight:800,fontSize:"0.82rem",marginBottom:14}}>
@@ -2549,7 +2549,7 @@ async function grantNewsPoints({user,setUser,showToast,showPoints,eventKey,point
     }
     const awarded=await awardWebPoints({user,setUser,showToast,showPoints,points,reason:description});
     return awarded>0;
-  }catch(e){console.warn("No se pudieron dar puntos de actualidad",e);return false;}
+  }catch(e){console.warn("No se pudieron dar RP de actualidad",e);return false;}
 }
 function NewsCard({item,compact=false,featured=false,onOpen,stats=null}){
   const openNews=()=>{SFX.tab();onOpen?.(item);};
@@ -2730,7 +2730,7 @@ function NewsDetailModal({item,user,setUser,showToast,showPoints,onClose,onChang
       <Card style={{marginBottom:12,background:T.panel}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:7}}>Unirse al hilo</div>
         <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Comenta algo útil: recomendación, experiencia, sitio parecido, opinión o dato que ayude a otros." rows={3} style={{width:"100%",border:`2px solid ${T.g200}`,borderRadius:16,padding:"11px 12px",background:T.g50,resize:"none",outline:"none",fontSize:".9rem",fontWeight:750,color:T.text}}/>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginTop:9}}><div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>+5 pts por tu primer comentario en esta noticia. Bonos al comentar 3 y 10 noticias distintas.</div><Btn small onClick={sendComment} disabled={loading}>Comentar</Btn></div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginTop:9}}><div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>+5 RP por tu primer comentario en esta noticia. Bonos al comentar 3 y 10 noticias distintas.</div><Btn small onClick={sendComment} disabled={loading}>Comentar</Btn></div>
       </Card>
       <div style={{fontWeight:950,color:T.g800,margin:"4px 0 10px"}}>Comentarios</div>
       {comments.length===0?<EmptyState icon="💬" title="Sin comentarios todavía" sub="Sé el primero en abrir el hilo."/>:comments.map(c=><Card key={c.id} style={{marginBottom:9,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)"}}>
@@ -3325,7 +3325,7 @@ function Clientes({user,showToast}){
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontWeight:950,color:T.g600}}>⭐ {c.puntos||0}</div>
-              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>puntos</div>
+              <div style={{fontSize:".68rem",fontWeight:850,color:T.textSub}}>RP</div>
             </div>
           </div>
         </Card>
@@ -3358,7 +3358,7 @@ function Clientes({user,showToast}){
               <Card style={{marginBottom:14,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`1.5px solid ${T.gold}`,padding:12}}>
                 <div style={{fontWeight:950,color:T.g800}}>Resumen de fidelidad</div>
                 <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>
-                  Este cliente ha generado aproximadamente <b>{totalPuntosGanados}</b> puntos por cobros registrados. Los puntos son fidelidad, no dinero.
+                  Este cliente ha generado aproximadamente <b>{totalPuntosGanados}</b> RP por cobros registrados. Los RP son fidelidad, no dinero.
                 </div>
               </Card>
 
@@ -3579,7 +3579,7 @@ function Caja({user,showToast}){
       if(cobroId) await dbPatch("citas",`?id=eq.${citaCobro.id}`,{cobro_id:cobroId,updated_at:new Date().toISOString()});
       const puntosDados=await sumarPuntosFidelidad(citaCobro.usuario_id,puntosGenerados);
       SFX.collect();
-      showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosDados}/${puntosGenerados} pts de fidelidad`:""}${puntosGenerados&&puntosDados<puntosGenerados?" · límite diario aplicado":""}`);
+      showToast?.(`Cita cobrada: ${money(importe)}${puntosGenerados?` · +${puntosDados}/${puntosGenerados} RP de fidelidad`:""}${puntosGenerados&&puntosDados<puntosGenerados?" · límite diario aplicado":""}`);
       setCitaCobro(null);
       await loadCaja();
     }else{
@@ -3603,7 +3603,7 @@ function Caja({user,showToast}){
           <div className="icon3d" style={{fontSize:"2rem"}}>🧾</div>
           <div style={{flex:1}}>
             <div style={{fontWeight:950,fontSize:"1rem"}}>Caja y cobros reales</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Registra ventas manuales y cobra citas realizadas. Los puntos son fidelidad, no dinero ni método de pago.</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Registra ventas manuales y cobra citas realizadas. Los RP son fidelidad, no dinero ni método de pago.</div>
           </div>
         </div>
       </Card>
@@ -3710,11 +3710,11 @@ function Caja({user,showToast}){
             </Card>
             <Input label="Importe final" value={cobroForm.importe} onChange={v=>setCobroForm(f=>({...f,importe:v}))} type="number"/>
             <Select label="Método de pago" value={cobroForm.metodo_pago} onChange={v=>setCobroForm(f=>({...f,metodo_pago:v}))} options={[{value:"efectivo",label:"Efectivo"},{value:"tarjeta",label:"Tarjeta"},{value:"bizum",label:"Bizum"},{value:"mixto",label:"Mixto"}]}/>
-            <Input label="Puntos de fidelidad a sumar" value={cobroForm.puntos_generados} onChange={v=>setCobroForm(f=>({...f,puntos_generados:v}))} type="number"/>
+            <Input label="RP de fidelidad a sumar" value={cobroForm.puntos_generados} onChange={v=>setCobroForm(f=>({...f,puntos_generados:v}))} type="number"/>
             <Card style={{marginBottom:14,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`1.5px solid ${T.gold}`,padding:12}}>
               <div style={{fontWeight:950,color:T.g800}}>⭐ Puntos de fidelidad</div>
               <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>
-                Los puntos no equivalen a euros y no se usan como método de pago. Sólo se suman como fidelidad y luego se canjean por cupones, avatar, juegos o premios de tienda.
+                Los RP no equivalen a euros y no se usan como método de pago. Sólo se suman como fidelidad y luego se canjean por cupones, avatar, juegos o premios de tienda.
               </div>
             </Card>
             <Input label="Descripción" value={cobroForm.descripcion} onChange={v=>setCobroForm(f=>({...f,descripcion:v}))}/>
@@ -4453,7 +4453,7 @@ function applyGameVoucher(user,item,qty=1){
   return {ok:false,kind,amount,total:0,label:"Vale de juego no reconocido"};
 }
 function rarityPriceRange(r){
-  return {comun:"120–300 pts",raro:"350–900 pts",epico:"1.000–1.800 pts",legendario:"2.000–3.600 pts"}[r]||"Especial";
+  return {comun:"120–300 RP",raro:"350–900 RP",epico:"1.000–1.800 RP",legendario:"2.000–3.600 RP"}[r]||"Especial";
 }
 function shopItemPreview(p,user){
   const cfg=normalizeAvatarConfig(user?.avatarConfig||user?.avatar_config,user?.avatar||0);
@@ -4507,8 +4507,8 @@ function canUserRedeem(user,item,settings={}){
   const min=Number(settings?.tienda?.puntos_minimos_canje||0);
   if(!active)return {ok:false,reason:"No disponible"};
   if(stock.level==="bad")return {ok:false,reason:"Agotado"};
-  if(points<min)return {ok:false,reason:`Mínimo ${min} pts`};
-  if(points<price)return {ok:false,reason:`Faltan ${Math.max(0,price-points)} pts`};
+  if(points<min)return {ok:false,reason:`Mínimo ${min} RP`};
+  if(points<price)return {ok:false,reason:`Faltan ${Math.max(0,price-points)} RP`};
   return {ok:true,reason:"Canjear"};
 }
 function shopRedemptionTips(user={},items=[]){
@@ -4547,7 +4547,7 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
           </div>
         </div>
         <div style={{display:"grid",gap:6,justifyItems:"end"}}>
-          <div className="shop-status-pill">💰 {pts} puntos</div>
+          <div className="shop-status-pill">💰 {pts} RP</div>
           <div className="shop-status-pill">🎁 {info.affordable} canjeables</div>
         </div>
       </div>
@@ -4565,7 +4565,7 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
         <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
           <div style={{fontSize:"1.35rem"}}>🎯</div>
           <div style={{fontWeight:950,color:T.g800,fontSize:".86rem"}}>{next?info.missing:0}</div>
-          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>puntos para el próximo</div>
+          <div style={{fontSize:".72rem",fontWeight:820,color:T.textSub}}>RP para el próximo</div>
         </div>
         <div style={{background:"rgba(255,255,255,.42)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10}}>
           <div style={{fontSize:"1.35rem"}}>📦</div>
@@ -4577,7 +4577,7 @@ function ShopCommandCenter({user,items=[],settings={},onFilter=null}){
         <div style={{marginTop:10,background:"rgba(47,107,66,.10)",border:`1px solid ${T.g200}`,borderRadius:16,padding:10,display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           <div>
             <div style={{fontWeight:950,color:T.g800}}>Próximo objetivo: {next.icono||next.icon||"🎁"} {next.nombre||next.name||"recompensa"}</div>
-            <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>Te faltan {info.missing} puntos.</div>
+            <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>Te faltan {info.missing} RP.</div>
           </div>
           {onFilter&&<Btn small col="gold" onClick={()=>onFilter("canjeables")}>Ver canjeables</Btn>}
         </div>
@@ -4619,7 +4619,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
     const isGame=isGameVoucherItem(p);
     const isReal=isRealMoneyProduct(p);
 
-    if(!isReal && (user.puntos||0)<precio){showToast("No tienes suficientes puntos");SFX.error();return;}
+    if(!isReal && (user.puntos||0)<precio){showToast("No tienes suficientes RP");SFX.error();return;}
     if(stockLimitado && Number(p.stock)<=0){showToast("Este artículo está agotado");SFX.error();return;}
 
     const nuevos=isReal?Number(user.puntos||0):Math.max(0,(user.puntos||0)-precio);
@@ -4627,7 +4627,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
     if(!isReal){
       const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
       if(!okUser){
-        showToast("No se pudieron descontar los puntos");
+        showToast("No se pudieron descontar los RP");
         SFX.error();
         return;
       }
@@ -4674,7 +4674,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
     }
     SFX.collect();
 
-    await createNotification({rol_destino:"admin",tipo:"pedido",titulo:isReal?"Nuevo pedido de producto real":"Nuevo pedido de tienda",mensaje:isReal?`${user.nombre||user.email||"Cliente"} solicitó ${p.nombre}${precioEuros?` por ${precioEuros.toFixed(2)} €`:""}.`:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} puntos.`,entidad_tipo:"tienda_pedido",entidad_id:pedido?.id||p.id,importante:!isAvatar&&!isGame});
+    await createNotification({rol_destino:"admin",tipo:"pedido",titulo:isReal?"Nuevo pedido de producto real":"Nuevo pedido de tienda",mensaje:isReal?`${user.nombre||user.email||"Cliente"} solicitó ${p.nombre}${precioEuros?` por ${precioEuros.toFixed(2)} €`:""}.`:`${user.nombre||user.email||"Cliente"} pidió ${p.nombre} por ${precio} RP.`,entidad_tipo:"tienda_pedido",entidad_id:pedido?.id||p.id,importante:!isAvatar&&!isGame});
     await createNotification({usuario_id:user.id,rol_destino:"client",tipo:isAvatar?"avatar":isGame?"juegos":isReal?"pedido":"pedido",titulo:isAvatar?"Personalización desbloqueada":isGame?"Vale de juego aplicado":isReal?"Pedido enviado":"Pedido creado",mensaje:isAvatar?`Has desbloqueado ${p.nombre}. Ve a Perfil > Editor para equiparlo.`:isGame?`Has comprado ${gameVoucherAmount(p)} tiradas extra para el Gacha Barber.`:isReal?`Tu pedido de ${p.nombre} queda pendiente de confirmación/pago en tienda.`:`Tu pedido de ${p.nombre} queda pendiente de preparación.`,entidad_tipo:isAvatar?"avatar":isGame?"juego_bonus":"tienda_pedido",entidad_id:pedido?.id||p.id,importante:false});
 
     showToast(isAvatar?`${p.nombre} desbloqueado`:isGame?`${gameVoucherAmount(p)} tiradas de Gacha añadidas`:isReal?`${p.nombre} solicitado correctamente`:`${p.nombre} pedido correctamente`);
@@ -4752,10 +4752,10 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
                       <div style={{fontWeight:950,color:T.g800,fontSize:".94rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.nombre}</div>
                       <div style={{fontSize:"0.78rem",color:T.textSub,marginTop:3,fontWeight:820,lineHeight:1.35}}>{p.descripcion}</div>
                       {gameVoucher&&<div style={{marginTop:7,background:"rgba(38,63,77,.10)",border:`1px solid ${T.g200}`,borderRadius:12,padding:"7px 9px",fontSize:".76rem",fontWeight:950,color:T.g800,lineHeight:1.35}}>
-                        🎰 Vale de juego: pagas <b>{precio} pts</b> y recibes <b>+{gameVoucherAmount(p)} tiradas extra</b> para el Gacha. Se suma al momento y se puede repetir.
+                        🎰 Vale de juego: pagas <b>{precio} RP</b> y recibes <b>+{gameVoucherAmount(p)} tiradas extra</b> para el Gacha. Se suma al momento y se puede repetir.
                       </div>}
                     </div>
-                    <div style={{fontWeight:950,color:T.orange,fontSize:"1.02rem",whiteSpace:"nowrap"}}>{realMoney?(precioEuros?`${precioEuros.toFixed(2)} €`:"Consultar"): `${precio} pts`}</div>
+                    <div style={{fontWeight:950,color:T.orange,fontSize:"1.02rem",whiteSpace:"nowrap"}}>{realMoney?(precioEuros?`${precioEuros.toFixed(2)} €`:"Consultar"): `${precio} RP`}</div>
                   </div>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
                     <Badge col="gold">{shopCategoryLabel(itemShopCategory(p))}</Badge>
@@ -5395,7 +5395,7 @@ function DreadStitchGame({onWin,user}){
   function start(){resetRound();setLastAccuracy(100);setMessage('Llega a 100 puntos. Dorado +5, ganchillo +3, normal +1. Si tocas 20 tijeras pierdes.');setFinished(false);setRunning(true);}
   function finishWin(){
     setRunning(false);setFinished(true);setWon(true);setItems([]);setLastAccuracy(accuracy);
-    setMessage(`Partida completada con ${accuracy}% de precisión. Puedes guardar el récord y cobrar puntos si no los cobraste hoy.`);
+    setMessage(`Partida completada con ${accuracy}% de precisión. Puedes guardar el récord y cobrar RP si no los cobraste hoy.`);
     SFX.success();
   }
   function finishLose(){
@@ -5457,7 +5457,7 @@ function DreadStitchGame({onWin,user}){
   </Card>;
 }
 
-function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){ 
+function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity}){ 
   const uid=user?.id||"anon";
   const SYMBOLS={
     scissors:{icon:'✂️',name:'Tijeras'},
@@ -5544,6 +5544,19 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls}){
         else out=safeNoMatch();
         setReels(out);
         setResult({...final,usedExtra});
+        const hasPrize=Number(final.rc||0)>0||Number(final.xp||0)>0||Number(final.extraPulls||0)>0||Number(final.rp||0)>0;
+        if(!hasPrize){
+          addHistory({label:final.spinLabel||final.label||'Sin premio',rarity:final.rarity||'base',rp:0,rc:0,xp:0,extraPulls:0,usedExtra:!!usedExtra});
+        }
+        try{
+          onActivity?.({
+            usedExtra:!!usedExtra,
+            prize_id:final.id||'empty',
+            label:final.spinLabel||final.label||'Sin premio',
+            rarity:final.rarity||'base',
+            hasPrize
+          });
+        }catch{}
         setSpinning(false);
         final.rarity==='base'?SFX.tab():SFX.success();
       }
@@ -5642,7 +5655,7 @@ function ArcadeInfoPanel({onOpenGacha}){
     }}>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10}}>
         <div style={{fontSize:".88rem",fontWeight:850,lineHeight:1.42,color:T.g800}}>
-          Este es el espacio para jugar, mejorar récords y conseguir puntos diarios para avanzar en recompensas, avatar y descuentos de la tienda.
+          Este es el espacio para jugar, mejorar récords y conseguir RP diarios para avanzar en recompensas, avatar y descuentos de la tienda.
         </div>
         <button
           onClick={()=>{SFX.tab();setOpen(v=>!v);}}
@@ -5664,7 +5677,7 @@ function ArcadeInfoPanel({onOpenGacha}){
 
       <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:10}}>
         <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>récord semanal</span>
-        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>puntos diarios</span>
+        <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>RP diarios</span>
         <span style={{background:"#F3E2B5",color:T.g800,borderRadius:999,padding:"5px 9px",fontSize:".68rem",fontWeight:900}}>premios y avatar</span>
       </div>
 
@@ -5675,8 +5688,8 @@ function ArcadeInfoPanel({onOpenGacha}){
         animation:"fadeSlide .22s ease"
       }}>
         <div style={{display:"grid",gap:8,fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.42}}>
-          <div>Los récords sirven para competir y volver a intentarlo. Los puntos reales, en cambio, se cobran de forma limitada para que la tienda y los desbloqueos sigan teniendo valor.</div>
-          <div>Cada juego puede entregar puntos una vez al día. Después puedes rejugar para mejorar marca, pero no para farmear puntos sin límite.</div>
+          <div>Los récords sirven para competir y volver a intentarlo. Los RP reales, en cambio, se cobran de forma limitada para que la tienda y los desbloqueos sigan teniendo valor.</div>
+          <div>Cada juego puede entregar RP una vez al día. Después puedes rejugar para mejorar marca, pero no para farmear RP sin límite.</div>
           <div>El Gacha Barber no reparte RP. Sirve para azar suave, RC, XP y alguna tirada extra sin romper la economía.</div>
         </div>
         <div style={{marginTop:11,display:"flex",justifyContent:"flex-start"}}>
@@ -6316,6 +6329,25 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     return true;
   }
 
+  async function registerGachaActivity(meta={}){
+    if(!user?.id)return false;
+    try{
+      await dbPost("game_scores",{
+        usuario_id:String(user.id),
+        usuario_nombre:user.nombre||user.email||"Cliente",
+        usuario_avatar:user.avatar||0,
+        usuario_avatar_config:normalizeAvatarV3(user.avatarConfig||user.avatar_config,user.id||user.avatar||0),
+        game_id:"gacha",
+        score:0,
+        week:weekKey()
+      });
+      return true;
+    }catch(e){
+      console.warn("No se pudo registrar actividad de Gacha",e,meta);
+      return false;
+    }
+  }
+
   if(activeGame){
     const g=GAMES.find(x=>x.id===activeGame);
     return(
@@ -6330,7 +6362,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
         {activeGame==="runner"&&<RastaRunnerGame user={user} onWin={pts=>handleWin("runner",pts)}/>} 
         {activeGame==="jump"&&<PlatformJumpGame user={user} onWin={pts=>handleWin("jump",pts)}/>} 
         {activeGame==="stitch"&&<DreadStitchGame user={user} onWin={pts=>handleWin("stitch",pts)}/>} 
-        {activeGame==="gacha"&&<GachaSlotsGame user={user} settings={settings} onWin={pts=>handleWin("gacha",pts)} onCurrencyWin={awardGameCurrencyPrize} onBuyPulls={buyGachaPulls}/>} 
+        {activeGame==="gacha"&&<GachaSlotsGame user={user} settings={settings} onWin={pts=>handleWin("gacha",pts)} onCurrencyWin={awardGameCurrencyPrize} onBuyPulls={buyGachaPulls} onActivity={registerGachaActivity}/>} 
         {activeGame==="tycoon"&&<RastaCutsTycoonGame user={user} setUser={setUser} showToast={showToast}/>} 
       </div>
     );
@@ -6452,10 +6484,10 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
   const selected=gameMeta(game);
   const weekly=mode==="weekly";
   const GENERAL_KINDS=[
-    {id:"total",icon:"💎",title:"General",sub:"Puntos totales actuales",unit:"pts"},
-    {id:"games",icon:"🎮",title:"Juegos",sub:"Puntos/récords acumulados en Arcade",unit:"pts"},
-    {id:"shop",icon:"🛍️",title:"Tienda",sub:"Puntos canjeados por cupones, avatar, juegos y premios",unit:"pts"},
-    {id:"community",icon:"🌐",title:"Comunidad",sub:"Temas, respuestas, votos y participación real",unit:"pts"},
+    {id:"total",icon:"💎",title:"General",sub:"RP actuales",unit:"RP"},
+    {id:"games",icon:"🎮",title:"Juegos",sub:"Récords acumulados en Arcade",unit:"RP"},
+    {id:"shop",icon:"🛍️",title:"Tienda",sub:"RP canjeados por cupones, avatar, juegos y premios",unit:"RP"},
+    {id:"community",icon:"🌐",title:"Comunidad",sub:"Temas, respuestas, votos y participación real",unit:"RP"},
   ];
   const generalMeta=GENERAL_KINDS.find(x=>x.id===generalKind)||GENERAL_KINDS[0];
 
@@ -6591,7 +6623,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
   const generalMyRow=(generalRows||[]).find(r=>String(r.user_id||r.usuario_id)===String(user?.id));
   const reload=()=>section==="games"?loadBoard():loadGeneralBoard(generalKind);
 
-  function RankRow({r,i,unit="pts"}){
+  function RankRow({r,i,unit="RP"}){
     return <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 0",borderBottom:i<9?"1px solid rgba(255,244,214,.16)":"none"}}>
       <div style={{width:36,fontWeight:950,fontSize:"1.05rem",color:i<3?T.gold:T.white}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</div>
       <PublicAvatar profile={r} currentUser={user} size={40}/>
@@ -6633,7 +6665,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
             </button>
           </div>
           <div style={{fontSize:".76rem",fontWeight:800,opacity:.82,lineHeight:1.35,marginTop:10}}>
-            {section==="games"?"Top 10 de récords del Arcade: semanal, histórico y por minijuego.":"Top general dividido en puntos totales, juegos, tienda y comunidad."}
+            {section==="games"?"Top 10 de récords del Arcade: semanal, histórico y por minijuego.":"Top general dividido en RP, juegos, tienda y comunidad."}
           </div>
         </div>
       </Card>
@@ -6686,7 +6718,7 @@ function GameTopsPage({user,onBack,onPlay,initialTab="games"}){
             <div><div style={{fontWeight:950,fontSize:"1.05rem"}}>{generalMeta.icon} Top general · {generalMeta.title}</div><div style={{fontSize:".74rem",opacity:.78,fontWeight:800}}>{generalMeta.sub}</div></div>
             <Badge col="gold">{generalRows.length}/10</Badge>
           </div>
-          {generalLoading?<Spinner/>:generalRows.length===0?<EmptyState icon="👑" title="Sin datos todavía" sub="Cuando los clientes participen, jueguen o canjeen puntos aparecerán aquí."/>:generalRows.map((r,i)=><RankRow key={`${r.user_id}-${generalKind}-${i}-${livePulse}`} r={r} i={i} unit={generalMeta.unit}/>)}
+          {generalLoading?<Spinner/>:generalRows.length===0?<EmptyState icon="👑" title="Sin datos todavía" sub="Cuando los clientes participen, jueguen o canjeen RP aparecerán aquí."/>:generalRows.map((r,i)=><RankRow key={`${r.user_id}-${generalKind}-${i}-${livePulse}`} r={r} i={i} unit={generalMeta.unit}/>)}
         </Card>
         {generalMyRow&&<Card style={{marginTop:12,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`2px solid ${T.gold}`}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}><PublicAvatar profile={generalMyRow} currentUser={user} size={40}/><div style={{flex:1}}><div style={{fontWeight:950,color:T.g800}}>Tu posición en {generalMeta.title}</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>{generalMeta.sub}</div></div><div style={{fontWeight:950,color:T.orange,fontSize:"1.2rem"}}>{generalMyRow.score}</div></div>
@@ -6725,7 +6757,7 @@ function Retos({user,setUser,showToast,showPoints}){
   function daysLeft(f){const d=Math.ceil((new Date(f)-new Date())/86400000);return d<=0?"Vence hoy":`${d} dias`;}
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🎯" title="Retos" sub="Completa retos y gana puntos"/>
+      <SectionHeader icon="🎯" title="Retos" sub="Completa retos y gana RP"/>
       {loading?<Spinner/>:retos.length===0?<EmptyState icon="🎯" title="Sin retos activos" sub="Vuelve pronto"/>
         :retos.map(r=>{
           const prog=progresos[r.id];
@@ -6735,7 +6767,7 @@ function Retos({user,setUser,showToast,showPoints}){
             <Card key={r.id} style={{marginBottom:12,border:canClaim?`2px solid ${T.g400}`:done?`2px solid ${T.g300}`:`1px solid ${T.g150}`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
                 <div style={{flex:1}}><div style={{fontWeight:800}}>{r.titulo}</div><div style={{fontSize:"0.8rem",color:T.textSub,marginTop:2}}>{r.descripcion}</div></div>
-                <div style={{textAlign:"right",marginLeft:10}}><div style={{fontWeight:900,color:T.pink,fontSize:"1rem"}}>+{r.puntos_premio} pts</div><div style={{fontSize:"0.7rem",color:T.textSub}}>{daysLeft(r.fecha_fin)}</div></div>
+                <div style={{textAlign:"right",marginLeft:10}}><div style={{fontWeight:900,color:T.pink,fontSize:"1rem"}}>+{r.puntos_premio} RP</div><div style={{fontSize:"0.7rem",color:T.textSub}}>{daysLeft(r.fecha_fin)}</div></div>
               </div>
               <div style={{marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><div style={{fontSize:"0.75rem",fontWeight:700,color:T.textSub}}>Progreso</div><div style={{fontSize:"0.75rem",fontWeight:800,color:T.g600}}>{pv}/{r.meta}</div></div>
@@ -6799,7 +6831,7 @@ function Ranking({user}){
               <div className="icon3d" style={{fontSize:i<3?"1.7rem":"1.1rem",minWidth:38,textAlign:"center",fontWeight:900}}>{medal}</div>
               <PublicAvatar profile={u} currentUser={user} size={42}/>
               <div style={{flex:1}}><div style={{fontWeight:900}}>{publicName(u,user)}{isMe?" · tú":""}</div><div style={{fontSize:".72rem",color:T.textSub,fontWeight:800}}>{isPrivateProfile(u,user)?"Perfil en modo incógnito":avatarStyleName(normalizeAvatarConfig(u.avatar_config||u.avatarConfig,u.avatar))}</div><AvatarMiniIdentity profile={u} currentUser={user} limit={2}/></div>
-              <div style={{fontWeight:900,color:T.orange,fontSize:"1.02rem"}}>{u.score||0} pts</div>
+              <div style={{fontWeight:900,color:T.orange,fontSize:"1.02rem"}}>{u.score||0} RP</div>
             </div>
           </Card>
         );
@@ -6869,7 +6901,7 @@ function Reviews({user,setUser,showToast,showPoints}){
           <div style={{display:"flex",gap:8}}>{[1,2,3,4,5].map(n=><button key={n} onClick={()=>setRating(n)} style={{fontSize:"1.8rem",background:"none",border:"none",cursor:"pointer",opacity:n<=rating?1:0.3}}>*</button>)}</div>
         </div>
         <Input label="Comentario" value={comment} onChange={setComment} placeholder="Cuentanos tu experiencia..."/>
-        <Btn full onClick={submit}>Enviar (+10 pts)</Btn>
+        <Btn full onClick={submit}>Enviar (+10 RP)</Btn>
       </Modal>
     </div>
   );
@@ -6935,7 +6967,7 @@ function PerfilNewsActivity({user}){
       <div><div style={{fontWeight:950,color:T.g800}}>📰 Mi actividad en Actualidad</div><div style={{fontSize:".78rem",fontWeight:800,color:T.textSub}}>Tus comentarios y likes quedan aquí para seguir los hilos.</div></div>
       <Badge col="gold">{total}</Badge>
     </div>
-    {loading?<Spinner/>:total===0?<div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.4}}>Todavía no has comentado ni dado like en Actualidad. Abre una noticia, aporta algo útil y empieza a sumar puntos.</div>:<>
+    {loading?<Spinner/>:total===0?<div style={{fontSize:".84rem",fontWeight:800,color:T.textSub,lineHeight:1.4}}>Todavía no has comentado ni dado like en Actualidad. Abre una noticia, aporta algo útil y empieza a sumar RP.</div>:<>
       {items.length>0&&<div style={{fontWeight:950,color:T.g800,fontSize:".86rem",margin:"4px 0 8px"}}>Comentarios recientes</div>}
       {items.map(c=><div key={c.id} onClick={()=>c.news_url&&window.open(c.news_url,"_blank","noopener,noreferrer")} style={{background:"rgba(255,244,214,.72)",border:`1px solid ${T.g200}`,borderRadius:14,padding:"9px 10px",marginBottom:8,cursor:c.news_url?"pointer":"default"}}>
         <div style={{fontWeight:950,color:T.g800,fontSize:".82rem",lineHeight:1.18}}>{c.news_title||"Noticia"}</div>
@@ -7109,7 +7141,7 @@ function ObjetivosTrofeos({user,setUser,showToast,showPoints,onNavigate=null}){
   const available=MISSION_DEFS.filter(m=>missionValue(m,stats)>=m.goal&&!claimed[`${m.key}_${missionPeriodKey(m)}`]).length;
   return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${available?T.gold:T.g300}`}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:12}}>
-      <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🎯 Objetivos y trofeos</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Motivos claros para volver cada día sin regalar puntos infinitos.</div></div>
+      <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🎯 Objetivos y trofeos</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Motivos claros para volver cada día sin regalar RP infinitos.</div></div>
       <Badge col={available?"gold":"green"}>{available} listos</Badge>
     </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
@@ -7180,7 +7212,7 @@ function AvatarCosmeticShop({user,setUser,currentConfig,onApply,showToast,showPo
   const shown=items.filter(i=>cat==="todos"||i.categoria===cat);
   return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:10}}>
-      <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🧢 Tienda de estilo</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Canjea puntos por cosméticos del perfil. Se desbloquean para siempre.</div></div>
+      <div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>🧢 Tienda de estilo</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>Canjea RP por cosméticos del perfil. Se desbloquean para siempre.</div></div>
       <Badge col="gold">{user.puntos||0} pts</Badge>
     </div>
     <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:8}}>{cats.map(c=><button key={c.id} onClick={()=>setCat(c.id)} style={{whiteSpace:"nowrap",border:`2px solid ${cat===c.id?T.gold:T.g200}`,background:cat===c.id?T.gradGold:"rgba(255,244,214,.8)",borderRadius:999,padding:"7px 12px",fontWeight:950,color:cat===c.id?T.g900:T.g700,cursor:"pointer"}}>{c.label}</button>)}</div>
@@ -7365,13 +7397,13 @@ async function reveal(item){
     }
     const price=Number(item.puntos_precio||0);
     if((user.puntos||0)<price){
-      showToast?.(`Necesitas ${price} puntos para este desbloqueable`);
+      showToast?.(`Necesitas ${price} RP para este desbloqueable`);
       SFX.error();
       return;
     }
     const nuevos=Math.max(0,(user.puntos||0)-price);
     const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
-    if(!okUser){showToast?.("No se pudieron descontar los puntos");SFX.error();return;}
+    if(!okUser){showToast?.("No se pudieron descontar los RP");SFX.error();return;}
     try{
       await supabase.from("user_cosmetics").upsert({usuario_id:String(user.id),item_key:item.item_key,created_at:new Date().toISOString()},{onConflict:"usuario_id,item_key"});
     }catch{}
@@ -7385,7 +7417,7 @@ async function reveal(item){
     recordPointMovement(user.id,{amount:-price,type:"spend",reason:`Desbloqueo: ${item.nombre}`,source:isCouponPathReward(item)?"camino_cupones":"camino_avatar",balance:nuevos,meta:{item_key:item.item_key,coupon_code:couponRow?.codigo||null}});
     setUser?.(u=>({...u,puntos:nuevos}));
     SFX.success();
-    showToast?.(couponRow?.codigo?`${item.nombre} desbloqueado: ${couponRow.codigo}`:`${item.nombre} desbloqueado por ${price} pts`);
+    showToast?.(couponRow?.codigo?`${item.nombre} desbloqueado: ${couponRow.codigo}`:`${item.nombre} desbloqueado por ${price} RP`);
     if(isAvatarPathReward(item)) apply(item,true);
   }
 
@@ -8192,7 +8224,7 @@ function GestionTienda({user,showToast}){
         ]}/>
         {form.tipo==="gacha_pulls"&&<Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
           <div style={{fontWeight:950,color:T.g800}}>🎰 Ejemplo claro</div>
-          <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>Precio en puntos = lo que paga el usuario. Tiradas/cantidad que añade = lo que recibe en el Gacha. Para tu vale actual: <b>5 puntos</b> y <b>10 tiradas</b>.</div>
+          <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>Precio en RP = lo que paga el usuario. Tiradas/cantidad que añade = lo que recibe en el Gacha. Para tu vale actual: <b>5 RP</b> y <b>10 tiradas</b>.</div>
         </Card>}
         <Select label="Rareza" value={form.rareza} onChange={v=>setForm(f=>({...f,rareza:v}))} options={[
           {value:"comun",label:"Común"},
@@ -8259,7 +8291,7 @@ function GestionAjustes({user,showToast}){
   };
   const META={
     branding:{icon:"🏷️",title:"Marca",sub:"Nombre, slogan y textos principales.",categoria:"general"},
-    puntos:{icon:"⭐",title:"Puntos",sub:"Fidelidad y límites de puntos. No equivalen a euros.",categoria:"puntos"},
+    puntos:{icon:"💎",title:"RP",sub:"Fidelidad y límites de RP. No equivalen a euros.",categoria:"puntos"},
     secciones:{icon:"🧩",title:"Secciones",sub:"Activar o preparar secciones principales.",categoria:"secciones"},
     musica:{icon:"🎧",title:"Música",sub:"Ajustes generales de sonido.",categoria:"musica"},
     rasta_helper:{icon:"🧭",title:"Rasta ayuda",sub:"Asistente, tips diarios y ayuda interactiva.",categoria:"rasta"}
@@ -8356,12 +8388,12 @@ function GestionAjustes({user,showToast}){
         {active==="puntos"&&<>
           <Card style={{marginBottom:14,background:"linear-gradient(180deg,#EBD8A8,#D7B777)",border:`1.5px solid ${T.gold}`,padding:12}}>
             <div style={{fontWeight:950,color:T.g800}}>Regla importante</div>
-            <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>Los puntos son fidelidad y recompensas. No equivalen a euros ni se usan como dinero.</div>
+            <div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:4}}>Los RP son fidelidad y recompensas. No equivalen a euros ni se usan como dinero.</div>
           </Card>
-          <NumberField k="puntos" f="puntos_por_cita_cobrada" label="Puntos por cita cobrada"/>
-          <NumberField k="puntos" f="puntos_por_comentario" label="Puntos por comentario"/>
-          <NumberField k="puntos" f="puntos_por_like" label="Puntos por like"/>
-          <NumberField k="puntos" f="limite_diario_juegos" label="Límite diario de puntos en juegos"/>
+          <NumberField k="puntos" f="puntos_por_cita_cobrada" label="RP por cita cobrada"/>
+          <NumberField k="puntos" f="puntos_por_comentario" label="RP por comentario"/>
+          <NumberField k="puntos" f="puntos_por_like" label="RP por like"/>
+          <NumberField k="puntos" f="limite_diario_juegos" label="Límite diario de RP en juegos"/>
           <NumberField k="puntos" f="gacha_tiradas_dia" label="Tiradas de Gacha al día"/>
         </>}
 
@@ -9131,12 +9163,12 @@ function GestionPedidos({user,showToast}){
       const okRefund=await dbPatch("usuarios",`?id=eq.${pedido.usuario_id}`,{puntos:nuevos});
       if(okRefund)recordPointMovement(pedido.usuario_id,{amount:pts,type:"refund",reason:`Devolución: ${pedidoNombre(pedido)}`,source:"devolucion",balance:nuevos,usuario_email:rows?.[0]?.email||pedido.cliente_email||null,usuario_nombre:rows?.[0]?.nombre||pedido.cliente_nombre||null,meta:{pedido_id:pedido.id}});
     }
-    await setEstado(pedido,"cancelado",{motivo_cancelacion:"Cancelado desde gestión con devolución de puntos"});
+    await setEstado(pedido,"cancelado",{motivo_cancelacion:"Cancelado desde gestión con devolución de RP"});
   }
 
   function copyPedido(p){
-    const items=pedidoItems(p).map(it=>`- ${it.nombre||"Artículo"} x${it.qty||1} · ${Number(it.total_puntos||it.puntos||0)} pts`).join("\n");
-    const txt=`Pedido Rasta Cuts\nCliente: ${pedidoCliente(p)}\nEmail: ${p.cliente_email||"sin email"}\nEstado: ${estadoPedido(p)}\nTotal: ${pedidoTotal(p)} pts\nPedido: ${pedidoNombre(p)}\n${items?`\nArtículos:\n${items}`:""}`;
+    const items=pedidoItems(p).map(it=>`- ${it.nombre||"Artículo"} x${it.qty||1} · ${Number(it.total_puntos||it.puntos||0)} RP`).join("\n");
+    const txt=`Pedido Rasta Cuts\nCliente: ${pedidoCliente(p)}\nEmail: ${p.cliente_email||"sin email"}\nEstado: ${estadoPedido(p)}\nTotal: ${pedidoTotal(p)} RP\nPedido: ${pedidoNombre(p)}\n${items?`\nArtículos:\n${items}`:""}`;
     try{navigator.clipboard?.writeText(txt);showToast?.("Resumen copiado");SFX.success();}catch{showToast?.("No se pudo copiar");}
   }
 
@@ -9168,7 +9200,7 @@ function GestionPedidos({user,showToast}){
       <StatCard icon="⏳" label="Pendientes" value={pendientes.length} col={pendientes.length?"gold":"green"}/>
       <StatCard icon="📦" label="Activos" value={activos.length} col={activos.length?"pink":"green"}/>
       <StatCard icon="✅" label="Listos" value={listos.length} col={listos.length?"blue":"green"}/>
-      <StatCard icon="⭐" label="Puntos activos" value={puntosPendientes} col="gold"/>
+      <StatCard icon="⭐" label="RP activos" value={puntosPendientes} col="gold"/>
     </div>
 
     <Card style={{marginBottom:12,padding:12,background:"rgba(255,244,214,.78)",boxShadow:"none"}}>
@@ -9574,7 +9606,7 @@ function GestionEstadisticas({showToast}){
           <div className="icon3d" style={{fontSize:"2.2rem"}}>📊</div>
           <div style={{flex:1}}>
             <div style={{fontWeight:950,fontSize:"1rem"}}>Panel de control</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Mide citas, ingresos, pedidos, puntos y actividad sin salir de Gestión.</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Mide citas, ingresos, pedidos, RP y actividad sin salir de Gestión.</div>
           </div>
         </div>
       </Card>
@@ -9596,7 +9628,7 @@ function GestionEstadisticas({showToast}){
           <StatCard icon="🎁" label="Pedidos activos" value={pedidosPendientes.length} col="pink"/>
           <StatCard icon="✅" label="Pedidos entregados" value={pedidosEntregados.length} col="green"/>
           <StatCard icon="👥" label="Clientes" value={data.clientes.length} col="blue"/>
-          <StatCard icon="⭐" label="Puntos movidos" value={puntosPedidos+puntosNoticias+puntosCanjes} col="gold"/>
+          <StatCard icon="⭐" label="RP movidos" value={puntosPedidos+puntosNoticias+puntosCanjes} col="gold"/>
         </div>
 
         <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
@@ -9605,7 +9637,7 @@ function GestionEstadisticas({showToast}){
             <div>Ingresos registrados: <b style={{color:T.g800}}>{money(ingresos)}</b> en {cobrosOk.length} cobro{cobrosOk.length===1?"":"s"}.</div>
             <div>Citas: <b style={{color:T.g800}}>{data.citas.length}</b> totales, <b style={{color:T.g800}}>{citasRealizadas.length}</b> realizadas y <b style={{color:T.g800}}>{citasPendientes.length}</b> pendientes/propuestas.</div>
             <div>Comunidad: <b style={{color:T.g800}}>{data.foroTemas.length}</b> temas, <b style={{color:T.g800}}>{data.foroRespuestas.length}</b> respuestas y <b style={{color:T.g800}}>{data.newsEvents.length}</b> eventos de actualidad.</div>
-            <div>Tienda: <b style={{color:T.g800}}>{data.pedidos.length}</b> pedidos y <b style={{color:T.g800}}>{puntosPedidos}</b> puntos canjeados en pedidos.</div>
+            <div>Tienda: <b style={{color:T.g800}}>{data.pedidos.length}</b> pedidos y <b style={{color:T.g800}}>{puntosPedidos}</b> RP canjeados en pedidos.</div>
           </div>
         </Card>
 
@@ -9826,7 +9858,7 @@ function GestionFacturacionPanel({user,showToast}){
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.6rem",lineHeight:1}}>Resumen de facturación</div>
           <div style={{fontSize:".84rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-            Vista rápida de caja, cobros, citas realizadas, pedidos activos y puntos canjeados.
+            Vista rápida de caja, cobros, citas realizadas, pedidos activos y RP canjeados.
           </div>
         </div>
         <Btn small col="ghost" onClick={load}>Actualizar</Btn>
@@ -9851,7 +9883,7 @@ function GestionFacturacionPanel({user,showToast}){
         <StatCard icon="🏁" label="Citas realizadas" value={citasRealizadas.length} col="green"/>
         <StatCard icon="🟡" label="Citas pendientes" value={citasPendientes.length} col="gold"/>
         <StatCard icon="🎁" label="Pedidos activos" value={pedidosActivos.length} col="pink"/>
-        <StatCard icon="⭐" label="Puntos canjeados" value={puntosCanjeados} col="gold"/>
+        <StatCard icon="⭐" label="RP canjeados" value={puntosCanjeados} col="gold"/>
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
@@ -9870,7 +9902,7 @@ function GestionFacturacionPanel({user,showToast}){
         <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🛍️ Tienda y canjes</div>
           <div style={{fontSize:".86rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
-            Pedidos activos: <b style={{color:T.g800}}>{pedidosActivos.length}</b>. Puntos canjeados: <b style={{color:T.g800}}>{puntosCanjeados}</b>.
+            Pedidos activos: <b style={{color:T.g800}}>{pedidosActivos.length}</b>. RP canjeados: <b style={{color:T.g800}}>{puntosCanjeados}</b>.
           </div>
         </Card>
       </div>
@@ -10153,7 +10185,7 @@ function GestionTiendaPanel({user,showToast}){
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Resumen de tienda</div>
           <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-            Control rápido de premios, pedidos, canjes, stock bajo y actividad de la tienda de puntos.
+            Control rápido de premios, pedidos, canjes, stock bajo y actividad de la tienda de RP.
           </div>
         </div>
         <Btn small col="ghost" onClick={load}>Actualizar</Btn>
@@ -10167,7 +10199,7 @@ function GestionTiendaPanel({user,showToast}){
         <StatCard icon="📋" label="Pedidos activos" value={pedidosPendientes.length} col="pink"/>
         <StatCard icon="✅" label="Entregados" value={entregados.length} col="green"/>
         <StatCard icon="📦" label="Stock bajo" value={stockBajo.length} col={stockBajo.length?"red":"green"}/>
-        <StatCard icon="⭐" label="Puntos canjeados" value={puntosCanjeados} col="gold"/>
+        <StatCard icon="⭐" label="RP canjeados" value={puntosCanjeados} col="gold"/>
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
@@ -10297,13 +10329,13 @@ function GestionTiendaAjustes({user,showToast}){
         <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>🛍️ Activación</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:10}}>
           <Toggle label="Tienda activa" sub="Muestra u oculta la tienda para clientes." value={settings.secciones.tienda_activa!==false} onChange={v=>setSection("tienda_activa",v)}/>
-          <Toggle label="Canjes activos" sub="Permite o bloquea nuevos canjes de puntos." value={settings.tienda.canjes_activos!==false} onChange={v=>setTienda("canjes_activos",v)}/>
+          <Toggle label="Canjes activos" sub="Permite o bloquea nuevos canjes de RP." value={settings.tienda.canjes_activos!==false} onChange={v=>setTienda("canjes_activos",v)}/>
         </div>
       </Card>
 
       <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>⭐ Reglas de canje</div>
-        <Input label="Puntos mínimos para canjear" type="number" value={String(settings.tienda.puntos_minimos_canje??0)} onChange={v=>setTienda("puntos_minimos_canje",Math.max(0,parseInt(v,10)||0))}/>
+        <Input label="RP mínimos para canjear" type="number" value={String(settings.tienda.puntos_minimos_canje??0)} onChange={v=>setTienda("puntos_minimos_canje",Math.max(0,parseInt(v,10)||0))}/>
         <div style={{marginBottom:14}}>
           <div style={{fontSize:"0.8rem",fontWeight:800,color:T.g700,marginBottom:5}}>Mensaje visible de tienda</div>
           <textarea value={settings.tienda.mensaje_tienda||""} onChange={e=>setTienda("mensaje_tienda",e.target.value)} style={{width:"100%",minHeight:90,padding:"10px 14px",borderRadius:12,border:`1.5px solid ${T.g200}`,background:T.g50,fontSize:"0.9rem",color:T.text,outline:"none",boxShadow:"inset 0 2px 8px rgba(20,8,4,.08)"}}/>
@@ -10510,7 +10542,7 @@ function GestionJuegosAdmin({user,showToast}){
         </Card>
         <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)"}}>
           <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>⭐ Límites y recompensas</div>
-          <Input label="Límite diario de puntos por juegos" type="number" value={String(settings.puntos.limite_diario_juegos??75)} onChange={v=>setPointValue("limite_diario_juegos",Math.max(0,parseInt(v,10)||0))}/>
+          <Input label="Límite diario de RP por juegos" type="number" value={String(settings.puntos.limite_diario_juegos??75)} onChange={v=>setPointValue("limite_diario_juegos",Math.max(0,parseInt(v,10)||0))}/>
           <Input label="Tiradas diarias de Gacha" type="number" value={String(settings.puntos.gacha_tiradas_dia??50)} onChange={v=>setPointValue("gacha_tiradas_dia",Math.max(0,parseInt(v,10)||0))}/>
           <Btn col="gold" onClick={saveGameSettings} disabled={!isAdmin||saving}>{saving?"Guardando...":"Guardar ajustes de juegos"}</Btn>
           {!isAdmin&&<div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,marginTop:8}}>El staff puede revisar esta pantalla, pero sólo admin puede guardar ajustes.</div>}
@@ -10538,7 +10570,7 @@ function GestionJuegosAdmin({user,showToast}){
           <Input label="Descripción" value={newReto.descripcion} onChange={v=>setNewReto(r=>({...r,descripcion:v}))}/>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
             <Input label="Meta" type="number" value={String(newReto.meta)} onChange={v=>setNewReto(r=>({...r,meta:v}))}/>
-            <Input label="Premio en puntos" type="number" value={String(newReto.puntos_premio)} onChange={v=>setNewReto(r=>({...r,puntos_premio:v}))}/>
+            <Input label="Premio en RP" type="number" value={String(newReto.puntos_premio)} onChange={v=>setNewReto(r=>({...r,puntos_premio:v}))}/>
             <Input label="Fecha fin" type="date" value={newReto.fecha_fin} onChange={v=>setNewReto(r=>({...r,fecha_fin:v}))}/>
           </div>
           <Btn col="gold" onClick={createReto} disabled={!isAdmin}>Crear reto</Btn>
@@ -10552,7 +10584,7 @@ function GestionJuegosAdmin({user,showToast}){
                 <div style={{fontWeight:950,color:T.g800}}>{r.titulo}</div>
                 <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{r.descripcion}</div>
                 <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:6}}>
-                  <Badge col="blue">Meta {r.meta}</Badge><Badge col="gold">+{r.puntos_premio} pts</Badge><Badge col={r.activo!==false?"green":"red"}>{r.activo!==false?"Activo":"Inactivo"}</Badge>
+                  <Badge col="blue">Meta {r.meta}</Badge><Badge col="gold">+{r.puntos_premio} RP</Badge><Badge col={r.activo!==false?"green":"red"}>{r.activo!==false?"Activo":"Inactivo"}</Badge>
                 </div>
               </div>
               <Btn small col={r.activo!==false?"red":"green"} onClick={()=>toggleReto(r)} disabled={!isAdmin}>{r.activo!==false?"Desactivar":"Activar"}</Btn>
@@ -11504,10 +11536,10 @@ function LoginHelperAvatar({size=46,speaking=false}={}){
 
 const RASTA_GENERAL_TIPS=[
   "Pulsa Activar ayuda y toca cualquier botón para saber qué hace sin ejecutar la acción.",
-  "Los puntos se ganan poco a poco: juegos, participación y actividad real en la app.",
+  "Los RP se ganan poco a poco: juegos, participación y actividad real en la app.",
   "En Perfil puedes ajustar tu avatar, tu privacidad y cómo apareces en rankings.",
   "Comunidad reúne tablón, foro, actualidad y música para no perderse entre pestañas.",
-  "En Arcade puedes repetir partidas para mejorar récord, aunque los puntos diarios tienen límite.",
+  "En Arcade puedes repetir partidas para mejorar récord, aunque los RP diarios tienen límite.",
   "Top 10 enseña marcas por juego; Top general resume actividad global de clientes.",
   "Si una sección no queda clara, abre el modo ayuda y toca justo esa zona.",
   "La tienda tiene más sentido cuando los puntos se convierten en premios visibles.",
@@ -11515,7 +11547,7 @@ const RASTA_GENERAL_TIPS=[
   "Gestión es la zona interna para caja, citas, clientes, stock y permisos.",
   "El modo incógnito oculta nombre y avatar público, pero mantiene tu personalización privada.",
   "Las noticias funcionan mejor cuando se leen rápido y se puede debatir sin salir de la app.",
-  "El perfil público debe mostrar lo justo: avatar, nombre, puntos y actividad sin datos personales.",
+  "El perfil público debe mostrar lo justo: avatar, nombre, RP y actividad sin datos personales.",
   "El ranking semanal sirve para picarse esta semana; el histórico guarda las mejores marcas.",
   "Si el menú parece cargado, entra por Gestión: ahí está ordenado lo interno.",
   "Cuando termines una cita, márcala como realizada para que luego cuente en historial y facturación.",
@@ -11525,7 +11557,7 @@ const RASTA_GENERAL_TIPS=[
   "Música es una biblioteca rápida para descubrir reggae, rap clásico, ska y rock sin ruido comercial.",
   "El tablón es para avisos oficiales; el foro es para conversar.",
   "Si una noticia merece conversación, abre debate y deja un comentario útil.",
-  "Los premios de tienda deben tener valor real para que los puntos importen.",
+  "Los premios de tienda deben tener valor real para que los RP importen.",
   "El botón de Sonido activa música suave; con doble toque saltas a una canción aleatoria.",
   "Las citas pendientes necesitan respuesta: confirmar, proponer hora o cancelar.",
   "El resumen de Gestión muestra lo importante sin entrar en cada pestaña.",
@@ -11572,13 +11604,13 @@ const RASTA_DAILY_FUN_TIPS=[
   "Hoy puedes probar una partida, mirar una noticia y revisar si tu avatar sigue como quieres.",
   "Una app clara se entiende en pocos toques: reserva, juega, participa y canjea.",
   "Actualidad funciona mejor con titulares cortos, imagen clara y resumen útil.",
-  "El Arcade tiene que picar sin regalar puntos infinitos: récord sí, abuso no.",
+  "El Arcade tiene que picar sin regalar RP infinitos: récord sí, abuso no.",
   "Una buena pantalla de inicio enseña rápido qué se puede hacer dentro.",
   "Los clientes deberían reconocer su avatar igual en Perfil, Comunidad y rankings.",
   "Si algo aparece raro en móvil, se corrige en diseño antes de seguir acumulando funciones.",
   "Los mensajes del asistente deben ayudar, no molestar ni tapar botones importantes.",
-  "La tienda gana valor cuando los puntos sirven para cosas visibles y deseables.",
-  "El perfil público debe enseñar lo justo: avatar, nombre, puntos y actividad sin datos privados.",
+  "La tienda gana valor cuando los RP sirvenn para cosas visibles y deseables.",
+  "El perfil público debe enseñar lo justo: avatar, nombre, RP y actividad sin datos privados.",
   "Hoy toca revisar si Gestión resume bien citas, caja y clientes.",
   "Un ranking bueno da ganas de volver sin hacer trampas con puntos.",
   "Una cita bien creada debe enseñar fecha, hora, tratamientos, duración y precio.",
@@ -11586,7 +11618,7 @@ const RASTA_DAILY_FUN_TIPS=[
   "La comunidad necesita ritmo: novedades, juego, conversación y algún premio.",
   "Si el usuario no sabe qué tocar, el modo ayuda tiene que salvarlo.",
   "El mejor botón es el que se entiende antes de pulsarlo.",
-  "Un cliente vuelve más si siente que tiene perfil, puntos y progreso.",
+  "Un cliente vuelve más si siente que tiene perfil, RP y progreso.",
   "Los avisos oficiales van al tablón; las dudas y debates van al foro.",
   "Hoy puede ser buen día para descubrir un artista nuevo en Música.",
   "Un diseño moderno no es llenar de efectos, es que todo fluya mejor.",
@@ -11705,7 +11737,7 @@ function rastaPageHelpIntro(page){
     misiones:"Estás en Misiones. Aquí ves objetivos diarios y semanales para ganar RP, RC y XP de forma controlada.",
     inventario:"Estás en Stock. Aquí se revisa inventario y productos.",
     caja:"Estás en Caja. Aquí se revisan ingresos, ventas y actividad económica.",
-    ranking:"Estás en Ranking. Aquí se comparan puntos y progreso entre clientes.",
+    ranking:"Estás en Ranking. Aquí se comparan RP y progreso entre clientes.",
     cartera:"Estás en Cartera. Aquí se separan los puntos web, el límite diario, el saldo futuro y la economía del Tycoon.",
     carrito:"Estás en Carrito. Aquí se guardarán compras de tienda y personalización del avatar antes de confirmar el canje.",
     notificaciones:"Estás en Notificaciones. Aquí se leen avisos completos, citas, mensajes y accesos rápidos a la sección relacionada."
@@ -11748,7 +11780,7 @@ function rastaElementHelp(target,page){
   if(t.includes("top 10"))return "Top 10 abre los rankings de minijuegos: semanal e histórico por cada juego.";
   if(t.includes("top general"))return "Top general muestra estadísticas globales de clientes: puntos, juegos, tienda y comunidad.";
   if(t.includes("ver top")||t.includes("abrir top"))return "Este botón abre la página de rankings para ver los mejores jugadores y estadísticas.";
-  if(t.includes("jugar ahora")||t==="jugar"||t.includes("▶ jugar")||t.includes("rejugar"))return "Abre el juego seleccionado. Puedes repetir para mejorar récord, aunque los puntos sólo se cobran una vez al día.";
+  if(t.includes("jugar ahora")||t==="jugar"||t.includes("▶ jugar")||t.includes("rejugar"))return "Abre el juego seleccionado. Puedes repetir para mejorar récord, aunque los RP sólo se cobran una vez al día.";
   if(t.includes("gacha"))return "Gacha Barber es una máquina de tiradas con límite diario. Sirve para premios, suerte y recompensas controladas.";
   if(t.includes("guardar récord")||t.includes("guardar record"))return "Guarda tu puntuación para que aparezca en los rankings. Si ya cobraste hoy, sólo mejora la marca.";
   if(t.includes("nueva")||t.includes("+ nueva")||t.includes("nueva cita"))return "Crea una cita nueva. Puedes elegir varios tratamientos y la app suma duración y precio.";
@@ -11758,7 +11790,7 @@ function rastaElementHelp(target,page){
   if(t.includes("proponer"))return "Permite sugerir otra fecha u hora al cliente en vez de aceptar la reserva tal cual.";
   if(t.includes("publicar"))return "Publica el texto en el tablón, foro o comunidad según la sección donde estés.";
   if(t.includes("responder"))return "Añade una respuesta al tema o conversación actual.";
-  if(t.includes("comentar")||t.includes("comentario"))return "Abre o añade comentarios. Participar en comunidad puede servir para puntos y actividad.";
+  if(t.includes("comentar")||t.includes("comentario"))return "Abre o añade comentarios. Participar en comunidad puede servir para RP y actividad.";
   if(t.includes("me gusta")||t.includes("like")||t.includes("👍"))return "Pulsa una vez para dar like y vuelve a pulsar para quitarlo. Sólo cuenta un like activo por usuario y publicación, tema, respuesta o noticia.";
   if(t.includes("youtube"))return "Abre una búsqueda o enlace de YouTube relacionado, normalmente para música o vídeos oficiales.";
   if(t.includes("fuente")||t.includes("leer fuente"))return "Abre la fuente original de la noticia fuera de la app.";
@@ -11771,7 +11803,7 @@ function rastaElementHelp(target,page){
   if(t.includes("citas"))return "Abre la sección de citas para reservar o gestionar reservas.";
   if(t.includes("clientes"))return "Abre el panel de clientes, visible para admin o staff.";
   if(t.includes("usuarios"))return "Abre el panel de usuarios, normalmente sólo para admin.";
-  if(t.includes("tienda"))return "Abre la tienda de puntos, premios y canjes.";
+  if(t.includes("tienda"))return "Abre la tienda de RP, premios y canjes.";
   if(t.includes("arcade"))return "Abre los juegos y rankings.";
   if(t.includes("guardar"))return "Guarda los cambios que has hecho.";
   if(t.includes("editar"))return "Permite modificar esta información.";
@@ -12266,14 +12298,14 @@ function CartPanel({show,onClose,user,setUser,showToast}){
     const pointItems=hydratedItems.filter(x=>!isRealMoneyProduct(x));
     const realItems=hydratedItems.filter(isRealMoneyProduct);
     const totalEuros=realItems.reduce((sum,it)=>sum+(itemEuroPrice(it)*Number(it.qty||1)),0);
-    if((user.puntos||0)<totalPts){showToast?.(`Te faltan ${totalPts-(user.puntos||0)} puntos`);SFX.error();return;}
+    if((user.puntos||0)<totalPts){showToast?.(`Te faltan ${totalPts-(user.puntos||0)} RP`);SFX.error();return;}
 
     const nuevos=Math.max(0,(user.puntos||0)-totalPts);
 
     if(totalPts>0){
       const okUser=await dbPatch("usuarios",`?id=eq.${user.id}`,{puntos:nuevos});
       if(!okUser){
-        showToast?.("No se pudieron descontar los puntos");
+        showToast?.("No se pudieron descontar los RP");
         SFX.error();
         return;
       }
@@ -12554,10 +12586,11 @@ function Particles(){
 
 function GlobalUIPolishPatch(){
   return <style>{`
+    @import url("https://fonts.googleapis.com/css2?family=Pirata+One&family=Rye&family=Nunito:wght@500;700;800;900&family=Inter:wght@500;700;800;900&display=swap");
     /* Rasta Cuts 2.9.6d · polish global + RastaHelp sticker limpio */
     :root{
       --rc-font-body: Inter, Nunito, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --rc-font-title: "Baloo 2", Nunito, Inter, system-ui, sans-serif;
+      --rc-font-title: "Pirata One", "Rye", "Georgia", serif;
       --rc-radius-card: 20px;
       --rc-shadow-soft: 0 12px 28px rgba(20,8,4,.16);
       --rc-shadow-card: 0 8px 18px rgba(20,8,4,.18);
@@ -12683,7 +12716,7 @@ function GlobalUIPolishPatch(){
       --rc-text:#fff7dc;
       --rc-glow:0 0 34px rgba(54,224,188,.18),0 18px 55px rgba(0,0,0,.38);
       --rc-font-body: Inter, Nunito, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --rc-font-title: Inter, Nunito, system-ui, sans-serif;
+      --rc-font-title: "Pirata One", "Rye", "Georgia", serif;
     }
 
     html,body,#root{
@@ -12712,21 +12745,8 @@ function GlobalUIPolishPatch(){
     }
 
     body::after{
-      content:"RASTA  CUTS   ✂   TATTOO   BARBER   ARCADE";
-      position:fixed;
-      top:17%;
-      left:-4%;
-      width:120%;
-      transform:rotate(-8deg);
-      pointer-events:none;
-      z-index:0;
-      font:1000 clamp(2.8rem,8vw,8rem)/1 Inter,system-ui,sans-serif;
-      letter-spacing:.16em;
-      color:transparent;
-      -webkit-text-stroke:1px rgba(255,244,214,.045);
-      text-shadow:0 0 42px rgba(54,224,188,.05);
-      white-space:nowrap;
-      opacity:.9;
+      content:"";
+      display:none!important;
     }
 
     .app-shell{
@@ -12780,9 +12800,9 @@ function GlobalUIPolishPatch(){
       padding:7px 12px!important;
       box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;
       color:var(--rc-cream)!important;
-      font-family:Inter,Nunito,system-ui,sans-serif!important;
-      font-weight:1000!important;
-      letter-spacing:-.03em!important;
+      font-family:"Pirata One","Rye",Georgia,serif!important;
+      font-weight:400!important;
+      letter-spacing:.02em!important;
       text-shadow:0 0 18px rgba(240,200,92,.22)!important;
     }
     .brand-scissors{filter:drop-shadow(0 0 8px rgba(54,224,188,.55));}
@@ -12872,24 +12892,15 @@ function GlobalUIPolishPatch(){
       box-shadow:0 30px 80px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.12)!important;
     }
     .premium-home section::after{
-      content:"✦  FLASH  ✂  RASTA CUTS  ✦  TATTOO  ✂";
-      position:absolute;
-      right:-36px;
-      bottom:10px;
-      transform:rotate(-8deg);
-      font:1000 2.35rem/1 Inter,system-ui,sans-serif;
-      color:transparent;
-      -webkit-text-stroke:1px rgba(255,244,214,.075);
-      letter-spacing:.13em;
-      pointer-events:none;
-      white-space:nowrap;
+      content:"";
+      display:none!important;
     }
 
     .premium-home h1{
-      font-family:Inter,Nunito,system-ui,sans-serif!important;
-      font-weight:1000!important;
-      font-size:clamp(2.55rem,6.6vw,5.7rem)!important;
-      letter-spacing:-.075em!important;
+      font-family:"Pirata One","Rye",Georgia,serif!important;
+      font-weight:400!important;
+      font-size:clamp(2.45rem,6.2vw,5.35rem)!important;
+      letter-spacing:.018em!important;
       color:var(--rc-cream)!important;
       text-shadow:0 6px 0 rgba(0,0,0,.30),0 0 26px rgba(240,200,92,.25)!important;
     }
@@ -12977,7 +12988,7 @@ function GlobalUIPolishPatch(){
       .app-header-pro{margin:8px auto 0!important;width:calc(100% - 16px)!important;border-radius:20px!important;padding:10px 12px!important;}
       .page-content-pro{width:calc(100% - 14px)!important;margin-top:10px!important;border-radius:24px!important;padding:14px 10px!important;}
       .premium-home section{border-radius:26px!important;}
-      .premium-home h1{font-size:clamp(2.2rem,14vw,3.65rem)!important;letter-spacing:-.065em!important;}
+      .premium-home h1{font-size:clamp(2.15rem,12vw,3.4rem)!important;letter-spacing:.01em!important;line-height:.92!important;}
       .bottom-nav-pro{width:calc(100% - 16px)!important;border-radius:22px!important;}
       .nav-tab-pro{min-width:0!important;}
       .nav-tab-pro span{font-size:.54rem!important;}
