@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7i: misma base visual, logo en public root para evitar líos con carpetas.
+  // Paleta 2.9.7j: misma base visual, tarjetas con ilustraciones y más identidad barber/tattoo/rasta.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7I_LOGO_ROOT_PATH_FIX";
-const APP_VERSION_SHORT = "2.9.7i";
+const APP_VERSION = "RASTACUTS_2_9_7J_ILLUSTRATED_CARDS_REWORK";
+const APP_VERSION_SHORT = "2.9.7j";
 const APP_BUILD_DATE = "2026-06-10";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
