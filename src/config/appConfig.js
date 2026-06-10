@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7e: misma base visual. Copy público más limpio para clientes, staff y admin.
+  // Paleta 2.9.7f: misma base visual, home centrada en marca y textos más limpios.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7E_CLEAN_PUBLIC_COPY";
-const APP_VERSION_SHORT = "2.9.7e";
+const APP_VERSION = "RASTACUTS_2_9_7F_HOME_BRAND_FIX";
+const APP_VERSION_SHORT = "2.9.7f";
 const APP_BUILD_DATE = "2026-06-10";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
