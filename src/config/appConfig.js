@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7a: base App Store. Fondo profundo, acentos graffiti/tattoo/rasta y mejor contraste.
+  // Paleta 2.9.7b: App Store estable, más graffiti/tattoo/rasta y menos foro verde.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7A_APP_STORE_UI_FOUNDATION";
-const APP_VERSION_SHORT = "2.9.7a";
+const APP_VERSION = "RASTACUTS_2_9_7B_ECONOMY_INTEGRITY_PIRATE_TITLES";
+const APP_VERSION_SHORT = "2.9.7b";
 const APP_BUILD_DATE = "2026-06-10";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
