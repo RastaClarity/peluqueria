@@ -2464,7 +2464,7 @@ function ClientDashboard({user,onNavigate,settings}){
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12}}>
             <FeatureCard icon="🎮" title="Arcade" sub="Minijuegos, récords, RC, XP y ranking." to="juegos" tone="blue" art="🕹️" artType="arcade"/>
             <FeatureCard icon="🏪" title="Tycoon" sub="Mejora tu barbería paso a paso." to="juegos" tone="gold" art="🏗️" artType="tycoon"/>
-            <FeatureCard icon="🎰" title="Gacha" sub="Tiradas, suerte y premios pequeños." to="juegos" tone="pink" art="🔮" artType="gacha"/>
+            <FeatureCard icon="🎰" title="Gacha" sub="Tiradas limitadas, RC y XP." to="juegos" tone="pink" art="🔮" artType="gacha"/>
             <FeatureCard icon="🛍️" title="Tienda juegos" sub="Vales, tiradas y recompensas." to="tienda" tone="blue" art="🎫" artType="tienda"/>
             <FeatureCard icon="🧑‍🎤" title="Avatar" sub="Tu personaje, tu rol y tus insignias." to="perfil" tone="green" art="👑" artType="perfil"/>
             <FeatureCard icon="🌐" title="Comunidad" sub="Foro, tablón, historias y comunidad." to="comunidad" tone="orange" art="👥" artType="comunidad"/>
@@ -6466,27 +6466,26 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     const best=getMyBestScore(g.id,uid);
     const isTycoon=g.id==="tycoon";
     const isGacha=g.id==="gacha";
-    const border=played?`1px solid ${T.g300}`:`2px solid ${featured?T.gold:T.g200}`;
-    const bg=played?"linear-gradient(180deg,#EBD8A8,#D7B777)":featured?"linear-gradient(135deg,#FFF8E6,#F3E0AA)":"linear-gradient(135deg,#FFF4D6,#F6E5BE)";
-    return <Card style={{opacity:played&&!isTycoon?0.84:1,background:bg,border,position:"relative",overflow:"hidden"}} hover>
-      <div style={{position:"absolute",right:-16,top:-22,fontSize:"5rem",opacity:.08,transform:"rotate(-10deg)"}}>{g.icon}</div>
-      <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:14}}>
-        <div className="icon3d" style={{fontSize:featured?"2.8rem":"2.45rem"}}>{g.icon}</div>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
-            <div style={{fontWeight:950,fontSize:featured?"1.06rem":".98rem",color:T.g800}}>{g.title}</div>
-            {played&&!isTycoon&&<Badge col="green">cobrado hoy</Badge>}
+    const toneMap={tycoon:["#E0B84F","#4A2F0D","local"],gacha:["#B878FF","#2A1747","gacha"],runner:["#35B8D0","#123E52","arcade"],jump:["#3EE6C7","#123F32","arcade"],stitch:["#D94A35","#4A1711","reto"],memoria:["#E0B84F","#3E3010","arcade"],sopa:["#0FB890","#143F2E","reto"],trivia:["#B878FF","#281A42","comunidad"]};
+    const [accent,deep,artType]=toneMap[g.id]||["#3EE6C7","#123F32","arcade"];
+    const status=isTycoon?"Progreso propio":isGacha?"RC + XP":played?"Cobrado hoy":"Pendiente hoy";
+    return <Card hover style={{opacity:played&&!isTycoon?0.92:1,background:`linear-gradient(145deg,rgba(8,13,10,.97),${deep}F2), radial-gradient(circle at 88% 16%,${accent}33,transparent 38%)`,border:`1px solid ${played&&!isTycoon?"rgba(255,244,214,.18)":accent+"77"}`,position:"relative",overflow:"hidden",color:"#FFF7DA",padding:0,boxShadow:"0 18px 42px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08)"}}>
+      <div style={{position:"absolute",right:-18,top:0,opacity:.88,transform:"rotate(-5deg)",pointerEvents:"none"}}><RastaCardIllustration type={artType} accent={accent} size={150}/></div>
+      <div style={{position:"absolute",left:0,right:0,top:0,height:48,background:`linear-gradient(90deg,${accent}28,rgba(255,255,255,.06),transparent)`,borderBottom:`1px solid ${accent}22`}}/>
+      <div style={{position:"relative",zIndex:1,padding:14,display:"grid",gridTemplateColumns:"minmax(0,1fr) auto",gap:12,alignItems:"end",minHeight:164}}>
+        <div style={{minWidth:0,maxWidth:"72%"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:7,padding:"6px 10px",borderRadius:999,background:"rgba(255,255,255,.08)",border:`1px solid ${accent}33`,fontSize:".70rem",fontWeight:1000,color:"rgba(255,247,218,.82)",textTransform:"uppercase",letterSpacing:".05em"}}>{g.icon} {status}</div>
+          <div className="rc-card-title" style={{fontWeight:1000,fontSize:featured?"1.42rem":"1.20rem",marginTop:13,color:accent,textTransform:"uppercase",letterSpacing:".02em",lineHeight:1}}>{g.title}</div>
+          <div style={{fontSize:".80rem",fontWeight:800,lineHeight:1.35,color:"rgba(255,247,218,.78)",marginTop:6,maxWidth:210}}>{g.desc}</div>
+          <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:11}}>
+            {isTycoon?<Badge col="blue">🪙 RC global</Badge>:isGacha?<Badge col="gold">🎰 sin RP por tirada</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP</Badge>}
+            {!isTycoon&&<Badge col="blue">🏆 récord {best}</Badge>}
             {isGacha&&extraPulls>0&&<Badge col="gold">+{extraPulls} tiradas</Badge>}
           </div>
-          <div style={{fontSize:"0.78rem",color:T.textSub,fontWeight:820,lineHeight:1.35,marginTop:3}}>{g.desc}</div>
-          <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:7}}>
-            {isTycoon?<Badge col="blue">🪙 usa RC global</Badge>:isGacha?<Badge col="gold">🎰 RC + XP · sin RP</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP/día</Badge>}
-            {isTycoon?<Badge col="green">⏱️ progreso real</Badge>:<Badge col="blue">🏆 récord {best}</Badge>}
-          </div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
-          <Btn small col={featured?"gold":"green"} onClick={()=>isTycoon?onOpenTycoon?.():setActiveGame(g.id)}>{isTycoon?"Abrir Tycoon":played&&!isGacha?"Rejugar":"Jugar"}</Btn>
-          {!isTycoon&&<button onClick={()=>onOpenTops?.("games")} style={{border:"none",background:"transparent",color:T.g600,fontSize:".7rem",fontWeight:950,cursor:"pointer"}}>Ver top</button>}
+        <div style={{display:"grid",gap:7,justifyItems:"end",alignSelf:"end"}}>
+          <button onClick={()=>isTycoon?onOpenTycoon?.():setActiveGame(g.id)} style={{border:`1px solid ${accent}88`,background:`linear-gradient(135deg,${accent},#FFF1A6)`,color:"#160D07",borderRadius:14,padding:"9px 12px",fontWeight:1000,cursor:"pointer",boxShadow:`0 10px 20px ${accent}22`,whiteSpace:"nowrap"}}>{isTycoon?"Gestionar":played&&!isGacha?"Rejugar":"Jugar"}</button>
+          {!isTycoon&&<button onClick={()=>onOpenTops?.("games")} style={{border:"none",background:"transparent",color:"rgba(255,247,218,.78)",fontSize:".70rem",fontWeight:950,cursor:"pointer"}}>Ver top</button>}
         </div>
       </div>
     </Card>;
@@ -6494,7 +6493,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
 
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🎮" title="Arcade Rasta" sub="Juegos, piques, Gacha y Tycoon en una zona pensada para entrar y jugar."/>
+      <SectionHeader icon="🎮" title="Arcade Rasta" sub="Minijuegos, rankings, Gacha y Tycoon en una zona directa para jugar."/>
 
       <Card style={{marginBottom:14,background:"linear-gradient(145deg,#171008,#2B331A 48%,#C9A43D)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
         <div style={{position:"absolute",right:-22,top:-34,fontSize:"7rem",opacity:.12,transform:"rotate(-10deg)"}}>🎮</div>
@@ -6503,7 +6502,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
             <Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={54}/>
             <div style={{flex:1,minWidth:220}}>
               <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.62rem",lineHeight:1}}>Centro Arcade</div>
-              <div style={{fontSize:".82rem",fontWeight:850,opacity:.84,lineHeight:1.35}}>Juega, deja marca y mueve RP, RC y XP sin que parezca una hoja de cálculo.</div>
+              <div style={{fontSize:".82rem",fontWeight:850,opacity:.84,lineHeight:1.35}}>Juega, sube marcas y gana recompensas de juego con ritmo de arcade.</div>
             </div>
             <div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>
               <Badge col="gold">💎 {Number(user?.puntos||0)} RP</Badge>
@@ -11627,7 +11626,7 @@ const RASTA_GENERAL_TIPS=[
   "Los RP se ganan poco a poco: juegos, participación y actividad real en la app.",
   "En Perfil puedes ajustar tu avatar, tu privacidad y cómo apareces en rankings.",
   "Comunidad reúne tablón, foro, actualidad y música para no perderse entre pestañas.",
-  "En Arcade puedes repetir partidas para mejorar récord, aunque los RP diarios tienen límite.",
+  "En Arcade puedes repetir partidas para mejorar récord. Los RP diarios tienen límite.",
   "Top 10 enseña marcas por juego; Ranking general resume actividad global de clientes.",
   "Si una sección no queda clara, abre el modo ayuda y toca justo esa zona.",
   "La tienda tiene más sentido cuando los puntos se convierten en premios visibles.",
@@ -11639,7 +11638,7 @@ const RASTA_GENERAL_TIPS=[
   "El ranking semanal sirve para picarse esta semana; el histórico guarda las mejores marcas.",
   "Desde Gestión puedes revisar caja, citas, pedidos y permisos.",
   "Cuando termines una cita, márcala como realizada para que luego cuente en historial y facturación.",
-  "Los juegos tienen que picar y motivar, no regalar RP sin control.",
+  "Los juegos tienen que picar y motivar, con premios claros y limitados.",
   "Una app útil se entiende tocando: reserva, juega, lee, participa y canjea.",
   "El avatar debe verse igual en Perfil, rankings, comunidad y clientes.",
   "Música es una biblioteca rápida para descubrir reggae, rap clásico, ska y rock sin ruido comercial.",
@@ -11676,7 +11675,7 @@ const RASTA_RARE_CULTURE_TIPS=[
   "Tip de privacidad: incógnito no borra al usuario, sólo oculta cómo se muestra al público.",
   "Tip de rankings: el top semanal mantiene movimiento; el histórico da prestigio.",
   "Tip de sonido: música suave mejor que melodías chillones en móvil.",
-  "Tip de diseño: si algo tapa un botón en Android, hay que darle más margen inferior.",
+  "Tip de móvil: los botones importantes deben quedar cómodos en la parte inferior.",
   "Tip de citas: una cita sin estado claro genera confusión; pendiente, confirmada o cancelada.",
   "Tip de caja: primero que cuadre por dentro; luego ya se pondrá más fino.",
   "Tip de admin: Usuarios es permisos; Clientes es historial y ficha comercial.",
@@ -11692,12 +11691,12 @@ const RASTA_DAILY_FUN_TIPS=[
   "Hoy puedes probar una partida, mirar una noticia y revisar si tu avatar sigue como quieres.",
   "Una app clara se entiende en pocos toques: reserva, juega, participa y canjea.",
   "Actualidad funciona mejor con titulares cortos, imagen clara y resumen útil.",
-  "El Arcade tiene que picar sin regalar RP infinitos: récord sí, abuso no.",
+  "El Arcade funciona mejor cuando cada récord se siente ganado.",
   "Una buena pantalla de inicio enseña rápido qué se puede hacer dentro.",
   "Los clientes deberían reconocer su avatar igual en Perfil, Comunidad y rankings.",
-  "Si algo aparece raro en móvil, se corrige en diseño antes de seguir acumulando funciones.",
-  "Los mensajes del asistente deben ayudar, no molestar ni tapar botones importantes.",
-  "La tienda gana valor cuando los RP sirvenn para cosas visibles y deseables.",
+  "En móvil todo debe quedar claro en pocos toques.",
+  "El asistente debe ayudar justo cuando hace falta.",
+  "La tienda gana valor cuando los RP sirven para cosas visibles y deseables.",
   "El perfil público debe enseñar lo justo: avatar, nombre, RP y actividad sin datos privados.",
   "Hoy toca revisar si Gestión resume bien citas, caja y clientes.",
   "Un ranking bueno da ganas de volver sin hacer trampas con puntos.",
