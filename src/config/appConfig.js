@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7b: App Store estable, más graffiti/tattoo/rasta y menos foro verde.
+  // Paleta 2.9.7c: visual rework real, graffiti/tattoo/rasta con dibujos de fondo y tarjetas con más personalidad.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -13,10 +13,10 @@ const T = {
   g50:"#FFF4D6",
 
   pink:"#B14CFF",
-  gold:"#F0C85C",
+  gold:"#F2C85B",
   orange:"#D9822B",
   red:"#D94A35",
-  blue:"#36E0BC",
+  blue:"#3EE6C7",
 
   ink:"#050706",
   panel:"#F3E4BD",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7B_ECONOMY_INTEGRITY_PIRATE_TITLES";
-const APP_VERSION_SHORT = "2.9.7b";
+const APP_VERSION = "RASTACUTS_2_9_7C_VISUAL_REWORK_REAL";
+const APP_VERSION_SHORT = "2.9.7c";
 const APP_BUILD_DATE = "2026-06-10";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
