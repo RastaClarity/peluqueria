@@ -1351,6 +1351,76 @@ function RastaMascotImage({settings=null,compact=false}={}){
   );
 }
 
+
+function brandLogoSourcesFromSettings(settings=null){
+  const b=settings?.branding||{};
+  return [
+    b.logo_banner_url,
+    b.logo_rastacuts_url,
+    b.logo_titulo_url,
+    b.imagen_titulo_url,
+    "/rastacuts_logo.webp",
+    "/rastacuts_logo.png",
+    "/rasta-cuts-logo-banner.webp",
+    "/rasta-cuts-logo-banner.png",
+    "/images/rasta-cuts-logo-banner.webp",
+    "/images/rasta-cuts-logo-banner.png",
+    "/images/rastacuts_logo.webp",
+    "/images/rastacuts_logo.png"
+  ].map(x=>String(x||"").trim()).filter(Boolean);
+}
+
+function RastaBrandBannerImage({settings=null,compact=false}={}){
+  const sources=useMemo(()=>brandLogoSourcesFromSettings(settings),[
+    settings?.branding?.logo_banner_url,
+    settings?.branding?.logo_rastacuts_url,
+    settings?.branding?.logo_titulo_url,
+    settings?.branding?.imagen_titulo_url
+  ]);
+  const [imgIndex,setImgIndex]=useState(0);
+  useEffect(()=>{setImgIndex(0);},[sources.join("|")]);
+  const src=sources[imgIndex];
+
+  if(!src){
+    return (
+      <div style={{display:"grid",placeItems:"center",gap:8}}>
+        <div style={{
+          fontFamily:"'Pirata One','Rubik Wet Paint','Bangers',cursive",
+          fontSize:compact?"2.3rem":"3.25rem",
+          lineHeight:.88,
+          letterSpacing:"1px",
+          color:"#FFD66B",
+          textShadow:"0 4px 0 #3A1607,0 10px 22px rgba(0,0,0,.54)",
+          textAlign:"center"
+        }}>Rasta Cuts</div>
+        <RastaMascotImage settings={settings} compact={compact}/>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{position:"relative",width:"100%",display:"grid",placeItems:"center",padding:compact?"2px 0 6px":"4px 0 10px"}}>
+      <div style={{position:"absolute",inset:"12% 8%",background:"radial-gradient(circle at 50% 50%,rgba(255,207,91,.30),transparent 52%)",filter:"blur(24px)",pointerEvents:"none"}}/>
+      <img
+        key={src}
+        src={src}
+        alt="Rasta Cuts"
+        draggable={false}
+        onError={()=>setImgIndex(i=>i+1)}
+        style={{
+          position:"relative",
+          width:"100%",
+          maxWidth:compact?390:620,
+          height:"auto",
+          display:"block",
+          objectFit:"contain",
+          filter:"drop-shadow(0 22px 24px rgba(0,0,0,.38))"
+        }}
+      />
+    </div>
+  );
+}
+
 function HeroMascot(){
   return (
     <div style={{width:"100%",maxWidth:382,margin:"0 auto 10px",position:"relative",animation:"mascotFloat 3.2s ease-in-out infinite"}}>
@@ -1821,24 +1891,14 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
       marginBottom:16
     }}>
       <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 12% 78%,rgba(47,107,66,.24),transparent 26%),radial-gradient(circle at 88% 84%,rgba(167,40,34,.18),transparent 24%)",pointerEvents:"none"}}/>
-      <div style={{position:"absolute",right:-28,top:90,fontSize:"9rem",opacity:.07,transform:"rotate(-10deg)"}}>✂️</div>
       <div style={{position:"relative",zIndex:1,textAlign:"center"}}>
-        <div style={{
-          fontFamily:"'Rubik Wet Paint','Bangers',cursive",
-          fontSize:compact?"2.45rem":"3.25rem",
-          lineHeight:.86,
-          letterSpacing:"1px",
-          color:"#FFD66B",
-          textShadow:"0 4px 0 #3A1607,0 10px 22px rgba(0,0,0,.54)",
-          transform:"rotate(-1deg)",
-          marginBottom:compact?-4:-2
-        }}>{name}</div>
+        <RastaBrandBannerImage settings={settings} compact={compact}/>
         <div style={{
           display:"inline-flex",
           alignItems:"center",
           gap:8,
-          marginTop:10,
-          padding:"6px 13px",
+          marginTop:compact?-2:0,
+          padding:"6px 14px",
           background:"rgba(255,244,214,.08)",
           border:"1px solid rgba(212,175,55,.28)",
           borderRadius:999,
@@ -1847,10 +1907,7 @@ function RastaLandingHero({compact=false,onNavigate=null,user=null,settings=null
           fontSize:".75rem",
           letterSpacing:".08em",
           textTransform:"uppercase"
-        }}>{emoji} Cortes, rastas y estilo urbano {emoji}</div>
-        <div style={{marginTop:compact?4:8,position:"relative"}}>
-          <RastaMascotImage settings={settings} compact={compact}/>
-        </div>
+        }}>Cortes, rastas y estilo urbano</div>
         <div style={{
           margin:"-10px auto 12px",
           maxWidth:360,
@@ -8252,7 +8309,7 @@ function GestionTienda({user,showToast}){
 
 
 const DEFAULT_APP_SETTINGS={
-  branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️",mascota_rasta_url:""},
+  branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"🔥",mascota_rasta_url:""},
   puntos:{puntos_por_cita_cobrada:10,puntos_por_comentario:3,puntos_por_like:1,limite_diario_juegos:75,gacha_tiradas_dia:50},
   secciones:{tienda_activa:true,arcade_activo:true,musica_activa:true,noticias_activas:true,foro_activo:true,gacha_activo:true},
   musica:{musica_activa_por_defecto:false,volumen_general:0.7,modo:"jazz_lofi_reggae",descripcion:"Música suave tipo jazz lofi reggae."},
@@ -8283,7 +8340,7 @@ function DisabledSection({icon="🔒",title="Sección desactivada",sub="Esta sec
 function GestionAjustes({user,showToast}){
   if(!isAdminUser(user)) return <EmptyState icon="🔒" title="Sólo admin" sub="Los ajustes globales sólo debería tocarlos el administrador."/>;
   const DEFAULTS={
-    branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"✂️",mascota_rasta_url:""},
+    branding:{nombre_tienda:"Rasta Cuts",slogan:"Reserva, juega, participa y desbloquea recompensas.",mensaje_login:"Forma parte de la comunidad Rasta Cuts.",emoji_principal:"🔥",mascota_rasta_url:""},
     puntos:{puntos_por_cita_cobrada:10,puntos_por_comentario:3,puntos_por_like:1,limite_diario_juegos:75,gacha_tiradas_dia:50},
     secciones:{tienda_activa:true,arcade_activo:true,musica_activa:true,noticias_activas:true,foro_activo:true,gacha_activo:true},
     musica:{musica_activa_por_defecto:false,volumen_general:0.7,modo:"jazz_lofi_reggae",descripcion:"Música suave tipo jazz lofi reggae."},
