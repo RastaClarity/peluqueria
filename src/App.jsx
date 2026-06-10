@@ -11340,10 +11340,10 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
   const progress=avatarLevelProgress(userXP(user));
 
   const cards=[
-    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Pedidos, vales, citas, tienda y seguridad.",tone:"gold",art:"✂️"},
+    {id:"gestion",icon:"🧾",title:"Local",sub:"Pedidos, citas, vales y tienda.",tone:"gold",art:"✂️"},
     {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vista real de tienda juegos y productos €.",tone:"blue",art:"🎟️"},
     {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP.",tone:"blue",art:"🕹️"},
-    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Retos diarios y semanales sin regalar de más.",tone:"green",art:"⚡"},
+    {id:"misiones",icon:"🎯",title:"Retos",sub:"Misiones diarias, semanales y progreso.",tone:"green",art:"⚡"},
     {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, historias y gente del estudio.",tone:"orange",art:"📣"},
     {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, rol, vales y cartera.",tone:"pink",art:"👑"},
   ];
@@ -11389,8 +11389,14 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       </div>
       <div style={{position:"relative",zIndex:2,padding:"26px clamp(18px,4vw,42px)",maxWidth:690}}>
         <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
-        <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.65rem,7vw,5.6rem)",lineHeight:.82,margin:"14px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)"}}>GESTIÓN DEL LOCAL</h1>
-        <p style={{maxWidth:560,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Pedidos, vales, caja, comunidad y arcade desde un solo lugar.</p>
+        <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",margin:"14px 0 8px"}}>
+          <div style={{width:70,height:70,borderRadius:22,display:"grid",placeItems:"center",background:"linear-gradient(135deg,rgba(242,200,91,.28),rgba(62,230,199,.10))",border:"1px solid rgba(255,231,164,.34)",boxShadow:"0 16px 32px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.12)",fontSize:"2.25rem"}}>✂️</div>
+          <div>
+            <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.9rem,7.4vw,6rem)",lineHeight:.82,margin:0,color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)",letterSpacing:".01em"}}>RASTA CUTS</h1>
+            <div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".18em",textTransform:"uppercase",fontSize:"clamp(.68rem,1.4vw,.86rem)",marginTop:5}}>Barber · Tattoo · Arcade</div>
+          </div>
+        </div>
+        <p style={{maxWidth:580,color:"rgba(255,247,218,.84)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Tu estudio digital: reservas, tienda, retos, comunidad y juego en un mismo sitio.</p>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🔔 {Number(unread?.admin||0)} avisos</span>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>📦 {pendingOrders.length} pedidos</span>
@@ -12995,7 +13001,7 @@ function GlobalUIPolishPatch(){
     }
 
 
-    /* 2.9.7e · Clean public copy: tono claro para clientes, staff y admin. */
+    /* 2.9.7f · Clean public copy: tono claro para clientes, staff y admin. */
     :root{
       --rc-font-title:"Pirata One","Rye",Georgia,serif;
       --rc-wall-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%23fff4d6' stroke-opacity='.14' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M35 41l28 28M63 41L35 69M48 32v45'/%3E%3Cpath d='M190 38c22 0 35 14 35 32s-13 32-35 32-35-14-35-32 13-32 35-32z'/%3E%3Cpath d='M174 70h32M190 54v32'/%3E%3Cpath d='M42 176c22-22 44-22 66 0M51 188c16-12 32-12 48 0'/%3E%3Cpath d='M160 178l23-38 23 38-23 14zM183 140v52'/%3E%3Cpath d='M215 210l10 20 22 3-16 15 4 22-20-11-20 11 4-22-16-15 22-3z' transform='scale(.62) translate(112 102)'/%3E%3C/g%3E%3Cg fill='%23f0c85c' fill-opacity='.10'%3E%3Ccircle cx='118' cy='55' r='5'/%3E%3Ccircle cx='222' cy='154' r='4'/%3E%3Ccircle cx='78' cy='224' r='4'/%3E%3C/g%3E%3C/svg%3E");
