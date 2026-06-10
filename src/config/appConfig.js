@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7k: continuidad visual, Arcade más premium y copy público limpio.
+  // Paleta 2.9.7l: misma base visual, login con contraste corregido.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7K_ARCADE_POLISH_CLEAN_COPY";
-const APP_VERSION_SHORT = "2.9.7k";
+const APP_VERSION = "RASTACUTS_2_9_7L_LOGIN_READABILITY_FIX";
+const APP_VERSION_SHORT = "2.9.7l";
 const APP_BUILD_DATE = "2026-06-10";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
