@@ -11357,8 +11357,8 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       </div>
       <div style={{position:"relative",zIndex:2,padding:"26px clamp(18px,4vw,42px)",maxWidth:690}}>
         <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
-        <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.65rem,7vw,5.6rem)",lineHeight:.82,margin:"14px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)"}}>CENTRO RASTA CUTS</h1>
-        <p style={{maxWidth:560,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Inicio serio para controlar pedidos, cupones, economía, comunidad y juegos sin perderse por la app.</p>
+        <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.65rem,7vw,5.6rem)",lineHeight:.82,margin:"14px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)"}}>RASTA CUTS HQ</h1>
+        <p style={{maxWidth:560,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Centro de control para pedidos, cupones, economía, comunidad y juegos con una estética más seria y urbana.</p>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🔔 {Number(unread?.admin||0)} avisos</span>
           <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>📦 {pendingOrders.length} pedidos</span>
@@ -12665,6 +12665,324 @@ function GlobalUIPolishPatch(){
       .rasta-helper-fixed-safe .rasta-face-avatar{width:50px!important;height:50px!important;}
       .rasta-helper-fixed-safe button[aria-label]{width:72px!important;height:72px!important;}
     }
+
+    /* 2.9.7a · App Store UI Foundation
+       Rollo graffiti/tattoo/rasta real en CSS, sin tocar Supabase ni economía. */
+    :root{
+      --rc-ink:#050706;
+      --rc-night:#07100d;
+      --rc-deep:#0b1711;
+      --rc-card:rgba(12,20,15,.82);
+      --rc-card-strong:rgba(8,13,10,.94);
+      --rc-border:rgba(255,218,119,.22);
+      --rc-gold:#f0c85c;
+      --rc-teal:#36e0bc;
+      --rc-red:#d94a35;
+      --rc-cream:#fff3d0;
+      --rc-muted:#c9b681;
+      --rc-text:#fff7dc;
+      --rc-glow:0 0 34px rgba(54,224,188,.18),0 18px 55px rgba(0,0,0,.38);
+      --rc-font-body: Inter, Nunito, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --rc-font-title: Inter, Nunito, system-ui, sans-serif;
+    }
+
+    html,body,#root{
+      min-height:100%;
+      background:
+        radial-gradient(circle at 14% 8%,rgba(54,224,188,.15),transparent 26%),
+        radial-gradient(circle at 92% 5%,rgba(240,200,92,.14),transparent 28%),
+        radial-gradient(circle at 70% 92%,rgba(217,74,53,.10),transparent 30%),
+        linear-gradient(135deg,#030504 0%,#07100d 45%,#100b07 100%)!important;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      opacity:.38;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.035) 1px, transparent 1px),
+        radial-gradient(circle at 18% 30%,rgba(54,224,188,.08),transparent 18%),
+        radial-gradient(circle at 84% 38%,rgba(240,200,92,.08),transparent 20%);
+      background-size:42px 42px,42px 42px,100% 100%,100% 100%;
+      mask-image:linear-gradient(180deg,rgba(0,0,0,.95),rgba(0,0,0,.55));
+    }
+
+    body::after{
+      content:"RASTA  CUTS   ✂   TATTOO   BARBER   ARCADE";
+      position:fixed;
+      top:17%;
+      left:-4%;
+      width:120%;
+      transform:rotate(-8deg);
+      pointer-events:none;
+      z-index:0;
+      font:1000 clamp(2.8rem,8vw,8rem)/1 Inter,system-ui,sans-serif;
+      letter-spacing:.16em;
+      color:transparent;
+      -webkit-text-stroke:1px rgba(255,244,214,.045);
+      text-shadow:0 0 42px rgba(54,224,188,.05);
+      white-space:nowrap;
+      opacity:.9;
+    }
+
+    .app-shell{
+      max-width:min(1180px,100vw)!important;
+      background:
+        radial-gradient(circle at 18% 0%,rgba(54,224,188,.14),transparent 28%),
+        radial-gradient(circle at 92% 8%,rgba(240,200,92,.14),transparent 26%),
+        radial-gradient(circle at 82% 92%,rgba(217,74,53,.08),transparent 30%),
+        linear-gradient(180deg,rgba(6,12,9,.94),rgba(8,10,8,.98))!important;
+      border-left:1px solid rgba(240,200,92,.16);
+      border-right:1px solid rgba(240,200,92,.16);
+      box-shadow:0 0 80px rgba(0,0,0,.45);
+      overflow:hidden;
+      isolation:isolate;
+    }
+
+    .app-shell::before{
+      content:"";
+      position:fixed;
+      left:50%;
+      top:76px;
+      transform:translateX(-50%);
+      width:min(1120px,92vw);
+      height:260px;
+      pointer-events:none;
+      z-index:0;
+      opacity:.68;
+      background:
+        radial-gradient(circle at 18% 30%,rgba(54,224,188,.20),transparent 22%),
+        radial-gradient(circle at 72% 18%,rgba(240,200,92,.18),transparent 24%),
+        linear-gradient(110deg,rgba(255,255,255,.05),transparent 30%,rgba(217,74,53,.06));
+      border-radius:42px;
+      filter:blur(2px);
+    }
+
+    .app-header-pro{
+      margin:12px auto 0!important;
+      width:calc(100% - 28px)!important;
+      border:1px solid rgba(240,200,92,.28)!important;
+      border-radius:24px!important;
+      background:
+        linear-gradient(135deg,rgba(5,7,6,.94),rgba(12,25,18,.92) 56%,rgba(53,34,14,.78))!important;
+      box-shadow:0 18px 45px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.10)!important;
+      backdrop-filter:blur(16px) saturate(1.1);
+    }
+
+    .brand-home-button{
+      background:linear-gradient(135deg,rgba(255,244,214,.12),rgba(54,224,188,.05))!important;
+      border:1px solid rgba(255,244,214,.14)!important;
+      border-radius:16px!important;
+      padding:7px 12px!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;
+      color:var(--rc-cream)!important;
+      font-family:Inter,Nunito,system-ui,sans-serif!important;
+      font-weight:1000!important;
+      letter-spacing:-.03em!important;
+      text-shadow:0 0 18px rgba(240,200,92,.22)!important;
+    }
+    .brand-scissors{filter:drop-shadow(0 0 8px rgba(54,224,188,.55));}
+
+    .header-action-pro,
+    .wallet-button-pro,
+    .cart-button-pro,
+    .theme-toggle-pro{
+      background:rgba(255,244,214,.09)!important;
+      border:1px solid rgba(255,244,214,.12)!important;
+      color:var(--rc-cream)!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;
+      backdrop-filter:blur(10px);
+    }
+
+    .page-content-pro{
+      position:relative;
+      z-index:1;
+      margin:14px auto 116px!important;
+      width:calc(100% - 24px)!important;
+      min-height:calc(100dvh - 210px);
+      border:1px solid rgba(240,200,92,.14)!important;
+      border-radius:32px!important;
+      background:
+        radial-gradient(circle at 12% 0%,rgba(54,224,188,.10),transparent 24%),
+        radial-gradient(circle at 90% 8%,rgba(240,200,92,.10),transparent 28%),
+        linear-gradient(180deg,rgba(6,16,12,.64),rgba(9,9,7,.70))!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 60px rgba(0,0,0,.28);
+      overflow:visible;
+    }
+
+    .page-content-pro::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:32px;
+      pointer-events:none;
+      z-index:-1;
+      opacity:.42;
+      background-image:
+        radial-gradient(circle at 6% 18%,rgba(255,244,214,.10) 0 1px,transparent 2px),
+        radial-gradient(circle at 96% 24%,rgba(54,224,188,.12) 0 1px,transparent 2px),
+        repeating-linear-gradient(135deg,transparent 0 19px,rgba(255,255,255,.026) 20px 21px);
+      background-size:86px 86px,104px 104px,100% 100%;
+    }
+
+    .motion-strip{
+      height:3px!important;
+      background:linear-gradient(90deg,transparent,var(--rc-teal),var(--rc-gold),var(--rc-red),transparent)!important;
+      border-radius:999px!important;
+      opacity:.95!important;
+      box-shadow:0 0 24px rgba(54,224,188,.32),0 0 34px rgba(240,200,92,.16)!important;
+    }
+
+    .studio-panel,
+    .card,
+    .modal-panel-pro{
+      background:
+        linear-gradient(155deg,rgba(255,244,214,.92),rgba(232,206,145,.88))!important;
+      border:1px solid rgba(240,200,92,.32)!important;
+      border-radius:22px!important;
+      box-shadow:0 16px 34px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.28)!important;
+    }
+
+    [data-rc-theme="night"] .studio-panel,
+    [data-rc-theme="night"] .card,
+    [data-rc-theme="night"] .modal-panel-pro{
+      color:var(--rc-cream)!important;
+      background:
+        linear-gradient(155deg,rgba(16,28,21,.92),rgba(8,14,10,.88))!important;
+      border:1px solid rgba(240,200,92,.24)!important;
+      box-shadow:0 16px 34px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.08)!important;
+    }
+
+    .premium-home{
+      gap:16px!important;
+    }
+    .premium-home section{
+      border-radius:34px!important;
+      border:1px solid rgba(240,200,92,.34)!important;
+      background:
+        linear-gradient(90deg,rgba(3,6,5,.98) 0%,rgba(8,22,16,.92) 46%,rgba(42,26,10,.52) 100%),
+        radial-gradient(circle at 20% 26%,rgba(54,224,188,.23),transparent 26%),
+        radial-gradient(circle at 76% 24%,rgba(240,200,92,.23),transparent 28%),
+        radial-gradient(circle at 87% 78%,rgba(217,74,53,.12),transparent 28%),
+        repeating-linear-gradient(-12deg,rgba(255,255,255,.045) 0 1px,transparent 1px 21px)!important;
+      box-shadow:0 30px 80px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.12)!important;
+    }
+    .premium-home section::after{
+      content:"✦  FLASH  ✂  RASTA CUTS  ✦  TATTOO  ✂";
+      position:absolute;
+      right:-36px;
+      bottom:10px;
+      transform:rotate(-8deg);
+      font:1000 2.35rem/1 Inter,system-ui,sans-serif;
+      color:transparent;
+      -webkit-text-stroke:1px rgba(255,244,214,.075);
+      letter-spacing:.13em;
+      pointer-events:none;
+      white-space:nowrap;
+    }
+
+    .premium-home h1{
+      font-family:Inter,Nunito,system-ui,sans-serif!important;
+      font-weight:1000!important;
+      font-size:clamp(2.55rem,6.6vw,5.7rem)!important;
+      letter-spacing:-.075em!important;
+      color:var(--rc-cream)!important;
+      text-shadow:0 6px 0 rgba(0,0,0,.30),0 0 26px rgba(240,200,92,.25)!important;
+    }
+    .premium-home h1::first-letter{
+      color:var(--rc-gold);
+    }
+
+    .premium-home section p,
+    .premium-home section div{
+      text-wrap:pretty;
+    }
+
+    .premium-home section button,
+    .premium-home button{
+      border-radius:18px!important;
+    }
+
+    .premium-home > div > button,
+    .premium-home-grid-main button{
+      border-width:1px!important;
+      border-color:rgba(240,200,92,.28)!important;
+      background:
+        linear-gradient(160deg,rgba(10,18,13,.96),rgba(17,30,22,.90) 58%,rgba(48,30,12,.72)),
+        radial-gradient(circle at 85% 12%,rgba(54,224,188,.18),transparent 34%)!important;
+      box-shadow:0 18px 42px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.10)!important;
+    }
+    .premium-home > div > button:nth-child(2n),
+    .premium-home-grid-main button:nth-child(2n){
+      background:
+        linear-gradient(160deg,rgba(9,14,12,.96),rgba(30,20,12,.92) 58%,rgba(75,46,12,.66)),
+        radial-gradient(circle at 80% 10%,rgba(240,200,92,.20),transparent 34%)!important;
+    }
+    .premium-home > div > button:nth-child(3n),
+    .premium-home-grid-main button:nth-child(3n){
+      background:
+        linear-gradient(160deg,rgba(10,14,12,.96),rgba(24,17,31,.88) 58%,rgba(50,20,70,.46)),
+        radial-gradient(circle at 80% 10%,rgba(177,76,255,.18),transparent 34%)!important;
+    }
+
+    .bottom-nav-pro{
+      width:min(720px,calc(100% - 24px))!important;
+      bottom:12px!important;
+      border:1px solid rgba(240,200,92,.24)!important;
+      border-radius:24px!important;
+      padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))!important;
+      background:linear-gradient(135deg,rgba(5,7,6,.92),rgba(12,22,16,.92))!important;
+      box-shadow:0 -6px 34px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.08)!important;
+      backdrop-filter:blur(18px) saturate(1.1);
+    }
+    .nav-tab-pro{
+      border-radius:17px!important;
+      min-width:64px!important;
+      padding:4px 7px!important;
+      transition:transform .18s ease,background .18s ease!important;
+    }
+    .nav-tab-pro[data-active="true"]{
+      background:linear-gradient(180deg,rgba(54,224,188,.18),rgba(240,200,92,.11))!important;
+      box-shadow:inset 0 0 0 1px rgba(255,244,214,.11)!important;
+      transform:translateY(-2px);
+    }
+    .nav-icon-pro{
+      border-radius:16px!important;
+      border:1px solid rgba(255,244,214,.10)!important;
+      background:rgba(255,255,255,.05)!important;
+    }
+
+    .rasta-helper-fixed-safe{
+      filter:drop-shadow(0 18px 22px rgba(0,0,0,.32));
+    }
+
+    input,textarea,select{
+      border-radius:16px!important;
+      border-color:rgba(240,200,92,.36)!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.18)!important;
+    }
+
+    @media(min-width:900px){
+      .app-shell{border-radius:0!important;}
+      .page-content-pro{padding:24px!important;}
+      .premium-home > div[style*="grid-template-columns:repeat"]{
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;
+      }
+    }
+    @media(max-width:560px){
+      .app-header-pro{margin:8px auto 0!important;width:calc(100% - 16px)!important;border-radius:20px!important;padding:10px 12px!important;}
+      .page-content-pro{width:calc(100% - 14px)!important;margin-top:10px!important;border-radius:24px!important;padding:14px 10px!important;}
+      .premium-home section{border-radius:26px!important;}
+      .premium-home h1{font-size:clamp(2.2rem,14vw,3.65rem)!important;letter-spacing:-.065em!important;}
+      .bottom-nav-pro{width:calc(100% - 16px)!important;border-radius:22px!important;}
+      .nav-tab-pro{min-width:0!important;}
+      .nav-tab-pro span{font-size:.54rem!important;}
+    }
+
   `}</style>;
 }
 
@@ -13098,4 +13416,4 @@ export default function App(){
   );
 }
 
-// RastaCuts 2.9.6i premium home real UI refresh
+// RastaCuts 2.9.7a App Store UI Foundation
