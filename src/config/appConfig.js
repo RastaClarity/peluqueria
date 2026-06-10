@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7c: visual rework real, graffiti/tattoo/rasta con dibujos de fondo y tarjetas con más personalidad.
+  // Paleta 2.9.7e: misma base visual. Copy público más limpio para clientes, staff y admin.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7C_VISUAL_REWORK_REAL";
-const APP_VERSION_SHORT = "2.9.7c";
+const APP_VERSION = "RASTACUTS_2_9_7E_CLEAN_PUBLIC_COPY";
+const APP_VERSION_SHORT = "2.9.7e";
 const APP_BUILD_DATE = "2026-06-10";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
