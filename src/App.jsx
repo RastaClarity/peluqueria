@@ -2269,101 +2269,166 @@ function ClientDashboard({user,onNavigate,settings}){
   const pendingOrder=homeData.orders.find(o=>!["entregado","cancelado"].includes(String(o.estado||"").toLowerCase()));
   const bestRecent=[...(homeData.scores||[])].sort((a,b)=>(Number(b.score)||Number(b.points)||0)-(Number(a.score)||Number(a.points)||0))[0];
   const claimedToday=(homeData.claims||[]).filter(c=>String(c.period_key||"").includes(TODAY_KEY())).length;
+  const availableCoupons=homeData.coupons||[];
   const dailyPreview=MISSION_DEFS.filter(m=>m.period==="day").slice(0,3);
 
-  function Quick({icon,title,sub,to,col="green"}){
-    return <button onClick={()=>{SFX.tab();onNavigate?.(to);}} style={{textAlign:"left",border:`2px solid ${T.g300}`,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",borderRadius:18,padding:"12px 10px",cursor:"pointer",boxShadow:"0 7px 16px rgba(20,8,4,.12)",minHeight:104}}>
-      <div style={{fontSize:"1.55rem",lineHeight:1}}>{icon}</div>
-      <div style={{fontWeight:1000,color:T.g800,marginTop:7,fontSize:".9rem"}}>{title}</div>
-      <div style={{fontSize:".73rem",fontWeight:820,color:T.textSub,lineHeight:1.28,marginTop:3}}>{sub}</div>
+  function HeroButton({children,to,variant="primary"}){
+    const primary=variant==="primary";
+    return <button onClick={()=>{SFX.tab();onNavigate?.(to);}} style={{
+      border:primary?"1px solid rgba(100,255,211,.55)":"1px solid rgba(255,210,98,.55)",
+      background:primary?"linear-gradient(135deg,#0FB890,#0C6D58)":"linear-gradient(135deg,rgba(255,210,98,.14),rgba(23,18,10,.66))",
+      color:primary?"#F8FFE9":"#FFE7A4",
+      borderRadius:16,
+      padding:"12px 16px",
+      fontWeight:1000,
+      cursor:"pointer",
+      boxShadow:primary?"0 14px 28px rgba(15,184,144,.22), inset 0 1px 0 rgba(255,255,255,.28)":"inset 0 1px 0 rgba(255,255,255,.14)",
+      letterSpacing:".01em",
+      minHeight:46
+    }}>{children}</button>;
+  }
+
+  function FeatureCard({icon,title,sub,to,tone="green",art}){
+    const tones={
+      green:["#0FB890","#144B32"],gold:["#E0B84F","#5A3D10"],blue:["#35B8D0","#123E52"],pink:["#B878FF","#39215F"],orange:["#E38B32","#613512"]
+    };
+    const [a,b]=tones[tone]||tones.green;
+    return <button onClick={()=>{SFX.tab();onNavigate?.(to);}} style={{
+      minHeight:150,
+      textAlign:"left",
+      border:`1px solid ${a}55`,
+      background:`linear-gradient(155deg,rgba(10,14,12,.92),${b}D9), radial-gradient(circle at 80% 12%,${a}44,transparent 42%)`,
+      borderRadius:22,
+      padding:14,
+      color:"#FFF7DA",
+      cursor:"pointer",
+      position:"relative",
+      overflow:"hidden",
+      boxShadow:"0 16px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.10)"
+    }}>
+      <div style={{position:"absolute",right:10,top:6,fontSize:"3.8rem",opacity:.18,filter:`drop-shadow(0 0 16px ${a})`}}>{art||icon}</div>
+      <div style={{position:"relative",zIndex:1}}>
+        <div style={{fontSize:"1.8rem",lineHeight:1}}>{icon}</div>
+        <div style={{fontWeight:1000,fontSize:"1.05rem",marginTop:10,color:a,textTransform:"uppercase",letterSpacing:".02em"}}>{title}</div>
+        <div style={{fontSize:".78rem",fontWeight:800,lineHeight:1.35,color:"rgba(255,247,218,.82)",marginTop:5,maxWidth:190}}>{sub}</div>
+        <div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:8,fontSize:".72rem",fontWeight:1000,color:"#FFE7A4",borderTop:`1px solid ${a}44`,paddingTop:8}}>Abrir <span>→</span></div>
+      </div>
     </button>;
   }
 
+  function NewsMini({item}){
+    return <div style={{display:"grid",gridTemplateColumns:"54px 1fr",gap:10,alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(255,231,164,.12)"}}>
+      <div style={{height:46,borderRadius:14,display:"grid",placeItems:"center",background:"linear-gradient(135deg,rgba(15,184,144,.22),rgba(224,184,79,.16))",border:"1px solid rgba(255,231,164,.18)",fontSize:"1.45rem"}}>📣</div>
+      <div style={{minWidth:0}}>
+        <div style={{fontWeight:950,color:"#FFF7DA",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.titulo||item.title||"Novedad Rasta Cuts"}</div>
+        <div style={{fontSize:".72rem",fontWeight:780,color:"rgba(255,247,218,.66)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.contenido||item.descripcion||"Actualización de comunidad"}</div>
+      </div>
+    </div>;
+  }
+
   return(
-    <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <Card style={{background:"linear-gradient(145deg,#120806,#2B1A0D 46%,#B99A45)",border:"2px solid rgba(255,244,214,.42)",marginBottom:14,padding:"18px",color:T.white,overflow:"hidden",position:"relative"}}>
-        <div style={{position:"absolute",right:-22,top:-28,fontSize:"7rem",opacity:.10}}>🏠</div>
-        <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
-          <Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={62}/>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{color:"rgba(255,255,255,0.78)",fontSize:"0.76rem",fontWeight:900}}>Inicio personal</div>
-            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",lineHeight:1,color:T.white}}>Hola, {user.nombre?.split(" ")[0]||"cliente"}</div>
-            <div style={{marginTop:7,display:"flex",gap:6,flexWrap:"wrap"}}><Badge col="gold">{nivel}</Badge><Badge col="green">💎 {userRP(user)} RP</Badge><Badge col="blue">🪙 {userRC(user)} RC</Badge></div>
-            <AvatarBadgesStrip user={user} limit={3} dark/>
+    <div className="premium-home" style={{animation:"fadeSlide 0.4s ease",display:"grid",gap:14}}>
+      <section style={{
+        borderRadius:30,
+        overflow:"hidden",
+        position:"relative",
+        minHeight:360,
+        border:"1px solid rgba(255,210,98,.35)",
+        background:"linear-gradient(90deg,rgba(3,8,7,.96) 0%,rgba(9,23,18,.88) 42%,rgba(10,11,10,.30) 100%), radial-gradient(circle at 72% 24%,rgba(17,207,155,.26),transparent 34%), radial-gradient(circle at 78% 72%,rgba(224,184,79,.22),transparent 38%), linear-gradient(135deg,#07100D,#132719 54%,#2C1B0B)",
+        boxShadow:"0 24px 60px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.10)"
+      }}>
+        <div style={{position:"absolute",inset:0,opacity:.22,backgroundImage:"linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.04) 1px, transparent 1px)",backgroundSize:"42px 42px"}}/>
+        <div style={{position:"absolute",right:-30,top:20,width:"52%",height:"82%",borderRadius:"34px 0 0 34px",background:"linear-gradient(145deg,rgba(255,210,98,.16),rgba(15,184,144,.08)), radial-gradient(circle at 48% 38%,rgba(255,242,190,.14),transparent 26%)",border:"1px solid rgba(255,210,98,.18)",transform:"skewX(-8deg)",boxShadow:"inset 0 0 70px rgba(0,0,0,.45)"}}/>
+        <div style={{position:"absolute",right:46,top:54,width:240,height:170,borderRadius:28,background:"linear-gradient(180deg,#2D1C0E,#0D1510)",border:"1px solid rgba(255,210,98,.30)",boxShadow:"0 20px 45px rgba(0,0,0,.38)",display:"grid",placeItems:"center",transform:"rotate(-2deg)"}}>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:"2.8rem",filter:"drop-shadow(0 0 16px #D9B35C)"}}>💈</div>
+            <div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.2rem",color:"#FFE7A4",lineHeight:.9,textShadow:"0 0 18px rgba(224,184,79,.5)"}}>RASTA</div>
+            <div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".22em",fontSize:".7rem"}}>CUTS</div>
           </div>
         </div>
-        <div style={{position:"relative",zIndex:1,marginTop:14}}>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:".72rem",fontWeight:900,color:"rgba(255,244,214,.82)",marginBottom:5}}><span>⭐ Nivel {progress.level}</span><span>{progress.remaining} XP para el siguiente</span></div>
-          <div style={{height:9,background:"rgba(255,255,255,0.25)",borderRadius:50,overflow:"hidden"}}><div style={{height:"100%",width:`${progress.pct}%`,background:"linear-gradient(90deg,#2F6B42,#D4AF37,#A72822)",borderRadius:50,transition:"width 0.6s ease"}}/></div>
+        <div style={{position:"absolute",right:32,bottom:30,display:"flex",gap:10,alignItems:"end"}}>
+          {['✂️','🎮','🎰','🛍️'].map((x,i)=><div key={x} style={{width:54,height:54,borderRadius:18,display:"grid",placeItems:"center",background:"rgba(3,8,7,.70)",border:"1px solid rgba(255,210,98,.22)",fontSize:"1.6rem",boxShadow:"0 12px 26px rgba(0,0,0,.32)",transform:`translateY(${i%2?12:0}px)`}}>{x}</div>)}
         </div>
-      </Card>
-
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-        <StatCard icon="💎" label="RP" value={userRP(user).toLocaleString("es-ES")} col="gold"/>
-        <StatCard icon="🪙" label="RC" value={userRC(user).toLocaleString("es-ES")} col="blue"/>
-        <StatCard icon="⭐" label="Nivel" value={Number(user?.avatar_level||progress.level)} col="pink"/>
-      </div>
-
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF8E6,#F1DCAA)",border:`2px solid ${T.gold}`}}>
-        <SectionHeader icon="🧭" title="Qué hacer ahora" sub="Accesos rápidos con sentido, no botones sueltos."/>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:9}}>
-          <Quick icon="🎯" title="Misiones" sub={`${claimedToday} reclamadas hoy. Mira lo que falta.`} to="misiones"/>
-          <Quick icon="🎮" title="Arcade" sub={bestRecent?`Última marca: ${Number(bestRecent.score)||Number(bestRecent.points)||0}`:"Juega para ganar RC y XP."} to="juegos"/>
-          <Quick icon="🛍️" title="Tienda juegos" sub="Vales, Gacha y productos separados." to="tienda"/>
-          <Quick icon="🌐" title="Comunidad" sub="Foro, tablón, noticias e insignias." to="comunidad"/>
+        <div style={{position:"relative",zIndex:2,padding:"28px clamp(18px,4vw,42px)",maxWidth:720}}>
+          <Badge col="gold">Bienvenido a tu barbería virtual</Badge>
+          <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(3.1rem,8vw,6.8rem)",lineHeight:.82,margin:"16px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)",letterSpacing:".02em"}}>RASTA CUTS</h1>
+          <div style={{fontSize:"clamp(1.05rem,2.2vw,1.45rem)",fontWeight:1000,color:"#FFE7A4",textTransform:"uppercase",letterSpacing:".02em"}}>Tu estilo. Tu arcade. Tu comunidad.</div>
+          <p style={{maxWidth:540,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"12px 0 18px"}}>Juega, sube de nivel, gana RC y XP, completa misiones y desbloquea recompensas sin perder de vista la peluquería real.</p>
+          <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:18}}>
+            <HeroButton to="juegos">🎮 Jugar ahora</HeroButton>
+            <HeroButton to="misiones" variant="ghost">🎯 Ver misiones</HeroButton>
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>💎 {userRP(user).toLocaleString("es-ES")} RP</span>
+            <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🪙 {userRC(user).toLocaleString("es-ES")} RC</span>
+            <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>⭐ Nivel {Number(user?.avatar_level||progress.level)}</span>
+          </div>
         </div>
-      </Card>
+      </section>
 
-      <div style={{display:"grid",gap:10,marginBottom:12}}>
-        {proxCita?(
-          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}} onClick={()=>onNavigate?.("citas")} hover>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
-              <div><div style={{fontWeight:950,color:T.g800}}>📅 Tu próxima cita</div><div style={{fontWeight:900,color:T.g700,marginTop:3}}>{proxCita.servicio_label||proxCita.servicio||"Cita"}</div><div style={{fontSize:"0.8rem",color:T.textSub,fontWeight:850,marginTop:2}}>{proxCita.fecha}</div></div>
-              <Badge col="green">{proxCita.hora}</Badge>
+      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 310px",gap:14}} className="premium-home-grid-main">
+        <div style={{display:"grid",gap:14}}>
+          <div style={{
+            borderRadius:24,
+            padding:16,
+            border:"1px solid rgba(255,210,98,.32)",
+            background:"linear-gradient(100deg,rgba(22,16,9,.96),rgba(51,35,14,.88)), radial-gradient(circle at 82% 50%,rgba(224,184,79,.22),transparent 35%)",
+            color:"#FFF7DA",
+            boxShadow:"0 16px 38px rgba(0,0,0,.22)"
+          }}>
+            <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+              <div><div style={{fontSize:".72rem",fontWeight:1000,color:"#E0B84F",textTransform:"uppercase",letterSpacing:".08em"}}>Evento de temporada</div><div style={{fontSize:"1.35rem",fontWeight:1000}}>Corte legendario</div><div style={{fontSize:".82rem",fontWeight:780,color:"rgba(255,247,218,.72)"}}>Completa misiones, sube en ranking y desbloquea recompensas.</div></div>
+              <button onClick={()=>onNavigate?.("misiones")} style={{border:"1px solid rgba(255,210,98,.48)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver evento →</button>
             </div>
-          </Card>
-        ):(
-          <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}} hover onClick={()=>onNavigate?.("citas")}>
-            <div style={{display:"flex",alignItems:"center",gap:12}}><div style={{fontSize:"2rem"}}>📅</div><div style={{flex:1}}><div style={{fontWeight:950,color:T.g800}}>Reserva tu próxima visita</div><div style={{fontSize:".8rem",fontWeight:800,color:T.textSub}}>Elige tratamientos y deja la cita preparada.</div></div><Btn small col="gold" onClick={()=>onNavigate?.("citas")}>Reservar</Btn></div>
-          </Card>
-        )}
+          </div>
 
-        {(homeData.coupons||[]).length>0&&<Card style={{background:"linear-gradient(180deg,#FFF8E1,#F4D58D)",border:`2px solid ${T.gold}`}} onClick={()=>onNavigate?.("perfil")} hover>
-          <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:"2rem"}}>🎟️</div><div style={{flex:1}}><div style={{fontWeight:950,color:T.g800}}>Tienes {homeData.coupons.length} cupón disponible</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>Entra en Perfil para copiarlo o usarlo en tienda.</div></div><Badge col="gold">Cupón</Badge></div>
-        </Card>}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12}}>
+            <FeatureCard icon="🎮" title="Arcade" sub="Minijuegos, récords, RC, XP y ranking." to="juegos" tone="blue" art="🕹️"/>
+            <FeatureCard icon="🏪" title="Tycoon" sub="Gestiona tu estudio usando RC globales." to="juegos" tone="gold" art="🏗️"/>
+            <FeatureCard icon="🎰" title="Gacha" sub="Premios pequeños, tiradas extra y progreso sin RP gratis." to="juegos" tone="pink" art="🔮"/>
+            <FeatureCard icon="🛍️" title="Tienda juegos" sub="Vales de tiradas y extras separados de productos reales." to="tienda" tone="blue" art="🎫"/>
+            <FeatureCard icon="🧑‍🎤" title="Avatar" sub="Nivel, roles, insignias y recompensas del camino." to="perfil" tone="green" art="👑"/>
+            <FeatureCard icon="🌐" title="Comunidad" sub="Tablón, foro, actualidad y perfiles públicos." to="comunidad" tone="orange" art="👥"/>
+          </div>
+        </div>
 
-        {pendingOrder&&<Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}} onClick={()=>onNavigate?.("tienda")} hover>
-          <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:"2rem"}}>📦</div><div style={{flex:1}}><div style={{fontWeight:950,color:T.g800}}>Pedido en curso</div><div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>{pendingOrder.item_nombre||"Pedido"} · {pendingOrder.estado||"pendiente"}</div></div><Badge col="blue">Pedido</Badge></div>
-        </Card>}
+        <aside style={{display:"grid",gap:12}}>
+          <div style={{borderRadius:24,padding:16,background:"linear-gradient(160deg,rgba(7,16,13,.96),rgba(31,42,23,.88))",border:"1px solid rgba(255,210,98,.30)",color:"#FFF7DA",boxShadow:"0 16px 38px rgba(0,0,0,.24)"}}>
+            <div style={{fontWeight:1000,color:"#E0B84F",textTransform:"uppercase",fontSize:".78rem"}}>Recompensa diaria</div>
+            <div style={{fontSize:"3rem",margin:"12px 0",textAlign:"center",filter:"drop-shadow(0 0 18px rgba(224,184,79,.35))"}}>🎁</div>
+            <div style={{fontSize:".83rem",fontWeight:780,color:"rgba(255,247,218,.76)",lineHeight:1.4}}>Entra, revisa misiones y reclama progreso sin romper la economía.</div>
+            <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:14,width:"100%",border:"none",borderRadius:14,padding:"11px 12px",background:"linear-gradient(135deg,#E0B84F,#B97D22)",fontWeight:1000,color:"#201407",cursor:"pointer"}}>🎯 Ir a misiones</button>
+          </div>
+          <div style={{borderRadius:24,padding:16,background:"linear-gradient(160deg,rgba(8,12,11,.96),rgba(17,37,31,.90))",border:"1px solid rgba(95,240,200,.26)",color:"#FFF7DA"}}>
+            <div style={{fontWeight:1000,color:"#5EF0C8",textTransform:"uppercase",fontSize:".78rem"}}>Tu progreso</div>
+            <div style={{marginTop:10,display:"flex",alignItems:"center",gap:10}}><Av av={user.avatar} config={user.avatarConfig||user.avatar_config} size={54}/><div><div style={{fontWeight:1000}}>{nivel}</div><div style={{fontSize:".75rem",fontWeight:800,color:"rgba(255,247,218,.70)"}}>{progress.remaining} XP para subir</div></div></div>
+            <div style={{marginTop:12,height:9,borderRadius:999,background:"rgba(255,255,255,.12)",overflow:"hidden"}}><div style={{height:"100%",width:`${progress.pct}%`,borderRadius:999,background:"linear-gradient(90deg,#5EF0C8,#E0B84F,#B878FF)"}}/></div>
+            <div style={{marginTop:10}}><AvatarBadgesStrip user={user} limit={3} dark/></div>
+          </div>
+        </aside>
       </div>
 
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
-        <SectionHeader icon="🎯" title="Misiones rápidas" sub="El Inicio te recuerda dónde ganar RP, RC y XP." action={<Btn small col="ghost" onClick={()=>onNavigate?.("misiones")}>Ver todas</Btn>}/>
-        <div style={{display:"grid",gap:8}}>
-          {dailyPreview.map(m=><div key={m.key} style={{display:"flex",alignItems:"center",gap:10,background:"rgba(255,244,214,.62)",border:`1px solid ${T.g200}`,borderRadius:14,padding:"9px 10px"}}>
-            <div style={{fontSize:"1.35rem"}}>{m.icon}</div><div style={{flex:1,minWidth:0}}><div style={{fontWeight:950,color:T.g800,fontSize:".84rem"}}>{m.title}</div><div style={{fontSize:".72rem",fontWeight:800,color:T.textSub}}>{missionRewards(m)}</div></div><button onClick={()=>onNavigate?.(m.action||"misiones")} style={{border:0,borderRadius:12,padding:"7px 9px",fontWeight:950,background:T.gradGold,color:T.g900,cursor:"pointer",fontSize:".72rem"}}>Ir</button>
-          </div>)}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:14}}>
+        <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(18,29,22,.94))",border:"1px solid rgba(255,210,98,.25)",color:"#FFF7DA"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}><div style={{fontWeight:1000,color:"#E0B84F"}}>📰 Novedades</div><button onClick={()=>onNavigate?.("comunidad")} style={{border:"none",background:"transparent",color:"#5EF0C8",fontWeight:1000,cursor:"pointer"}}>Ver todas</button></div>
+          {(noticias||[]).slice(0,2).length?(noticias||[]).slice(0,2).map(n=><NewsMini key={n.id||n.titulo} item={n}/>):<div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,247,218,.68)",marginTop:12}}>Aún no hay novedades oficiales publicadas.</div>}
         </div>
-      </Card>
-
-      <ActualidadMini onNavigate={onNavigate}/>
-
-      {noticias.length>0&&(
-        <div>
-          <div style={{fontWeight:950,color:T.g800,marginBottom:10}}>Novedades de la tienda</div>
-          {noticias.map(n=>(
-            <Card key={n.id} style={{marginBottom:10,background:"linear-gradient(180deg,#FFF4D6,#F0D69C)"}} hover>
-              <div style={{fontWeight:900,color:T.g800}}>{n.emoji} {n.titulo||n.contenido?.slice(0,40)}</div>
-              <div style={{fontSize:"0.8rem",color:T.textSub,marginTop:4,fontWeight:800}}>{n.contenido}</div>
-            </Card>
-          ))}
+        <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(20,24,15,.94))",border:"1px solid rgba(95,240,200,.22)",color:"#FFF7DA"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}><div style={{fontWeight:1000,color:"#5EF0C8"}}>🎯 Misiones diarias</div><button onClick={()=>onNavigate?.("misiones")} style={{border:"none",background:"transparent",color:"#E0B84F",fontWeight:1000,cursor:"pointer"}}>Ver todas</button></div>
+          <div style={{display:"grid",gap:8,marginTop:12}}>{dailyPreview.map(m=><div key={m.key} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"center",padding:"9px 10px",borderRadius:14,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.08)"}}><div><div style={{fontWeight:930}}>{m.icon} {m.title}</div><div style={{fontSize:".70rem",fontWeight:760,color:"rgba(255,247,218,.62)"}}>{m.desc}</div></div><Badge col="gold">+{m.rp||0} RP</Badge></div>)}</div>
         </div>
-      )}
+        <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(28,20,13,.94))",border:"1px solid rgba(255,210,98,.24)",color:"#FFF7DA"}}>
+          <div style={{fontWeight:1000,color:"#E0B84F"}}>🏆 Actividad arcade</div>
+          <div style={{marginTop:12,display:"grid",gap:8}}>
+            <div style={{padding:12,borderRadius:16,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.08)"}}><div style={{fontWeight:1000}}>Última marca</div><div style={{fontSize:".85rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{bestRecent?`${bestRecent.game_id||"Juego"} · ${Number(bestRecent.score)||Number(bestRecent.points)||0}`:"Juega una partida para aparecer aquí."}</div></div>
+            {pendingOrder&&<div style={{padding:12,borderRadius:16,background:"rgba(224,184,79,.10)",border:"1px solid rgba(224,184,79,.22)"}}><div style={{fontWeight:1000}}>📦 Pedido en curso</div><div style={{fontSize:".8rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{pendingOrder.item_nombre||"Pedido"} · {pendingOrder.estado||"pendiente"}</div></div>}
+            {availableCoupons.length>0&&<div style={{padding:12,borderRadius:16,background:"rgba(95,240,200,.08)",border:"1px solid rgba(95,240,200,.20)"}}><div style={{fontWeight:1000}}>🎟️ Cupón disponible</div><div style={{fontSize:".8rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{availableCoupons[0].codigo||availableCoupons[0].nombre}</div></div>}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-
-
 
 // ACTUALIDAD MAGAZINE + COMUNIDAD
 const NEWS_CATEGORIES=[
@@ -11239,80 +11304,96 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
   const rcMovs=home.movs.filter(m=>String(m.currency||"").toLowerCase()==="rc");
   const rpMovs=home.movs.filter(m=>String(m.currency||"").toLowerCase()==="rp"||String(m.currency||"").toLowerCase()==="puntos");
   const bestScore=[...home.scores].sort((a,b)=>(Number(b.score)||Number(b.points)||0)-(Number(a.score)||Number(a.points)||0))[0];
+  const progress=avatarLevelProgress(userXP(user));
 
   const cards=[
-    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Pedidos, cupones, citas, tienda, usuarios y seguridad."},
-    {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vista real de tienda juegos y productos €."},
-    {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP."},
-    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Diarias y semanales conectadas a RP/RC/XP."},
-    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, actualidad e insignias."},
-    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, roles, cupones y cartera."},
+    {id:"gestion",icon:"🧾",title:"Gestión",sub:"Pedidos, cupones, citas, tienda, usuarios y seguridad.",tone:"gold"},
+    {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vista real de tienda juegos y productos €.",tone:"blue"},
+    {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP.",tone:"blue"},
+    {id:"misiones",icon:"🎯",title:"Misiones",sub:"Diarias y semanales conectadas a RP/RC/XP.",tone:"green"},
+    {id:"comunidad",icon:"🌐",title:"Comunidad",sub:"Tablón, foro, actualidad e insignias.",tone:"orange"},
+    {id:"perfil",icon:"👤",title:"Perfil",sub:"Avatar, roles, cupones y cartera.",tone:"pink"},
   ];
 
-  function QuickCard({c}){
-    return <button onClick={()=>{SFX.tab();onNavigate?.(c.id);}} style={{border:`2px solid ${T.g300}`,background:"rgba(255,244,214,.82)",borderRadius:18,padding:"13px 10px",cursor:"pointer",boxShadow:"0 7px 16px rgba(20,8,4,.12)",textAlign:"left",minHeight:112}}>
-      <div style={{fontSize:"1.55rem",lineHeight:1}}>{c.icon}</div>
-      <div style={{fontWeight:1000,color:T.g800,marginTop:6,fontSize:".92rem"}}>{c.title}</div>
-      <div style={{fontSize:".76rem",fontWeight:800,color:T.textSub,lineHeight:1.28,marginTop:3}}>{c.sub}</div>
+  function AdminFeature({c}){
+    const tones={green:["#0FB890","#143F2E"],gold:["#E0B84F","#5A3D10"],blue:["#35B8D0","#123E52"],pink:["#B878FF","#39215F"],orange:["#E38B32","#613512"]};
+    const [a,b]=tones[c.tone]||tones.green;
+    return <button onClick={()=>{SFX.tab();onNavigate?.(c.id);}} style={{
+      textAlign:"left",
+      minHeight:118,
+      border:`1px solid ${a}55`,
+      background:`linear-gradient(150deg,rgba(9,14,12,.96),${b}D9), radial-gradient(circle at 86% 12%,${a}33,transparent 42%)`,
+      borderRadius:22,
+      padding:14,
+      color:"#FFF7DA",
+      cursor:"pointer",
+      boxShadow:"0 16px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.10)",
+      position:"relative",
+      overflow:"hidden"
+    }}>
+      <div style={{position:"absolute",right:8,top:4,fontSize:"3.4rem",opacity:.16}}>{c.icon}</div>
+      <div style={{position:"relative",zIndex:1}}>
+        <div style={{fontSize:"1.55rem"}}>{c.icon}</div>
+        <div style={{fontWeight:1000,color:a,marginTop:7,textTransform:"uppercase",letterSpacing:".02em"}}>{c.title}</div>
+        <div style={{fontSize:".76rem",fontWeight:800,color:"rgba(255,247,218,.76)",lineHeight:1.35,marginTop:4}}>{c.sub}</div>
+      </div>
     </button>;
   }
 
-  return <div style={{animation:"fadeSlide .34s ease"}}>
-    <Card style={{marginBottom:14,background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#D4AF37)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative"}}>
-      <div style={{position:"absolute",right:-16,top:-24,fontSize:"7rem",opacity:.10}}>🏠</div>
-      <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
-        <div className="icon3d" style={{fontSize:"2.4rem"}}>✂️</div>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.75rem",lineHeight:1}}>Inicio Rasta Cuts</div>
-          <div style={{fontSize:".82rem",fontWeight:850,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>Centro de mando rápido: pedidos, economía, comunidad, juegos y accesos importantes sin perderse.</div>
-        </div>
-        <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
+  return <div className="premium-home" style={{animation:"fadeSlide .34s ease",display:"grid",gap:14}}>
+    <section style={{
+      borderRadius:30,
+      overflow:"hidden",
+      position:"relative",
+      minHeight:300,
+      border:"1px solid rgba(255,210,98,.35)",
+      background:"linear-gradient(90deg,rgba(3,8,7,.96) 0%,rgba(12,23,18,.90) 46%,rgba(42,26,10,.70) 100%), radial-gradient(circle at 78% 30%,rgba(224,184,79,.24),transparent 34%), radial-gradient(circle at 70% 74%,rgba(17,207,155,.18),transparent 38%), linear-gradient(135deg,#07100D,#132719 54%,#2C1B0B)",
+      boxShadow:"0 24px 60px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.10)"
+    }}>
+      <div style={{position:"absolute",inset:0,opacity:.22,backgroundImage:"linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.04) 1px, transparent 1px)",backgroundSize:"42px 42px"}}/>
+      <div style={{position:"absolute",right:34,top:44,width:250,height:160,borderRadius:28,background:"linear-gradient(180deg,#2D1C0E,#0D1510)",border:"1px solid rgba(255,210,98,.30)",boxShadow:"0 20px 45px rgba(0,0,0,.38)",display:"grid",placeItems:"center",transform:"rotate(-2deg)"}}>
+        <div style={{textAlign:"center"}}><div style={{fontSize:"2.4rem"}}>✂️</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.05rem",color:"#FFE7A4",lineHeight:.9}}>RASTA CUTS</div><div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".18em",fontSize:".64rem"}}>CONTROL PANEL</div></div>
       </div>
-    </Card>
+      <div style={{position:"relative",zIndex:2,padding:"26px clamp(18px,4vw,42px)",maxWidth:690}}>
+        <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
+        <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.65rem,7vw,5.6rem)",lineHeight:.82,margin:"14px 0 8px",color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)"}}>CENTRO RASTA CUTS</h1>
+        <p style={{maxWidth:560,color:"rgba(255,247,218,.82)",fontWeight:780,lineHeight:1.55,margin:"10px 0 18px"}}>Inicio serio para controlar pedidos, cupones, economía, comunidad y juegos sin perderse por la app.</p>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🔔 {Number(unread?.admin||0)} avisos</span>
+          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>📦 {pendingOrders.length} pedidos</span>
+          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🎟️ {activeCoupons.length} cupones</span>
+          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>⭐ Nivel {Number(user?.avatar_level||progress.level)}</span>
+        </div>
+      </div>
+    </section>
 
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
-      <StatCard icon="🔔" label="Avisos" value={(Number(unread?.admin||0)>0?`${unread.admin}`:"0")} col={Number(unread?.admin||0)>0?"red":"green"}/>
-      <StatCard icon="📦" label="Pedidos" value={pendingOrders.length} col="gold"/>
-      <StatCard icon="🎟️" label="Cupones" value={activeCoupons.length} col="pink"/>
-      <StatCard icon="⭐" label="Nivel" value={Number(user?.avatar_level||avatarLevelFromXP(userXP(user)))} col="blue"/>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:12}}>{cards.map(c=><AdminFeature key={c.id} c={c}/>)}</div>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(28,20,13,.94))",border:"1px solid rgba(255,210,98,.24)",color:"#FFF7DA"}}>
+        <div style={{fontWeight:1000,color:"#E0B84F"}}>📌 Pendiente ahora</div>
+        {loading?<Spinner/>:<div style={{display:"grid",gap:8,marginTop:12}}>
+          {pendingOrders[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(255,210,98,.22)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>📦 Pedido pendiente</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{pendingOrders[0].cliente_nombre||pendingOrders[0].cliente_email||"Cliente"} · {pendingOrders[0].item_nombre||"Pedido"}</div></button>}
+          {activeCoupons[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(95,240,200,.20)",background:"rgba(95,240,200,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>🎟️ Cupón disponible</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{activeCoupons[0].usuario_nombre||activeCoupons[0].usuario_email||"Usuario"} · {activeCoupons[0].codigo||activeCoupons[0].nombre}</div></button>}
+          {bestScore&&<button onClick={()=>onNavigate?.("juegos")} style={{textAlign:"left",border:"1px solid rgba(255,255,255,.10)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>🏆 Última actividad arcade</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{bestScore.usuario_nombre||bestScore.nombre||"Jugador"} · {bestScore.game_id||"juego"} · {Number(bestScore.score)||Number(bestScore.points)||0}</div></button>}
+          {!pendingOrders[0]&&!activeCoupons[0]&&!bestScore&&<div style={{fontSize:".82rem",fontWeight:850,color:"rgba(255,247,218,.68)"}}>No hay urgencias visibles ahora mismo.</div>}
+        </div>}
+      </div>
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(17,37,31,.90))",border:"1px solid rgba(95,240,200,.26)",color:"#FFF7DA"}}>
+        <div style={{fontWeight:1000,color:"#5EF0C8"}}>💰 Economía reciente</div>
+        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Resumen rápido de movimientos sin abrir tablas.</div>
+        <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:12}}><Badge col="gold">RP movs: {rpMovs.length}</Badge><Badge col="blue">RC movs: {rcMovs.length}</Badge><Badge col="pink">Misiones: {home.missions.length}</Badge></div>
+        <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:14,border:"1px solid rgba(255,210,98,.36)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver misiones →</button>
+      </div>
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(20,24,15,.94))",border:"1px solid rgba(255,210,98,.22)",color:"#FFF7DA"}}>
+        <div style={{fontWeight:1000,color:"#E0B84F"}}>🌐 Comunidad reciente</div>
+        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Comentarios y actividad social.</div>
+        <div style={{marginTop:12,fontSize:".95rem",fontWeight:1000}}>💬 {home.comments.length} comentarios recientes</div>
+        <button onClick={()=>onNavigate?.("comunidad")} style={{marginTop:14,border:"1px solid rgba(95,240,200,.30)",background:"rgba(95,240,200,.12)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#5EF0C8",cursor:"pointer"}}>Abrir comunidad →</button>
+      </div>
     </div>
-
-    <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF8E6,#F1DCAA)",border:`2px solid ${T.gold}`}}>
-      <SectionHeader icon="📌" title="Pendiente ahora" sub="Lo más importante que mirar antes de seguir trabajando."/>
-      {loading?<Spinner/>:<div style={{display:"grid",gap:8}}>
-        {pendingOrders[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.68)",borderRadius:14,padding:"10px",cursor:"pointer"}}><div style={{fontWeight:950,color:T.g800}}>📦 Pedido pendiente</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>{pendingOrders[0].cliente_nombre||pendingOrders[0].cliente_email||"Cliente"} · {pendingOrders[0].item_nombre||"Pedido"} · {pendingOrders[0].estado||"pendiente"}</div></button>}
-        {activeCoupons[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.68)",borderRadius:14,padding:"10px",cursor:"pointer"}}><div style={{fontWeight:950,color:T.g800}}>🎟️ Cupón disponible</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>{activeCoupons[0].usuario_nombre||activeCoupons[0].usuario_email||"Usuario"} · {activeCoupons[0].codigo||activeCoupons[0].nombre}</div></button>}
-        {bestScore&&<button onClick={()=>onNavigate?.("juegos")} style={{textAlign:"left",border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.68)",borderRadius:14,padding:"10px",cursor:"pointer"}}><div style={{fontWeight:950,color:T.g800}}>🏆 Última actividad arcade</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>{bestScore.usuario_nombre||bestScore.nombre||"Jugador"} · {bestScore.game_id||"juego"} · {Number(bestScore.score)||Number(bestScore.points)||0}</div></button>}
-        {!pendingOrders[0]&&!activeCoupons[0]&&!bestScore&&<div style={{fontSize:".82rem",fontWeight:850,color:T.textSub,background:"rgba(255,244,214,.58)",borderRadius:14,padding:12}}>No hay urgencias visibles. Puedes revisar tienda, comunidad o arcade desde accesos rápidos.</div>}
-      </div>}
-    </Card>
-
-    <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
-      <SectionHeader icon="🧭" title="Accesos rápidos" sub="La flecha vuelve atrás. Tocar Rasta Cuts arriba vuelve a este inicio."/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))",gap:10}}>{cards.map(c=><QuickCard key={c.id} c={c}/>)}</div>
-    </Card>
-
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:10,marginBottom:12}}>
-      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
-        <div style={{fontWeight:1000,color:T.g800}}>💰 Economía reciente</div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,marginTop:3}}>Control rápido de RP/RC/XP sin entrar al panel largo.</div>
-        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}><Badge col="gold">RP movs: {rpMovs.length}</Badge><Badge col="blue">RC movs: {rcMovs.length}</Badge><Badge col="pink">Misiones: {home.missions.length}</Badge></div>
-        <Btn small col="ghost" style={{marginTop:10}} onClick={()=>onNavigate?.("misiones")}>Ver misiones</Btn>
-      </Card>
-      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.g300}`}}>
-        <div style={{fontWeight:1000,color:T.g800}}>🌐 Comunidad reciente</div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,marginTop:3}}>Últimos comentarios y actividad social.</div>
-        <div style={{marginTop:10,fontSize:".82rem",fontWeight:900,color:T.g700}}>💬 {home.comments.length} comentarios recientes</div>
-        <Btn small col="ghost" style={{marginTop:10}} onClick={()=>onNavigate?.("comunidad")}>Abrir comunidad</Btn>
-      </Card>
-    </div>
-
-    <Card style={{background:"linear-gradient(180deg,#FFF8E6,#F0D7A3)",border:`2px solid ${T.gold}`}}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:"2rem"}}>🤙</div><div><div style={{fontWeight:1000,color:T.g800}}>RastaHelp también abre Misiones</div><div style={{fontSize:".8rem",fontWeight:850,color:T.textSub,lineHeight:1.35}}>El ayudante flotante sirve como acceso rápido para guiar al usuario cuando no sabe qué hacer.</div></div></div>
-    </Card>
   </div>;
 }
-
 
 const NAV_CFG={
   admin:[{id:"dashboard",icon:"🏠",label:"Inicio"},{id:"juegos",icon:"🎮",label:"Arcade"},{id:"tienda",icon:"🛍️",label:"Tienda"},{id:"comunidad",icon:"🌐",label:"Comunidad"},{id:"gestion",icon:"🧾",label:"Gestión"},{id:"perfil",icon:"👤",label:"Perfil"}],
@@ -12562,6 +12643,23 @@ function GlobalUIPolishPatch(){
       transform-origin:center;
       box-shadow:0 5px 12px rgba(20,8,4,.20)!important;
     }
+
+    /* 2.9.6i · Home premium real, sin usar imágenes externas */
+    .premium-home{
+      --premium-gold:#E0B84F;
+      --premium-teal:#5EF0C8;
+      --premium-ink:#07100D;
+    }
+    .premium-home button{transition:transform .18s ease, filter .18s ease, box-shadow .18s ease;}
+    .premium-home button:hover{transform:translateY(-2px);filter:saturate(1.07) brightness(1.04);}
+    .premium-home button:active{transform:translateY(0) scale(.985);}
+    @media(max-width:860px){
+      .premium-home-grid-main{grid-template-columns:1fr!important;}
+    }
+    @media(max-width:560px){
+      .premium-home section{min-height:auto!important;}
+      .premium-home h1{font-size:3.05rem!important;}
+    }
     @media(max-width:520px){
       .rasta-helper-fixed-safe .rasta-face-avatar{width:50px!important;height:50px!important;}
       .rasta-helper-fixed-safe button[aria-label]{width:72px!important;height:72px!important;}
@@ -12999,4 +13097,4 @@ export default function App(){
   );
 }
 
-// RastaCuts 2.9.6d UI polish global + RastaHelp sticker clean
+// RastaCuts 2.9.6i premium home real UI refresh
