@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7g: home centrada en la mascota Rasta, menos duplicados y marca más limpia.
+  // Paleta 2.9.7i: misma base visual, logo en public root para evitar líos con carpetas.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7G_HOME_MASCOT_BRAND_CLEAN";
-const APP_VERSION_SHORT = "2.9.7g";
+const APP_VERSION = "RASTACUTS_2_9_7I_LOGO_ROOT_PATH_FIX";
+const APP_VERSION_SHORT = "2.9.7i";
 const APP_BUILD_DATE = "2026-06-10";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
