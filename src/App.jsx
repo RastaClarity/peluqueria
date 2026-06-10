@@ -11340,7 +11340,7 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
   const progress=avatarLevelProgress(userXP(user));
 
   const cards=[
-    {id:"gestion",icon:"🧾",title:"Local",sub:"Pedidos, citas, vales y tienda.",tone:"gold",art:"✂️"},
+    {id:"gestion",icon:"💈",title:"Local",sub:"Pedidos, citas, vales y tienda.",tone:"gold",art:"🏪"},
     {id:"tienda",icon:"🛍️",title:"Tienda",sub:"Vista real de tienda juegos y productos €.",tone:"blue",art:"🎟️"},
     {id:"juegos",icon:"🎮",title:"Arcade",sub:"Gacha, Tycoon, rankings, RC y XP.",tone:"blue",art:"🕹️"},
     {id:"misiones",icon:"🎯",title:"Retos",sub:"Misiones diarias, semanales y progreso.",tone:"green",art:"⚡"},
@@ -11384,13 +11384,16 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       boxShadow:"0 24px 60px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.10)"
     }}>
       <div style={{position:"absolute",inset:0,opacity:.22,backgroundImage:"linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.04) 1px, transparent 1px)",backgroundSize:"42px 42px"}}/>
-      <div className="rc-hero-sign" style={{position:"absolute",right:34,top:44,width:250,height:160,borderRadius:28,background:"linear-gradient(180deg,#2D1C0E,#0D1510)",border:"1px solid rgba(255,210,98,.30)",boxShadow:"0 20px 45px rgba(0,0,0,.38)",display:"grid",placeItems:"center",transform:"rotate(-2deg)"}}>
-        <div style={{textAlign:"center"}}><div style={{fontSize:"2.4rem"}}>✂️</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2.05rem",color:"#FFE7A4",lineHeight:.9}}>RASTA CUTS</div><div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".18em",fontSize:".64rem"}}>BARBER STUDIO</div></div>
+      <div className="rc-hero-sign rc-hero-rasta-logo" style={{position:"absolute",right:34,top:34,width:270,height:188,borderRadius:30,background:"linear-gradient(180deg,rgba(45,28,14,.94),rgba(7,16,13,.96))",border:"1px solid rgba(255,210,98,.30)",boxShadow:"0 20px 45px rgba(0,0,0,.38)",display:"grid",placeItems:"center",transform:"rotate(-2deg)",padding:14}}>
+        <div style={{textAlign:"center",display:"grid",placeItems:"center",gap:6}}>
+          <LoginHelperAvatar size={104} speaking/>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.95rem",color:"#FFE7A4",lineHeight:.88,textShadow:"0 5px 14px rgba(0,0,0,.35)"}}>RASTA CUTS</div>
+          <div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".16em",fontSize:".62rem",textTransform:"uppercase"}}>Barber · Tattoo · Arcade</div>
+        </div>
       </div>
       <div style={{position:"relative",zIndex:2,padding:"26px clamp(18px,4vw,42px)",maxWidth:690}}>
-        <Badge col={isAdmin?"gold":"green"}>{isAdmin?"ADMIN":"STAFF"}</Badge>
-        <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",margin:"14px 0 8px"}}>
-          <div style={{width:70,height:70,borderRadius:22,display:"grid",placeItems:"center",background:"linear-gradient(135deg,rgba(242,200,91,.28),rgba(62,230,199,.10))",border:"1px solid rgba(255,231,164,.34)",boxShadow:"0 16px 32px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.12)",fontSize:"2.25rem"}}>✂️</div>
+        <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",margin:"6px 0 8px"}}>
+          <div style={{width:76,height:76,borderRadius:24,display:"grid",placeItems:"center",background:"linear-gradient(135deg,rgba(242,200,91,.22),rgba(62,230,199,.08))",border:"1px solid rgba(255,231,164,.34)",boxShadow:"0 16px 32px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.12)",overflow:"hidden"}}><LoginHelperAvatar size={70}/></div>
           <div>
             <h1 style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(2.9rem,7.4vw,6rem)",lineHeight:.82,margin:0,color:"#FFF7DA",textShadow:"0 8px 0 rgba(0,0,0,.24),0 0 24px rgba(224,184,79,.24)",letterSpacing:".01em"}}>RASTA CUTS</h1>
             <div style={{fontWeight:1000,color:"#5EF0C8",letterSpacing:".18em",textTransform:"uppercase",fontSize:"clamp(.68rem,1.4vw,.86rem)",marginTop:5}}>Barber · Tattoo · Arcade</div>
@@ -13489,7 +13492,7 @@ function AppCore(){
       <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.22), inset 0 -1px 0 ${clinicAccent}55`}}>
         <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
           {navHistory.length>0&&<button className="header-action-pro" onClick={goBack} title="Volver a la pestaña anterior" style={{background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,.22)",borderRadius:12,width:32,height:32,cursor:"pointer",color:T.white,fontWeight:950,fontSize:"1rem",display:"grid",placeItems:"center",boxShadow:"0 4px 12px rgba(0,0,0,.16)"}}>←</button>}
-          <button className="brand-home-button" onClick={goHome} title="Ir al inicio" style={{display:"inline-flex",alignItems:"center",gap:7,border:"none",background:"transparent",padding:0,cursor:"pointer",fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)",minWidth:0}}><span className="brand-scissors" style={{fontSize:"1.3rem"}}>{appSettings?.branding?.emoji_principal||"✂️"}</span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{appSettings?.branding?.nombre_tienda||BRAND.name}</span></button>
+          <button className="brand-home-button" onClick={goHome} title="Ir al inicio" style={{display:"inline-flex",alignItems:"center",gap:8,border:"none",background:"transparent",padding:0,cursor:"pointer",fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)",minWidth:0}}><span className="brand-rasta-mark" style={{width:32,height:32,borderRadius:999,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 5px 14px rgba(0,0,0,.22)"}}><LoginHelperAvatar size={32}/></span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{appSettings?.branding?.nombre_tienda||BRAND.name}</span></button>
           {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
