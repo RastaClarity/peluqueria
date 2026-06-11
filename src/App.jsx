@@ -6620,12 +6620,14 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     const [accent,deep,artType]=toneMap[g.id]||["#3EE6C7","#123F32","arcade"];
     const status=isTycoon?"Progreso propio":isGacha?"RC + XP":played?"Cobrado hoy":"Pendiente hoy";
     return <Card hover style={{opacity:played&&!isTycoon?0.92:1,background:`linear-gradient(145deg,rgba(8,13,10,.97),${deep}F2), radial-gradient(circle at 88% 16%,${accent}33,transparent 38%)`,border:`1px solid ${played&&!isTycoon?"rgba(255,244,214,.18)":accent+"77"}`,position:"relative",overflow:"hidden",color:"#FFF7DA",padding:0,boxShadow:"0 18px 42px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08)"}}>
-      <div style={{position:"absolute",right:-8,top:8,opacity:.68,transform:"rotate(-5deg)",pointerEvents:"none"}}><RastaCardIllustration type={artType} accent={accent} size={108}/></div>
-      <div style={{position:"absolute",left:0,right:0,top:0,height:48,background:`linear-gradient(90deg,${accent}28,rgba(255,255,255,.06),transparent)`,borderBottom:`1px solid ${accent}22`}}/>
-      <div style={{position:"relative",zIndex:1,padding:12,display:"grid",gridTemplateColumns:"minmax(0,1fr) auto",gap:10,alignItems:"end",minHeight:126}}>
+      <div style={{position:"absolute",right:4,top:10,opacity:.38,transform:"rotate(-5deg)",pointerEvents:"none",zIndex:0}}><RastaCardIllustration type={artType} accent={accent} size={96}/></div>
+      <div style={{position:"absolute",left:0,right:0,top:0,height:38,background:`linear-gradient(90deg,${accent}24,rgba(255,255,255,.045),transparent)`,borderBottom:`1px solid ${accent}18`,zIndex:0}}/>
+      <div style={{position:"absolute",top:9,left:12,zIndex:2,display:"inline-flex",alignItems:"center",gap:6,padding:"5px 9px",borderRadius:999,background:"rgba(255,244,214,.88)",border:`1px solid ${accent}66`,fontSize:".62rem",fontWeight:1000,color:"#211407",textTransform:"uppercase",letterSpacing:".045em",boxShadow:"0 5px 12px rgba(0,0,0,.16)",maxWidth:"calc(100% - 120px)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+        {status}
+      </div>
+      <div style={{position:"relative",zIndex:1,padding:"46px 12px 12px",display:"grid",gridTemplateColumns:"minmax(0,1fr) auto",gap:10,alignItems:"end",minHeight:132}}>
         <div style={{minWidth:0,maxWidth:"78%"}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:7,padding:"6px 10px",borderRadius:999,background:"rgba(255,255,255,.08)",border:`1px solid ${accent}33`,fontSize:".70rem",fontWeight:1000,color:"rgba(255,247,218,.82)",textTransform:"uppercase",letterSpacing:".05em"}}>{g.icon} {status}</div>
-          <div className="rc-card-title" style={{fontWeight:1000,fontSize:featured?"1.18rem":"1.05rem",marginTop:9,color:accent,textTransform:"uppercase",letterSpacing:".02em",lineHeight:1}}>{g.title}</div>
+          <div className="rc-card-title" style={{fontWeight:1000,fontSize:featured?"1.16rem":"1.04rem",marginTop:0,color:accent,textTransform:"uppercase",letterSpacing:".02em",lineHeight:1}}>{g.title}</div>
           <div style={{fontSize:".74rem",fontWeight:800,lineHeight:1.25,color:"rgba(255,247,218,.78)",marginTop:5,maxWidth:210}}>{g.desc}</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
             {isTycoon?<Badge col="blue">🪙 RC global</Badge>:isGacha?<Badge col="gold">🎰 premios de juego</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP</Badge>}
@@ -13604,7 +13606,7 @@ function GlobalUIPolishPatch(){
       .nav-tab-pro[data-active="true"] .nav-icon-pro{transform:scale(1.06)!important;}
       .nav-tab-pro span{font-size:.49rem!important;max-width:52px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
       .rc-arcade-games-grid{grid-template-columns:1fr!important;gap:9px!important;}
-      .rc-arcade-games-grid .card{border-radius:18px!important;}
+      .rc-arcade-games-grid .card{border-radius:18px!important;} .rc-arcade-games-grid .rc-card-title{line-height:.94!important;}
       .rasta-helper-fixed-safe{transform:scale(.86)!important;transform-origin:bottom right!important;}
     }
 
