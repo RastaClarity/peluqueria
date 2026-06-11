@@ -4900,7 +4900,7 @@ function markPlayedToday(gid,uid){localStorage.setItem(`played_${gid}_${uid}_${T
 const GAME_DAILY_REWARDS={stitch:5,runner:4,jump:4,memoria:5,sopa:5,trivia:3,gacha:0};
 const ARCADE_GAMES=[
   {id:"tycoon",icon:"🏪",title:"Rasta Cuts Tycoon",desc:"Gestión profunda con los RC globales de Rasta Cuts",pts:0},
-  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Gacha seguro: no reparte RP, sólo RC, XP y tiradas extra",pts:GAME_DAILY_REWARDS.gacha},
+  {id:"gacha",icon:"🎰",title:"Gacha Barber",desc:"Máquina de tiradas con premios de juego: RC, XP y tiradas extra",pts:GAME_DAILY_REWARDS.gacha},
   {id:"stitch",icon:"🪝",title:"Gancho Ninja",desc:"Llega a 100 puntos y termina",pts:GAME_DAILY_REWARDS.stitch},
   {id:"runner",icon:"✂️",title:"Rasta Runner",desc:"Peine protector, bloques y agujeros",pts:GAME_DAILY_REWARDS.runner},
   {id:"jump",icon:"🌤️",title:"Rasta Jump",desc:"Recoge utensilios y evita tijeras",pts:GAME_DAILY_REWARDS.jump},
@@ -5548,14 +5548,14 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity
   };
   const normal=['scissors','comb','hook','band','coin','star','clover'];
   const PRIZE_TABLE=[
-    {id:'empty',chance:'52%',label:'Sin premio',desc:'No sale premio. El Gacha es azar y no imprime RP.',key:null,rp:0,rc:0,xp:0,rarity:'base'},
-    {id:'xp_small',chance:'14%',label:'XP pequeña',desc:'+3 XP',key:'star',rp:0,rc:0,xp:3,rarity:'comun'},
-    {id:'rc_small',chance:'13%',label:'RC pequeño',desc:'+5 RC',key:'coin',rp:0,rc:5,xp:0,rarity:'comun'},
-    {id:'xp_medium',chance:'8%',label:'XP media',desc:'+8 XP',key:'clover',rp:0,rc:0,xp:8,rarity:'comun'},
-    {id:'rc_medium',chance:'6%',label:'RC medio',desc:'+10 RC',key:'scissors',rp:0,rc:10,xp:0,rarity:'comun'},
+    {id:'empty',chance:'52%',label:'Tirada registrada',desc:'Cuenta para actividad y misiones.',key:null,rp:0,rc:0,xp:0,rarity:'actividad'},
+    {id:'xp_small',chance:'14%',label:'Impulso XP',desc:'+3 XP',key:'star',rp:0,rc:0,xp:3,rarity:'comun'},
+    {id:'rc_small',chance:'13%',label:'Monedas RC',desc:'+5 RC',key:'coin',rp:0,rc:5,xp:0,rarity:'comun'},
+    {id:'xp_medium',chance:'8%',label:'Subida XP',desc:'+8 XP',key:'clover',rp:0,rc:0,xp:8,rarity:'comun'},
+    {id:'rc_medium',chance:'6%',label:'Pack RC',desc:'+10 RC',key:'scissors',rp:0,rc:10,xp:0,rarity:'comun'},
     {id:'rc_xp_mix',chance:'4%',label:'Mezcla arcade',desc:'+10 RC y +5 XP',key:'comb',rp:0,rc:10,xp:5,rarity:'raro'},
     {id:'extra_pull',chance:'2%',label:'Tirada extra',desc:'+1 tirada extra',key:'hook',rp:0,rc:0,xp:0,extraPulls:1,rarity:'raro'},
-    {id:'rc_good',chance:'0,8%',label:'RC bueno',desc:'+25 RC y +10 XP',key:'gem',rp:0,rc:25,xp:10,rarity:'epico'},
+    {id:'rc_good',chance:'0,8%',label:'Pack RC especial',desc:'+25 RC y +10 XP',key:'gem',rp:0,rc:25,xp:10,rarity:'epico'},
     {id:'extra_pack',chance:'0,2%',label:'Pack de tiradas',desc:'+3 tiradas extra y +20 XP',key:'ticket',rp:0,rc:0,xp:20,extraPulls:3,rarity:'legendario'}
   ];
   const [reels,setReels]=useState(['scissors','comb','hook']);
@@ -5585,7 +5585,7 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity
 
   function pickPrize(){
     const r=Math.random()*100;
-    if(r<52)return {...PRIZE_TABLE[0],spinLabel:'Sin premio'};
+    if(r<52)return {...PRIZE_TABLE[0],spinLabel:'Tirada registrada'};
     if(r<66)return {...PRIZE_TABLE[1],spinLabel:'Premio común: +3 XP'};
     if(r<79)return {...PRIZE_TABLE[2],spinLabel:'Premio común: +5 RC'};
     if(r<87)return {...PRIZE_TABLE[3],spinLabel:'Premio común: +8 XP'};
@@ -5602,7 +5602,7 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity
 
   function spin(){
     if(spinning)return;
-    if(pullsLeft<=0){SFX.error();setResult({id:'no_pulls',rp:0,rc:0,xp:0,key:null,label:'Sin tiradas disponibles',spinLabel:'Sin tiradas disponibles',rarity:'base'});return;}
+    if(pullsLeft<=0){SFX.error();setResult({id:'no_pulls',rp:0,rc:0,xp:0,key:null,label:'Sin tiradas disponibles',spinLabel:'Sin tiradas disponibles',rarity:'actividad'});return;}
     const usedExtra=normalPullsLeft<=0;
     if(!usedExtra){
       const nextPulls=pulls+1;setPulls(nextPulls);setGachaPullsToday(uid,nextPulls);
@@ -5612,7 +5612,7 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity
     setSpinning(true);setResult(null);setClaimed(false);
     let ticks=0;const final=pickPrize();
     const spinTimer=setInterval(()=>{
-      ticks++;setReels(randomReels());playTone(220+ticks*14,'triangle',0.042,0.032);
+      ticks++;setReels(randomReels());try{SFX.tab?.();}catch{}
       if(ticks>=20){
         clearInterval(spinTimer);
         let out;
@@ -5622,13 +5622,13 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity
         setResult({...final,usedExtra});
         const hasPrize=Number(final.rc||0)>0||Number(final.xp||0)>0||Number(final.extraPulls||0)>0||Number(final.rp||0)>0;
         if(!hasPrize){
-          addHistory({label:final.spinLabel||final.label||'Sin premio',rarity:final.rarity||'base',rp:0,rc:0,xp:0,extraPulls:0,usedExtra:!!usedExtra});
+          addHistory({label:final.spinLabel||final.label||'Tirada registrada',rarity:final.rarity||'base',rp:0,rc:0,xp:0,extraPulls:0,usedExtra:!!usedExtra});
         }
         try{
           onActivity?.({
             usedExtra:!!usedExtra,
             prize_id:final.id||'empty',
-            label:final.spinLabel||final.label||'Sin premio',
+            label:final.spinLabel||final.label||'Tirada registrada',
             rarity:final.rarity||'base',
             hasPrize
           });
@@ -5673,7 +5673,7 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity
 
   return <Card style={{background:'linear-gradient(180deg,#271006,#5C3317 55%,#D4AF37)',border:`2px solid ${T.gold}`,color:T.white}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:12}}>
-      <div><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><div style={{fontSize:'.72rem',fontWeight:850,opacity:.82,marginTop:2}}>No da RP · RC/XP bajos · azar real</div></div>
+      <div><div style={{fontWeight:950,fontSize:'1.05rem'}}>🎰 Gacha Barber</div><div style={{fontSize:'.72rem',fontWeight:850,opacity:.82,marginTop:2}}>Premios de juego · RC, XP y tiradas extra</div></div>
       <Badge col={pullsLeft>0?'gold':'red'}>{pullsLeft} tiradas</Badge>
     </div>
 
@@ -5690,9 +5690,9 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity
     </div>
 
     {result&&<Card style={{background:'rgba(255,248,230,.92)',border:`2px solid ${result.rarity==='legendario'?T.gold:result.rarity==='epico'?T.pink:T.g300}`,marginBottom:12}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}><div style={{fontWeight:950,color:T.g800}}>{result.spinLabel||result.label}</div><Badge col={rarityBadgeColor(result.rarity)}>{result.rarity||'base'}</Badge></div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}><div style={{fontWeight:950,color:T.g800}}>{result.spinLabel||result.label}</div><Badge col={rarityBadgeColor(result.rarity)}>{result.rarity==='base'?'actividad':(result.rarity||'común')}</Badge></div>
       <div style={{fontSize:'.82rem',fontWeight:820,color:T.textSub,marginTop:5,lineHeight:1.38}}>
-        {(result.rp||result.rc||result.xp||result.extraPulls)>0?`Premio: ${result.rc?`+${result.rc} RC `:''}${result.xp?`+${result.xp} XP `:''}${result.extraPulls?`+${result.extraPulls} tiradas`:''}`:pullsLeft<=0?'Sin tiradas. Compra vales en Tienda juegos o usa el botón de 10 tiradas por 5 RP.':'No ha salido premio esta vez. Prueba de nuevo cuando tengas tiradas.'}
+        {(result.rp||result.rc||result.xp||result.extraPulls)>0?`Premio: ${result.rc?`+${result.rc} RC `:''}${result.xp?`+${result.xp} XP `:''}${result.extraPulls?`+${result.extraPulls} tiradas`:''}`:pullsLeft<=0?'No quedan tiradas disponibles. Puedes usar tiradas extra o conseguir vales en la tienda.':'Tirada registrada. Cuenta para actividad y misiones.'}
       </div>
       {(result.rp||result.rc||result.xp||result.extraPulls)>0&&<div style={{marginTop:10}}><Btn full col={claimed?'green':'gold'} disabled={claimed} onClick={claim}>{claimed?'Premio cobrado':'Cobrar premio'}</Btn></div>}
     </Card>}
@@ -5703,17 +5703,17 @@ function GachaSlotsGame({user,onWin,onCurrencyWin,settings,onBuyPulls,onActivity
     </div>
 
     <div style={{marginTop:10,display:'flex',gap:8,flexWrap:'wrap',alignItems:'center',justifyContent:'space-between'}}>
-      <div style={{fontSize:'.72rem',fontWeight:820,opacity:.82,lineHeight:1.35}}>Regla: el Gacha no reparte RP. Lo normal es no ganar nada o recibir RC/XP pequeño. Los RP sólo se consiguen por misiones, acciones limitadas y recompensas controladas.</div>
+      <div style={{fontSize:'.72rem',fontWeight:820,opacity:.82,lineHeight:1.35}}>Cada tirada cuenta como actividad. Los premios del Gacha son de juego: RC, XP o tiradas extra. Los RP se consiguen en retos y acciones limitadas.</div>
       <button onClick={()=>setShowOdds(v=>!v)} style={{border:'1px solid rgba(255,244,214,.38)',background:'rgba(255,248,230,.18)',color:T.white,borderRadius:999,padding:'7px 10px',fontWeight:950,cursor:'pointer'}}>{showOdds?'Ocultar':'Ver'} probabilidades</button>
     </div>
 
     {showOdds&&<Card style={{marginTop:10,background:'rgba(255,248,230,.94)',border:`1px solid ${T.g200}`}}>
-      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Tabla de premios</div>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Probabilidades del Gacha</div>
       <div style={{display:'grid',gap:7}}>{PRIZE_TABLE.map(p=><div key={p.id} style={{display:'grid',gridTemplateColumns:'58px 1fr auto',gap:8,alignItems:'center',fontSize:'.78rem',fontWeight:850,color:T.textSub}}><Badge col={rarityBadgeColor(p.rarity)}>{p.chance}</Badge><span><b style={{color:T.g800}}>{p.label}</b><br/>{p.desc}</span><span style={{fontSize:'1.15rem'}}>{p.key?SYMBOLS[p.key]?.icon:'▫️'}</span></div>)}</div>
     </Card>}
 
     {history.length>0&&<Card style={{marginTop:10,background:'rgba(255,248,230,.88)',border:`1px solid ${T.g200}`}}>
-      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Últimos premios</div>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Últimas tiradas</div>
       <div style={{display:'grid',gap:6}}>{history.slice(0,5).map(h=><div key={h.id} style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:'.78rem',fontWeight:850,color:T.textSub}}><span>{h.label}</span><span style={{whiteSpace:'nowrap'}}>{h.rp?`${h.rp>0?'+':''}${h.rp} RP `:''}{h.rc?`+${h.rc} RC `:''}{h.xp?`+${h.xp} XP`:''}{h.extraPulls?` +${h.extraPulls}🎰`:''}</span></div>)}</div>
     </Card>}
   </Card>;
@@ -5765,8 +5765,8 @@ function ArcadeInfoPanel({onOpenGacha}){
       }}>
         <div style={{display:"grid",gap:8,fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.42}}>
           <div>Los récords sirven para competir, mejorar marcas y volver a intentarlo cada día.</div>
-          <div>Cada juego puede entregar RP una vez al día. Después puedes rejugar para mejorar marca, pero no para farmear RP sin límite.</div>
-          <div>El Gacha Barber no reparte RP. Mantiene premios pequeños, RC, XP y alguna tirada extra.</div>
+          <div>Cada juego puede contar para recompensa una vez al día. Después puedes rejugar para mejorar tu marca y subir en rankings.</div>
+          <div>El Gacha Barber entrega premios de juego: RC, XP y tiradas extra. Cada tirada también cuenta como actividad.</div>
         </div>
         <div style={{marginTop:11,display:"flex",justifyContent:"flex-start"}}>
           <Btn small col="gold" onClick={onOpenGacha}>🎰 Abrir Gacha Barber</Btn>
@@ -6476,7 +6476,7 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
           <div className="rc-card-title" style={{fontWeight:1000,fontSize:featured?"1.42rem":"1.20rem",marginTop:13,color:accent,textTransform:"uppercase",letterSpacing:".02em",lineHeight:1}}>{g.title}</div>
           <div style={{fontSize:".80rem",fontWeight:800,lineHeight:1.35,color:"rgba(255,247,218,.78)",marginTop:6,maxWidth:210}}>{g.desc}</div>
           <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:11}}>
-            {isTycoon?<Badge col="blue">🪙 RC global</Badge>:isGacha?<Badge col="gold">🎰 sin RP por tirada</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP</Badge>}
+            {isTycoon?<Badge col="blue">🪙 RC global</Badge>:isGacha?<Badge col="gold">🎰 premios de juego</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP</Badge>}
             {!isTycoon&&<Badge col="blue">🏆 récord {best}</Badge>}
             {isGacha&&extraPulls>0&&<Badge col="gold">+{extraPulls} tiradas</Badge>}
           </div>
@@ -7061,7 +7061,7 @@ const MISSION_DEFS=[
   // Las misiones sólo empujan al usuario a usar la app.
   // No deben ser la fuente principal de RC ni pueden imprimir RP sin control.
   {key:"daily_arcade",period:"day",icon:"🎮",title:"Una partida al día",desc:"Juega y guarda una partida de Arcade hoy. Premio pequeño para mantener el hábito.",goal:1,rp:2,rc:3,xp:5,points:2,type:"gamesToday",action:"juegos",actionLabel:"Ir al Arcade"},
-  {key:"daily_gacha",period:"day",icon:"🎰",title:"Tirada Gacha",desc:"Haz una tirada en el Gacha Barber hoy. No da RP, sólo una ayuda pequeña.",goal:1,rp:0,rc:1,xp:3,points:0,type:"gachaToday",action:"juegos",actionLabel:"Ir al Gacha"},
+  {key:"daily_gacha",period:"day",icon:"🎰",title:"Tirada Gacha",desc:"Haz una tirada en el Gacha Barber hoy para completar actividad y sumar progreso.",goal:1,rp:0,rc:1,xp:3,points:0,type:"gachaToday",action:"juegos",actionLabel:"Ir al Gacha"},
   {key:"daily_news_comment",period:"day",icon:"💬",title:"Deja tu huella",desc:"Comenta en el tablón o en actualidad y deja tu huella en la comunidad.",goal:1,rp:1,rc:0,xp:5,points:1,type:"commentsToday",action:"noticias",actionLabel:"Ir a Actualidad"},
   {key:"daily_news_like",period:"day",icon:"👍",title:"Marca algo útil",desc:"Da un like en Actualidad hoy. Premio simbólico de XP.",goal:1,rp:0,rc:0,xp:2,points:0,type:"likesToday",action:"noticias",actionLabel:"Ir a Actualidad"},
   {key:"daily_tycoon",period:"day",icon:"🏪",title:"Turno Tycoon",desc:"Atiende clientes o guarda actividad del Tycoon hoy. El RC fuerte lo genera el propio Tycoon, no la misión.",goal:1,rp:0,rc:3,xp:5,points:0,type:"tycoonToday",action:"juegos",actionLabel:"Ir al Tycoon"},
@@ -8150,7 +8150,7 @@ function GestionTienda({user,showToast}){
     setShowEdit(true);
   }
   function openGachaVoucher(){
-    setForm({...empty,item_key:`gacha_10_${Date.now()}`,nombre:"Vale 10 tiradas Gacha",descripcion:"Canje claro: pagas 5 puntos y recibes 10 tiradas extra para el Gacha Barber. Se aplica al momento y puedes comprarlo tantas veces como quieras.",categoria:"juegos",tipo:"gacha_pulls",icono:"🎰",puntos_precio:"5",stock:"",rareza:"comun",slot:"gacha_pulls",valor:"10",juego_bonus_tipo:"gacha_pulls",juego_bonus_cantidad:"10"});
+    setForm({...empty,item_key:`gacha_10_${Date.now()}`,nombre:"Vale 10 tiradas Gacha",descripcion:"Canje: pagas 5 RP y recibes 10 tiradas extra para el Gacha Barber. Se aplica al momento y queda guardado en tu perfil.",categoria:"juegos",tipo:"gacha_pulls",icono:"🎰",puntos_precio:"5",stock:"",rareza:"comun",slot:"gacha_pulls",valor:"10",juego_bonus_tipo:"gacha_pulls",juego_bonus_cantidad:"10"});
     setShowEdit(true);
   }
   function openRealProduct(){
@@ -11674,102 +11674,68 @@ function LoginHelperAvatar({size=46,speaking=false}={}){
 
 
 const RASTA_GENERAL_TIPS=[
-  "Pulsa Activar ayuda y toca cualquier botón para saber qué hace sin ejecutar la acción.",
-  "Los RP se ganan poco a poco: juegos, participación y actividad real en la app.",
-  "En Perfil puedes ajustar tu avatar, tu privacidad y cómo apareces en rankings.",
-  "Comunidad reúne tablón, foro, actualidad y música para no perderse entre pestañas.",
-  "En Arcade puedes repetir partidas para mejorar récord. Los RP diarios tienen límite.",
-  "Top 10 enseña marcas por juego; Ranking general resume actividad global de clientes.",
-  "Si una sección no queda clara, abre el modo ayuda y toca justo esa zona.",
-  "La tienda tiene más sentido cuando los puntos se convierten en premios visibles.",
-  "En Citas puedes elegir varios tratamientos y ver tiempo y precio aproximado.",
-  "Gestión reúne caja, citas, clientes, stock y permisos.",
-  "El modo incógnito oculta nombre y avatar público, pero mantiene tu personalización privada.",
-  "Las noticias funcionan mejor cuando se leen rápido y se puede debatir sin salir de la app.",
-  "El perfil público debe mostrar lo justo: avatar, nombre, RP y actividad sin datos personales.",
-  "El ranking semanal sirve para picarse esta semana; el histórico guarda las mejores marcas.",
-  "Desde Gestión puedes revisar caja, citas, pedidos y permisos.",
-  "Cuando termines una cita, márcala como realizada para que luego cuente en historial y facturación.",
-  "Los juegos tienen que picar y motivar, con premios claros y limitados.",
-  "Una app útil se entiende tocando: reserva, juega, lee, participa y canjea.",
-  "El avatar debe verse igual en Perfil, rankings, comunidad y clientes.",
-  "Música es una biblioteca rápida para descubrir reggae, rap clásico, ska y rock sin ruido comercial.",
-  "El tablón es para avisos del estudio; el foro es para conversar.",
-  "Si una noticia merece conversación, abre debate y deja un comentario útil.",
-  "Los premios de tienda deben tener valor real para que los RP importen.",
-  "El botón de Sonido activa música suave; con doble toque saltas a una canción aleatoria.",
-  "Las citas pendientes necesitan respuesta: confirmar, proponer hora o cancelar.",
-  "El resumen de Gestión enseña lo urgente sin abrir todo.",
-  "La comunidad funciona mejor si cada acción tiene sentido: like, comentario, debate o tema.",
-  "El cliente sólo debería ver su parte; admin y staff ven herramientas de trabajo.",
-  "Una pantalla limpia vale más que diez textos largos.",
-  "Los botones importantes deben quedar siempre visibles en móvil."
+  "Revisa tus retos diarios para ver qué recompensas puedes reclamar hoy.",
+  "Tus RP sirven para canjes y recompensas. Se consiguen poco a poco con actividad real.",
+  "Los RC son la moneda de juego para Arcade, Gacha y Tycoon.",
+  "La XP sube tu nivel de avatar y desbloquea progreso visual.",
+  "En Perfil puedes revisar tu avatar, tu nivel, tus vales y tu actividad.",
+  "En Arcade puedes jugar para mejorar récords y subir en los rankings.",
+  "En Tienda encontrarás vales, productos y recompensas disponibles.",
+  "En Comunidad puedes leer novedades, comentar y participar en el foro.",
+  "Las notificaciones aparecen en la campana superior cuando hay avisos nuevos.",
+  "La cartera muestra tus RP, RC, XP y últimos movimientos.",
+  "Si tienes una reserva o pedido pendiente, aparecerá en Inicio cuando toque revisarlo.",
+  "El modo incógnito oculta tu nombre y avatar en zonas públicas.",
+  "Los rankings enseñan tus mejores marcas y la actividad semanal.",
+  "El botón de sonido activa o silencia la música de fondo.",
+  "En móvil, usa el menú inferior o lateral para moverte rápido por la app.",
+  "RastaHelp puede explicar una pantalla cuando necesites ayuda concreta.",
+  "Si una acción da recompensa, la app te lo mostrará antes o después de reclamarla.",
+  "Los vales disponibles aparecen en tu perfil y en las zonas de canje.",
+  "La pantalla de Inicio resume lo importante sin tener que abrir cada sección.",
+  "Las reservas, recompensas y juegos están conectados a tu perfil."
 ];
 
 const RASTA_RARE_CULTURE_TIPS=[
-  "Tip musical: Morodo encaja muy bien para una sesión tranquila con ritmo reggae.",
-  "Tip musical: Kase.O es buena puerta de entrada para rap español con letra cuidada.",
-  "Tip musical: Pure Negga funciona bien para ambiente suave y melódico.",
-  "Tip musical: Bob Marley es base obligatoria si alguien quiere empezar con reggae clásico.",
-  "Tip musical: Ska-P mete energía para quienes prefieren ska con más caña.",
-  "Tip musical: Nirvana aporta variedad rock sin perder una vibra clásica.",
-  "Tip musical: Rapsusklei encaja en tardes tranquilas y letras con más fondo.",
-  "Tip musical: Violadores del Verso tiene sentido aquí por cultura urbana y toque zaragozano.",
-  "Tip musical: Cultura Profética va perfecto para una sección más elegante y relajada.",
-  "Tip musical: Fyahbwoy tiene más energía para entrar al Arcade con ritmo.",
-  "Tip de comunidad: un buen comentario aporta una idea, una pregunta o una experiencia.",
-  "Tip de noticias: mejor pocas noticias buenas que mucho contenido de relleno.",
-  "Tip de juegos: si ya cobraste puntos hoy, aún puedes jugar para mejorar récord.",
-  "Tip de perfil: cuanto más reconocible sea el avatar, más vivos se sienten los rankings.",
-  "Tip de tienda: los canjes deberían ser claros, deseables y fáciles de entender.",
-  "Tip de reservas: varios tratamientos juntos deben sumar precio y duración automáticamente.",
-  "Tip de gestión: staff puede trabajar; admin puede tocar permisos y ajustes.",
-  "Tip de privacidad: incógnito no borra al usuario, sólo oculta cómo se muestra al público.",
-  "Tip de rankings: el top semanal mantiene movimiento; el histórico da prestigio.",
-  "Tip de sonido: música suave mejor que melodías chillones en móvil.",
-  "Tip de móvil: los botones importantes deben quedar cómodos en la parte inferior.",
-  "Tip de citas: una cita sin estado claro genera confusión; pendiente, confirmada o cancelada.",
-  "Tip de caja: primero que cuadre por dentro; luego ya se pondrá más fino.",
-  "Tip de admin: Usuarios es permisos; Clientes es historial y ficha comercial.",
-  "Tip de foro: temas cortos y claros consiguen más respuestas.",
-  "Tip de premios: personalización del avatar puede ser una recompensa muy buena.",
-  "Tip de actualidad: el formato tipo shorts funciona mejor si la tarjeta respira.",
-  "Tip de música: usar búsquedas evita links rotos al principio.",
-  "Tip de app: menos texto, más iconos claros y explicaciones bajo demanda.",
-  "Tip de Rasta: el modo ayuda debe explicar, no molestar."
+  "Para una sesión tranquila, prueba una lista de reggae suave mientras navegas por la app.",
+  "Si te va el rap español, la sección Música puede ayudarte a descubrir temas para el estudio.",
+  "En el Arcade, juega para mejorar tu marca aunque ya hayas reclamado la recompensa del día.",
+  "Un buen comentario en Comunidad aporta una idea, una duda o una experiencia útil.",
+  "Las noticias son más cómodas cuando se leen rápido y tienen un debate claro debajo.",
+  "El avatar gana más sentido cuando aparece igual en Perfil, Comunidad y rankings.",
+  "La Tienda funciona mejor cuando los canjes son fáciles de entender y tienen valor real.",
+  "Las reservas deben mostrar fecha, hora, servicio y precio con claridad.",
+  "El ranking semanal mantiene movimiento y el histórico guarda las mejores marcas.",
+  "Si quieres privacidad, activa el modo incógnito desde Perfil.",
+  "Los retos diarios son pequeños objetivos para volver sin convertir la app en una obligación.",
+  "La música debe acompañar la experiencia, no taparla.",
+  "El foro sirve para conversaciones más largas que un comentario rápido.",
+  "Los avisos importantes del estudio aparecen en zonas visibles de la app.",
+  "Los cosméticos del avatar son una buena forma de enseñar progreso sin tocar datos personales.",
+  "Las recompensas se entienden mejor cuando ves RP, RC y XP separados.",
+  "La navegación en móvil está pensada para llegar a todo en pocos toques.",
+  "La comunidad gana vida cuando hay novedades, rankings y pequeños retos."
 ];
 
 const RASTA_DAILY_FUN_TIPS=[
-  "Hoy puedes probar una partida, mirar una noticia y revisar si tu avatar sigue como quieres.",
-  "Una app clara se entiende en pocos toques: reserva, juega, participa y canjea.",
-  "Actualidad funciona mejor con titulares cortos, imagen clara y resumen útil.",
-  "El Arcade funciona mejor cuando cada récord se siente ganado.",
-  "Una buena pantalla de inicio enseña rápido qué se puede hacer dentro.",
-  "Los clientes deberían reconocer su avatar igual en Perfil, Comunidad y rankings.",
-  "En móvil todo debe quedar claro en pocos toques.",
-  "El asistente debe ayudar justo cuando hace falta.",
-  "La tienda gana valor cuando los RP sirven para cosas visibles y deseables.",
-  "El perfil público debe enseñar lo justo: avatar, nombre, RP y actividad sin datos privados.",
-  "Hoy toca revisar si Gestión resume bien citas, caja y clientes.",
-  "Un ranking bueno da ganas de volver sin hacer trampas con puntos.",
-  "Una cita bien creada debe enseñar fecha, hora, tratamientos, duración y precio.",
-  "La música de fondo debe acompañar, no competir con la app.",
-  "La comunidad necesita ritmo: novedades, juego, conversación y algún premio.",
-  "Si el usuario no sabe qué tocar, el modo ayuda tiene que salvarlo.",
-  "El mejor botón es el que se entiende antes de pulsarlo.",
-  "Un cliente vuelve más si siente que tiene perfil, RP y progreso.",
-  "Los avisos del estudio van al tablón; las dudas y debates van al foro.",
-  "Hoy puede ser buen día para descubrir un artista nuevo en Música.",
-  "Un diseño moderno no es llenar de efectos, es que todo fluya mejor.",
-  "Si algo se repite demasiado, hay que convertirlo en rotación diaria.",
-  "La app debería sentirse viva sin parecer una feria de luces.",
-  "Un admin necesita ver rápido qué citas requieren acción.",
-  "Un staff no debería tener que tocar permisos para hacer su trabajo.",
-  "El cliente no debe ver paneles internos ni información de gestión.",
-  "Las recompensas pequeñas mantienen movimiento si están bien equilibradas.",
-  "El Gacha tiene sentido si es divertido, limitado y no genera RP por tiradas.",
-  "Los tops por juego motivan más cuando cada juego tiene identidad propia.",
-  "Una ficha de cliente debe servir para recordar historial, no para cambiar roles."
+  "Hoy puedes revisar tus retos, jugar una partida y mirar si tienes algún vale pendiente.",
+  "Empieza por Inicio si quieres ver lo importante de un vistazo.",
+  "En Arcade puedes probar distintos juegos y comparar tus marcas.",
+  "Si subes de nivel, tu progreso se reflejará en Perfil.",
+  "Revisa la Tienda de vez en cuando: los vales y recompensas pueden cambiar.",
+  "Comunidad reúne novedades, comentarios y foro.",
+  "Las reservas se gestionan mejor cuando eliges bien el servicio y la hora.",
+  "Si tienes avisos nuevos, la campana superior te lo indicará.",
+  "Tus RP, RC y XP están separados para que cada cosa tenga su función.",
+  "El RastaHelp está para orientar, no para llenar la pantalla de texto.",
+  "Una partida rápida puede mejorar tu ranking aunque no siempre dé recompensa.",
+  "El progreso diario se ve mejor si reclamas sólo lo que ya has completado.",
+  "La música de fondo puede activarse o silenciarse desde la cabecera.",
+  "En Perfil puedes revisar cómo te ven otros usuarios.",
+  "El modo ayuda explica botones y zonas cuando lo necesitas.",
+  "Los comentarios y likes ayudan a dar movimiento a la comunidad.",
+  "Si algo no carga, vuelve a Inicio y revisa avisos o conexión.",
+  "La app está pensada para reservar, jugar, participar y canjear recompensas."
 ];
 
 
@@ -11919,8 +11885,8 @@ function rastaElementHelp(target,page){
   if(t.includes("top 10"))return "Top 10 abre los rankings de minijuegos: semanal e histórico por cada juego.";
   if(t.includes("top general"))return "Ranking general muestra estadísticas globales de clientes: puntos, juegos, tienda y comunidad.";
   if(t.includes("ver top")||t.includes("abrir top"))return "Este botón abre la página de rankings para ver los mejores jugadores y estadísticas.";
-  if(t.includes("jugar ahora")||t==="jugar"||t.includes("▶ jugar")||t.includes("rejugar"))return "Abre el juego seleccionado. Puedes repetir para mejorar récord, aunque los RP sólo se cobran una vez al día.";
-  if(t.includes("gacha"))return "Gacha Barber es una máquina de tiradas con límite diario. Sirve para premios, suerte y recompensas controladas.";
+  if(t.includes("jugar ahora")||t==="jugar"||t.includes("▶ jugar")||t.includes("rejugar"))return "Abre el juego seleccionado. Puedes repetir para mejorar récord. Las recompensas diarias tienen límite, pero el ranking sigue contando. se cobran una vez al día.";
+  if(t.includes("gacha"))return "Gacha Barber es una máquina de tiradas con límite diario. Puedes conseguir RC, XP o tiradas extra.";
   if(t.includes("guardar récord")||t.includes("guardar record"))return "Guarda tu puntuación para que aparezca en los rankings. Si ya cobraste hoy, sólo mejora la marca.";
   if(t.includes("nueva")||t.includes("+ nueva")||t.includes("nueva cita"))return "Crea una cita nueva. Puedes elegir varios tratamientos y la app suma duración y precio.";
   if(t.includes("confirmar"))return "Confirma esta cita. Pasará de pendiente a confirmada para que el cliente sepa que queda aceptada.";
@@ -11935,7 +11901,7 @@ function rastaElementHelp(target,page){
   if(t.includes("fuente")||t.includes("leer fuente"))return "Abre la fuente original de la noticia fuera de la app.";
   if(t.includes("abrir debate"))return "Abre la conversación de esa noticia para poder leer o comentar.";
   if(t.includes("actualizar"))return "Actualiza los datos de esta sección para traer contenido o rankings más recientes.";
-  if(t.includes("misiones")||t.includes("objetivos"))return "Abre Misiones: objetivos diarios y semanales para ganar RP, RC y XP sin farmear sin límite.";
+  if(t.includes("misiones")||t.includes("objetivos"))return "Abre Retos: objetivos diarios y semanales con recompensas de RP, RC y XP.";
   if(t.includes("perfil"))return "Entra en tu perfil para editar avatar, privacidad, nombre y opciones de cuenta.";
   if(t.includes("comunidad"))return "Abre Comunidad: tablón, foro y actualidad.";
   if(t.includes("inicio"))return "Vuelve al inicio, donde se ve el resumen general de la app.";
@@ -11956,6 +11922,15 @@ function rastaElementHelp(target,page){
   return rastaPageHelpIntro(page);
 }
 
+function cleanRastaTipText(value){
+  const txt=String(value||"").trim()
+    .replace(/^Tip\s+(musical|de\s+comunidad|de\s+noticias|de\s+juegos|de\s+perfil|de\s+tienda|de\s+reservas|de\s+gestión|de\s+privacidad|de\s+rankings|de\s+sonido|de\s+móvil|de\s+caja|de\s+admin|de\s+foro|de\s+premios|de\s+actualidad|de\s+música|de\s+app|de\s+Rasta):\s*/i,"");
+  const low=txt.toLowerCase();
+  if(!txt)return "";
+  if(low.includes("menos texto")||low.includes("modo ayuda debe explicar")||low.includes("sin regalar")||low.includes("hoja de cálculo"))return "";
+  return txt;
+}
+
 function HelperMascot({page,settings=null,onOpenMissions=null}){
   const key=helperPageKey(page);
   const baseTips=HELP_TIPS[key]||HELP_TIPS.dashboard;
@@ -11966,7 +11941,7 @@ function HelperMascot({page,settings=null,onOpenMissions=null}){
     ...RASTA_GENERAL_TIPS,
     ...RASTA_DAILY_FUN_TIPS,
     ...RASTA_RARE_CULTURE_TIPS
-  ].filter(Boolean)));
+  ].map(cleanRastaTipText).filter(Boolean)));
   const [open,setOpen]=useState(false);
   const [helpMode,setHelpMode]=useState(false);
   const [tipIndex,setTipIndex]=useState(0);
@@ -12386,7 +12361,7 @@ function WalletPanel({show,onClose,user}){
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontWeight:950,color:T.g800,marginBottom:8}}><span>Límite diario normal RP</span><span>{todayEarned}/{dailyMax} RP</span></div>
         <div style={{height:10,borderRadius:999,background:"rgba(75,48,27,.15)",overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#5F8E22,#D5B24F)",borderRadius:999}}/></div>
-        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia canónica: máximo normal de 50 RP/día. El Gacha no reparte RP; da RC, XP o tiradas extra. Los descuentos, cupones y vales usan RP.</div>
+        <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35,marginTop:8}}>Referencia de economía: los RP se reservan para retos, canjes y recompensas importantes. El Gacha usa premios de juego como RC, XP y tiradas extra.</div>
       </Card>
       <Card style={{marginTop:10,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)"}}>
         <div style={{fontWeight:950,color:T.g800}}>Economías separadas</div>
@@ -13124,14 +13099,48 @@ function GlobalUIPolishPatch(){
       }
     }
     @media(max-width:560px){
-      .app-header-pro{margin:8px auto 0!important;width:calc(100% - 16px)!important;border-radius:20px!important;padding:10px 12px!important;}
-      .page-content-pro{width:calc(100% - 14px)!important;margin-top:10px!important;border-radius:24px!important;padding:14px 10px!important;}
-      .premium-home section{border-radius:26px!important;}
+      .app-shell{width:100vw!important;max-width:100vw!important;overflow-x:hidden!important;border-left:0!important;border-right:0!important;}
+      .app-header-pro{margin:6px auto 0!important;width:calc(100% - 10px)!important;border-radius:18px!important;padding:7px 8px!important;gap:6px!important;overflow:hidden!important;}
+      .app-header-pro > div:first-child{flex:1 1 auto!important;min-width:0!important;gap:5px!important;overflow:hidden!important;}
+      .app-header-pro > div:last-child{flex:0 0 auto!important;gap:4px!important;min-width:0!important;}
+      .brand-home-button{max-width:128px!important;padding:5px 7px!important;gap:5px!important;font-size:1.02rem!important;border-radius:14px!important;}
+      .brand-home-button .brand-rasta-mark{width:24px!important;height:24px!important;min-width:24px!important;}
+      .brand-home-button .brand-rasta-mark svg{transform:scale(.78)!important;transform-origin:center!important;}
+      .app-header-pro > div:first-child > span{display:none!important;}
+      .header-action-pro{min-width:30px!important;width:30px!important;height:30px!important;padding:0!important;font-size:.78rem!important;display:inline-grid!important;place-items:center!important;border-radius:999px!important;line-height:1!important;}
+      .header-action-pro svg,.header-action-pro img{max-width:24px!important;max-height:24px!important;}
+      .wallet-button-pro,.cart-button-pro{font-size:.82rem!important;}
+      .theme-toggle-pro .theme-word{display:none!important;}
+      .theme-toggle-pro{width:30px!important;min-width:30px!important;}
+      .app-header-pro button[title*="música"],.app-header-pro button[title*="Música"],.app-header-pro button[title*="Activar música"]{font-size:0!important;}
+      .app-header-pro button[title*="música"]::before,.app-header-pro button[title*="Música"]::before,.app-header-pro button[title*="Activar música"]::before{content:"🔊";font-size:.82rem!important;}
+      .app-header-pro button[title*="Doble toque"]::before{content:"🔇";font-size:.82rem!important;}
+      .app-header-pro .header-action-pro:last-child{width:30px!important;height:30px!important;padding:0!important;overflow:hidden!important;}
+      .app-header-pro .header-action-pro:last-child > div,.app-header-pro .header-action-pro:last-child svg{transform:scale(.82)!important;transform-origin:center!important;}
+      .page-content-pro{width:calc(100% - 10px)!important;margin-top:8px!important;border-radius:22px!important;padding:12px 8px!important;overflow:hidden!important;min-height:calc(100dvh - 170px)!important;}
+      .premium-home section{border-radius:22px!important;}
       .premium-home h1{font-size:clamp(2.15rem,12vw,3.4rem)!important;letter-spacing:.01em!important;line-height:.92!important;}
-      .bottom-nav-pro{width:calc(100% - 16px)!important;border-radius:22px!important;}
-      .nav-tab-pro{min-width:0!important;}
-      .nav-tab-pro span{font-size:.54rem!important;}
+      .rc-home-cover{margin-left:-8px!important;margin-right:-8px!important;}
+      .rc-home-cover img{max-height:230px!important;object-fit:contain!important;}
+      .rc-home-cover [style*="padding:8px 12px"]{padding:6px 8px!important;font-size:.74rem!important;border-radius:12px!important;}
+      .rc-home-live-panels{grid-template-columns:1fr!important;gap:10px!important;}
+      .rc-home-live-panels > div{border-radius:18px!important;padding:12px!important;}
+      .rc-home-live-panels [style*="grid-template-columns:repeat(3,1fr)"]{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;}
+      .bottom-nav-pro{width:calc(100% - 10px)!important;border-radius:20px!important;padding:6px 5px calc(7px + env(safe-area-inset-bottom,0px))!important;gap:2px!important;}
+      .nav-tab-pro{min-width:0!important;padding:2px 3px!important;gap:1px!important;}
+      .nav-icon-pro{font-size:.95rem!important;padding:3px 5px!important;border-radius:12px!important;}
+      .nav-tab-pro[data-active="true"] .nav-icon-pro{transform:scale(1.06)!important;}
+      .nav-tab-pro span{font-size:.49rem!important;max-width:52px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
     }
+
+    @media(max-width:380px){
+      .brand-home-button{max-width:104px!important;font-size:.95rem!important;}
+      .header-action-pro{width:28px!important;height:28px!important;min-width:28px!important;font-size:.72rem!important;}
+      .app-header-pro{padding:6px 6px!important;}
+      .nav-tab-pro span{font-size:.46rem!important;max-width:46px!important;}
+      .nav-icon-pro{font-size:.9rem!important;padding:3px 4px!important;}
+    }
+
 
 
     /* 2.9.7f · Clean public copy: tono claro para clientes, staff y admin. */
@@ -13753,7 +13762,7 @@ function AppCore(){
           <button className="header-action-pro cart-button-pro" onClick={()=>setCartOpen(true)} title="Carrito · compras y personalización" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🛒</button>
           <button className="header-action-pro" onClick={handleMusicButtonClick} title={musicOn?`Doble toque: canción aleatoria (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
           <button className="header-action-pro theme-toggle-pro" onClick={toggleUiTheme} title={uiTheme==="night"?"Cambiar a modo día":"Cambiar a modo noche"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.72rem",display:"inline-flex",alignItems:"center",gap:4}}>{uiTheme==="night"?"☀️":"🌙"} <span className="theme-word">{uiTheme==="night"?"Día":"Noche"}</span></button>
-          {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} pts</div>}
+          {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} RP</div>}
           <div className="header-action-pro" onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
             <Av av={currentUser.avatar} config={currentUser.avatarConfig} size={32}/>
           </div>
