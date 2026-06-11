@@ -266,13 +266,65 @@ function AvatarLevelRolesPanel({user,compact=false}){
 function formatCurrencyBadge(user){return `💎 ${userRP(user)} RP · 🪙 ${userRC(user)} RC · ⭐ Nv. ${Number(user?.avatar_level||avatarLevelFromXP(userXP(user)))}`;}
 
 function PublicProfileModal({profile,onClose}){
+  const [publicStats,setPublicStats]=useState({loading:false,best:[],games:0,comments:0,likes:0,forum:0});
+
+  useEffect(()=>{
+    let alive=true;
+    async function loadPublicStats(){
+      if(!profile?.id&&!profile?.user_id&&!profile?.usuario_id){
+        setPublicStats({loading:false,best:[],games:0,comments:0,likes:0,forum:0});
+        return;
+      }
+      const uid=String(profile.id||profile.user_id||profile.usuario_id);
+      setPublicStats(s=>({...s,loading:true}));
+      try{
+        const [scores,comments,likes,topics,replies]=await Promise.all([
+          safeList("game_scores",`?usuario_id=eq.${uid}&order=score.desc&limit=120&select=game_id,score,created_at`),
+          safeList("news_comments",`?usuario_id=eq.${uid}&limit=200&select=id`),
+          safeList("news_likes",`?usuario_id=eq.${uid}&limit=200&select=id`),
+          safeList("foro_temas",`?usuario_id=eq.${uid}&limit=200&select=id`),
+          safeList("foro_respuestas",`?usuario_id=eq.${uid}&limit=200&select=id`)
+        ]);
+
+        const bestMap={};
+        (scores||[]).forEach(s=>{
+          const gid=String(s.game_id||s.juego||s.game||"").trim();
+          if(!gid||gid==="gacha")return;
+          const score=Number(s.score)||Number(s.points)||Number(s.puntos)||0;
+          if(!bestMap[gid]||score>Number(bestMap[gid].score||0))bestMap[gid]={...s,game_id:gid,score};
+        });
+
+        const best=Object.values(bestMap)
+          .sort((a,b)=>Number(b.score||0)-Number(a.score||0))
+          .slice(0,4);
+
+        if(alive)setPublicStats({
+          loading:false,
+          best,
+          games:(scores||[]).length,
+          comments:(comments||[]).length,
+          likes:(likes||[]).length,
+          forum:(topics||[]).length+(replies||[]).length
+        });
+      }catch(e){
+        if(alive)setPublicStats({loading:false,best:[],games:0,comments:0,likes:0,forum:0});
+      }
+    }
+    loadPublicStats();
+    return()=>{alive=false;};
+  },[profile?.id,profile?.user_id,profile?.usuario_id]);
+
   if(!profile)return null;
   const hidden=isPrivateProfile(profile);
   const cfg=normalizeAvatarV3(profile.avatar_config||profile.avatarConfig,profile.id||profile.avatar||0);
   const pts=userRP(profile);
   const rc=userRC(profile);
   const xp=userXP(profile);
-  const nivel=avatarLevelName(profile.avatar_level||avatarLevelFromXP(xp));
+  const levelNum=Number(profile.avatar_level||avatarLevelFromXP(xp));
+  const nivel=avatarLevelName(levelNum);
+  const progress=levelProgress(xp);
+  const joinedLabel=profile.created_at?new Date(profile.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}):null;
+
   if(hidden){
     return <Modal show={!!profile} onClose={onClose} title="Perfil privado">
       <div style={{textAlign:"center",padding:"8px 0 4px"}}>
@@ -286,25 +338,83 @@ function PublicProfileModal({profile,onClose}){
       </div>
     </Modal>;
   }
+
   return <Modal show={!!profile} onClose={onClose} title="Perfil público">
-    <div style={{textAlign:"center"}}>
-      <div style={{display:"flex",justifyContent:"center",marginBottom:10}}><Av av={profile.avatar} config={cfg} size={96}/></div>
-      <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",color:T.g800}}>{profile.nombre||"Cliente Rasta"}</div>
-      <div style={{display:"flex",justifyContent:"center",gap:8,flexWrap:"wrap",marginTop:10}}>
-        <Badge col="gold">{nivel}</Badge><Badge col="green">💎 {pts} RP</Badge><Badge col="blue">🪙 {rc} RC</Badge>
-      </div>
-      <div style={{display:"flex",justifyContent:"center"}}><AvatarBadgesStrip user={profile} limit={4}/></div>
-      <Card style={{marginTop:14,textAlign:"left",background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)"}}>
-        <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🎭 Estilo</div>
-        <div style={{fontSize:".86rem",fontWeight:800,color:T.textSub}}>{avatarStyleName(cfg)}</div>
-      </Card>
-      <Card style={{marginTop:10,textAlign:"left",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
-        <div style={{fontWeight:900,color:T.g800,marginBottom:8}}>🏆 Resumen público</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,textAlign:"center"}}>
-          <div><div style={{fontSize:"1.4rem"}}>💎</div><b>{pts}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>RP</div></div>
-          <div><div style={{fontSize:"1.4rem"}}>🔥</div><b>{profile.visitas||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Visitas</div></div>
-          <div><div style={{fontSize:"1.4rem"}}>🎮</div><b>{profile.records||0}</b><div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Récords</div></div>
+    <div style={{display:"grid",gap:12}}>
+      <Card style={{textAlign:"center",background:"linear-gradient(145deg,#120806,#183226 58%,#6E3518)",color:T.white,border:"2px solid rgba(242,200,91,.42)",overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-18,top:-20,fontSize:"6rem",opacity:.10}}>♛</div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{display:"flex",justifyContent:"center",marginBottom:10}}>
+            <div style={{borderRadius:"50%",padding:5,background:"linear-gradient(145deg,#FFF4D6,#E0B84F)",boxShadow:"0 14px 30px rgba(0,0,0,.28)"}}>
+              <Av av={profile.avatar} config={cfg} size={102}/>
+            </div>
+          </div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.7rem",color:T.g50,lineHeight:1}}>{profile.nombre||profile.usuario_nombre||"Cliente Rasta"}</div>
+          <div style={{fontSize:".78rem",fontWeight:850,color:"rgba(255,247,218,.74)",marginTop:5}}>
+            {publicRoleLabel(profile)}{joinedLabel?` · desde ${joinedLabel}`:""}
+          </div>
+          <div style={{display:"flex",justifyContent:"center",gap:8,flexWrap:"wrap",marginTop:11}}>
+            <Badge col="gold">{nivel}</Badge>
+            <Badge col="green">💎 {pts} RP</Badge>
+            <Badge col="blue">🪙 {rc} RC</Badge>
+            <Badge col="pink">⭐ {xp} XP</Badge>
+          </div>
         </div>
+      </Card>
+
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`1.5px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",marginBottom:8}}>
+          <div>
+            <div style={{fontWeight:950,color:T.g800}}>⭐ Progreso público</div>
+            <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub}}>Nivel {levelNum} · {progress.remaining} XP para el siguiente</div>
+          </div>
+          <Badge col="gold">{Math.round(progress.pct)}%</Badge>
+        </div>
+        <div style={{height:11,borderRadius:999,background:"rgba(110,53,24,.16)",overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${Math.max(5,Math.min(100,progress.pct))}%`,borderRadius:999,background:T.gradGold}}/>
+        </div>
+        <div style={{display:"flex",justifyContent:"center",marginTop:10}}>
+          <AvatarBadgesStrip user={profile} limit={5}/>
+        </div>
+      </Card>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+        <Card style={{padding:10,textAlign:"center",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
+          <div style={{fontSize:"1.25rem"}}>🎮</div><b>{publicStats.games}</b><div style={{fontSize:".65rem",fontWeight:850,color:T.textSub}}>partidas</div>
+        </Card>
+        <Card style={{padding:10,textAlign:"center",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
+          <div style={{fontSize:"1.25rem"}}>💬</div><b>{publicStats.comments}</b><div style={{fontSize:".65rem",fontWeight:850,color:T.textSub}}>comentarios</div>
+        </Card>
+        <Card style={{padding:10,textAlign:"center",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
+          <div style={{fontSize:"1.25rem"}}>👍</div><b>{publicStats.likes}</b><div style={{fontSize:".65rem",fontWeight:850,color:T.textSub}}>likes</div>
+        </Card>
+        <Card style={{padding:10,textAlign:"center",background:"linear-gradient(180deg,#F6E5BE,#E6C27A)"}}>
+          <div style={{fontSize:"1.25rem"}}>🗣️</div><b>{publicStats.forum}</b><div style={{fontSize:".65rem",fontWeight:850,color:T.textSub}}>foro</div>
+        </Card>
+      </div>
+
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`1.5px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🏆 Mejores marcas</div>
+        {publicStats.loading?<Spinner/>:publicStats.best.length===0?
+          <div style={{fontSize:".82rem",fontWeight:820,color:T.textSub,lineHeight:1.4}}>Todavía no hay marcas públicas de Arcade para este perfil.</div>:
+          <div style={{display:"grid",gap:7}}>
+            {publicStats.best.map((s,i)=>{
+              const meta=gameMeta(s.game_id);
+              return <div key={`${s.game_id}-${i}`} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"center",border:`1px solid ${T.g200}`,background:"rgba(255,255,255,.35)",borderRadius:13,padding:"8px 10px"}}>
+                <div style={{minWidth:0}}>
+                  <div style={{fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{meta.icon} {meta.title}</div>
+                  <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub}}>Mejor puntuación registrada</div>
+                </div>
+                <Badge col="gold">{Number(s.score)||0}</Badge>
+              </div>;
+            })}
+          </div>
+        }
+      </Card>
+
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`1.5px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🎭 Estilo de avatar</div>
+        <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.4}}>{avatarStyleName(cfg)}</div>
       </Card>
     </div>
   </Modal>;
@@ -6468,21 +6578,21 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     const [accent,deep,artType]=toneMap[g.id]||["#3EE6C7","#123F32","arcade"];
     const status=isTycoon?"Progreso propio":isGacha?"RC + XP":played?"Cobrado hoy":"Pendiente hoy";
     return <Card hover style={{opacity:played&&!isTycoon?0.92:1,background:`linear-gradient(145deg,rgba(8,13,10,.97),${deep}F2), radial-gradient(circle at 88% 16%,${accent}33,transparent 38%)`,border:`1px solid ${played&&!isTycoon?"rgba(255,244,214,.18)":accent+"77"}`,position:"relative",overflow:"hidden",color:"#FFF7DA",padding:0,boxShadow:"0 18px 42px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08)"}}>
-      <div style={{position:"absolute",right:-18,top:0,opacity:.88,transform:"rotate(-5deg)",pointerEvents:"none"}}><RastaCardIllustration type={artType} accent={accent} size={150}/></div>
+      <div style={{position:"absolute",right:-8,top:8,opacity:.68,transform:"rotate(-5deg)",pointerEvents:"none"}}><RastaCardIllustration type={artType} accent={accent} size={108}/></div>
       <div style={{position:"absolute",left:0,right:0,top:0,height:48,background:`linear-gradient(90deg,${accent}28,rgba(255,255,255,.06),transparent)`,borderBottom:`1px solid ${accent}22`}}/>
-      <div style={{position:"relative",zIndex:1,padding:14,display:"grid",gridTemplateColumns:"minmax(0,1fr) auto",gap:12,alignItems:"end",minHeight:164}}>
-        <div style={{minWidth:0,maxWidth:"72%"}}>
+      <div style={{position:"relative",zIndex:1,padding:12,display:"grid",gridTemplateColumns:"minmax(0,1fr) auto",gap:10,alignItems:"end",minHeight:126}}>
+        <div style={{minWidth:0,maxWidth:"78%"}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:7,padding:"6px 10px",borderRadius:999,background:"rgba(255,255,255,.08)",border:`1px solid ${accent}33`,fontSize:".70rem",fontWeight:1000,color:"rgba(255,247,218,.82)",textTransform:"uppercase",letterSpacing:".05em"}}>{g.icon} {status}</div>
-          <div className="rc-card-title" style={{fontWeight:1000,fontSize:featured?"1.42rem":"1.20rem",marginTop:13,color:accent,textTransform:"uppercase",letterSpacing:".02em",lineHeight:1}}>{g.title}</div>
-          <div style={{fontSize:".80rem",fontWeight:800,lineHeight:1.35,color:"rgba(255,247,218,.78)",marginTop:6,maxWidth:210}}>{g.desc}</div>
-          <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:11}}>
+          <div className="rc-card-title" style={{fontWeight:1000,fontSize:featured?"1.18rem":"1.05rem",marginTop:9,color:accent,textTransform:"uppercase",letterSpacing:".02em",lineHeight:1}}>{g.title}</div>
+          <div style={{fontSize:".74rem",fontWeight:800,lineHeight:1.25,color:"rgba(255,247,218,.78)",marginTop:5,maxWidth:210}}>{g.desc}</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
             {isTycoon?<Badge col="blue">🪙 RC global</Badge>:isGacha?<Badge col="gold">🎰 premios de juego</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP</Badge>}
             {!isTycoon&&<Badge col="blue">🏆 récord {best}</Badge>}
             {isGacha&&extraPulls>0&&<Badge col="gold">+{extraPulls} tiradas</Badge>}
           </div>
         </div>
         <div style={{display:"grid",gap:7,justifyItems:"end",alignSelf:"end"}}>
-          <button onClick={()=>isTycoon?onOpenTycoon?.():setActiveGame(g.id)} style={{border:`1px solid ${accent}88`,background:`linear-gradient(135deg,${accent},#FFF1A6)`,color:"#160D07",borderRadius:14,padding:"9px 12px",fontWeight:1000,cursor:"pointer",boxShadow:`0 10px 20px ${accent}22`,whiteSpace:"nowrap"}}>{isTycoon?"Gestionar":played&&!isGacha?"Rejugar":"Jugar"}</button>
+          <button onClick={()=>isTycoon?onOpenTycoon?.():setActiveGame(g.id)} style={{border:`1px solid ${accent}88`,background:`linear-gradient(135deg,${accent},#FFF1A6)`,color:"#160D07",borderRadius:13,padding:"8px 10px",fontWeight:1000,cursor:"pointer",boxShadow:`0 10px 20px ${accent}22`,whiteSpace:"nowrap"}}>{isTycoon?"Gestionar":played&&!isGacha?"Rejugar":"Jugar"}</button>
           {!isTycoon&&<button onClick={()=>onOpenTops?.("games")} style={{border:"none",background:"transparent",color:"rgba(255,247,218,.78)",fontSize:".70rem",fontWeight:950,cursor:"pointer"}}>Ver top</button>}
         </div>
       </div>
@@ -6536,11 +6646,18 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
         {categoryDefs.map(c=><button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{minWidth:132,border:`2px solid ${category===c.id?T.gold:T.g200}`,borderRadius:18,padding:"10px 12px",background:category===c.id?"linear-gradient(135deg,#FFF4D6,#EBD081)":"rgba(255,244,214,.72)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:category===c.id?"0 8px 18px rgba(185,154,69,.22)":"0 5px 12px rgba(20,8,4,.08)"}}><div>{c.icon} {c.label}</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:2}}>{c.sub}</div></button>)}
       </div>
 
-      <div style={{fontSize:".78rem",fontWeight:900,color:T.textSub,margin:"-2px 2px 10px"}}>
-        Mostrando {visibleGames.length} de {GAMES.length} juegos. Cambia de pestaña sólo si quieres filtrar.
+      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",margin:"-2px 2px 10px",flexWrap:"wrap"}}>
+        <div style={{fontSize:".78rem",fontWeight:900,color:T.textSub}}>
+          Mostrando {visibleGames.length} de {GAMES.length} juegos. Cambia de pestaña sólo si quieres filtrar.
+        </div>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+          <button onClick={()=>setActiveGame("runner")} style={{border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.70)",borderRadius:999,padding:"6px 9px",fontSize:".68rem",fontWeight:950,color:T.g800,cursor:"pointer"}}>✂️ Runner</button>
+          <button onClick={()=>setActiveGame("gacha")} style={{border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.70)",borderRadius:999,padding:"6px 9px",fontSize:".68rem",fontWeight:950,color:T.g800,cursor:"pointer"}}>🎰 Gacha</button>
+          <button onClick={()=>onOpenTycoon?.()} style={{border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.70)",borderRadius:999,padding:"6px 9px",fontSize:".68rem",fontWeight:950,color:T.g800,cursor:"pointer"}}>🏪 Tycoon</button>
+        </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:12,marginBottom:16}}>
+      <div className="rc-arcade-games-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:10,marginBottom:16}}>
         {visibleGames.map(g=><GameCard key={g.id} g={g} featured={activeCat.id==="destacados"}/>) }
       </div>
     </div>
@@ -13444,6 +13561,9 @@ function GlobalUIPolishPatch(){
       .nav-icon-pro{font-size:.95rem!important;padding:3px 5px!important;border-radius:12px!important;}
       .nav-tab-pro[data-active="true"] .nav-icon-pro{transform:scale(1.06)!important;}
       .nav-tab-pro span{font-size:.49rem!important;max-width:52px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+      .rc-arcade-games-grid{grid-template-columns:1fr!important;gap:9px!important;}
+      .rc-arcade-games-grid .card{border-radius:18px!important;}
+      .rasta-helper-fixed-safe{transform:scale(.86)!important;transform-origin:bottom right!important;}
     }
 
     @media(max-width:380px){
