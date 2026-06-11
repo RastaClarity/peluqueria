@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7v: RastaHelp vuelve a Inicio, Gacha corregido y Android compacto.
+  // Paleta 2.9.7x: cabecera móvil equilibrada y sin título ocupando espacio.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7V_RASTAHELP_HOME_RESTORE";
-const APP_VERSION_SHORT = "2.9.7v";
+const APP_VERSION = "RASTACUTS_2_9_7X_BALANCED_MOBILE_TOPBAR";
+const APP_VERSION_SHORT = "2.9.7x";
 const APP_BUILD_DATE = "2026-06-11";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
