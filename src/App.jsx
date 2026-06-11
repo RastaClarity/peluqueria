@@ -3133,6 +3133,7 @@ function Citas({user,showToast,onNavigate}){
   const [form,setForm]=useState({servicios:["corte"],fecha:"",hora:"",notas:"",cliente_nombre:user?.nombre||""});
   const [ocupados,setOcupados]=useState([]);
   const [view,setView]=useState(user?.rol!==ROLES.CLIENT?"pendiente":"todas");
+  const [period,setPeriod]=useState("todas");
   const [proposal,setProposal]=useState(null);
   const [adminEdit,setAdminEdit]=useState(null);
   const [cancelEdit,setCancelEdit]=useState(null);
@@ -3296,9 +3297,38 @@ function Citas({user,showToast,onNavigate}){
     {id:"confirmada",label:"Confirmadas",icon:"✅"},
     {id:"cancelada",label:"Canceladas",icon:"❌"},
   ];
-  const citasVisibles=view==="todas"?citas:citas.filter(c=>statusOf(c)===view);
+  const citasBase=view==="todas"?citas:citas.filter(c=>statusOf(c)===view);
+  const citasVisibles=citasBase.filter(c=>periodMatch(c));
   const eColor={pendiente:"gold",propuesta:"blue",confirmada:"green",cancelada:"red",completada:"blue"};
   const eLabel={pendiente:"pendiente",propuesta:"propuesta",confirmada:"confirmada",cancelada:"cancelada",completada:"realizada"};
+
+  function todayIso(offset=0){
+    const d=new Date();
+    d.setHours(0,0,0,0);
+    d.setDate(d.getDate()+offset);
+    return d.toISOString().slice(0,10);
+  }
+  function dateDiffFromToday(fecha){
+    if(!fecha)return 9999;
+    const a=new Date(todayIso(0)+"T00:00:00");
+    const b=new Date(String(fecha)+"T00:00:00");
+    if(Number.isNaN(b.getTime()))return 9999;
+    return Math.round((b-a)/86400000);
+  }
+  function periodMatch(cita,p=period){
+    const diff=dateDiffFromToday(cita.fecha);
+    if(p==="hoy")return diff===0;
+    if(p==="manana")return diff===1;
+    if(p==="semana")return diff>=0&&diff<=7;
+    return true;
+  }
+  const periodTabs=[
+    {id:"todas",icon:"📚",label:"Todas"},
+    {id:"hoy",icon:"☀️",label:"Hoy"},
+    {id:"manana",icon:"🌙",label:"Mañana"},
+    {id:"semana",icon:"🗓️",label:"7 días"}
+  ];
+  const periodCounts=periodTabs.reduce((acc,p)=>({...acc,[p.id]:citas.filter(c=>periodMatch(c,p.id)).length}),{});
 
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
@@ -3317,12 +3347,20 @@ function Citas({user,showToast,onNavigate}){
           <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.propuesta||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Propuestas</div></div>
           <div style={{background:"rgba(255,244,214,.58)",border:`1px solid ${T.g300}`,borderRadius:14,padding:"10px",textAlign:"center"}}><div style={{fontSize:"1.15rem",fontWeight:950,color:T.g800}}>{counts.confirmada||0}</div><div style={{fontSize:".68rem",fontWeight:900,color:T.textSub}}>Confirmadas</div></div>
         </div>
+        <div style={{marginBottom:10}}>
+          <div style={{fontSize:".72rem",fontWeight:950,color:T.g700,textTransform:"uppercase",letterSpacing:".04em",marginBottom:6}}>Agenda rápida</div>
+          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:2}}>
+            {periodTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setPeriod(t.id);}} style={{flex:"0 0 auto",border:"none",borderRadius:999,padding:"8px 12px",background:period===t.id?T.gradGold:"rgba(255,244,214,.62)",color:period===t.id?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:period===t.id?"0 8px 18px rgba(18,8,4,.16)":"none"}}>{t.icon} {t.label} <span style={{opacity:.75}}>({periodCounts[t.id]||0})</span></button>)}
+          </div>
+        </div>
+
+        <div style={{fontSize:".72rem",fontWeight:950,color:T.g700,textTransform:"uppercase",letterSpacing:".04em",marginBottom:6}}>Estado</div>
         <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:2}}>
           {statusTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setView(t.id);}} style={{flex:"0 0 auto",border:"none",borderRadius:999,padding:"8px 12px",background:view===t.id?T.gradGold:"rgba(255,244,214,.62)",color:view===t.id?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:view===t.id?"0 8px 18px rgba(18,8,4,.16)":"none"}}>{t.icon} {t.label} <span style={{opacity:.75}}>({counts[t.id]||0})</span></button>)}
         </div>
       </Card>
 
-      {loading?<Spinner/>:citasVisibles.length===0?<EmptyState icon="📅" title="Sin citas" sub={view==="todas"?"Todavía no hay citas en esta vista":"No hay citas con este estado"}/>
+      {loading?<Spinner/>:citasVisibles.length===0?<EmptyState icon="📅" title="Sin citas" sub={period==="todas"?(view==="todas"?"Todavía no hay citas en esta vista":"No hay citas con este estado"):"No hay citas en este periodo con el estado elegido"}/>
         :citasVisibles.map(c=>{
           const list=citaServices(c);
           const dur=citaDuration(list);
