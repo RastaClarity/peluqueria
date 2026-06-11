@@ -7619,7 +7619,7 @@ function UserRewardCouponsCard({user,showToast}){
   </Card>;
 }
 
-function Perfil({user,setUser,onLogout,showToast,showPoints,onNavigate}){
+function Perfil({user,setUser,onLogout,showToast,showPoints,onNavigate,onOpenAudioSettings=null,audioMode="random"}){
   const [tab,setTab]=useState("resumen");
   const [ownedCosmetics,setOwnedCosmetics]=useState(localOwnedCosmetics(user));
   const [privacy,setPrivacy]=useState(normalizePrivacy(user));
@@ -7648,6 +7648,7 @@ function Perfil({user,setUser,onLogout,showToast,showPoints,onNavigate}){
     {id:"camino",icon:"🎁",label:"Camino"},
     {id:"roles",icon:"⭐",label:"Roles"},
     {id:"logros",icon:"🏆",label:"Logros"},
+    {id:"ajustes",icon:"⚙️",label:"Ajustes"},
   ];
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
@@ -7699,6 +7700,27 @@ function Perfil({user,setUser,onLogout,showToast,showPoints,onNavigate}){
         </Card>
         <PerfilNewsActivity user={user}/>
       </>}
+
+      {tab==="ajustes"&&<Card style={{marginBottom:16,padding:14,background:"linear-gradient(180deg,#FFF4D6,#E6CF9B)",border:`2px solid ${T.g300}`}}>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>⚙️ Ajustes del perfil</div>
+        <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.38,marginTop:4}}>Opciones personales para que la app se adapte mejor a cómo la usas.</div>
+        <div style={{display:"grid",gap:10,marginTop:12}}>
+          <button onClick={()=>onOpenAudioSettings?.()} style={{border:`2px solid ${T.g200}`,background:"linear-gradient(180deg,#101C15,#07100D)",color:T.white,borderRadius:18,padding:12,textAlign:"left",cursor:"pointer",boxShadow:"0 8px 18px rgba(20,8,4,.16)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+              <div><div style={{fontWeight:1000}}>🎧 Sonido y música</div><div style={{fontSize:".78rem",fontWeight:800,color:"rgba(255,247,218,.72)",lineHeight:1.34,marginTop:3}}>Modo actual: {audioMode==="ambient"?"ambientada por sección":"aleatoria en toda la app"}</div></div>
+              <Badge col={audioMode==="ambient"?"blue":"gold"}>{audioMode==="ambient"?"Ambientada":"Aleatoria"}</Badge>
+            </div>
+          </button>
+          <div style={{border:`1px solid ${T.g200}`,borderRadius:18,padding:12,background:"rgba(255,244,214,.62)"}}>
+            <div style={{fontWeight:1000,color:T.g800}}>🕶️ Privacidad</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:3}}>La privacidad del perfil se gestiona desde el resumen del perfil.</div>
+          </div>
+          <div style={{border:`1px solid ${T.g200}`,borderRadius:18,padding:12,background:"rgba(255,244,214,.62)"}}>
+            <div style={{fontWeight:1000,color:T.g800}}>🔔 Avisos</div>
+            <div style={{fontSize:".78rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:3}}>Las notificaciones importantes aparecen en la campana superior.</div>
+          </div>
+        </div>
+      </Card>}
 
       {tab==="editar"&&<Card style={{marginBottom:16,padding:12,background:"linear-gradient(180deg,#F6E8C8,#D4BD8F)",border:"2px solid #8E7957"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:12}}>
@@ -13198,6 +13220,14 @@ function GlobalUIPolishPatch(){
 
 
 
+
+    /* 2.9.8a · Botón de sonido con acceso largo a ajustes */
+    @media(max-width:560px){
+      .rc-balanced-topbar .rc-sound-mini{
+        box-shadow:0 0 0 1px rgba(255,244,214,.12),0 4px 12px rgba(0,0,0,.20)!important;
+      }
+    }
+
     /* 2.9.7x · Cabecera Android equilibrada: izquierda cartera/puntos/carrito, derecha ajustes */
     .rc-balanced-topbar{
       grid-template-columns:minmax(0,1fr) auto!important;
@@ -13607,6 +13637,99 @@ function GlobalUIPolishPatch(){
   `}</style>;
 }
 
+
+function audioZoneForPage(page,communityTab){
+  const p=String(page||"dashboard");
+  if(p==="dashboard")return "home";
+  if(p==="juegos"||p==="ranking"||p==="retos")return "arcade";
+  if(p==="tienda"||p==="cupones")return "shop";
+  if(p==="perfil")return "profile";
+  if(p==="comunidad")return communityTab==="musica"?"global":"community";
+  if(p==="gestion"||p==="citas"||p==="clientes")return "shop";
+  if(p==="buzon"||p==="notificaciones")return "global";
+  return "global";
+}
+
+function audioZoneLabel(zone){
+  const labels={
+    home:"Inicio",
+    login:"Login",
+    shop:"Tienda",
+    profile:"Perfil",
+    arcade:"Arcade",
+    community:"Comunidad",
+    global:"Global"
+  };
+  return labels[zone]||"Global";
+}
+
+function AudioSettingsModal({show,onClose,mode,onModeChange,currentZone,musicOn,onToggleMusic,onNextTrack,uiTheme,onToggleTheme,trackName}){
+  const selected=mode==="ambient"?"ambient":"random";
+
+  function ModeButton({id,icon,title,desc,note}){
+    const active=selected===id;
+    return <button onClick={()=>onModeChange?.(id)} style={{
+      border:`2px solid ${active?T.gold:T.g300}`,
+      background:active?"linear-gradient(135deg,#7A5720,#F0C85C 65%,#FFE7A4)":"linear-gradient(180deg,#FFF4D6,#E7D1A0)",
+      color:T.g900,
+      borderRadius:18,
+      padding:12,
+      textAlign:"left",
+      cursor:"pointer",
+      boxShadow:active?"0 10px 22px rgba(20,8,4,.20)":"0 6px 14px rgba(20,8,4,.10)"
+    }}>
+      <div style={{display:"flex",alignItems:"center",gap:9}}>
+        <div style={{width:34,height:34,borderRadius:13,display:"grid",placeItems:"center",background:active?"rgba(5,7,6,.14)":"rgba(110,53,24,.10)",fontSize:"1.1rem"}}>{icon}</div>
+        <div style={{fontWeight:1000}}>{title}</div>
+      </div>
+      <div style={{fontSize:".78rem",fontWeight:800,color:active?T.g800:T.textSub,lineHeight:1.36,marginTop:8}}>{desc}</div>
+      {note&&<div style={{fontSize:".7rem",fontWeight:900,color:active?T.g900:T.textSub,opacity:.8,marginTop:8}}>{note}</div>}
+    </button>;
+  }
+
+  return <Modal show={show} onClose={onClose} title="Ajustes de sonido">
+    <div style={{display:"grid",gap:12}}>
+      <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D3A3)",border:`1.5px solid ${T.g300}`}}>
+        <div style={{fontWeight:1000,color:T.g800}}>🎧 Música de fondo</div>
+        <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.38,marginTop:4}}>
+          Elige cómo quieres que se comporte la playlist. Esta pantalla ya guarda tu preferencia para la próxima fase del motor de audio.
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:10,marginTop:12}}>
+          <ModeButton id="random" icon="🔀" title="Aleatoria en toda la app" desc="Mezcla todas las canciones de la playlist sin importar la sección." note="Modo por defecto"/>
+          <ModeButton id="ambient" icon="🌗" title="Ambientada por sección" desc="Deja preparado que Inicio, Tienda, Perfil y Arcade usen canciones de su ambiente." note="Se conectará al motor en la siguiente fase"/>
+        </div>
+      </Card>
+
+      <Card style={{background:"linear-gradient(180deg,#101C15,#07100D)",border:`1.5px solid ${T.g300}`,color:T.white}}>
+        <div style={{fontWeight:1000,color:T.g150}}>Estado actual</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginTop:10}}>
+          <div style={{borderRadius:14,padding:10,background:"rgba(255,244,214,.08)",border:"1px solid rgba(255,244,214,.14)"}}>
+            <div style={{fontSize:".68rem",fontWeight:900,opacity:.72}}>MODO</div>
+            <div style={{fontWeight:1000}}>{selected==="ambient"?"Ambientada":"Aleatoria"}</div>
+          </div>
+          <div style={{borderRadius:14,padding:10,background:"rgba(255,244,214,.08)",border:"1px solid rgba(255,244,214,.14)"}}>
+            <div style={{fontSize:".68rem",fontWeight:900,opacity:.72}}>ZONA</div>
+            <div style={{fontWeight:1000}}>{audioZoneLabel(currentZone)}</div>
+          </div>
+        </div>
+        <div style={{fontSize:".78rem",fontWeight:800,color:"rgba(255,247,218,.72)",lineHeight:1.38,marginTop:10}}>
+          Tema actual: <b>{trackName||"Rasta Cuts Lounge"}</b>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8,marginTop:12}}>
+          <Btn full small col={musicOn?"ghost":"gold"} onClick={onToggleMusic}>{musicOn?"🔇 Silenciar":"🔊 Activar"}</Btn>
+          <Btn full small col="blue" onClick={onNextTrack}>⏭️ Cambiar tema</Btn>
+          <Btn full small col="ghost" onClick={onToggleTheme}>{uiTheme==="night"?"☀️ Modo día":"🌙 Modo noche"}</Btn>
+        </div>
+      </Card>
+
+      <div style={{fontSize:".76rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>
+        Mantén pulsado el botón de sonido de la cabecera para volver a abrir estos ajustes.
+      </div>
+    </div>
+  </Modal>;
+}
+
+
 function AppCore(){
   const [user,setUser]=useState(null);
   const [page,setPage]=useState("dashboard");
@@ -13615,6 +13738,17 @@ function AppCore(){
   const [toast,setToast]=useState({show:false,msg:""});
   const [ptsPopup,setPtsPopup]=useState({show:false,pts:0});
   const [musicOn,setMusicOn]=useState(false);
+  const [audioSettingsOpen,setAudioSettingsOpen]=useState(false);
+  const [audioMode,setAudioMode]=useState(()=>{
+    if(typeof window==="undefined")return "random";
+    try{
+      const saved=localStorage.getItem("rasta_cuts_audio_mode");
+      return saved==="ambient"?"ambient":"random";
+    }catch{}
+    return "random";
+  });
+  const musicPressTimer=useRef(null);
+  const musicLongPressTriggered=useRef(false);
   const [uiTheme,setUiTheme]=useState(()=>{
     if(typeof window==="undefined")return "night";
     try{
@@ -13650,6 +13784,13 @@ function AppCore(){
       localStorage.setItem("rastaCutsUiTheme",uiTheme);
     }catch{}
   },[uiTheme]);
+
+  useEffect(()=>{
+    try{
+      localStorage.setItem("rasta_cuts_audio_mode",audioMode==="ambient"?"ambient":"random");
+    }catch{}
+  },[audioMode]);
+
 
   function openTycoonPage(){
     if(typeof window!=="undefined") window.location.hash="#/tycoon";
@@ -13795,7 +13936,33 @@ function AppCore(){
     SFX.tab();
     setTimeout(()=>showToast(`Tema aleatorio: ${getBackgroundName()}`),40);
   }
+  function openAudioSettings(){
+    if(musicPressTimer.current){clearTimeout(musicPressTimer.current);musicPressTimer.current=null;}
+    setAudioSettingsOpen(true);
+    SFX.tab();
+  }
+  function updateAudioMode(nextMode){
+    const clean=nextMode==="ambient"?"ambient":"random";
+    setAudioMode(clean);
+    try{localStorage.setItem("rasta_cuts_audio_mode",clean);}catch{}
+    showToast(clean==="ambient"?"Preferencia guardada: música ambientada por sección":"Preferencia guardada: música aleatoria");
+  }
+  function startMusicLongPress(){
+    if(musicPressTimer.current)clearTimeout(musicPressTimer.current);
+    musicLongPressTriggered.current=false;
+    musicPressTimer.current=setTimeout(()=>{
+      musicLongPressTriggered.current=true;
+      openAudioSettings();
+    },560);
+  }
+  function cancelMusicLongPress(){
+    if(musicPressTimer.current){clearTimeout(musicPressTimer.current);musicPressTimer.current=null;}
+  }
   function handleMusicButtonClick(){
+    if(musicLongPressTriggered.current){
+      musicLongPressTriggered.current=false;
+      return;
+    }
     const now=Date.now();
     const isDouble=(now-musicButtonLastTap)<330;
     musicButtonLastTap=now;
@@ -13911,7 +14078,7 @@ function AppCore(){
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
     tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda cerrada" sub="La tienda está pausada desde Gestión."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="El Arcade está pausado desde Gestión."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTycoon={openTycoonPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,misiones:<MisionesPage {...sp} onNavigate={navTo}/>,
-    ranking:<Ranking user={currentUser}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout} onNavigate={navTo}/>,
+    ranking:<Ranking user={currentUser}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout} onNavigate={navTo} onOpenAudioSettings={()=>setAudioSettingsOpen(true)} audioMode={audioMode}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
     cupones:<Cupones user={currentUser} showToast={showToast}/>,
@@ -13943,7 +14110,7 @@ function AppCore(){
             {notifCount>0&&<span className="rc-top-badge" style={{position:"absolute",top:-5,right:-5,minWidth:16,height:16,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".55rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}
           </button>
 
-          <button className="header-action-pro rc-mini-square rc-sound-mini" onClick={handleMusicButtonClick} title={musicOn?`Silenciar música · doble toque: canción aleatoria (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.14)",borderRadius:12,width:32,height:32,minWidth:32,padding:0,cursor:"pointer",color:T.white,fontWeight:900,display:"grid",placeItems:"center"}}>
+          <button className="header-action-pro rc-mini-square rc-sound-mini" onClick={handleMusicButtonClick} onPointerDown={startMusicLongPress} onPointerUp={cancelMusicLongPress} onPointerLeave={cancelMusicLongPress} onPointerCancel={cancelMusicLongPress} onContextMenu={(e)=>{e.preventDefault();openAudioSettings();}} title={musicOn?`Silenciar música · mantener pulsado: ajustes (${getBackgroundName()})`:"Activar música · mantener pulsado: ajustes"} style={{background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.14)",borderRadius:12,width:32,height:32,minWidth:32,padding:0,cursor:"pointer",color:T.white,fontWeight:900,display:"grid",placeItems:"center"}}>
             <span className="rc-top-icon">{musicOn?"🔇":"🔊"}</span>
           </button>
 
@@ -13972,6 +14139,7 @@ function AppCore(){
           </button>
         );})}
       </div>
+      <AudioSettingsModal show={audioSettingsOpen} onClose={()=>setAudioSettingsOpen(false)} mode={audioMode} onModeChange={updateAudioMode} currentZone={audioZoneForPage(ap,communityTab)} musicOn={musicOn} onToggleMusic={toggleMusic} onNextTrack={changeMusicTrack} uiTheme={uiTheme} onToggleTheme={toggleUiTheme} trackName={getBackgroundName()}/>
       <NotificacionesPanel show={notifOpen} onClose={()=>setNotifOpen(false)} items={notifications} onRefresh={loadNotifications} onMarkAll={markNotificationsRead} onMarkOne={markNotificationRead} onOpenCitas={()=>navTo("citas")}/>
       <WalletPanel show={walletOpen} onClose={()=>setWalletOpen(false)} user={currentUser}/>
       <CartPanel show={cartOpen} onClose={()=>setCartOpen(false)} user={currentUser} setUser={setUser} showToast={showToast}/>
