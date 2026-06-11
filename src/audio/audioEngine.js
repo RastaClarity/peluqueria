@@ -258,8 +258,11 @@ function readBackgroundMusicMode(){
   try{
     const saved=localStorage.getItem("rasta_cuts_audio_mode");
     return saved==="ambient"?"ambient":"random";
-  }catch{return "random";}
+  }catch{
+    return "random";
+  }
 }
+
 let backgroundMusicMode=readBackgroundMusicMode();
 let backgroundPreferredZone="global";
 
@@ -268,16 +271,86 @@ function normalizeAudioZone(zone){
   if(["home","login","shop","profile","arcade","community","global"].includes(z))return z;
   return "global";
 }
+
+function pageToAudioZone(page,communityTab){
+  const p=String(page||"").toLowerCase();
+  const c=String(communityTab||"").toLowerCase();
+
+  if(!p)return "login";
+  if(p==="dashboard")return "home";
+  if(p==="juegos"||p==="ranking"||p==="retos"||p==="tops")return "arcade";
+  if(p==="tienda"||p==="cupones"||p==="caja")return "shop";
+  if(p==="perfil")return "profile";
+  if(p==="comunidad")return c==="musica"?"global":"community";
+  if(p==="gestion"||p==="citas"||p==="clientes"||p==="inventario")return "shop";
+  if(p==="buzon"||p==="notificaciones"||p==="reviews"||p==="chat")return "global";
+
+  return "global";
+}
+
+function detectBackgroundZone(){
+  if(backgroundPreferredZone&&backgroundPreferredZone!=="global"){
+    return normalizeAudioZone(backgroundPreferredZone);
+  }
+
+  try{
+    const shell=document.querySelector(".app-shell");
+    const page=shell?.dataset?.page || "";
+    const community=shell?.dataset?.community || "";
+    return normalizeAudioZone(pageToAudioZone(page,community));
+  }catch{}
+
+  return "global";
+}
+
+function readLiveBackgroundMode(){
+  const liveMode=readBackgroundMusicMode();
+  if(liveMode!==backgroundMusicMode){
+    backgroundMusicMode=liveMode;
+    backgroundShuffleQueue=[];
+  }
+  return backgroundMusicMode;
+}
+
+function indexesForZone(zone){
+  const exact=BACKGROUND_PLAYLIST
+    .map((t,i)=>({t,i}))
+    .filter(x=>String(x.t?.zone||"").toLowerCase()===zone)
+    .map(x=>x.i);
+
+  if(exact.length)return exact;
+
+  const global=BACKGROUND_PLAYLIST
+    .map((t,i)=>({t,i}))
+    .filter(x=>String(x.t?.zone||"").toLowerCase()==="global")
+    .map(x=>x.i);
+
+  return global;
+}
+
 function backgroundCandidateIndexes(){
   const len=BACKGROUND_PLAYLIST.length;
   if(!len)return [0];
-  if(backgroundMusicMode!=="ambient")return Array.from({length:len},(_,i)=>i);
-  const zone=normalizeAudioZone(backgroundPreferredZone);
-  const exact=BACKGROUND_PLAYLIST.map((t,i)=>({t,i})).filter(x=>String(x.t?.zone||"").toLowerCase()===zone).map(x=>x.i);
-  if(exact.length)return exact;
-  const global=BACKGROUND_PLAYLIST.map((t,i)=>({t,i})).filter(x=>String(x.t?.zone||"").toLowerCase()==="global").map(x=>x.i);
-  return global.length?global:Array.from({length:len},(_,i)=>i);
+
+  const mode=readLiveBackgroundMode();
+
+  if(mode!=="ambient"){
+    return Array.from({length:len},(_,i)=>i);
+  }
+
+  const zone=detectBackgroundZone();
+  const zoneIndexes=indexesForZone(zone);
+
+  if(zoneIndexes.length)return zoneIndexes;
+
+  return Array.from({length:len},(_,i)=>i);
 }
+
+function currentTrackStillFitsMode(){
+  const candidates=backgroundCandidateIndexes();
+  return candidates.includes(backgroundTrackIndex);
+}
+
 function getBackgroundTrack(){
   return BACKGROUND_PLAYLIST[backgroundTrackIndex%BACKGROUND_PLAYLIST.length]||BACKGROUND_PLAYLIST[0];
 }
@@ -292,13 +365,19 @@ function getBackgroundSrc(){
 function pickRandomBackgroundIndex(){
   const candidates=backgroundCandidateIndexes();
   const len=candidates.length;
+
   if(len<=1)return candidates[0]??0;
+
   if(!backgroundShuffleQueue.length){
     backgroundShuffleQueue=candidates
       .filter(i=>i!==backgroundTrackIndex)
       .sort(()=>Math.random()-0.5);
-    if(!backgroundShuffleQueue.length)backgroundShuffleQueue=[...candidates].sort(()=>Math.random()-0.5);
+
+    if(!backgroundShuffleQueue.length){
+      backgroundShuffleQueue=[...candidates].sort(()=>Math.random()-0.5);
+    }
   }
+
   return backgroundShuffleQueue.shift()??candidates[0]??0;
 }
 function backgroundTargetVolume(){
@@ -393,7 +472,7 @@ function startMusic(){
   backgroundAudioAvailable=true;
   stopGeneratedMusic();
 
-  if(!backgroundFirstStartDone){
+  if(!backgroundFirstStartDone || !currentTrackStillFitsMode()){
     backgroundTrackIndex=pickRandomBackgroundIndex();
     backgroundSourceTry=0;
     backgroundFirstStartDone=true;
