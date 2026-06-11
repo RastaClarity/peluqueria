@@ -11493,27 +11493,75 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       </div>
     </section>
 
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
-      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(28,20,13,.94))",border:"1px solid rgba(255,210,98,.24)",color:"#FFF7DA"}}>
-        <div style={{fontWeight:1000,color:"#E0B84F"}}>📌 Ahora mismo</div>
-        {loading?<Spinner/>:<div style={{display:"grid",gap:8,marginTop:12}}>
-          {pendingOrders[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(255,210,98,.22)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>📦 Pedido pendiente</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{pendingOrders[0].cliente_nombre||pendingOrders[0].cliente_email||"Cliente"} · {pendingOrders[0].item_nombre||"Pedido"}</div></button>}
-          {activeCoupons[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(95,240,200,.20)",background:"rgba(95,240,200,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>🎟️ Vale disponible</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{activeCoupons[0].usuario_nombre||activeCoupons[0].usuario_email||"Usuario"} · {activeCoupons[0].codigo||activeCoupons[0].nombre}</div></button>}
-          {bestScore&&<button onClick={()=>onNavigate?.("juegos")} style={{textAlign:"left",border:"1px solid rgba(255,255,255,.10)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>🏆 Última actividad arcade</div><div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.70)"}}>{bestScore.usuario_nombre||bestScore.nombre||"Jugador"} · {bestScore.game_id||"juego"} · {Number(bestScore.score)||Number(bestScore.points)||0}</div></button>}
-          {!pendingOrders[0]&&!activeCoupons[0]&&!bestScore&&<div style={{fontSize:".82rem",fontWeight:850,color:"rgba(255,247,218,.68)"}}>Ahora está todo tranquilo.</div>}
+    <div className="rc-home-live-panels" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(28,20,13,.94))",border:"1px solid rgba(255,210,98,.24)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.22)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+          <div>
+            <div style={{fontWeight:1000,color:"#E0B84F",fontSize:"1.02rem"}}>📌 Hoy en Rasta Cuts</div>
+            <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:4}}>Lo más importante para revisar de un vistazo.</div>
+          </div>
+          <div style={{width:46,height:46,borderRadius:16,display:"grid",placeItems:"center",background:"rgba(242,200,91,.10)",border:"1px solid rgba(242,200,91,.24)",fontSize:"1.35rem"}}>💈</div>
+        </div>
+        {loading?<Spinner/>:<div style={{display:"grid",gap:8,marginTop:14}}>
+          {pendingOrders[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(255,210,98,.22)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>Pedido pendiente</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.72}}>{pendingOrders[0].nombre||pendingOrders[0].cliente_nombre||"Nuevo pedido"} · {pendingOrders[0].estado||"pendiente"}</div></button>}
+          {activeCoupons[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(95,240,200,.20)",background:"rgba(95,240,200,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>Vale activo</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.72}}>{activeCoupons[0].titulo||activeCoupons[0].codigo||"Cupón disponible"}</div></button>}
+          {bestScore&&<button onClick={()=>onNavigate?.("juegos")} style={{textAlign:"left",border:"1px solid rgba(255,255,255,.10)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>Mejor partida reciente</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.72}}>{bestScore.game_id||bestScore.juego||"Arcade"} · {Number(bestScore.score||bestScore.points||0).toLocaleString("es-ES")} puntos de juego</div></button>}
+          {!pendingOrders[0]&&!activeCoupons[0]&&!bestScore&&<div style={{fontSize:".84rem",fontWeight:850,color:"rgba(255,247,218,.74)",padding:"8px 0"}}>Todo tranquilo por ahora. Cuando haya pedidos, vales o partidas destacadas aparecerán aquí.</div>}
         </div>}
       </div>
-      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(17,37,31,.90))",border:"1px solid rgba(95,240,200,.26)",color:"#FFF7DA"}}>
-        <div style={{fontWeight:1000,color:"#5EF0C8"}}>💰 Movimiento reciente</div>
-        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Últimos movimientos de RP, RC, XP y retos completados.</div>
-        <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:12}}><Badge col="gold">RP movs: {rpMovs.length}</Badge><Badge col="blue">RC movs: {rcMovs.length}</Badge><Badge col="pink">Misiones: {home.missions.length}</Badge></div>
-        <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:14,border:"1px solid rgba(255,210,98,.36)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver retos →</button>
+
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(17,37,31,.90))",border:"1px solid rgba(95,240,200,.26)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.20)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+          <div>
+            <div style={{fontWeight:1000,color:"#5EF0C8",fontSize:"1.02rem"}}>⭐ Progreso del perfil</div>
+            <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:4}}>Nivel, experiencia y saldo visible.</div>
+          </div>
+          <div style={{width:46,height:46,borderRadius:16,display:"grid",placeItems:"center",background:"rgba(95,240,200,.10)",border:"1px solid rgba(95,240,200,.24)",fontSize:"1.35rem"}}>👤</div>
+        </div>
+        <div style={{marginTop:15,display:"grid",gap:10}}>
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:".8rem",fontWeight:950,color:"rgba(255,247,218,.84)",marginBottom:6}}>
+              <span>Nivel {Number(user?.avatar_level||progress.level)}</span>
+              <span>{Math.max(0,Math.min(100,Math.round(progress.percent||0)))}%</span>
+            </div>
+            <div style={{height:10,borderRadius:999,background:"rgba(255,255,255,.08)",overflow:"hidden",border:"1px solid rgba(255,255,255,.08)"}}>
+              <div style={{width:`${Math.max(5,Math.min(100,progress.percent||0))}%`,height:"100%",borderRadius:999,background:"linear-gradient(90deg,#5EF0C8,#E0B84F)",boxShadow:"0 0 18px rgba(95,240,200,.24)"}}/>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+            <div style={{borderRadius:14,padding:"10px 8px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.10)"}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.7}}>RP</div><div style={{fontWeight:1000,color:"#E0B84F"}}>{Number(user?.puntos||0).toLocaleString("es-ES")}</div></div>
+            <div style={{borderRadius:14,padding:"10px 8px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.10)"}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.7}}>RC</div><div style={{fontWeight:1000,color:"#5EF0C8"}}>{userRC(user).toLocaleString("es-ES")}</div></div>
+            <div style={{borderRadius:14,padding:"10px 8px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.10)"}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.7}}>XP</div><div style={{fontWeight:1000,color:"#FFF7DA"}}>{userXP(user).toLocaleString("es-ES")}</div></div>
+          </div>
+        </div>
       </div>
-      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(20,24,15,.94))",border:"1px solid rgba(255,210,98,.22)",color:"#FFF7DA"}}>
-        <div style={{fontWeight:1000,color:"#E0B84F"}}>🌐 Comunidad activa</div>
-        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Comentarios, foro y movimiento de la gente.</div>
-        <div style={{marginTop:12,fontSize:".95rem",fontWeight:1000}}>💬 {home.comments.length} comentarios recientes</div>
-        <button onClick={()=>onNavigate?.("comunidad")} style={{marginTop:14,border:"1px solid rgba(95,240,200,.30)",background:"rgba(95,240,200,.12)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#5EF0C8",cursor:"pointer"}}>Entrar a comunidad →</button>
+
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(24,19,12,.94))",border:"1px solid rgba(255,210,98,.22)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.20)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+          <div>
+            <div style={{fontWeight:1000,color:"#E0B84F",fontSize:"1.02rem"}}>🎯 Reto recomendado</div>
+            <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:4}}>Un objetivo rápido para mover la app hoy.</div>
+          </div>
+          <div style={{width:46,height:46,borderRadius:16,display:"grid",placeItems:"center",background:"rgba(217,74,53,.10)",border:"1px solid rgba(217,74,53,.24)",fontSize:"1.35rem"}}>⚡</div>
+        </div>
+        <div style={{marginTop:14,borderRadius:18,padding:14,background:"linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.03))",border:"1px solid rgba(255,255,255,.10)"}}>
+          <div style={{fontWeight:1000,color:"#FFF7DA"}}>Completa una acción diaria</div>
+          <div style={{fontSize:".82rem",fontWeight:820,color:"rgba(255,247,218,.72)",lineHeight:1.45,marginTop:5}}>Revisa tus retos disponibles y reclama sólo lo que hayas completado.</div>
+          <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:12,border:"1px solid rgba(255,210,98,.36)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver retos</button>
+        </div>
+      </div>
+
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(20,24,15,.94))",border:"1px solid rgba(255,210,98,.22)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.20)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+          <div>
+            <div style={{fontWeight:1000,color:"#E0B84F",fontSize:"1.02rem"}}>🌐 Comunidad activa</div>
+            <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:4}}>Comentarios, foro y novedades del estudio.</div>
+          </div>
+          <div style={{width:46,height:46,borderRadius:16,display:"grid",placeItems:"center",background:"rgba(255,210,98,.10)",border:"1px solid rgba(255,210,98,.24)",fontSize:"1.35rem"}}>💬</div>
+        </div>
+        <div style={{marginTop:14,fontSize:".95rem",fontWeight:1000}}>💬 {home.comments.length} comentarios recientes</div>
+        <div style={{marginTop:8,fontSize:".82rem",fontWeight:820,color:"rgba(255,247,218,.72)",lineHeight:1.45}}>Cuando haya movimiento en el tablón o en noticias aparecerá aquí.</div>
+        <button onClick={()=>onNavigate?.("comunidad")} style={{marginTop:14,border:"1px solid rgba(95,240,200,.30)",background:"rgba(95,240,200,.12)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#5EF0C8",cursor:"pointer"}}>Ver comunidad</button>
       </div>
     </div>
   </div>;
