@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.8f: perfil público avanzado.
+  // Paleta 2.9.8g: Arcade compacto y más usable.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_8F_PUBLIC_PROFILE_PRO";
-const APP_VERSION_SHORT = "2.9.8f";
+const APP_VERSION = "RASTACUTS_2_9_8G_ARCADE_COMPACT_GRID";
+const APP_VERSION_SHORT = "2.9.8g";
 const APP_BUILD_DATE = "2026-06-11";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
