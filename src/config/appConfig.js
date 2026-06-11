@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.9c: agenda rápida de citas.
+  // Paleta 2.9.9d: agenda próxima visual.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_9C_BOOKING_QUICK_AGENDA";
-const APP_VERSION_SHORT = "2.9.9c";
+const APP_VERSION = "RASTACUTS_2_9_9D_BOOKING_NEXT_AGENDA";
+const APP_VERSION_SHORT = "2.9.9d";
 const APP_BUILD_DATE = "2026-06-11";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
