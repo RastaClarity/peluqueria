@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.8c: rankings inteligentes y perfiles públicos.
+  // Paleta 2.9.8d: repaso visual Android.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_8C_SMART_RANKINGS_PROFILES";
-const APP_VERSION_SHORT = "2.9.8c";
+const APP_VERSION = "RASTACUTS_2_9_8D_ANDROID_UI_HOTFIX";
+const APP_VERSION_SHORT = "2.9.8d";
 const APP_BUILD_DATE = "2026-06-11";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
