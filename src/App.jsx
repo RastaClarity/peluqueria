@@ -11450,34 +11450,46 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
   }
 
   return <div className="premium-home rc-visual-rework" style={{animation:"fadeSlide .34s ease",display:"grid",gap:14}}>
-    <section className="rc-hero-wall rc-hero-admin" style={{
-      borderRadius:30,
-      overflow:"hidden",
+    <section className="rc-home-cover" style={{
       position:"relative",
-      minHeight:300,
-      border:"1px solid rgba(255,210,98,.35)",
-      background:"linear-gradient(90deg,rgba(3,8,7,.96) 0%,rgba(12,23,18,.90) 50%,rgba(42,26,10,.70) 100%), radial-gradient(circle at 74% 36%,rgba(224,184,79,.22),transparent 34%), radial-gradient(circle at 30% 72%,rgba(17,207,155,.14),transparent 38%), linear-gradient(135deg,#07100D,#132719 54%,#2C1B0B)",
-      boxShadow:"0 24px 60px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.10)"
+      overflow:"hidden",
+      minHeight:"clamp(330px,52vw,470px)",
+      margin:"-18px -14px 2px",
+      borderRadius:"0 0 34px 34px",
+      background:"linear-gradient(135deg,#050706,#102017 55%,#2B1A0A)",
+      boxShadow:"0 26px 70px rgba(0,0,0,.42), inset 0 -1px 0 rgba(255,210,98,.22)"
     }}>
-      <div style={{position:"absolute",inset:0,opacity:.22,backgroundImage:"linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.04) 1px, transparent 1px)",backgroundSize:"42px 42px"}}/>
-      <div style={{position:"absolute",inset:"auto -10% -26% -10%",height:"48%",background:"radial-gradient(circle at 50% 30%,rgba(242,200,91,.22),transparent 58%)",filter:"blur(18px)",pointerEvents:"none"}}/>
-      <div style={{position:"relative",zIndex:2,padding:"24px clamp(18px,4vw,42px)",display:"grid",gap:14,placeItems:"center",textAlign:"center"}}>
-        <div style={{width:"100%",maxWidth:760,margin:"0 auto"}}>
-          <RastaBrandBannerImage compact={false}/>
-        </div>
-        <p style={{maxWidth:620,color:"rgba(255,247,218,.88)",fontWeight:850,lineHeight:1.5,margin:"-4px auto 4px",fontSize:"clamp(.92rem,1.5vw,1.05rem)"}}>
-          Tu estudio digital: reservas, tienda, retos, comunidad y juego en un mismo sitio.
+      <img
+        src="/rastacuts_logo.webp"
+        alt=""
+        draggable={false}
+        onError={e=>{e.currentTarget.style.display="none";}}
+        style={{
+          position:"absolute",
+          inset:0,
+          width:"100%",
+          height:"100%",
+          objectFit:"cover",
+          objectPosition:"center center",
+          filter:"saturate(1.06) contrast(1.05)",
+          opacity:.96,
+          pointerEvents:"none"
+        }}
+      />
+      <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(5,7,6,.08) 0%,rgba(5,7,6,.22) 42%,rgba(5,7,6,.88) 100%), radial-gradient(circle at 50% 18%,rgba(242,200,91,.18),transparent 42%)",pointerEvents:"none"}}/>
+      <div style={{position:"absolute",inset:0,opacity:.14,backgroundImage:"linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.06) 1px, transparent 1px)",backgroundSize:"46px 46px",mixBlendMode:"screen",pointerEvents:"none"}}/>
+      <div style={{position:"relative",zIndex:2,minHeight:"clamp(330px,52vw,470px)",display:"flex",flexDirection:"column",justifyContent:"flex-end",alignItems:"center",textAlign:"center",padding:"clamp(90px,18vw,190px) 18px 24px"}}>
+        <p style={{maxWidth:620,color:"rgba(255,247,218,.90)",fontWeight:900,lineHeight:1.5,margin:"0 auto 12px",fontSize:"clamp(.92rem,1.5vw,1.08rem)",textShadow:"0 4px 18px rgba(0,0,0,.52)"}}>
+          Reservas, retos, comunidad y recompensas en un mismo sitio.
         </p>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
-          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🔔 {Number(unread?.admin||0)} avisos</span>
-          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>📦 {pendingOrders.length} pedidos</span>
-          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>🎟️ {activeCoupons.length} cupones</span>
-          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",color:"#FFF7DA",fontWeight:900}}>⭐ Nivel {Number(user?.avatar_level||progress.level)}</span>
+          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(5,7,6,.64)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,231,164,.22)",color:"#FFF7DA",fontWeight:900}}>🔔 {Number(unread?.admin||0)} avisos</span>
+          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(5,7,6,.64)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,231,164,.22)",color:"#FFF7DA",fontWeight:900}}>📦 {pendingOrders.length} pedidos</span>
+          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(5,7,6,.64)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,231,164,.22)",color:"#FFF7DA",fontWeight:900}}>🎟️ {activeCoupons.length} cupones</span>
+          <span style={{padding:"8px 12px",borderRadius:14,background:"rgba(5,7,6,.64)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,231,164,.22)",color:"#FFF7DA",fontWeight:900}}>⭐ Nivel {Number(user?.avatar_level||progress.level)}</span>
         </div>
       </div>
     </section>
-
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:12}}>{cards.map(c=><AdminFeature key={c.id} c={c}/>)}</div>
 
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
       <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(28,20,13,.94))",border:"1px solid rgba(255,210,98,.24)",color:"#FFF7DA"}}>
@@ -11491,7 +11503,7 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
       </div>
       <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(17,37,31,.90))",border:"1px solid rgba(95,240,200,.26)",color:"#FFF7DA"}}>
         <div style={{fontWeight:1000,color:"#5EF0C8"}}>💰 Movimiento reciente</div>
-        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Resumen rápido de actividad, recompensas y progreso.</div>
+        <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:6}}>Últimos movimientos de RP, RC, XP y retos completados.</div>
         <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:12}}><Badge col="gold">RP movs: {rpMovs.length}</Badge><Badge col="blue">RC movs: {rcMovs.length}</Badge><Badge col="pink">Misiones: {home.missions.length}</Badge></div>
         <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:14,border:"1px solid rgba(255,210,98,.36)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver retos →</button>
       </div>
