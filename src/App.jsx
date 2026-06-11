@@ -3329,6 +3329,14 @@ function Citas({user,showToast,onNavigate}){
     {icon:"✅",label:"Confirmadas",value:counts.confirmada||0,sub:"listas"},
     {icon:"🔁",label:"Propuestas",value:counts.propuesta||0,sub:"por responder"}
   ];
+  function citaEnHora(hora){
+    return citasHoy.find(c=>String(c.hora||"").slice(0,5)===String(hora).slice(0,5));
+  }
+  function bloqueAgendaEstado(hora){
+    const cita=citaEnHora(hora);
+    if(cita)return {kind:"busy",cita,label:eLabel[statusOf(cita)]||statusOf(cita)};
+    return {kind:"free",cita:null,label:"Libre"};
+  }
   const eColor={pendiente:"gold",propuesta:"blue",confirmada:"green",cancelada:"red",completada:"blue"};
   const eLabel={pendiente:"pendiente",propuesta:"propuesta",confirmada:"confirmada",cancelada:"cancelada",completada:"realizada"};
 
@@ -3407,6 +3415,35 @@ function Citas({user,showToast,onNavigate}){
             <div style={{fontSize:".68rem",fontWeight:950,color:T.g700,marginTop:2}}>{k.label}</div>
             <div style={{fontSize:".64rem",fontWeight:800,color:T.textSub,lineHeight:1.2,marginTop:1}}>{k.sub}</div>
           </div>)}
+        </div>
+      </Card>}
+
+      {!loading&&<Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`1.5px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",marginBottom:10}}>
+          <div>
+            <div style={{fontWeight:1000,color:T.g800}}>🕘 Agenda de hoy</div>
+            <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35}}>
+              Huecos del día según las citas guardadas. Útil para ver rápido dónde cabe una reserva.
+            </div>
+          </div>
+          <Badge col={citasHoy.length?"gold":"green"}>{citasHoy.length} hoy</Badge>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:8}}>
+          {HORARIOS.map(h=>{
+            const slot=bloqueAgendaEstado(h);
+            const c=slot.cita;
+            const st=c?statusOf(c):"libre";
+            return <button key={h} onClick={()=>{setPeriod("hoy");c?setView(st):setShowNew(true);}} style={{textAlign:"left",border:`1px solid ${c?T.g300:T.g200}`,background:c?"linear-gradient(180deg,#E6CF9B,#D8BE87)":"rgba(255,255,255,.40)",borderRadius:15,padding:"9px 10px",cursor:"pointer",minHeight:74}}>
+              <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}>
+                <div style={{fontWeight:1000,color:T.g800}}>{h}</div>
+                <Badge col={c?(eColor[st]||"gold"):"green"}>{slot.label}</Badge>
+              </div>
+              {c?<div style={{marginTop:6}}>
+                <div style={{fontSize:".75rem",fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.cliente_nombre||"Cliente"}</div>
+                <div style={{fontSize:".68rem",fontWeight:820,color:T.textSub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.servicio_label||c.servicio||"Servicio"}</div>
+              </div>:<div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,marginTop:7}}>Toca para crear cita</div>}
+            </button>;
+          })}
         </div>
       </Card>}
 
