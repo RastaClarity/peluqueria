@@ -7624,8 +7624,8 @@ function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}
   const preview=normalizeAvatarConfig({...currentConfig,...cosmeticPatch(item)},user.avatar);
   const locked=!owned&&!reached;
   return <button type="button" onClick={onClick} style={{
-    minWidth:88,
-    maxWidth:88,
+    minWidth:78,
+    maxWidth:78,
     border:"none",
     background:"transparent",
     padding:0,
@@ -7633,19 +7633,19 @@ function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}
     position:"relative"
   }}>
     <div style={{
-      height:76,
-      width:76,
+      height:66,
+      width:66,
       margin:"0 auto",
       borderRadius:"50%",
       display:"grid",
       placeItems:"center",
       background:active?"linear-gradient(145deg,#FFF8E1,#E6C27A)":reached?"linear-gradient(145deg,#FFF4D6,#F0D39B)":"linear-gradient(145deg,#16100C,#3A2A1D)",
-      border:`3px solid ${active?T.gold:owned?T.g300:reached?T.gold:"rgba(255,244,214,.22)"}`,
+      border:`2px solid ${active?T.gold:owned?T.g300:reached?T.gold:"rgba(255,244,214,.22)"}`,
       boxShadow:active?"0 0 24px rgba(212,175,55,.55)":reached?"0 8px 18px rgba(212,175,55,.25)":"inset 0 10px 22px rgba(0,0,0,.35),0 8px 14px rgba(20,8,4,.18)",
       overflow:"hidden",
       animation:reached&&!owned?"rewardPulsePro 2.2s ease-in-out infinite":"none"
     }}>
-      <div style={{filter:locked?"grayscale(1) brightness(0)":"none",opacity:locked?0.78:1,transform:"scale(.92)"}}>
+      <div style={{filter:locked?"grayscale(1) brightness(0)":"none",opacity:locked?0.78:1,transform:"scale(.82)"}}>
         <RewardNodeIcon item={item} user={user} currentConfig={currentConfig} locked={locked}/>
       </div>
       {owned&&<div style={{position:"absolute",right:8,top:4,background:T.gradGold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".68rem"}}>✓</div>}
@@ -7653,10 +7653,10 @@ function RewardSilhouette({item,user,currentConfig,owned,reached,active,onClick}
       {reached&&!owned&&<div style={{position:"absolute",right:7,top:4,background:T.gold,color:T.g900,borderRadius:"50%",width:20,height:20,display:"grid",placeItems:"center",fontWeight:950,fontSize:".68rem"}}>!</div>}
     </div>
     <div style={{height:18,width:3,background:owned||reached?T.gold:"rgba(255,244,214,.35)",margin:"-1px auto 0"}}/>
-    <div style={{fontSize:".68rem",fontWeight:950,color:owned||reached?T.g800:T.textSub,lineHeight:1.05}}>
+    <div style={{fontSize:".62rem",fontWeight:950,color:owned||reached?T.g800:T.textSub,lineHeight:1.05}}>
       Nv. {rewardLevelFor(item.puntos_precio)}
     </div>
-    <div style={{fontSize:".63rem",fontWeight:850,color:T.textSub,lineHeight:1.05,marginTop:2}}>
+    <div style={{fontSize:".58rem",fontWeight:850,color:T.textSub,lineHeight:1.05,marginTop:2}}>
       {item.puntos_precio} pts
     </div>
   </button>;
@@ -7746,14 +7746,14 @@ async function reveal(item){
   const next=items.find(i=>!owned.includes(i.item_key) && Number(i.puntos_precio||0)>(user.puntos||0)) || items.find(i=>!owned.includes(i.item_key));
 
   return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`,overflow:"hidden",padding:14}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:10}}>
+    <div style={{display:"grid",gap:8,marginBottom:10}}>
       <div style={{minWidth:0}}>
-        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.34rem",color:T.g800}}>🎁 Camino de recompensas</div>
-        <div style={{fontSize:".76rem",fontWeight:850,color:T.textSub,lineHeight:1.25}}>Línea de desbloqueos: estilos, fondos, auras y cupones grandes. La tienda queda para juegos y productos reales.</div>
+        <div style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(1.12rem,5.2vw,1.34rem)",color:T.g800,lineHeight:1.05}}>🎁 Camino de recompensas</div>
+        <div style={{fontSize:".76rem",fontWeight:850,color:T.textSub,lineHeight:1.25,marginTop:3}}>Línea de desbloqueos: estilos, fondos, auras y cupones grandes. La tienda queda para juegos y productos reales.</div>
       </div>
-      <div style={{textAlign:"right"}}>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
         <Badge col="gold">Nv. {lvl.level}</Badge>
-        <div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:4}}>{user.puntos||0} pts</div>
+        <Badge col="blue">{user.puntos||0} pts</Badge>
       </div>
     </div>
 
@@ -11772,7 +11772,9 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
             <div style={{fontWeight:1000,color:"#5EF0C8",fontSize:"1.02rem"}}>⭐ Progreso del perfil</div>
             <div style={{fontSize:".78rem",fontWeight:820,color:"rgba(255,247,218,.68)",marginTop:4}}>Nivel, experiencia y saldo visible.</div>
           </div>
-          <div style={{width:46,height:46,borderRadius:16,display:"grid",placeItems:"center",background:"rgba(95,240,200,.10)",border:"1px solid rgba(95,240,200,.24)",fontSize:"1.35rem"}}>👤</div>
+          <div style={{width:46,height:46,borderRadius:16,display:"grid",placeItems:"center",background:"rgba(95,240,200,.10)",border:"1px solid rgba(95,240,200,.24)",overflow:"hidden"}}>
+            <Av av={user?.avatar} config={user?.avatarConfig||user?.avatar_config} size={40}/>
+          </div>
         </div>
         <div style={{marginTop:15,display:"grid",gap:10}}>
           <div>
@@ -12234,7 +12236,8 @@ function HelperMascot({page,settings=null,onOpenMissions=null}){
     const onResize=()=>{
       if(typeof window==="undefined")return;
       setPos(p=>{
-        const next={x:Math.max(8,Math.min(window.innerWidth-66,p.x)),y:Math.max(72,Math.min(window.innerHeight-82,p.y))};
+        const isMob=window.innerWidth<=520;
+        const next={x:Math.max(8,Math.min(window.innerWidth-66,p.x)),y:Math.max(72,Math.min(window.innerHeight-(isMob?176:118),p.y))};
         try{localStorage.setItem("rasta_helper_pos_v3",JSON.stringify(next));}catch{}
         return next;
       });
@@ -12309,7 +12312,7 @@ function HelperMascot({page,settings=null,onOpenMissions=null}){
     const isMob=window.innerWidth<=520;
     const next={
       x:Math.max(8,Math.min(window.innerWidth-(isMob?62:66),d.baseX+dx)),
-      y:Math.max(72,Math.min(window.innerHeight-(isMob?118:92),d.baseY+dy))
+      y:Math.max(72,Math.min(window.innerHeight-(isMob?176:118),d.baseY+dy))
     };
     dragRef.current.last=next;
     setPos(next);
@@ -13119,7 +13122,7 @@ function GlobalUIPolishPatch(){
     }
     @media(max-width:520px){
       .rasta-helper-fixed-safe .rasta-face-avatar{width:50px!important;height:50px!important;}
-      .rasta-helper-fixed-safe button[aria-label]{width:72px!important;height:72px!important;}
+      .rasta-helper-fixed-safe button[aria-label]{width:64px!important;height:64px!important;}
     }
 
     /* 2.9.7a · App Store UI Foundation
@@ -13423,7 +13426,7 @@ function GlobalUIPolishPatch(){
       .theme-toggle-pro{width:27px!important;min-width:27px!important;}
       .app-header-pro .header-action-pro:last-child{width:27px!important;height:27px!important;padding:0!important;overflow:hidden!important;}
       .app-header-pro .header-action-pro:last-child > div,.app-header-pro .header-action-pro:last-child svg{transform:scale(.72)!important;transform-origin:center!important;}
-      .page-content-pro{width:calc(100% - 10px)!important;margin-top:8px!important;border-radius:22px!important;padding:12px 8px!important;overflow:hidden!important;min-height:calc(100dvh - 170px)!important;}
+      .page-content-pro{width:calc(100% - 10px)!important;margin-top:8px!important;border-radius:22px!important;padding:12px 8px calc(126px + env(safe-area-inset-bottom,0px))!important;overflow:hidden!important;min-height:calc(100dvh - 170px)!important;}
       .premium-home section{border-radius:22px!important;}
       .premium-home h1{font-size:clamp(2.15rem,12vw,3.4rem)!important;letter-spacing:.01em!important;line-height:.92!important;}
       .rc-home-cover{margin-left:-8px!important;margin-right:-8px!important;}
@@ -14357,7 +14360,7 @@ function AppCore(){
           </button>
         </div>
       </div>
-      <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
+      <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px calc(132px + env(safe-area-inset-bottom,0px))",position:"relative"}}>
         <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${clinicAccent}99,${clinicAccent2}77,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${clinicAccent}44`,opacity:.92}}/>
         {pages[ap]||pages["dashboard"]}
         <HelperMascot page={helperPage || (ap==="dashboard"?"inicio":(ap==="comunidad"?communityTab:ap))} settings={appSettings} onOpenMissions={()=>navTo("misiones")}/>
