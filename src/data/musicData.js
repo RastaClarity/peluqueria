@@ -31,11 +31,7 @@ export const BACKGROUND_PLAYLIST=[
     mood:"sunny morning",
     zone:"home",
     energy:"medium",
-    gain Rhodes Loop.mp3"]
-  },
-  {
-    id:"velvet_menu_glow_01",
-    name:"Velvet Menu:0.94,
+    gain:0.94,
     tags:["menu","bright","smooth","positive"],
     srcs:["/audio/Velvet%20Menu%20Glow.mp3","/audio/Velvet Menu Glow.mp3"]
   },
@@ -126,5 +122,143 @@ export const BACKGROUND_PLAYLIST=[
     gain:0.90,
     tags:["neon","arcade","retro","game"],
     srcs:["/audio/Neon%20Barbertron.mp3","/audio/Neon Barbertron.mp3"]
+  },
+
+  {
+    id:"rasta_cuts_groove_01",
+    name:"Rasta Cuts Groove",
+    title:"Rasta Cuts Groove",
+    mood:"sunny morning",
+    zone:"home",
+    energy:"medium",
+    gain:0.95,
+    tags:["groove","fresh","positive","rasta"],
+    srcs:["/audio/Rasta%20Cuts%20Groove.mp3","/audio/Rasta Cuts Groove.mp3"]
+  },
+  {
+    id:"rasta_cuts_loop_01",
+    name:"Rasta Cuts Loop",
+    title:"Rasta Cuts Loop",
+    mood:"cozy barber shop",
+    zone:"global",
+    energy:"low",
+    gain:1.00,
+    tags:["loop","smooth","barber","background"],
+    srcs:["/audio/Rasta%20Cuts%20Loop.mp3","/audio/Rasta Cuts Loop.mp3"]
+  },
+  {
+    id:"rasta_cuts_loop_1_01",
+    name:"Rasta Cuts Loop 1",
+    title:"Rasta Cuts Loop 1",
+    mood:"sun/Rasta Cuts Loop.mp3"]
+  },
+  {
+    id:"rasta_cuts_loop_1_01",
+    name:"set beach",
+    zone:"home",
+    energy:"low",
+    gain:1.00,
+    tags:["loop","sunset","warm","chill"],
+    srcs:["/audio/Rasta%20Cuts%20Loop%201.mp3","/audio/Rasta Cuts Loop 1.mp3"]
+  },
+  {
+    id:"rasta_cuts_loop_2_01",
+    name:"Rasta Cuts Loop 2",
+    title:"Rasta Cuts Loop 2",
+    mood:"rainy lo-fi",
+    zone:"login",
+    energy:"low",
+    gain:1.04,
+    tags:["loop","lofi","soft","calm"],
+    srcs:["/audio/Rasta%20Cuts%20Loop%202.mp3","/audio/Rasta Cuts Loop 2.mp3"]
+  },
+  {
+    id:"rasta_drift_01",
+    name:"Rasta Drift",
+    title:"Rasta Drift",
+    mood:"sunset beach",
+    zone:"home",
+    energy:"low",
+    gain:1.00,
+    tags:["drift","rasta","beach","chill"],
+    srcs:["/audio/rasta%20drift.mp3","/audio/rasta drift.mp3"]
+  },
+
+  {
+    id:"rasta_cuts_drift_01",
+    name:"Rasta Cuts Drift",
+    title:"Rasta Cuts Drift",
+    mood:"emotional anime chill",
+    zone:"profile",
+    energy:"low",
+    gain:1.03,
+    tags:["drift","emotional","soft","anime"],
+    srcs:["/audio/Rasta%20Cuts%20Drift.mp3","/audio/Rasta Cuts Drift.mp3"]
+  },
+  {
+    id:"rasta_cuts_drift_1_01",
+    name:"Rasta Cuts Drift 1",
+    title:"Rasta Cuts Drift 1",
+    mood:"rainy lo-fi",
+    zone:"login",
+    energy:"low",
+    gain:1.03,
+    tags:["drift","rainy","lofi","calm"],
+    srcs:["/audio/Rasta%20Cuts%20Drift%20(1).mp3","/audio/Rasta Cuts Drift (1).mp3"]
+  },
+  {
+    id:"rasta_cuts_drift_4_01",
+    name:"Rasta Cuts Drift 4",
+    title:"Rasta Cuts Drift 4",
+    mood:"sunset beach",
+    zone:"home",
+    energy:"low",
+    gain:1.00,
+    tags:["drift","sunset","warm","rasta"],
+    srcs:["/audio/Rasta%20Cuts%20Drift%204.mp3","/audio/Rasta Cuts Drift 4.mp3"]
+  },
+  {
+    id:"rasta_cuts_flow_01",
+    name:"Rasta Cuts Flow",
+    title:"Rasta Cuts Flow",
+    mood:"cozy barber shop",
+    zone:"shop",
+    energy:"medium",
+    gain:0.96,
+    tags:["flow","barber","smooth","clean"],
+    srcs:["/audio/Rasta%20Cuts%20Flow.mp3","/audio/Rasta Cuts Flow.mp3"]
+  },
+  {
+    id:"barber_vinyl_crackle_01",
+    name:"Barber Vinyl Crackle",
+    title:"Barber Vinyl Crackle",
+    mood:"cozy barber shop",
+    zone:"shop",
+    energy:"low",
+    gain:1.02,
+    tags:["barber","vinyl","crackle","warm"],
+    srcs:["/audio/Barber%20Vinyl%20Crackle.mp3","/audio/Barber Vinyl Crackle.mp3"]
+  },
+  {
+    id:"rasta_breeze_01",
+    name:"Rasta Breeze",
+    title:"Rasta Breeze",
+    mood:"sunset beach",
+    zone:"home",
+    energy:"low",
+    gain:1.00,
+    tags:["breeze","beach","rasta","soft"],
+    srcs:["/audio/Rasta%20Breeze.mp3","/audio/Rasta Breeze.mp3"]
+  },
+  {
+    id:"rasta_cuts_breeze_01",
+    name:"Rasta Cuts Breeze",
+    title:"Rasta Cuts Breeze",
+    mood:"sunny morning",
+    zone:"home",
+    energy:"medium",
+    gain:0.98,
+    tags:["breeze","morning","fresh","positive"],
+    srcs:["/audio/Rasta%20Cuts%20Breeze.mp3","/audio/Rasta Cuts Breeze.mp3"]
   }
 ];
