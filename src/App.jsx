@@ -3299,6 +3299,19 @@ function Citas({user,showToast,onNavigate}){
   ];
   const citasBase=view==="todas"?citas:citas.filter(c=>statusOf(c)===view);
   const citasVisibles=citasBase.filter(c=>periodMatch(c));
+  const citasProximas=citas
+    .filter(c=>!["cancelada","completada"].includes(statusOf(c)))
+    .filter(c=>dateDiffFromToday(c.fecha)>=0)
+    .sort((a,b)=>String(`${a.fecha||""} ${a.hora||""}`).localeCompare(String(`${b.fecha||""} ${b.hora||""}`)))
+    .slice(0,6);
+  function dayLabel(fecha){
+    const diff=dateDiffFromToday(fecha);
+    if(diff===0)return "Hoy";
+    if(diff===1)return "Mañana";
+    if(diff>=2&&diff<=7)return `En ${diff} días`;
+    try{return new Date(String(fecha)+"T00:00:00").toLocaleDateString("es-ES",{day:"2-digit",month:"short"});}
+    catch{return fecha||"Sin fecha";}
+  }
   const eColor={pendiente:"gold",propuesta:"blue",confirmada:"green",cancelada:"red",completada:"blue"};
   const eLabel={pendiente:"pendiente",propuesta:"propuesta",confirmada:"confirmada",cancelada:"cancelada",completada:"realizada"};
 
@@ -3359,6 +3372,42 @@ function Citas({user,showToast,onNavigate}){
           {statusTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setView(t.id);}} style={{flex:"0 0 auto",border:"none",borderRadius:999,padding:"8px 12px",background:view===t.id?T.gradGold:"rgba(255,244,214,.62)",color:view===t.id?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:view===t.id?"0 8px 18px rgba(18,8,4,.16)":"none"}}>{t.icon} {t.label} <span style={{opacity:.75}}>({counts[t.id]||0})</span></button>)}
         </div>
       </Card>
+
+      {!loading&&citasProximas.length>0&&<Card style={{marginBottom:12,background:"linear-gradient(145deg,#120806,#183226 58%,#6E3518)",border:"2px solid rgba(242,200,91,.38)",color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-16,top:-24,fontSize:"6rem",opacity:.10}}>📅</div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",marginBottom:10}}>
+            <div>
+              <div style={{fontWeight:1000,color:T.g50,fontSize:"1.02rem"}}>🗓️ Agenda próxima</div>
+              <div style={{fontSize:".76rem",fontWeight:820,color:"rgba(255,247,218,.70)",lineHeight:1.35}}>Las próximas reservas activas de un vistazo.</div>
+            </div>
+            <Badge col="gold">{citasProximas.length}</Badge>
+          </div>
+          <div style={{display:"grid",gap:8}}>
+            {citasProximas.map(c=>{
+              const st=statusOf(c);
+              const list=citaServices(c);
+              const precio=Number(c.servicio_precio)||citaTotal(list);
+              return <button key={`soon-${c.id}`} onClick={()=>{setView(st);setPeriod(dateDiffFromToday(c.fecha)===0?"hoy":dateDiffFromToday(c.fecha)===1?"manana":"semana");}} style={{textAlign:"left",display:"grid",gridTemplateColumns:"76px 1fr auto",gap:9,alignItems:"center",border:"1px solid rgba(255,244,214,.16)",background:"rgba(255,255,255,.07)",borderRadius:15,padding:"9px 10px",color:T.white,cursor:"pointer"}}>
+                <div style={{borderRadius:12,background:"rgba(242,200,91,.12)",border:"1px solid rgba(242,200,91,.20)",padding:"7px 6px",textAlign:"center"}}>
+                  <div style={{fontSize:".68rem",fontWeight:950,color:T.gold,lineHeight:1.05}}>{dayLabel(c.fecha)}</div>
+                  <div style={{fontSize:".86rem",fontWeight:1000,color:T.g50,marginTop:2}}>{c.hora||"--:--"}</div>
+                </div>
+                <div style={{minWidth:0}}>
+                  <div style={{fontWeight:1000,color:T.g50,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.cliente_nombre||"Cliente"}</div>
+                  <div style={{fontSize:".72rem",fontWeight:820,color:"rgba(255,247,218,.70)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                    {list.length?list.map(s=>s.label).join(" + "):(c.servicio_label||c.servicio||"Servicio")}
+                  </div>
+                </div>
+                <div style={{display:"grid",gap:4,justifyItems:"end"}}>
+                  <Badge col={eColor[st]||"gold"}>{eLabel[st]||st}</Badge>
+                  {!!precio&&<span style={{fontSize:".72rem",fontWeight:950,color:T.gold}}>{precio}€</span>}
+                </div>
+              </button>;
+            })}
+          </div>
+        </div>
+      </Card>}
 
       {loading?<Spinner/>:citasVisibles.length===0?<EmptyState icon="📅" title="Sin citas" sub={period==="todas"?(view==="todas"?"Todavía no hay citas en esta vista":"No hay citas con este estado"):"No hay citas en este periodo con el estado elegido"}/>
         :citasVisibles.map(c=>{
