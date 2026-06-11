@@ -6329,7 +6329,7 @@ function RastaCutsTycoonGame({user,setUser,showToast,standalone=false,onExit}){
 
 function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOpenTycoon,settings}){
   const [activeGame,setActiveGame]=useState(null);
-  const [category,setCategory]=useState("destacados");
+  const [category,setCategory]=useState("todos");
   const arcadeActiva=settings?.secciones?.arcade_activo!==false;
   const gachaActiva=settings?.secciones?.gacha_activo!==false;
   const gameDailyCap=Math.max(0,parseInt(settings?.puntos?.limite_diario_juegos??GAME_DAILY_CAP,10)||GAME_DAILY_CAP);
@@ -6450,10 +6450,10 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
   const pendingCount=Math.max(0,GAMES.length-playedCount);
   const extraPulls=getGachaExtraPulls(uid);
   const categoryDefs=[
-    {id:"destacados",icon:"⭐",label:"Destacados",sub:"Lo principal para avanzar",ids:["tycoon","gacha","runner"]},
+    {id:"todos",icon:"🎮",label:"Todos",sub:"Todo el Arcade",ids:GAMES.map(g=>g.id)},
+    {id:"destacados",icon:"⭐",label:"Recomendados",sub:"Tycoon, Gacha y Runner",ids:["tycoon","gacha","runner"]},
     {id:"ranking",icon:"🏆",label:"Ranking",sub:"Piques y Top",ids:["runner","jump","stitch","memoria"]},
-    {id:"clasicos",icon:"🕹️",label:"Clásicos",sub:"Partidas rápidas",ids:["memoria","sopa","trivia"]},
-    {id:"todos",icon:"🎮",label:"Todos",sub:"Todo el Arcade",ids:GAMES.map(g=>g.id)}
+    {id:"clasicos",icon:"🕹️",label:"Clásicos",sub:"Partidas rápidas",ids:["memoria","sopa","trivia"]}
   ];
   const activeCat=categoryDefs.find(x=>x.id===category)||categoryDefs[0];
   const visibleGames=GAMES.filter(g=>activeCat.ids.includes(g.id));
@@ -6536,7 +6536,11 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
         {categoryDefs.map(c=><button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{minWidth:132,border:`2px solid ${category===c.id?T.gold:T.g200}`,borderRadius:18,padding:"10px 12px",background:category===c.id?"linear-gradient(135deg,#FFF4D6,#EBD081)":"rgba(255,244,214,.72)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:category===c.id?"0 8px 18px rgba(185,154,69,.22)":"0 5px 12px rgba(20,8,4,.08)"}}><div>{c.icon} {c.label}</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:2}}>{c.sub}</div></button>)}
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr",gap:12,marginBottom:16}}>
+      <div style={{fontSize:".78rem",fontWeight:900,color:T.textSub,margin:"-2px 2px 10px"}}>
+        Mostrando {visibleGames.length} de {GAMES.length} juegos. Cambia de pestaña sólo si quieres filtrar.
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:12,marginBottom:16}}>
         {visibleGames.map(g=><GameCard key={g.id} g={g} featured={activeCat.id==="destacados"}/>) }
       </div>
     </div>
