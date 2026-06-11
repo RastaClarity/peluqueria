@@ -3312,6 +3312,23 @@ function Citas({user,showToast,onNavigate}){
     try{return new Date(String(fecha)+"T00:00:00").toLocaleDateString("es-ES",{day:"2-digit",month:"short"});}
     catch{return fecha||"Sin fecha";}
   }
+  const citasActivas=citas.filter(c=>!["cancelada","completada"].includes(statusOf(c))&&dateDiffFromToday(c.fecha)>=0);
+  const citasHoy=citasActivas.filter(c=>dateDiffFromToday(c.fecha)===0);
+  const citasSemana=citasActivas.filter(c=>dateDiffFromToday(c.fecha)>=0&&dateDiffFromToday(c.fecha)<=7);
+  const ingresoSemana=citasSemana.reduce((sum,c)=>sum+(Number(c.servicio_precio)||citaTotal(citaServices(c))),0);
+  const minutosSemana=citasSemana.reduce((sum,c)=>sum+citaDuration(citaServices(c)),0);
+  const pendientesCobro=citas.filter(c=>["confirmada","completada"].includes(statusOf(c))&&(Number(c.servicio_precio)||citaTotal(citaServices(c)))>0&&!pagoDe(c)).length;
+  const kpiCards=isAdmin?[
+    {icon:"☀️",label:"Hoy",value:citasHoy.length,sub:"citas activas"},
+    {icon:"🗓️",label:"7 días",value:citasSemana.length,sub:"próximas citas"},
+    {icon:"💶",label:"Previsto",value:`${ingresoSemana}€`,sub:"ingreso orientativo"},
+    {icon:"⏱️",label:"Tiempo",value:formatDuration(minutosSemana),sub:"ocupación aprox."}
+  ]:[
+    {icon:"📅",label:"Próximas",value:citasActivas.length,sub:"reservas activas"},
+    {icon:"🟡",label:"Pendientes",value:counts.pendiente||0,sub:"por confirmar"},
+    {icon:"✅",label:"Confirmadas",value:counts.confirmada||0,sub:"listas"},
+    {icon:"🔁",label:"Propuestas",value:counts.propuesta||0,sub:"por responder"}
+  ];
   const eColor={pendiente:"gold",propuesta:"blue",confirmada:"green",cancelada:"red",completada:"blue"};
   const eLabel={pendiente:"pendiente",propuesta:"propuesta",confirmada:"confirmada",cancelada:"cancelada",completada:"realizada"};
 
@@ -3372,6 +3389,26 @@ function Citas({user,showToast,onNavigate}){
           {statusTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setView(t.id);}} style={{flex:"0 0 auto",border:"none",borderRadius:999,padding:"8px 12px",background:view===t.id?T.gradGold:"rgba(255,244,214,.62)",color:view===t.id?T.g900:T.g700,fontWeight:950,cursor:"pointer",boxShadow:view===t.id?"0 8px 18px rgba(18,8,4,.16)":"none"}}>{t.icon} {t.label} <span style={{opacity:.75}}>({counts[t.id]||0})</span></button>)}
         </div>
       </Card>
+
+      {!loading&&<Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`1.5px solid ${T.g300}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",marginBottom:10}}>
+          <div>
+            <div style={{fontWeight:1000,color:T.g800}}>📊 Resumen de agenda</div>
+            <div style={{fontSize:".76rem",fontWeight:820,color:T.textSub,lineHeight:1.35}}>
+              {isAdmin?"Vista rápida de ocupación e ingresos orientativos.":"Estado rápido de tus reservas."}
+            </div>
+          </div>
+          {isAdmin&&pendientesCobro>0&&<Badge col="red">{pendientesCobro} sin cobrar</Badge>}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(118px,1fr))",gap:8}}>
+          {kpiCards.map(k=><div key={k.label} style={{border:`1px solid ${T.g300}`,background:"rgba(255,255,255,.34)",borderRadius:15,padding:"10px 9px"}}>
+            <div style={{fontSize:"1.25rem",lineHeight:1}}>{k.icon}</div>
+            <div style={{fontSize:"1.05rem",fontWeight:1000,color:T.g800,marginTop:4,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{k.value}</div>
+            <div style={{fontSize:".68rem",fontWeight:950,color:T.g700,marginTop:2}}>{k.label}</div>
+            <div style={{fontSize:".64rem",fontWeight:800,color:T.textSub,lineHeight:1.2,marginTop:1}}>{k.sub}</div>
+          </div>)}
+        </div>
+      </Card>}
 
       {!loading&&citasProximas.length>0&&<Card style={{marginBottom:12,background:"linear-gradient(145deg,#120806,#183226 58%,#6E3518)",border:"2px solid rgba(242,200,91,.38)",color:T.white,overflow:"hidden",position:"relative"}}>
         <div style={{position:"absolute",right:-16,top:-24,fontSize:"6rem",opacity:.10}}>📅</div>
