@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7o: logo correcto en Inicio, RastaHelp fuera de Home y login legible.
+  // Paleta 2.9.7p: Home más limpia, logo como fondo superior y sin menú duplicado.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7O_HOME_LOGO_LOGIN_FIX";
-const APP_VERSION_SHORT = "2.9.7o";
+const APP_VERSION = "RASTACUTS_2_9_7P_HOME_COVER_NO_DUPLICATE_MENU";
+const APP_VERSION_SHORT = "2.9.7p";
 const APP_BUILD_DATE = "2026-06-10";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
