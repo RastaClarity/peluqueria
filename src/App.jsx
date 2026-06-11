@@ -12804,7 +12804,44 @@ function GlobalUIPolishPatch(){
     @media(max-width:860px){
       .premium-home-grid-main{grid-template-columns:1fr!important;}
     }
+
+    .rc-header-actions{
+      flex-wrap:nowrap!important;
+      justify-content:flex-end!important;
+      overflow:visible!important;
+    }
+    .rc-top-icon-btn{
+      width:34px!important;
+      height:34px!important;
+      min-width:34px!important;
+      display:inline-grid!important;
+      place-items:center!important;
+      padding:0!important;
+      line-height:1!important;
+      overflow:visible!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 4px 12px rgba(0,0,0,.18)!important;
+    }
+    .rc-top-icon-btn .rc-btn-icon{
+      display:block!important;
+      font-size:1rem!important;
+      line-height:1!important;
+      transform:none!important;
+    }
+    .rc-profile-mini{
+      overflow:hidden!important;
+    }
+    .rc-profile-mini > div{
+      transform:scale(.88)!important;
+      transform-origin:center!important;
+    }
+
     @media(max-width:560px){
+      .rc-header-actions{gap:3px!important;flex-shrink:0!important;max-width:calc(100vw - 150px)!important;}
+      .rc-top-icon-btn{width:27px!important;height:27px!important;min-width:27px!important;border-radius:10px!important;}
+      .rc-top-icon-btn .rc-btn-icon{font-size:.78rem!important;}
+      .rc-profile-mini > div{transform:scale(.72)!important;transform-origin:center!important;}
+      .rc-top-badge{top:-4px!important;right:-4px!important;min-width:14px!important;height:14px!important;font-size:.48rem!important;border-width:1px!important;}
+      .rc-client-rp-chip{display:none!important;}
       .rasta-helper-fixed-safe{
         right:8px!important;
         bottom:calc(78px + env(safe-area-inset-bottom,0px))!important;
@@ -13123,16 +13160,13 @@ function GlobalUIPolishPatch(){
       .brand-home-button .brand-rasta-mark{width:24px!important;height:24px!important;min-width:24px!important;}
       .brand-home-button .brand-rasta-mark svg{transform:scale(.78)!important;transform-origin:center!important;}
       .app-header-pro > div:first-child > span{display:none!important;}
-      .header-action-pro{min-width:30px!important;width:30px!important;height:30px!important;padding:0!important;font-size:.78rem!important;display:inline-grid!important;place-items:center!important;border-radius:999px!important;line-height:1!important;}
+      .header-action-pro{padding:0!important;display:inline-grid!important;place-items:center!important;line-height:1!important;}
       .header-action-pro svg,.header-action-pro img{max-width:24px!important;max-height:24px!important;}
       .wallet-button-pro,.cart-button-pro{font-size:.82rem!important;}
       .theme-toggle-pro .theme-word{display:none!important;}
-      .theme-toggle-pro{width:30px!important;min-width:30px!important;}
-      .app-header-pro button[title*="música"],.app-header-pro button[title*="Música"],.app-header-pro button[title*="Activar música"]{font-size:0!important;}
-      .app-header-pro button[title*="música"]::before,.app-header-pro button[title*="Música"]::before,.app-header-pro button[title*="Activar música"]::before{content:"🔊";font-size:.82rem!important;}
-      .app-header-pro button[title*="Doble toque"]::before{content:"🔇";font-size:.82rem!important;}
-      .app-header-pro .header-action-pro:last-child{width:30px!important;height:30px!important;padding:0!important;overflow:hidden!important;}
-      .app-header-pro .header-action-pro:last-child > div,.app-header-pro .header-action-pro:last-child svg{transform:scale(.82)!important;transform-origin:center!important;}
+      .theme-toggle-pro{width:27px!important;min-width:27px!important;}
+      .app-header-pro .header-action-pro:last-child{width:27px!important;height:27px!important;padding:0!important;overflow:hidden!important;}
+      .app-header-pro .header-action-pro:last-child > div,.app-header-pro .header-action-pro:last-child svg{transform:scale(.72)!important;transform-origin:center!important;}
       .page-content-pro{width:calc(100% - 10px)!important;margin-top:8px!important;border-radius:22px!important;padding:12px 8px!important;overflow:hidden!important;min-height:calc(100dvh - 170px)!important;}
       .premium-home section{border-radius:22px!important;}
       .premium-home h1{font-size:clamp(2.15rem,12vw,3.4rem)!important;letter-spacing:.01em!important;line-height:.92!important;}
@@ -13150,6 +13184,10 @@ function GlobalUIPolishPatch(){
     }
 
     @media(max-width:380px){
+      .rc-header-actions{gap:2px!important;max-width:calc(100vw - 136px)!important;}
+      .rc-top-icon-btn{width:25px!important;height:25px!important;min-width:25px!important;border-radius:9px!important;}
+      .rc-top-icon-btn .rc-btn-icon{font-size:.72rem!important;}
+
       .brand-home-button{max-width:104px!important;font-size:.95rem!important;}
       .header-action-pro{width:28px!important;height:28px!important;min-width:28px!important;font-size:.72rem!important;}
       .app-header-pro{padding:6px 6px!important;}
@@ -13158,6 +13196,124 @@ function GlobalUIPolishPatch(){
     }
 
 
+
+
+    /* 2.9.7x · Cabecera Android equilibrada: izquierda cartera/puntos/carrito, derecha ajustes */
+    .rc-balanced-topbar{
+      grid-template-columns:minmax(0,1fr) auto!important;
+      overflow:hidden!important;
+    }
+    .rc-balanced-topbar .rc-topbar-left,
+    .rc-balanced-topbar .rc-topbar-right{
+      min-width:0!important;
+      flex-wrap:nowrap!important;
+    }
+    .rc-balanced-topbar .rc-mini-square,
+    .rc-balanced-topbar .rc-profile-pill{
+      width:32px!important;
+      height:32px!important;
+      min-width:32px!important;
+      padding:0!important;
+      display:grid!important;
+      place-items:center!important;
+      line-height:1!important;
+    }
+    .rc-balanced-topbar .rc-wallet-pill{
+      height:32px!important;
+      max-width:150px!important;
+      min-width:72px!important;
+      overflow:hidden!important;
+      white-space:nowrap!important;
+    }
+    .rc-balanced-topbar .rc-wallet-points{
+      max-width:66px!important;
+      overflow:hidden!important;
+      text-overflow:ellipsis!important;
+      white-space:nowrap!important;
+      font-size:.78rem!important;
+      line-height:1!important;
+    }
+    .rc-balanced-topbar .rc-wallet-unit{
+      font-size:.62rem!important;
+      opacity:.82!important;
+      line-height:1!important;
+    }
+    .rc-balanced-topbar .rc-top-icon{
+      display:block!important;
+      font-size:.95rem!important;
+      line-height:1!important;
+      transform:none!important;
+    }
+    .rc-balanced-topbar .rc-profile-pill > div,
+    .rc-balanced-topbar .rc-profile-pill svg{
+      transform:scale(.84)!important;
+      transform-origin:center!important;
+    }
+
+    @media(max-width:560px){
+      .app-header-pro.rc-balanced-topbar{
+        width:calc(100% - 10px)!important;
+        margin:6px auto 0!important;
+        padding:6px 7px!important;
+        border-radius:17px!important;
+        grid-template-columns:minmax(0,1fr) auto!important;
+        gap:5px!important;
+      }
+      .rc-balanced-topbar .rc-topbar-left{gap:4px!important;overflow:hidden!important;}
+      .rc-balanced-topbar .rc-topbar-right{gap:3px!important;overflow:visible!important;}
+      .rc-balanced-topbar .rc-mini-square,
+      .rc-balanced-topbar .rc-profile-pill{
+        width:28px!important;
+        height:28px!important;
+        min-width:28px!important;
+        border-radius:10px!important;
+      }
+      .rc-balanced-topbar .rc-wallet-pill{
+        height:28px!important;
+        min-width:72px!important;
+        max-width:106px!important;
+        padding:0 7px!important;
+        gap:4px!important;
+        border-radius:12px!important;
+      }
+      .rc-balanced-topbar .rc-top-icon{font-size:.78rem!important;}
+      .rc-balanced-topbar .rc-wallet-points{font-size:.68rem!important;max-width:45px!important;}
+      .rc-balanced-topbar .rc-wallet-unit{font-size:.52rem!important;}
+      .rc-balanced-topbar .rc-profile-pill > div,
+      .rc-balanced-topbar .rc-profile-pill svg{
+        transform:scale(.70)!important;
+      }
+      .rc-balanced-topbar .rc-top-badge{
+        top:-4px!important;
+        right:-4px!important;
+        min-width:14px!important;
+        height:14px!important;
+        font-size:.46rem!important;
+        border-width:1px!important;
+      }
+    }
+
+    @media(max-width:380px){
+      .app-header-pro.rc-balanced-topbar{padding:5px 6px!important;gap:4px!important;}
+      .rc-balanced-topbar .rc-topbar-left{gap:3px!important;}
+      .rc-balanced-topbar .rc-topbar-right{gap:2px!important;}
+      .rc-balanced-topbar .rc-mini-square,
+      .rc-balanced-topbar .rc-profile-pill{
+        width:26px!important;
+        height:26px!important;
+        min-width:26px!important;
+        border-radius:9px!important;
+      }
+      .rc-balanced-topbar .rc-wallet-pill{
+        height:26px!important;
+        min-width:62px!important;
+        max-width:92px!important;
+        padding:0 5px!important;
+      }
+      .rc-balanced-topbar .rc-top-icon{font-size:.72rem!important;}
+      .rc-balanced-topbar .rc-wallet-points{font-size:.62rem!important;max-width:37px!important;}
+      .rc-balanced-topbar .rc-wallet-unit{font-size:.48rem!important;}
+    }
 
     /* 2.9.7f · Clean public copy: tono claro para clientes, staff y admin. */
     :root{
@@ -13766,22 +13922,38 @@ function AppCore(){
       
       <Particles/>
       <PtsPopup pts={ptsPopup.pts} show={ptsPopup.show}/>
-      <div className="app-header-pro" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.22), inset 0 -1px 0 ${clinicAccent}55`}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
-          {navHistory.length>0&&<button className="header-action-pro" onClick={goBack} title="Volver a la pestaña anterior" style={{background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,.22)",borderRadius:12,width:32,height:32,cursor:"pointer",color:T.white,fontWeight:950,fontSize:"1rem",display:"grid",placeItems:"center",boxShadow:"0 4px 12px rgba(0,0,0,.16)"}}>←</button>}
-          <button className="brand-home-button" onClick={goHome} title="Ir al inicio" style={{display:"inline-flex",alignItems:"center",gap:8,border:"none",background:"transparent",padding:0,cursor:"pointer",fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.white,textShadow:"0 4px 10px rgba(0,0,0,.35)",minWidth:0}}><span className="brand-rasta-mark" style={{width:32,height:32,borderRadius:999,overflow:"hidden",display:"grid",placeItems:"center",boxShadow:"0 5px 14px rgba(0,0,0,.22)"}}><LoginHelperAvatar size={32}/></span><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{appSettings?.branding?.nombre_tienda||BRAND.name}</span></button>
-          {role!==ROLES.CLIENT&&<span style={{background:"rgba(255,255,255,0.22)",color:T.white,borderRadius:50,padding:"2px 8px",fontSize:"0.68rem",fontWeight:800,textTransform:"uppercase"}}>{role}</span>}
+      <div className="app-header-pro rc-balanced-topbar" style={{background:role===ROLES.CLIENT?theme.header:grad,padding:"8px 10px",display:"grid",gridTemplateColumns:"minmax(0,1fr) auto",gap:8,alignItems:"center",position:"sticky",top:0,zIndex:50,boxShadow:`0 4px 20px rgba(0,0,0,0.22), inset 0 -1px 0 ${clinicAccent}55`}}>
+        <div className="rc-topbar-left" style={{display:"flex",alignItems:"center",gap:6,minWidth:0,overflow:"hidden"}}>
+          {navHistory.length>0&&<button className="header-action-pro rc-mini-square rc-back-mini" onClick={goBack} title="Volver" style={{background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,.22)",borderRadius:12,width:32,height:32,minWidth:32,cursor:"pointer",color:T.white,fontWeight:950,fontSize:".95rem",display:"grid",placeItems:"center",boxShadow:"0 4px 12px rgba(0,0,0,.16)"}}>←</button>}
+
+          <button className="header-action-pro rc-wallet-pill" onClick={()=>setWalletOpen(true)} title="Cartera y puntos" style={{height:32,minWidth:0,display:"inline-flex",alignItems:"center",gap:6,border:"1px solid rgba(255,244,214,.14)",background:"rgba(255,244,214,.10)",borderRadius:14,padding:"0 9px",cursor:"pointer",color:T.white,fontWeight:950,boxShadow:"inset 0 1px 0 rgba(255,255,255,.08)"}}>
+            <span className="rc-top-icon">👛</span>
+            <span className="rc-wallet-points">{Number(currentUser.puntos||0).toLocaleString("es-ES")}</span>
+            <span className="rc-wallet-unit">RP</span>
+          </button>
+
+          <button className="header-action-pro rc-mini-square rc-cart-mini" onClick={()=>setCartOpen(true)} title="Carrito" style={{background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.14)",borderRadius:12,width:32,height:32,minWidth:32,padding:0,cursor:"pointer",color:T.white,fontWeight:900,display:"grid",placeItems:"center"}}>
+            <span className="rc-top-icon">🛒</span>
+          </button>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button className="header-action-pro" onClick={()=>setNotifOpen(true)} title="Notificaciones · campana de avisos y citas" style={{position:"relative",background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🔔{notifCount>0&&<span style={{position:"absolute",top:-5,right:-5,minWidth:17,height:17,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".58rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}</button>
-          <button className="header-action-pro wallet-button-pro" onClick={()=>setWalletOpen(true)} title="Cartera · puntos, saldo y límite diario" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>👛</button>
-          <button className="header-action-pro cart-button-pro" onClick={()=>setCartOpen(true)} title="Carrito · compras y personalización" style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 9px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.9rem"}}>🛒</button>
-          <button className="header-action-pro" onClick={handleMusicButtonClick} title={musicOn?`Doble toque: canción aleatoria (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:800,fontSize:"0.72rem"}}>{musicOn?"🔇 Silenciar":"🔊 Sonido"}</button>
-          <button className="header-action-pro theme-toggle-pro" onClick={toggleUiTheme} title={uiTheme==="night"?"Cambiar a modo día":"Cambiar a modo noche"} style={{background:"rgba(255,255,255,0.18)",border:"none",borderRadius:50,padding:"5px 10px",cursor:"pointer",color:T.white,fontWeight:900,fontSize:"0.72rem",display:"inline-flex",alignItems:"center",gap:4}}>{uiTheme==="night"?"☀️":"🌙"} <span className="theme-word">{uiTheme==="night"?"Día":"Noche"}</span></button>
-          {role===ROLES.CLIENT&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",color:T.white,fontWeight:900,fontSize:"0.84rem"}}>{currentUser.puntos||0} RP</div>}
-          <div className="header-action-pro" onClick={()=>navTo("perfil")} style={{cursor:"pointer",padding:2,background:"rgba(255,255,255,0.18)",borderRadius:"50%"}}>
-            <Av av={currentUser.avatar} config={currentUser.avatarConfig} size={32}/>
-          </div>
+
+        <div className="rc-topbar-right" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:6,minWidth:0}}>
+          <button className="header-action-pro rc-mini-square rc-notif-mini" onClick={()=>setNotifOpen(true)} title="Notificaciones" style={{position:"relative",background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.14)",borderRadius:12,width:32,height:32,minWidth:32,padding:0,cursor:"pointer",color:T.white,fontWeight:900,display:"grid",placeItems:"center"}}>
+            <span className="rc-top-icon">🔔</span>
+            {notifCount>0&&<span className="rc-top-badge" style={{position:"absolute",top:-5,right:-5,minWidth:16,height:16,borderRadius:999,background:"#A72822",color:"#FFF4D6",fontSize:".55rem",fontWeight:950,display:"grid",placeItems:"center",border:"1.5px solid #FFF4D6",boxShadow:"0 4px 10px rgba(0,0,0,.28)"}}>{notifCount>9?"9+":notifCount}</span>}
+          </button>
+
+          <button className="header-action-pro rc-mini-square rc-sound-mini" onClick={handleMusicButtonClick} title={musicOn?`Silenciar música · doble toque: canción aleatoria (${getBackgroundName()})`:"Activar música"} style={{background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.14)",borderRadius:12,width:32,height:32,minWidth:32,padding:0,cursor:"pointer",color:T.white,fontWeight:900,display:"grid",placeItems:"center"}}>
+            <span className="rc-top-icon">{musicOn?"🔇":"🔊"}</span>
+          </button>
+
+          <button className="header-action-pro rc-mini-square rc-theme-mini" onClick={toggleUiTheme} title={uiTheme==="night"?"Cambiar a modo día":"Cambiar a modo noche"} style={{background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.14)",borderRadius:12,width:32,height:32,minWidth:32,padding:0,cursor:"pointer",color:T.white,fontWeight:900,display:"grid",placeItems:"center"}}>
+            <span className="rc-top-icon">{uiTheme==="night"?"☀️":"🌙"}</span>
+          </button>
+
+          <button className="header-action-pro rc-profile-pill" onClick={()=>navTo("perfil")} title="Perfil" style={{width:32,height:32,minWidth:32,padding:0,display:"grid",placeItems:"center",cursor:"pointer",background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.14)",borderRadius:999,overflow:"hidden"}}>
+            <Av av={currentUser.avatar} config={currentUser.avatarConfig} size={27}/>
+          </button>
         </div>
       </div>
       <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
