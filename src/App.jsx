@@ -6860,61 +6860,295 @@ function Retos({user,setUser,showToast,showPoints}){
 }
 
 // RANKING
-function Ranking({user}){
-  const [lista,setLista]=useState([]);const [loading,setLoading]=useState(true);const [tab,setTab]=useState("global");const [selectedProfile,setSelectedProfile]=useState(null);
+function Ranking({user,onNavigate}){
+  const [tab,setTab]=useState("general");
+  const [game,setGame]=useState("runner");
+  const [q,setQ]=useState("");
+  const [loading,setLoading]=useState(true);
+  const [data,setData]=useState({users:[],scores:[],canjes:[],newsComments:[],newsLikes:[],foroTemas:[],foroRespuestas:[],foroVotos:[]});
+  const [selectedProfile,setSelectedProfile]=useState(null);
+  const [lastUpdate,setLastUpdate]=useState(null);
+
+  const gameOptions=(typeof ARCADE_GAMES!=="undefined"?ARCADE_GAMES:[]).filter(g=>g.id!=="gacha");
+  const selectedGame=gameMeta(game);
+
   useEffect(()=>{load();},[]);
+
   async function load(){
     setLoading(true);
-    const data=await dbGet("usuarios","?or=(role.eq.cliente,role.eq.client,role.is.null)&order=puntos.desc&limit=50&select=*");
-    let avatars=[];
     try{
-      const {data:av}=await supabase.from("avatar_profiles").select("usuario_id,email,avatar_config");
-      avatars=Array.isArray(av)?av:[];
-    }catch{}
-    const merged=(Array.isArray(data)?data:[]).map(u=>{
-      const hit=avatars.find(a=>String(a.usuario_id)===String(u.id)||String(a.email||"").toLowerCase()===String(u.email||"").toLowerCase());
-      return {...u,avatarConfig:normalizeAvatarConfig(hit?.avatar_config,u.avatar),avatar_config:normalizeAvatarConfig(hit?.avatar_config,u.avatar)};
+      const [usersRaw,scores,canjes,newsComments,newsLikes,foroTemas,foroRespuestas,foroVotos]=await Promise.all([
+        safeList("usuarios","?select=id,nombre,email,puntos,rc,xp,avatar,avatar_config,avatar_level,perfil_publico,modo_incognito,role,rol&limit=600"),
+        safeList("game_scores","?order=created_at.desc&limit=5000&select=*"),
+        safeList("canjes","?select=usuario_id,puntos_gastados,created_at&limit=5000"),
+        safeList("news_comments","?select=usuario_id,created_at&limit=5000"),
+        safeList("news_likes","?select=usuario_id,created_at&limit=5000"),
+        safeList("foro_temas","?select=usuario_id,likes,respuestas_count,fijado,created_at&limit=5000"),
+        safeList("foro_respuestas","?select=usuario_id,likes,created_at&limit=5000"),
+        safeList("foro_votos","?select=usuario_id,target_tipo,created_at&limit=5000")
+      ]);
+      const enriched=await enrichProfilesWithAvatarConfigs(Array.isArray(usersRaw)?usersRaw:[]);
+      const users=(enriched||[]).filter(u=>{
+        const r=normalizeRole(u.role||u.rol);
+        return r!==ROLES.ADMIN && r!==ROLES.STAFF && !isBannedProfile(u);
+      });
+      setData({
+        users,
+        scores:Array.isArray(scores)?scores:[],
+        canjes:Array.isArray(canjes)?canjes:[],
+        newsComments:Array.isArray(newsComments)?newsComments:[],
+        newsLikes:Array.isArray(newsLikes)?newsLikes:[],
+        foroTemas:Array.isArray(foroTemas)?foroTemas:[],
+        foroRespuestas:Array.isArray(foroRespuestas)?foroRespuestas:[],
+        foroVotos:Array.isArray(foroVotos)?foroVotos:[]
+      });
+      setLastUpdate(new Date());
+    }catch(e){
+      console.warn("No se pudo cargar ranking inteligente",e);
+      setData({users:[],scores:[],canjes:[],newsComments:[],newsLikes:[],foroTemas:[],foroRespuestas:[],foroVotos:[]});
+    }
+    setLoading(false);
+  }
+
+  function profileById(id,extra={}){
+    const key=String(id||"");
+    const found=(data.users||[]).find(u=>String(u.id)===key);
+    if(found)return {...found,...extra,user_id:key};
+    return {
+      id:key,
+      user_id:key,
+      nombre:extra.usuario_nombre||extra.nombre||"Jugador",
+      avatar:extra.usuario_avatar||extra.avatar||0,
+      avatar_config:extra.usuario_avatar_config||extra.avatar_config||null,
+      puntos:0,
+      rc:0,
+      xp:0,
+      ...extra
+    };
+  }
+
+  function communityScoreMap(){
+    const values={};
+    (data.newsComments||[]).forEach(r=>{const id=String(r.usuario_id||"");if(id)values[id]=(values[id]||0)+3;});
+    (data.newsLikes||[]).forEach(r=>{const id=String(r.usuario_id||"");if(id)values[id]=(values[id]||0)+1;});
+    (data.foroTemas||[]).forEach(r=>{const id=String(r.usuario_id||"");if(id)values[id]=(values[id]||0)+8+Number(r.likes||0)+Math.min(10,Number(r.respuestas_count||0));});
+    (data.foroRespuestas||[]).forEach(r=>{const id=String(r.usuario_id||"");if(id)values[id]=(values[id]||0)+3+Number(r.likes||0);});
+    (data.foroVotos||[]).forEach(r=>{const id=String(r.usuario_id||"");if(id)values[id]=(values[id]||0)+1;});
+    return values;
+  }
+
+  function arcadeRows(){
+    const byUser={};
+    (data.scores||[]).forEach(s=>{
+      const uid=String(s.usuario_id||s.user_id||"");
+      const gid=String(s.game_id||s.juego||s.game||"");
+      if(!uid||!gid)return;
+      const score=Number(s.score)||Number(s.points)||Number(s.puntos)||0;
+      if(!byUser[uid])byUser[uid]={bestByGame:{},plays:0,last:s};
+      byUser[uid].plays+=1;
+      byUser[uid].last=s;
+      if(score>Number(byUser[uid].bestByGame[gid]||0))byUser[uid].bestByGame[gid]=score;
     });
-    setLista(merged);setLoading(false);
+    return Object.entries(byUser).map(([uid,info])=>{
+      const totalBest=Object.values(info.bestByGame).reduce((sum,n)=>sum+Number(n||0),0);
+      const variety=Object.keys(info.bestByGame).length;
+      return {
+        ...profileById(uid,info.last),
+        score:Math.round(totalBest+info.plays*2+variety*25),
+        sub:`${info.plays} partidas · ${variety} juegos`,
+        unit:"pts"
+      };
+    });
   }
-  function score(u){
-    if(tab==="semana") return Number(u.puntos_semana||u.weekly_points||u.puntos_week||0);
-    if(tab==="compras") return Number(u.puntos_compras||u.purchase_points||u.compras_puntos||0);
-    return Number(u.puntos||0);
+
+  function gameRows(){
+    const byUser={};
+    (data.scores||[]).filter(s=>String(s.game_id||s.juego||s.game||"")===String(game)).forEach(s=>{
+      const uid=String(s.usuario_id||s.user_id||"");
+      if(!uid)return;
+      const score=Number(s.score)||Number(s.points)||Number(s.puntos)||0;
+      if(!byUser[uid]||score>Number(byUser[uid].score||0))byUser[uid]={...s,score};
+    });
+    return Object.values(byUser).map(r=>({
+      ...profileById(r.usuario_id||r.user_id,r),
+      score:Number(r.score)||0,
+      sub:r.created_at?`Mejor marca · ${new Date(r.created_at).toLocaleDateString("es-ES")}`:"Mejor marca",
+      unit:"pts"
+    }));
   }
-  const cfg={
-    global:{icon:"🏆",title:"Ranking general",sub:"Puntos acumulados"},
-    semana:{icon:"⚡",title:"Top semana",sub:"Se reinicia semanalmente si guardas puntos_semana"},
-    compras:{icon:"🛒",title:"Top compras",sub:"Puntos generados por compras"},
-  };
-  const ranked=[...lista].map(u=>({...u,score:score(u)})).sort((a,b)=>b.score-a.score).slice(0,10);
+
+  function shopRows(){
+    const spent={};
+    (data.canjes||[]).forEach(r=>{
+      const id=String(r.usuario_id||"");
+      if(id)spent[id]=(spent[id]||0)+Number(r.puntos_gastados||0);
+    });
+    return Object.entries(spent).map(([uid,score])=>({
+      ...profileById(uid),
+      score:Math.round(score),
+      sub:"RP canjeados en tienda",
+      unit:"RP"
+    }));
+  }
+
+  function levelRows(){
+    return (data.users||[]).map(u=>({
+      ...u,
+      user_id:String(u.id),
+      score:Number(u.avatar_level||avatarLevelFromXP(userXP(u)))||0,
+      sub:`${userXP(u)} XP · ${avatarLevelName(u.avatar_level||avatarLevelFromXP(userXP(u)))}`,
+      unit:"Nv."
+    }));
+  }
+
+  function communityRows(){
+    const map=communityScoreMap();
+    return (data.users||[]).map(u=>({
+      ...u,
+      user_id:String(u.id),
+      score:Math.round(Number(map[String(u.id)]||0)),
+      sub:"foro, actualidad y participación",
+      unit:"pts"
+    })).filter(r=>r.score>0);
+  }
+
+  function generalRows(){
+    return (data.users||[]).map(u=>({
+      ...u,
+      user_id:String(u.id),
+      score:Number(u.puntos||0)||0,
+      sub:`${userRC(u)} RC · ${userXP(u)} XP`,
+      unit:"RP"
+    }));
+  }
+
+  const tabs=[
+    {id:"general",icon:"👑",title:"General",sub:"RP acumulados"},
+    {id:"arcade",icon:"🎮",title:"Arcade",sub:"actividad y mejores marcas"},
+    {id:"game",icon:"🏆",title:"Por juego",sub:selectedGame.short||"minijuego"},
+    {id:"community",icon:"🌐",title:"Comunidad",sub:"foro y actualidad"},
+    {id:"shop",icon:"🛍️",title:"Tienda",sub:"canjes y recompensas"},
+    {id:"level",icon:"⭐",title:"Nivel",sub:"avatar y XP"}
+  ];
+
+  function rawRows(){
+    if(tab==="arcade")return arcadeRows();
+    if(tab==="game")return gameRows();
+    if(tab==="community")return communityRows();
+    if(tab==="shop")return shopRows();
+    if(tab==="level")return levelRows();
+    return generalRows();
+  }
+
+  const clean=normalizeText(q);
+  const allRows=rawRows()
+    .filter(r=>{
+      if(!clean)return true;
+      const visibleName=isPrivateProfile(r,user)?"xxxxxx":publicName(r,user);
+      return normalizeText(`${visibleName} ${r.sub||""} ${avatarLevelName(r.avatar_level||avatarLevelFromXP(userXP(r)))}`).includes(clean);
+    })
+    .sort((a,b)=>Number(b.score||0)-Number(a.score||0));
+
+  const topRows=allRows.slice(0,15);
+  const myIndex=allRows.findIndex(r=>String(r.user_id||r.id)===String(user?.id));
+  const myRow=myIndex>=0?allRows[myIndex]:null;
+  const activeMeta=tabs.find(t=>t.id===tab)||tabs[0];
+  const totalScores=data.scores.length;
+  const totalUsers=data.users.length;
+  const bestRow=allRows[0];
+
+  function formatScore(v,unit){
+    const n=Number(v)||0;
+    return `${n.toLocaleString("es-ES")} ${unit||"pts"}`;
+  }
+
+  function RankItem({r,i,forcePos=null}){
+    const pos=forcePos??i;
+    const isMe=String(r.user_id||r.id)===String(user?.id);
+    const medal=pos===0?"🥇":pos===1?"🥈":pos===2?"🥉":`#${pos+1}`;
+    return <Card key={`${r.user_id||r.id}-${tab}-${pos}`} hover onClick={()=>setSelectedProfile(r)} style={{marginBottom:8,background:isMe?"linear-gradient(180deg,#FFF1A8,#F6E5BE)":"linear-gradient(180deg,#FFF8E6,#E9D9B7)",border:isMe?`2px solid ${T.gold}`:`1.5px solid ${T.g200}`,padding:11}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div className="icon3d" style={{fontSize:pos<3?"1.55rem":"1rem",minWidth:36,textAlign:"center",fontWeight:950,color:T.g800}}>{medal}</div>
+        <PublicAvatar profile={r} currentUser={user} size={44}/>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontWeight:1000,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{publicName(r,user)}{isMe?" · tú":""}</div>
+          <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{isPrivateProfile(r,user)?"Perfil en modo incógnito":(r.sub||avatarStyleName(normalizeAvatarConfig(r.avatar_config||r.avatarConfig,r.avatar)))}</div>
+          <AvatarMiniIdentity profile={r} currentUser={user} limit={3} showCurrency/>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontWeight:1000,color:T.orange,fontSize:"1.05rem",whiteSpace:"nowrap"}}>{formatScore(r.score,r.unit)}</div>
+          <div style={{fontSize:".62rem",fontWeight:850,color:T.textSub}}>ranking</div>
+        </div>
+      </div>
+    </Card>;
+  }
+
   return(
     <div style={{animation:"fadeSlide 0.4s ease"}}>
-      <SectionHeader icon="🏆" title="Rankings" sub="Top 10 estilo liga"/>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
-        {Object.entries(cfg).map(([id,c])=><button key={id} onClick={()=>{SFX.tab();setTab(id);}} style={{border:`2px solid ${tab===id?T.gold:T.g200}`,background:tab===id?T.gradGold:"rgba(255,244,214,.82)",color:tab===id?T.g900:T.g700,borderRadius:16,padding:"9px 6px",fontWeight:900,cursor:"pointer",boxShadow:tab===id?"0 8px 20px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.12)"}}><div className="icon3d" style={{fontSize:"1.35rem"}}>{c.icon}</div><div style={{fontSize:".68rem"}}>{c.title}</div></button>)}
-      </div>
-      <Card style={{marginBottom:12,background:"linear-gradient(135deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}><div className="icon3d" style={{fontSize:"2.1rem"}}>{cfg[tab].icon}</div><div><div style={{fontWeight:900}}>{cfg[tab].title}</div><div style={{fontSize:".75rem",opacity:.78,fontWeight:700}}>{cfg[tab].sub}</div></div></div>
+      <SectionHeader icon="🏆" title="Rankings" sub="Liga de clientes, récords por juego y actividad de la comunidad." action={<Btn small col="ghost" onClick={load}>↻</Btn>}/>
+
+      <Card style={{marginBottom:12,background:"linear-gradient(145deg,#120806,#3A2312 52%,#B99A45)",border:`2px solid ${T.gold}`,color:T.white,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",right:-22,top:-30,fontSize:"7rem",opacity:.12}}>♛</div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.55rem",lineHeight:1}}>Liga Rasta Cuts</div>
+          <div style={{fontSize:".82rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.38,marginTop:5}}>Rankings limpios con avatar, nivel, RP, RC, XP y perfiles públicos sin mostrar datos personales.</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:12}}>
+            <div style={{borderRadius:14,padding:10,background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.16)"}}><div style={{fontWeight:1000}}>{totalUsers}</div><div style={{fontSize:".68rem",fontWeight:850,opacity:.75}}>usuarios</div></div>
+            <div style={{borderRadius:14,padding:10,background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.16)"}}><div style={{fontWeight:1000}}>{totalScores}</div><div style={{fontSize:".68rem",fontWeight:850,opacity:.75}}>partidas</div></div>
+            <div style={{borderRadius:14,padding:10,background:"rgba(255,244,214,.10)",border:"1px solid rgba(255,244,214,.16)"}}><div style={{fontWeight:1000}}>{bestRow?publicName(bestRow,user):"--"}</div><div style={{fontSize:".68rem",fontWeight:850,opacity:.75}}>líder</div></div>
+          </div>
+        </div>
       </Card>
-      {loading?<Spinner/>:ranked.length===0?<EmptyState icon="🏆" title="Sin datos" sub="Todavía no hay puntuaciones"/>:ranked.map((u,i)=>{
-        const isMe=u.id===user.id;
-        const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`;
-        return(
-          <Card key={u.id} onClick={()=>setSelectedProfile(u)} style={{marginBottom:8,background:isMe?"linear-gradient(180deg,#FFF1A8,#F6E5BE)":"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:isMe?`2px solid ${T.gold}`:`1px solid ${T.g300}`}} hover>
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <div className="icon3d" style={{fontSize:i<3?"1.7rem":"1.1rem",minWidth:38,textAlign:"center",fontWeight:900}}>{medal}</div>
-              <PublicAvatar profile={u} currentUser={user} size={42}/>
-              <div style={{flex:1}}><div style={{fontWeight:900}}>{publicName(u,user)}{isMe?" · tú":""}</div><div style={{fontSize:".72rem",color:T.textSub,fontWeight:800}}>{isPrivateProfile(u,user)?"Perfil en modo incógnito":avatarStyleName(normalizeAvatarConfig(u.avatar_config||u.avatarConfig,u.avatar))}</div><AvatarMiniIdentity profile={u} currentUser={user} limit={2}/></div>
-              <div style={{fontWeight:900,color:T.orange,fontSize:"1.02rem"}}>{u.score||0} RP</div>
-            </div>
-          </Card>
-        );
-      })}
+
+      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#EAD5A7)",border:`1.5px solid ${T.g300}`}}>
+        <Input label="Buscar en ranking" value={q} onChange={setQ} placeholder="Nombre, nivel, categoría..."/>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+          {tabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${tab===t.id?T.gold:T.g200}`,background:tab===t.id?T.gradGold:"rgba(255,244,214,.78)",color:tab===t.id?T.g900:T.g700,borderRadius:16,padding:"9px 5px",fontWeight:950,cursor:"pointer"}}>
+            <div style={{fontSize:"1.25rem",lineHeight:1}}>{t.icon}</div>
+            <div style={{fontSize:".72rem",marginTop:4}}>{t.title}</div>
+          </button>)}
+        </div>
+      </Card>
+
+      {tab==="game"&&<Card style={{marginBottom:12,background:"linear-gradient(180deg,#EFE0BE,#E4CFAB)",border:`1.5px solid ${T.g300}`}}>
+        <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🎮 Elegir minijuego</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+          {gameOptions.map(g=>{
+            const active=game===g.id;
+            return <button key={g.id} onClick={()=>{SFX.tab();setGame(g.id);}} style={{border:`2px solid ${active?T.gold:T.g200}`,background:active?T.gradGold:T.g50,color:active?T.g900:T.g700,borderRadius:15,padding:"9px 6px",fontWeight:950,cursor:"pointer"}}>
+              <div style={{fontSize:"1.35rem",lineHeight:1}}>{g.icon}</div>
+              <div style={{fontSize:".72rem",marginTop:4}}>{g.title}</div>
+            </button>;
+          })}
+        </div>
+      </Card>}
+
+      <Card style={{marginBottom:12,background:"linear-gradient(160deg,#24110A,#6E3518)",color:T.white,border:"2px solid rgba(255,244,214,.35)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:10}}>
+          <div>
+            <div style={{fontWeight:1000,fontSize:"1.05rem"}}>{activeMeta.icon} {activeMeta.title}</div>
+            <div style={{fontSize:".74rem",fontWeight:800,opacity:.75}}>{activeMeta.sub}{lastUpdate?` · ${lastUpdate.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}`:""}</div>
+          </div>
+          <Badge col="gold">{allRows.length}</Badge>
+        </div>
+        {loading?<Spinner/>:topRows.length===0?<EmptyState icon="🏆" title="Sin datos todavía" sub="Cuando haya actividad, aparecerá aquí."/>:<div>{topRows.map((r,i)=><RankItem key={`${r.user_id||r.id}-${i}`} r={r} i={i}/>)}</div>}
+      </Card>
+
+      {myRow&&myIndex>14&&<Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF1A8,#F6E5BE)",border:`2px solid ${T.gold}`}}>
+        <div style={{fontWeight:1000,color:T.g800,marginBottom:8}}>Tu posición</div>
+        <RankItem r={myRow} i={myIndex} forcePos={myIndex}/>
+      </Card>}
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Btn full col="ghost" onClick={()=>onNavigate?.("juegos")}>Ir al Arcade</Btn>
+        <Btn full col="gold" onClick={()=>onNavigate?.("comunidad")}>Ver comunidad</Btn>
+      </div>
+
       <PublicProfileModal profile={selectedProfile} onClose={()=>setSelectedProfile(null)}/>
     </div>
   );
 }
+
 
 // GALERIA
 function Galeria({showToast,isAdmin=false}){
@@ -14078,7 +14312,7 @@ function AppCore(){
     gestion:<GestionAdmin {...sp}/>,caja:<Caja {...sp}/>,usuarios:<AdminUsuarios {...sp}/>,feed:<SocialFeed {...sp}/>,foro:<Foro {...sp}/>,
     noticias:<Noticias {...sp}/>,musica:<Comunidad {...sp} initialTab="musica"/>,comunidad:<Comunidad {...sp} initialTab={communityTab}/>,
     tienda:(sec.tienda_activa===false?<DisabledSection icon="🛍️" title="Tienda cerrada" sub="La tienda está pausada desde Gestión."/>:<Tienda {...sp}/>),juegos:(sec.arcade_activo===false?<DisabledSection icon="🎮" title="Arcade desactivado" sub="El Arcade está pausado desde Gestión."/>:<Juegos {...sp} setHelperPage={setHelperPage} onOpenTycoon={openTycoonPage} onOpenTops={(tab)=>{setTopsInitial(tab||"games");navTo("tops");}}/>),tops:<GameTopsPage user={currentUser} initialTab={topsInitial} onBack={()=>navTo("juegos")} onPlay={()=>navTo("juegos")}/>,retos:<Retos {...sp}/>,misiones:<MisionesPage {...sp} onNavigate={navTo}/>,
-    ranking:<Ranking user={currentUser}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout} onNavigate={navTo} onOpenAudioSettings={()=>setAudioSettingsOpen(true)} audioMode={audioMode}/>,
+    ranking:<Ranking user={currentUser} onNavigate={navTo}/>,buzon:<BuzonPrivado {...sp}/>,perfil:<Perfil {...sp} onLogout={logout} onNavigate={navTo} onOpenAudioSettings={()=>setAudioSettingsOpen(true)} audioMode={audioMode}/>,
     galeria:<Galeria showToast={showToast} isAdmin={isAdmin}/>,
     reviews:<Reviews {...sp}/>,chat:<Chat user={currentUser} showToast={showToast}/>,
     cupones:<Cupones user={currentUser} showToast={showToast}/>,
