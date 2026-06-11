@@ -3084,6 +3084,13 @@ const SERVICIOS=[
   {id:"recogido",icon:"👑",label:"Recogido",precio:30,duracion:45,grupo:"Pelo"},
 ];
 const HORARIOS=["09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30"];
+const CITA_PACKS=[
+  {id:"pack_corte_barba",icon:"💈",label:"Corte + barba",desc:"Arreglo rápido completo",servicios:["corte","barba"]},
+  {id:"pack_degradado_barba",icon:"✂️",label:"Degradado + barba",desc:"Look limpio y perfilado",servicios:["degradado","barba"]},
+  {id:"pack_rastas_mantenimiento",icon:"🪮",label:"Mantenimiento rastas",desc:"Revisión de raíces y forma",servicios:["rastas_mantenimiento","rastas_arreglo"]},
+  {id:"pack_color_tratamiento",icon:"🎨",label:"Color + hidratación",desc:"Coloración con cuidado extra",servicios:["color","tratamiento"]},
+  {id:"pack_evento",icon:"👑",label:"Evento / peinado",desc:"Lavado, peinado y acabado",servicios:["lavado","recogido"]}
+];
 function formatDuration(min=0){
   const n=Number(min)||0;
   const h=Math.floor(n/60),m=n%60;
@@ -3159,6 +3166,12 @@ function Citas({user,showToast,onNavigate}){
       return {...f,servicios:next.length?next:current};
     });
   }
+  function applyBookingPack(pack){
+    if(!pack?.servicios?.length)return;
+    SFX.tab();
+    setForm(f=>({...f,servicios:[...pack.servicios]}));
+  }
+
 
   async function saveCita(){
     if(!form.servicios?.length){showToast("Elige al menos un tratamiento");return;}
@@ -3362,6 +3375,32 @@ function Citas({user,showToast,onNavigate}){
       <Modal show={showNew} onClose={()=>setShowNew(false)} title="Nueva cita">
         {isAdmin&&<Input label="Nombre del cliente" value={form.cliente_nombre} onChange={v=>setForm(f=>({...f,cliente_nombre:v}))}/>} 
         <div style={{marginBottom:14}}>
+          <div style={{fontSize:"0.82rem",fontWeight:950,color:T.g800,marginBottom:7}}>Packs rápidos</div>
+          <div style={{fontSize:"0.76rem",fontWeight:750,color:T.textSub,marginBottom:10}}>Elige un pack y luego ajusta servicios si hace falta.</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:8}}>
+            {CITA_PACKS.map(pack=>{
+              const packServices=selectedServices(pack.servicios);
+              const total=citaTotal(packServices);
+              const duration=citaDuration(packServices);
+              const active=pack.servicios.every(id=>form.servicios.includes(id))&&form.servicios.length===pack.servicios.length;
+              return <button key={pack.id} onClick={()=>applyBookingPack(pack)} style={{textAlign:"left",border:`2px solid ${active?T.gold:T.g300}`,background:active?"linear-gradient(180deg,#FFF4D6,#E6C27A)":"rgba(255,244,214,.72)",borderRadius:16,padding:10,cursor:"pointer",boxShadow:active?"0 10px 18px rgba(18,8,4,.18)":"0 5px 12px rgba(20,8,4,.08)"}}>
+                <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                  <span style={{fontSize:"1.35rem"}}>{pack.icon}</span>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontWeight:950,color:T.g800,fontSize:".82rem",lineHeight:1.12}}>{pack.label}</div>
+                    <div style={{fontSize:".68rem",fontWeight:800,color:T.textSub,lineHeight:1.2,marginTop:2}}>{pack.desc}</div>
+                  </div>
+                </div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+                  <Badge col="gold">{total}€</Badge>
+                  <Badge col="blue">⏱️ {formatDuration(duration)}</Badge>
+                </div>
+              </button>;
+            })}
+          </div>
+        </div>
+
+        <div style={{marginBottom:14}}>
           <div style={{fontSize:"0.82rem",fontWeight:950,color:T.g800,marginBottom:7}}>Tratamientos</div>
           <div style={{fontSize:"0.76rem",fontWeight:750,color:T.textSub,marginBottom:10}}>Puedes elegir varios. La app suma el precio y el tiempo aproximado.</div>
           {serviceGroups().map(grupo=><div key={grupo} style={{marginBottom:10}}>
@@ -3379,9 +3418,12 @@ function Citas({user,showToast,onNavigate}){
         </div>
         <Card style={{marginBottom:14,background:"linear-gradient(180deg,#D8BE87,#C7A66B)",padding:12}}>
           <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center"}}>
-            <div><div style={{fontWeight:950,color:T.g800}}>Resumen</div><div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>{currentServices.length} tratamiento{currentServices.length===1?"":"s"} seleccionado{currentServices.length===1?"":"s"}</div></div>
+            <div><div style={{fontWeight:950,color:T.g800}}>Resumen de reserva</div><div style={{fontSize:".76rem",fontWeight:800,color:T.textSub}}>{currentServices.length} tratamiento{currentServices.length===1?"":"s"} · precio orientativo</div></div>
             <div style={{textAlign:"right"}}><div style={{fontWeight:950,fontSize:"1.15rem",color:T.g800}}>{currentTotal}€</div><div style={{fontSize:".76rem",fontWeight:900,color:T.textSub}}>⏱️ {formatDuration(currentDuration)}</div></div>
           </div>
+          {currentServices.length>0&&<div style={{marginTop:8,fontSize:".74rem",fontWeight:850,color:T.g800,lineHeight:1.32}}>
+            {currentServices.map(s=>`${s.icon||"✂️"} ${s.label}`).join(" · ")}
+          </div>}
           {form.hora&&currentDuration>0&&<div style={{marginTop:8,fontSize:".76rem",fontWeight:850,color:T.textSub}}>Si empieza a las {form.hora}, terminaría aprox. a las {endTime(form.hora,currentDuration)}.</div>}
         </Card>
         <Input label="Fecha" value={form.fecha} onChange={v=>{setForm(f=>({...f,fecha:v,hora:""}));checkHorarios(v);}} type="date"/>
