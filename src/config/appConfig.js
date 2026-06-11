@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7t: Android compacto, RastaHelp limpio y textos de juegos más profesionales.
+  // Paleta 2.9.7u: hotfix Gacha, Android compacto y textos de juegos limpios.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7T_GAME_COPY_POLISH";
-const APP_VERSION_SHORT = "2.9.7t";
+const APP_VERSION = "RASTACUTS_2_9_7U_GACHA_HOTFIX_GAME_COPY";
+const APP_VERSION_SHORT = "2.9.7u";
 const APP_BUILD_DATE = "2026-06-11";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
