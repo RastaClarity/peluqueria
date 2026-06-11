@@ -12805,6 +12805,22 @@ function GlobalUIPolishPatch(){
       .premium-home-grid-main{grid-template-columns:1fr!important;}
     }
     @media(max-width:560px){
+      .rasta-helper-fixed-safe{
+        right:8px!important;
+        bottom:calc(78px + env(safe-area-inset-bottom,0px))!important;
+        transform:scale(.84)!important;
+        transform-origin:bottom right!important;
+        z-index:2300!important;
+      }
+      .rasta-helper-fixed-safe button[aria-label]{
+        width:64px!important;
+        height:64px!important;
+      }
+      .rasta-helper-fixed-safe .rasta-face-avatar{
+        width:46px!important;
+        height:46px!important;
+      }
+
       .premium-home section{min-height:auto!important;}
       .premium-home h1{font-size:3.05rem!important;}
     }
@@ -13771,7 +13787,7 @@ function AppCore(){
       <div key={`${ap}-${communityTab}`} className="page-content-pro" style={{padding:"18px 14px",position:"relative"}}>
         <div className="motion-strip" style={{background:`linear-gradient(90deg,transparent,${clinicAccent}99,${clinicAccent2}77,transparent)`,margin:"0 18px 16px",boxShadow:`0 0 18px ${clinicAccent}44`,opacity:.92}}/>
         {pages[ap]||pages["dashboard"]}
-        {ap!=="dashboard"&&<HelperMascot page={helperPage || (ap==="comunidad"?communityTab:ap)} settings={appSettings} onOpenMissions={()=>navTo("misiones")}/>}
+        <HelperMascot page={helperPage || (ap==="dashboard"?"inicio":(ap==="comunidad"?communityTab:ap))} settings={appSettings} onOpenMissions={()=>navTo("misiones")}/>
       </div>
       <div className="bottom-nav-pro" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"var(--rc-card-strong)",borderTop:`2px solid ${clinicAccent}`,display:"flex",justifyContent:"space-around",padding:"6px 2px 10px",zIndex:100,boxShadow:"0 -4px 20px rgba(0,0,0,0.18)"}}>
         {nav.map(n=>{
