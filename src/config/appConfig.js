@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7q: Home con cabecera/fondo abierto y logo completo en móvil.
+  // Paleta 2.9.7r: Home con paneles útiles y sin duplicar navegación.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7Q_HOME_BACKGROUND_HEADER_FIX";
-const APP_VERSION_SHORT = "2.9.7q";
+const APP_VERSION = "RASTACUTS_2_9_7R_HOME_LIVE_PANELS_POLISH";
+const APP_VERSION_SHORT = "2.9.7r";
 const APP_BUILD_DATE = "2026-06-11";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
