@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.7x: cabecera móvil equilibrada y sin título ocupando espacio.
+  // Paleta 2.9.7y: menú de audio, playlist aleatoria por defecto y modo ambientado opcional.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_7X_BALANCED_MOBILE_TOPBAR";
-const APP_VERSION_SHORT = "2.9.7x";
+const APP_VERSION = "RASTACUTS_2_9_7Y_AUDIO_SETTINGS_MENU";
+const APP_VERSION_SHORT = "2.9.7y";
 const APP_BUILD_DATE = "2026-06-11";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
