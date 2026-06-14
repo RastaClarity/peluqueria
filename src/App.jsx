@@ -2091,7 +2091,7 @@ function Auth({onLogin,showToast,settings}){
 
   async function handleLogin(){
     if(!email||!pass){showAuthError("Rellena todos los campos");SFX.error();return;}
-    if(!supabase){showAuthError("No se pudo conectar con Supabase");SFX.error();return;}
+    if(!supabase){showAuthError("No se pudo conectar. Inténtalo de nuevo.");SFX.error();return;}
     setLoading(true);
     const cleanEmail=email.trim().toLowerCase();
     const {data,error}=await supabase.auth.signInWithPassword({email:cleanEmail,password:pass});
@@ -2116,7 +2116,7 @@ function Auth({onLogin,showToast,settings}){
   async function handleRegister(){
     if(!email||!pass||!name){showAuthError("Rellena todos los campos");SFX.error();return;}
     if(pass.length<6){showAuthError("La contraseña debe tener al menos 6 caracteres");SFX.error();return;}
-    if(!supabase){showAuthError("No se pudo conectar con Supabase");SFX.error();return;}
+    if(!supabase){showAuthError("No se pudo conectar. Inténtalo de nuevo.");SFX.error();return;}
     setLoading(true);
     const cleanEmail=email.trim().toLowerCase();
     const cleanName=name.trim();
@@ -6599,7 +6599,7 @@ function RastaCutsTycoonGame({user,setUser,showToast,standalone=false,onExit}){
     "Esto no es el Arcade normal: aquí construyes el estudio usando tus RC globales. No toca tus RP valiosos.",
     "El mapa es la vista tipo Travian: pulsa un edificio, entra en su sala y usa los objetos clicables.",
     "La peluquería aumenta lo que cobras por cliente. El hall atrae gente. El almacén evita que se pare la economía.",
-    "Cada mejora entra en Obras y tarda tiempo real. Más adelante se puede hacer que Supabase guarde esto online.",
+    "Cada mejora entra en Obras y tarda tiempo real. Más adelante se podrá guardar el progreso online.",
     "Ruta recomendada: Hall nivel 2, Peluquería nivel 2, Almacén nivel 2, abrir Baño y luego Zona chill."
   ];
   const roomCost=selectedRoom.unlocked?tycoonUpgradeCost(state,selectedId):tycoonUnlockCost(selectedId);
@@ -9021,7 +9021,7 @@ function GestionAjustes({user,showToast}){
           <div className="icon3d" style={{fontSize:"2rem"}}>🛠️</div>
           <div style={{flex:1}}>
             <div style={{fontWeight:950,fontSize:"1rem"}}>Panel de configuración</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Estos valores se guardan en Supabase en app_settings. Algunas opciones ya se usan; otras quedan preparadas para los siguientes pasos.</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.82,lineHeight:1.35}}>Estos valores se guardan en los ajustes internos. Algunas opciones ya se usan y otras quedan preparadas para próximas mejoras.</div>
           </div>
         </div>
       </Card>
@@ -9404,8 +9404,8 @@ function GestionMusica({user,showToast}){
 
   async function uploadAudio(file){
     if(!file)return;
-    if(!supabase){showToast?.("Supabase no está conectado");return;}
-    if(!file.type.startsWith("audio/")){showToast?.("Sube un archivo de audio");return;}
+    if(!supabase){showToast?.("No se pudo conectar. Inténtalo de nuevo.");return;}
+    if(!file.type.startsWith("audio/")){showToast?.("Sube un audio");return;}
     setUploading(true);
     try{
       const safeName=file.name.replace(/[^a-zA-Z0-9._-]+/g,"_");
@@ -9544,18 +9544,18 @@ function GestionMusica({user,showToast}){
         ]}/>
         <Select label="Tipo" value={form.tipo} onChange={v=>setForm(f=>({...f,tipo:v}))} options={[
           {value:"externo",label:"Enlace externo"},
-          {value:"archivo",label:"Audio propio/libre"}
+          {value:"archivo",label:"Audio propio"}
         ]}/>
         <Input label="Descripción" value={form.descripcion} onChange={v=>setForm(f=>({...f,descripcion:v}))}/>
         <Input label="YouTube URL" value={form.youtube_url} onChange={v=>setForm(f=>({...f,youtube_url:v}))} placeholder="https://www.youtube.com/..."/>
         <Input label="Spotify URL" value={form.spotify_url} onChange={v=>setForm(f=>({...f,spotify_url:v}))} placeholder="https://open.spotify.com/..."/>
         <Input label="Web / playlist / búsqueda" value={form.web_url} onChange={v=>setForm(f=>({...f,web_url:v}))}/>
-        <Input label="Audio URL" value={form.audio_url} onChange={v=>setForm(f=>({...f,audio_url:v,tipo:v?"archivo":f.tipo}))} placeholder="Se rellena al subir audio o puedes pegar URL"/>
+        <Input label="Enlace de audio" value={form.audio_url} onChange={v=>setForm(f=>({...f,audio_url:v,tipo:v?"archivo":f.tipo}))} placeholder="Se rellena al subir un audio o puedes pegar un enlace"/>
         <div style={{marginBottom:14}}>
-          <div style={{fontSize:".78rem",fontWeight:950,color:T.g700,marginBottom:6}}>Subir audio propio/libre</div>
+          <div style={{fontSize:".78rem",fontWeight:950,color:T.g700,marginBottom:6}}>Subir audio propio</div>
           <input type="file" accept="audio/*" onChange={e=>uploadAudio(e.target.files?.[0])} style={{width:"100%",fontWeight:800,color:T.text}}/>
           {uploading&&<div style={{fontSize:".78rem",fontWeight:900,color:T.g700,marginTop:6}}>Subiendo audio...</div>}
-          {form.storage_path&&<div style={{fontSize:".72rem",fontWeight:800,color:T.textSub,marginTop:6}}>Storage: {form.storage_path}</div>}
+          {form.storage_path&&<div style={{fontSize:".72rem",fontWeight:800,color:T.textSub,marginTop:6}}>Audio guardado</div>}
         </div>
         <Select label="Destacado" value={form.destacado} onChange={v=>setForm(f=>({...f,destacado:v}))} options={[{value:"true",label:"Destacado"},{value:"false",label:"Normal"}]}/>
         <Select label="Estado" value={form.activo} onChange={v=>setForm(f=>({...f,activo:v}))} options={[{value:"true",label:"Activo"},{value:"false",label:"Oculto"}]}/>
@@ -10330,7 +10330,7 @@ function GestionEstadisticas({showToast}){
 
         <Card style={{marginTop:14,background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`}}>
           <div style={{fontWeight:950,color:T.g800}}>📌 Nota</div>
-          <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Este panel lee datos de Supabase y los resume. Si una tabla aún no tiene datos, simplemente aparecerá como cero o sin resultados.</div>
+          <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>Este panel resume la actividad de la app. Si aún no hay datos, aparecerá como cero o sin resultados.</div>
         </Card>
       </>}
     </div>
@@ -10353,7 +10353,7 @@ function GestionSeguridad({user,showToast}){
       setRows(Array.isArray(data)?data:[]);
     }catch(e){
       setRows([]);
-      showToast?.("No se pudo cargar auditoría. Revisa la tabla seguridad_auditoria.");
+      showToast?.("No se pudo cargar el registro de seguridad.");
     }
     setLoading(false);
   }
@@ -10405,7 +10405,7 @@ function GestionSeguridad({user,showToast}){
           <div className="icon3d" style={{fontSize:"2.2rem"}}>🛡️</div>
           <div style={{flex:1}}>
             <div style={{fontWeight:950,fontSize:"1rem"}}>Registro de seguridad</div>
-            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Aquí se revisan cambios de rol y eventos sensibles guardados en Supabase.</div>
+            <div style={{fontSize:".78rem",fontWeight:800,opacity:.84,lineHeight:1.35}}>Aquí se revisan cambios de rol y eventos sensibles registrados en la app.</div>
           </div>
         </div>
       </Card>
@@ -10453,7 +10453,7 @@ function GestionSeguridad({user,showToast}){
       <Card style={{marginTop:14,background:"linear-gradient(180deg,#EFE0BE,#D6BE87)",border:`2px dashed ${T.g400}`}}>
         <div style={{fontWeight:950,color:T.g800}}>📌 Nota</div>
         <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35,marginTop:4}}>
-          Si cambias un rol desde Gestión &gt; Usuarios y el trigger de Supabase está activo, aparecerá aquí como cambio de rol.
+          Si cambias un rol desde Gestión &gt; Usuarios y el registro automático está activo, aparecerá aquí como cambio de rol.
         </div>
       </Card>
     </div>
@@ -11493,11 +11493,11 @@ function GestionSeguridadSupabase({user,showToast}){
   const STORAGE_KEY="rasta_cuts_supabase_rls_plan_v1";
   const blocks=[
     {
-      id:"usuarios",icon:"👥",title:"Usuarios y roles",risk:"Muy alto",desc:"Base de toda la seguridad. Hay que cerrar lectura/escritura de perfiles, roles y baneos.",
-      tables:["usuarios","seguridad_auditoria"],
+      id:"usuarios",icon:"👥",title:"Usuarios y roles",risk:"Muy alto",desc:"Base de toda la seguridad. Hay que proteger perfiles, roles y bloqueos.",
+      tables:["Perfiles","Cambios importantes"],
       items:[
         "Cliente sólo puede leer su propio perfil completo",
-        "Cliente sólo puede editar datos seguros de su perfil",
+        "Cliente sólo puede editar datos básicos de su perfil",
         "Cliente nunca puede cambiar su rol",
         "Staff puede leer usuarios necesarios para gestión, pero no cambiar roles",
         "Admin puede cambiar roles y bloqueos",
@@ -11506,7 +11506,7 @@ function GestionSeguridadSupabase({user,showToast}){
     },
     {
       id:"citas",icon:"📅",title:"Citas y clientes de tienda",risk:"Alto",desc:"Separar clientes de tienda/citas de usuarios web para no mezclar privacidad.",
-      tables:["clientes","citas"],
+      tables:["Clientes","Agenda"],
       items:[
         "Cliente web sólo puede ver sus propias citas",
         "Staff/admin pueden ver agenda y citas de trabajo",
@@ -11516,8 +11516,8 @@ function GestionSeguridadSupabase({user,showToast}){
       ]
     },
     {
-      id:"tienda",icon:"🛍️",title:"Tienda, stock y pedidos",risk:"Alto",desc:"Evitar que un cliente modifique premios, puntos, pedidos o stock desde fuera.",
-      tables:["tienda_items","tienda_pedidos","inventario","canjes"],
+      id:"tienda",icon:"🛍️",title:"Tienda, stock y pedidos",risk:"Alto",desc:"Evitar cambios indebidos en premios, puntos, pedidos o stock.",
+      tables:["Premios","Pedidos","Stock","Canjes"],
       items:[
         "Cliente puede ver premios activos",
         "Cliente sólo puede ver sus propios pedidos/canjes",
@@ -11528,7 +11528,7 @@ function GestionSeguridadSupabase({user,showToast}){
     },
     {
       id:"comunidad",icon:"🌐",title:"Comunidad y mensajes",risk:"Alto",desc:"Controlar foro, mensajes privados, reportes y tablón para que nadie lea lo que no debe.",
-      tables:["foro_temas","foro_respuestas","mensajes_privados","reportes_comunidad","publicaciones"],
+      tables:["Foro","Respuestas","Mensajes","Reportes","Tablón"],
       items:[
         "Temas públicos legibles según sección activa",
         "Mensajes privados sólo visibles por emisor/receptor y admin/staff autorizado",
@@ -11538,11 +11538,11 @@ function GestionSeguridadSupabase({user,showToast}){
       ]
     },
     {
-      id:"ajustes",icon:"⚙️",title:"Ajustes y configuración",risk:"Muy alto",desc:"Los ajustes activan o apagan secciones; sólo admin debería cambiarlos.",
-      tables:["app_settings","musica_items"],
+      id:"ajustes",icon:"⚙️",title:"Ajustes y configuración",risk:"Muy alto",desc:"Los ajustes activan o pausan secciones; sólo admin debería cambiarlos.",
+      tables:["Ajustes","Música"],
       items:[
         "Ajustes globales sólo editables por admin",
-        "Lectura pública sólo de ajustes seguros",
+        "Sólo mostrar ajustes seguros",
         "Música editable sólo por admin",
         "No exponer claves ni datos sensibles",
         "Registrar cambios importantes"
@@ -11568,7 +11568,7 @@ function GestionSeguridadSupabase({user,showToast}){
   function reset(){
     setChecked({});
     try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
-    showToast?.("Plan Supabase reiniciado");
+    showToast?.("Plan de seguridad reiniciado");
   }
 
   if(!isAdmin)return <EmptyState icon="🔒" title="Sólo admin" sub="La preparación de seguridad sólo debería verla el administrador."/>;
@@ -11577,9 +11577,9 @@ function GestionSeguridadSupabase({user,showToast}){
       <div style={{display:"flex",alignItems:"center",gap:14}}>
         <div className="icon3d" style={{fontSize:"2.35rem"}}>🧱</div>
         <div style={{flex:1}}>
-          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Preparación Supabase / RLS</div>
+          <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Preparación de seguridad</div>
           <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-            Hoja de ruta para cerrar seguridad real en base de datos sin romper login, roles ni Gestión.
+            Repaso ordenado para cerrar la seguridad interna sin romper login, roles ni Gestión.
           </div>
         </div>
         <Badge col={pct===100?"green":"gold"}>{pct}%</Badge>
@@ -11589,7 +11589,7 @@ function GestionSeguridadSupabase({user,showToast}){
     <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,marginBottom:10}}>
         <div>
-          <div style={{fontWeight:950,color:T.g800}}>Estado antes de tocar RLS</div>
+          <div style={{fontWeight:950,color:T.g800}}>Estado antes de aplicar cambios</div>
           <div style={{fontSize:".8rem",fontWeight:820,color:T.textSub}}>{done} de {total} puntos preparados</div>
         </div>
         <Btn small col="ghost" onClick={reset}>Reiniciar</Btn>
@@ -11602,7 +11602,7 @@ function GestionSeguridadSupabase({user,showToast}){
     <Card style={{background:"linear-gradient(180deg,#FFE7DE,#F0C3B3)",border:`2px solid ${T.red}`}}>
       <div style={{fontWeight:950,color:T.g800,marginBottom:6}}>⚠️ Regla antes de empezar</div>
       <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
-        No activaremos políticas RLS de golpe. Primero se hará copia de seguridad mental del estado, luego <b>usuarios/roles</b>, después <b>citas</b>, luego <b>tienda</b>, después <b>comunidad</b> y al final <b>ajustes/auditoría</b>.
+        No aplicaremos cambios de seguridad de golpe. Primero se revisan <b>usuarios/roles</b>, después <b>citas</b>, luego <b>tienda</b>, después <b>comunidad</b> y al final <b>ajustes/auditoría</b>.
       </div>
     </Card>
 
@@ -11639,9 +11639,9 @@ function GestionSeguridadSupabase({user,showToast}){
     </div>
 
     <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
-      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Orden técnico recomendado</div>
+      <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Orden recomendado</div>
       <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
-        Primero se comprueba que el rol real vive en <b>usuarios</b>. Luego se crean políticas de lectura/escritura por tabla. Después se prueba con tres cuentas: admin, staff y cliente. Si algo falla, se revierte sólo esa tabla, no toda la app.
+        Primero se comprueban roles y permisos. Después se revisan accesos por zona. Luego se prueba con tres perfiles: admin, staff y cliente. Si algo falla, se corrige sólo esa parte, no toda la app.
       </div>
     </Card>
   </div>;
@@ -11752,7 +11752,7 @@ function GestionChecklist({user,showToast}){
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.65rem",lineHeight:1}}>Checklist de Gestión</div>
           <div style={{fontSize:".85rem",fontWeight:800,color:"rgba(255,244,214,.84)",lineHeight:1.35}}>
-            Revisión final antes de tocar seguridad real en Supabase. Marca cada prueba cuando la compruebes en la web.
+            Revisión final antes de cerrar la seguridad interna. Marca cada prueba cuando la compruebes en la web.
           </div>
         </div>
         <Badge col={pct===100?"green":"gold"}>{pct}%</Badge>
@@ -11799,7 +11799,7 @@ function GestionChecklist({user,showToast}){
     <Card style={{background:"linear-gradient(180deg,#E6CF9B,#D8BE87)",border:`2px solid ${T.g300}`}}>
       <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>Siguiente paso cuando esté todo marcado</div>
       <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.45}}>
-        Cuando Gestión esté revisada, el siguiente bloque será <b>Supabase/RLS</b>: primero usuarios y roles, después citas, tienda, comunidad y auditoría. No conviene tocar RLS hasta saber que la interfaz ya está estable.
+        Cuando Gestión esté revisada, el siguiente bloque será la <b>seguridad interna</b>: primero usuarios y roles, después citas, tienda, comunidad y auditoría. No conviene tocar esa parte hasta saber que la interfaz ya está estable.
       </div>
     </Card>
   </div>;
@@ -11843,8 +11843,8 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
     {id:"roles_permisos",icon:"👑",label:"Roles",sub:"Permisos de usuario y acceso",staff:false,group:"admin"},
     {id:"baneos",icon:"🚫",label:"Baneos",sub:"Cuentas bloqueadas y vuelta atrás rápida",staff:false,group:"admin"},
     {id:"seguridad",icon:"🧾",label:"Auditoría",sub:"Rastro de cambios importantes",staff:false,group:"admin"},
-    {id:"supabase_rls",icon:"🧱",label:"Supabase",sub:"Preparar la seguridad fuerte de Supabase",staff:false,group:"admin"},
-    {id:"checklist",icon:"✅",label:"Checklist",sub:"Repaso final antes de blindar Supabase",staff:false,group:"admin"},
+    {id:"supabase_rls",icon:"🧱",label:"Base de datos",sub:"Preparar la seguridad interna",staff:false,group:"admin"},
+    {id:"checklist",icon:"✅",label:"Checklist",sub:"Repaso final antes de cerrar seguridad",staff:false,group:"admin"},
     {id:"ajustes",icon:"⚙️",label:"Ajustes",sub:"Ajustes generales de Rasta Cuts",staff:false,group:"admin"},
   ].filter(t=>isAdmin||t.staff);
 
@@ -11856,7 +11856,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
     {id:"tienda",icon:"🛍️",label:"Tienda",sub:"Canjes, premios, stock y entregas. La tienda por dentro."},
     {id:"juegos",icon:"🎮",label:"Juegos",sub:"Arcade, rankings, retos y premios de juego."},
     {id:"comunidad",icon:"🌐",label:"Comunidad",sub:"Foro, mensajes, música y ambiente de comunidad."},
-    {id:"admin",icon:"🔐",label:"Admin",sub:"Usuarios, roles, bloqueos, Supabase y ajustes avanzados."}
+    {id:"admin",icon:"🔐",label:"Admin",sub:"Usuarios, roles, bloqueos y ajustes avanzados."}
   ].filter(g=>tabs.some(t=>t.group===g.id));
 
   const visibleTabs=tabs.filter(t=>t.group===gestionGroup);
@@ -11961,7 +11961,7 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
       {tab==="roles_permisos"&&(isAdmin?<GestionRolesPermisos user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La matriz de permisos sólo debería verla el administrador."/> )}
       {tab==="baneos"&&(isAdmin?<GestionBaneos user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="Los bloqueos sólo debería revisarlos el administrador."/> )}
       {tab==="seguridad"&&(isAdmin?<GestionSeguridad user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La auditoría de seguridad sólo debería verla el administrador."/> )}
-      {tab==="supabase_rls"&&(isAdmin?<GestionSeguridadSupabase user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La preparación de Supabase sólo debería verla el administrador."/> )}
+      {tab==="supabase_rls"&&(isAdmin?<GestionSeguridadSupabase user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="La preparación de seguridad sólo debería verla el administrador."/> )}
       {tab==="checklist"&&(isAdmin?<GestionChecklist user={user} showToast={showToast}/>:<RestrictedCard title="Sólo admin" sub="El checklist final sólo debería verlo el administrador."/> )}
       {tab==="ajustes"&&(isAdmin?<GestionAjustes user={user} showToast={showToast}/>:<RestrictedCard title="Ajustes bloqueados" sub="Los ajustes globales sólo debería tocarlos el administrador."/> )}
     </div>
@@ -13224,12 +13224,12 @@ function SafetyVersionPanel({user=null,settings=null,checkingSession=false,sessi
         <div style={{width:"min(460px,100%)",pointerEvents:"auto",background:"linear-gradient(180deg,#FFF8E6,#E9D3A4)",color:T.g900,border:`2px solid ${sessionWarning?T.red:T.gold}`,borderRadius:18,boxShadow:"0 18px 46px rgba(0,0,0,.36)",padding:12,fontFamily:"'Outfit',system-ui,sans-serif"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:8}}>
             <div>
-              <div style={{fontWeight:1000,fontSize:".92rem",color:T.g900}}>🛡️ Diagnóstico Rasta Cuts</div>
+              <div style={{fontWeight:1000,fontSize:".92rem",color:T.g900}}>🛡️ Estado Rasta Cuts</div>
               <div style={{fontSize:".72rem",fontWeight:850,color:T.textSub}}>{APP_VERSION_SHORT} · {APP_BUILD_DATE}</div>
             </div>
             <button onClick={()=>setOpen(false)} style={{border:0,borderRadius:999,width:30,height:30,background:T.g150,color:T.g800,fontWeight:1000,cursor:"pointer"}}>×</button>
           </div>
-          {sessionWarning&&<div style={{background:"#FFF1C8",border:`1px solid ${T.orange}`,borderRadius:12,padding:9,marginBottom:8,fontSize:".78rem",fontWeight:900,color:T.g800}}>Supabase o la sesión están tardando más de lo normal. Si se queda cargando, limpia datos y recarga.</div>}
+          {sessionWarning&&<div style={{background:"#FFF1C8",border:`1px solid ${T.orange}`,borderRadius:12,padding:9,marginBottom:8,fontSize:".78rem",fontWeight:900,color:T.g800}}>La conexión está tardando más de lo normal. Si se queda cargando, limpia datos y recarga.</div>}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,fontSize:".72rem",fontWeight:850,color:T.textSub,marginBottom:10}}>
             <div><b>Usuario:</b><br/>{info.user}</div>
             <div><b>Rol:</b><br/>{info.role}</div>
@@ -13237,7 +13237,7 @@ function SafetyVersionPanel({user=null,settings=null,checkingSession=false,sessi
             <div><b>Online:</b><br/>{info.online||"--"}</div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            <button onClick={copyInfo} style={{border:0,borderRadius:12,padding:"10px 8px",background:T.g700,color:T.white,fontWeight:1000,cursor:"pointer"}}>{copied?"Copiado":"Copiar debug"}</button>
+            <button onClick={copyInfo} style={{border:0,borderRadius:12,padding:"10px 8px",background:T.g700,color:T.white,fontWeight:1000,cursor:"pointer"}}>{copied?"Copiado":"Copiar info"}</button>
             <button onClick={clearRastaCutsClientData} style={{border:0,borderRadius:12,padding:"10px 8px",background:T.red,color:T.white,fontWeight:1000,cursor:"pointer"}}>Limpiar datos</button>
             <button onClick={toggleSafeMode} style={{gridColumn:"1 / -1",border:`1px solid ${T.g300}`,borderRadius:12,padding:"9px 8px",background:safeMode?"#F8E0B4":"#FFF8E6",color:T.g800,fontWeight:1000,cursor:"pointer"}}>Modo seguro local: {safeMode?"ON":"OFF"}</button>
           </div>
@@ -13460,7 +13460,7 @@ function GlobalUIPolishPatch(){
     }
 
     /* 2.9.7a · App Store UI Foundation
-       Rollo graffiti/tattoo/rasta real en CSS, sin tocar Supabase ni economía. */
+       Rollo graffiti/tattoo/rasta real en CSS, sin tocar economía. */
     :root{
       --rc-ink:#050706;
       --rc-night:#07100d;
