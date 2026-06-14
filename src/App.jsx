@@ -221,7 +221,7 @@ function AvatarLevelRolesPanel({user,compact=false}){
   const roleName=avatarLevelName(lvl);
   const unlocked=avatarUnlockedRoles(lvl);
   const nextRole=AVATAR_ROLE_TREE.find(r=>r.level>lvl)||null;
-  return <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D8B4)",border:`2px solid ${T.g300}`}}>
+  return <Card style={{marginBottom:12,background:"linear-gradient(145deg,#FFF4D6 0%,#F8E3A4 42%,#D7F2DD 100%), radial-gradient(circle at 100% 0%,rgba(95,240,200,.28),transparent 34%)",border:`2px solid ${T.g300}`,boxShadow:"0 16px 32px rgba(20,8,4,.12)"}}>
     <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",marginBottom:12}}>
       <div>
         <div style={{fontWeight:950,color:T.g800,fontSize:"1.02rem"}}>⭐ Nivel de avatar y roles</div>
@@ -2319,7 +2319,7 @@ function DashboardAdmin({user,showToast,onOpenTab}={}){
     <div style={{animation:"fadeSlide 0.4s ease"}}>
       <SectionHeader icon="🏠" title="Centro de mando" sub={new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"})} action={<Btn small col="ghost" onClick={load}>Actualizar</Btn>}/>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#120806,#2B1A0D 48%,#D4AF37)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative"}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(145deg,#080D0A 0%,#17252D 38%,#6E3518 72%,#D4AF37 100%), radial-gradient(circle at 92% 12%,rgba(95,240,200,.22),transparent 34%)",border:"2px solid rgba(255,244,214,.52)",color:T.white,overflow:"hidden",position:"relative",boxShadow:"0 20px 46px rgba(0,0,0,.26)"}}>
         <div style={{position:"absolute",right:-22,top:-26,fontSize:"6.8rem",opacity:.10}}>🧾</div>
         <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:12}}>
           <div className="icon3d" style={{fontSize:"2.25rem"}}>🧭</div>
@@ -4696,7 +4696,7 @@ function Foro({user,showToast}){
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4}}>
         {categories.map(c=><button key={c.id} onClick={()=>{SFX.tab();setFilter(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===c.id?T.gold:T.g300}`,background:filter===c.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>
           {c.icon} {c.label}
-        </button>)}
+        </button>})}
       </div>
     </Card>}
 
@@ -5095,14 +5095,14 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
         onFilter={(f)=>{ try{ if(f==='todos')setCat('todo'); else if(f==='avatar')setCat('estilo'); else if(f==='juegos')setCat('juegos'); else if(f==='productos')setCat('productos'); else if(f==='descuentos')setCat('cupones'); else if(f==='canjeables')setCat('todo'); }catch{} }}
       />
 
-      <Card style={{background:"linear-gradient(145deg,#24110A,#6E3518 58%,#D4AF37)",border:"2px solid rgba(255,244,214,.45)",marginBottom:16,padding:"14px 16px",color:T.white}}>
+      <Card style={{background:"linear-gradient(145deg,#140907 0%,#6E3518 42%,#B878FF 78%,#D4AF37 100%), radial-gradient(circle at 88% 18%,rgba(95,240,200,.25),transparent 34%)",border:"2px solid rgba(255,244,214,.48)",marginBottom:16,padding:"14px 16px",color:T.white,boxShadow:"0 18px 38px rgba(0,0,0,.24)"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
           <div><div style={{fontSize:"0.72rem",fontWeight:950,opacity:0.78,letterSpacing:".08em",textTransform:"uppercase"}}>RastaPoints</div><div style={{fontFamily:"'Pirata One',cursive",fontSize:"2rem",lineHeight:1}}>{user.puntos||0} RP</div><div style={{fontSize:".78rem",fontWeight:800,opacity:.82,marginTop:3}}>Canjea vales, pide productos del estudio y revisa tus últimos pedidos. Los RC quedan para juegos y progreso.</div></div>
           <div className="icon3d" style={{fontSize:"2.8rem"}}>🎁</div>
         </div>
       </Card>
 
-      {pedidos.length>0&&<Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`}}>
+      {pedidos.length>0&&<Card style={{marginBottom:14,background:"linear-gradient(135deg,#FFF4D6 0%,#E9F8F2 52%,#F5E0FF 100%)",border:`2px solid ${T.g300}`,boxShadow:"0 12px 24px rgba(20,8,4,.10)"}}>
         <div style={{fontWeight:950,color:T.g800,marginBottom:8}}>🧾 Tus últimos pedidos</div>
         {pedidos.slice(0,3).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",padding:"7px 0",borderTop:`1px solid ${T.g150}`}}>
           <div style={{minWidth:0}}>
@@ -5114,7 +5114,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
       </Card>}
 
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
-        {cats.map(c=><button key={c.id} onClick={()=>{SFX.tab();setCat(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${cat===c.id?T.gold:T.g300}`,background:cat===c.id?T.gradGold:"rgba(255,244,214,.84)",color:cat===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>
+        {cats.map(c=>{const tone=c.id==="juegos"?"#35B8D0":c.id==="productos"?"#B878FF":"#F2C85B";const active=cat===c.id;return <button key={c.id} onClick={()=>{SFX.tab();setCat(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${active?tone:tone+"55"}`,background:active?`linear-gradient(135deg,${tone}26,#FFF8E6 55%,${tone}18)`:"rgba(255,244,214,.84)",color:T.g800,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer",boxShadow:active?`0 8px 18px ${tone}28`:"none"}}>
           {c.icon} {c.label}
         </button>)}
       </div>
@@ -5129,9 +5129,9 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
           const stockLimitado=p.stock!==null && p.stock!==undefined && String(p.stock)!=="";
           const agotado=stockLimitado && Number(p.stock)<=0;
           return(
-            <Card key={p.id||p.item_key} className="shop-reward-card" style={{marginBottom:12,border:ok&&!agotado?`2px solid ${T.gold}`:`2px solid #8E7957`,opacity:agotado?0.62:1,background:"linear-gradient(180deg,#FFF8E2,#E9D8B4 60%,#D4BD8F)",overflow:"hidden",padding:0}}>
+            <Card key={p.id||p.item_key} className="shop-reward-card" style={{marginBottom:12,border:ok&&!agotado?`2px solid ${gameVoucher?"#B878FF":realMoney?"#35B8D0":T.gold}`:`2px solid #8E7957`,opacity:agotado?0.62:1,background:gameVoucher?"linear-gradient(135deg,#FFF8E2 0%,#F0E0FF 56%,#DCD2FF 100%)":realMoney?"linear-gradient(135deg,#FFF8E2 0%,#DDF7FF 56%,#C9ECF7 100%)":"linear-gradient(135deg,#FFF8E2,#E9D8B4 60%,#D4BD8F)",overflow:"hidden",padding:0,boxShadow:"0 14px 30px rgba(20,8,4,.12)"}}>
               <div style={{display:"grid",gridTemplateColumns:"92px 1fr",gap:0}}>
-                <div style={{minHeight:124,display:"grid",placeItems:"center",background:ok?"radial-gradient(circle at 50% 25%,rgba(213,178,79,.35),transparent 42%),linear-gradient(180deg,#304923,#10160F)":"linear-gradient(180deg,#3A2A18,#10160F)",borderRight:"2px solid #8E7957",position:"relative"}}>
+                <div style={{minHeight:124,display:"grid",placeItems:"center",background:ok?`radial-gradient(circle at 50% 25%,${gameVoucher?"rgba(184,120,255,.42)":realMoney?"rgba(53,184,208,.38)":"rgba(213,178,79,.35)"},transparent 42%),linear-gradient(180deg,#304923,#10160F)`:"linear-gradient(180deg,#3A2A18,#10160F)",borderRight:"2px solid #8E7957",position:"relative"}}>
                   <div style={{filter:ok||isAvatarPersonalizationItem(p)?"none":"grayscale(1) brightness(.55)",transform:"scale(1.03)"}}>{shopItemPreview(p,user)}</div>
                   {!ok&&<div style={{position:"absolute",top:7,right:7,background:"rgba(0,0,0,.66)",color:"#FFF8E2",borderRadius:999,padding:"2px 6px",fontSize:".62rem",fontWeight:950}}>🔒</div>}
                 </div>
@@ -8078,7 +8078,7 @@ async function reveal(item){
   const selectedActive=selectedItem&&isAvatarPathReward(selectedItem)?normalizeAvatarConfig(currentConfig,user.avatar)[selectedItem.slot]===selectedItem.valor:false;
   const next=items.find(i=>!owned.includes(i.item_key) && Number(i.puntos_precio||0)>(user.puntos||0)) || items.find(i=>!owned.includes(i.item_key));
 
-  return <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",border:`2px solid ${T.gold}`,overflow:"hidden",padding:14}}>
+  return <Card style={{marginBottom:14,background:"linear-gradient(145deg,#FFF4D6 0%,#F2D16B 36%,#F4E4B8 66%,#D9F4E6 100%), radial-gradient(circle at 92% 12%,rgba(184,120,255,.20),transparent 34%)",border:`2px solid ${T.gold}`,overflow:"hidden",padding:14,boxShadow:"0 18px 38px rgba(20,8,4,.14), inset 0 1px 0 rgba(255,255,255,.40)"}}>
     <div style={{display:"grid",gap:8,marginBottom:10}}>
       <div style={{minWidth:0}}>
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"clamp(1.12rem,5.2vw,1.34rem)",color:T.g800,lineHeight:1.05}}>🎁 Camino de recompensas</div>
@@ -8090,7 +8090,7 @@ async function reveal(item){
       </div>
     </div>
 
-    <div style={{background:"rgba(110,53,24,.12)",borderRadius:16,padding:10,marginBottom:12}}>
+    <div style={{background:"linear-gradient(135deg,rgba(255,255,255,.42),rgba(95,240,200,.16))",border:`1px solid ${T.g300}`,borderRadius:16,padding:10,marginBottom:12,boxShadow:"inset 0 1px 0 rgba(255,255,255,.35)"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:".72rem",fontWeight:950,color:T.g800,marginBottom:6}}>
         <span>{lvl.name}</span>
         <span>{lvl.next.level===lvl.level?"Nivel máximo":`Siguiente: Nv. ${lvl.next.level}`}</span>
@@ -8587,10 +8587,10 @@ function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=
       <StatCard icon="💬" label="Respuestas" value={stats.loading?"…":stats.respuestas} col="blue"/>
       <StatCard icon="📰" label="Comentarios" value={stats.loading?"…":stats.comentarios} col="pink"/>
     </div>
-    <Card style={{background:"linear-gradient(180deg,#FFF4D6,#F4E0B4)",border:`1.5px solid ${T.g200}`,boxShadow:"0 10px 22px rgba(20,8,4,.10)",marginBottom:10}}>
+    <Card style={{background:"linear-gradient(135deg,#FFF4D6 0%,#E7F8FF 45%,#F6E0FF 100%)",border:`1.5px solid ${T.g200}`,boxShadow:"0 14px 28px rgba(20,8,4,.12)",marginBottom:10,overflow:"hidden",position:"relative"}}>
       <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:220}}>
-          <div style={{fontFamily:"'Baloo 2','Plus Jakarta Sans','Outfit',system-ui,sans-serif",fontSize:"1.35rem",fontWeight:950,color:T.g800,lineHeight:1}}>Barrio Rasta Cuts</div>
+          <div style={{fontFamily:"'Baloo 2','Plus Jakarta Sans','Outfit',system-ui,sans-serif",fontSize:"1.35rem",fontWeight:950,color:T.g800,lineHeight:1}}>🌐 Barrio Rasta Cuts</div>
           <div style={{fontSize:".84rem",fontWeight:820,color:T.textSub,lineHeight:1.38,marginTop:4}}>
             {comunidad.mensaje_comunidad||"Lee el tablón, participa en el foro y mantén una comunidad respetuosa."}
           </div>
@@ -8600,7 +8600,7 @@ function ComunidadCentroPanel({tabs=[],activeId="feed",onSelect=()=>{},settings=
         </div>
       </div>
     </Card>
-    <Card style={{background:"linear-gradient(135deg,rgba(33,20,12,.96),rgba(75,48,27,.92))",border:"1.5px solid rgba(255,244,214,.24)",color:T.white,padding:"12px 13px"}}>
+    <Card style={{background:"linear-gradient(135deg,rgba(33,20,12,.96),rgba(38,63,77,.92),rgba(75,48,27,.92))",border:"1.5px solid rgba(255,244,214,.24)",color:T.white,padding:"12px 13px",boxShadow:"0 14px 30px rgba(0,0,0,.22)"}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:9}}>
         {normas.map((n,i)=><div key={n} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:".78rem",fontWeight:820,lineHeight:1.32,color:"rgba(255,244,214,.86)"}}><span style={{display:"grid",placeItems:"center",width:22,height:22,borderRadius:999,background:i===0?"#B99A45":i===1?"#4F602D":"#263F4D",color:"#FFF4D6",fontWeight:1000,flexShrink:0}}>{i+1}</span><span>{n}</span></div>)}
       </div>
@@ -8702,7 +8702,7 @@ function Comunidad(props){
         <div style={{fontSize:".75rem",marginTop:3}}>{t.label}</div>
       </button>)}
     </div>
-    <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px"}}>
+    <Card style={{marginBottom:14,background:"linear-gradient(135deg,#FFF4D6,#F6E5BE 52%,#E9F8F2)",padding:"12px 14px",border:`1.5px solid ${T.g200}`,boxShadow:"0 10px 22px rgba(20,8,4,.08)"}}>
       <div style={{fontWeight:950,color:T.g800}}>{active.icon} {active.label}</div>
       <div style={{fontSize:".82rem",fontWeight:800,color:T.textSub,lineHeight:1.35}}>{active.sub}</div>
     </Card>
@@ -11904,12 +11904,12 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
         </div>
       </Card>
 
-      <Card style={{marginBottom:12,background:"linear-gradient(180deg,#FFF4D6,#E9D9B7)",border:`2px solid ${T.g300}`,padding:12}}>
+      <Card style={{marginBottom:12,background:"linear-gradient(135deg,#FFF4D6 0%,#E9F8F2 48%,#F6E7C4 100%)",border:`2px solid ${T.g300}`,padding:12,boxShadow:"0 12px 26px rgba(20,8,4,.10)"}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8}}>
-          {gestionGroups.map(g=><button key={g.id} onClick={()=>openGestionGroup(g.id)} style={{border:`2px solid ${gestionGroup===g.id?T.gold:T.g300}`,background:gestionGroup===g.id?T.gradGold:"rgba(255,244,214,.72)",color:gestionGroup===g.id?T.g900:T.g700,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",fontSize:".72rem",boxShadow:gestionGroup===g.id?"0 10px 24px rgba(212,175,55,.22)":"0 5px 12px rgba(20,8,4,.08)"}}>
+          {gestionGroups.map(g=>{const tones={principal:"#F2C85B",facturacion:"#3EE6C7",tienda:"#B878FF",juegos:"#35B8D0",comunidad:"#0FB890",admin:"#D94A35"};const tone=tones[g.id]||T.gold;const active=gestionGroup===g.id;return <button key={g.id} onClick={()=>openGestionGroup(g.id)} style={{border:`2px solid ${active?tone:tone+"55"}`,background:active?`linear-gradient(135deg,${tone}26,#FFF8E6 60%,${tone}18)`:"rgba(255,244,214,.72)",color:T.g800,borderRadius:16,padding:"10px 6px",fontWeight:950,cursor:"pointer",fontSize:".72rem",boxShadow:active?`0 8px 18px ${tone}26`:"0 5px 12px rgba(20,8,4,.08)"}}>
             <div style={{fontSize:"1.2rem",lineHeight:1}}>{g.icon}</div>
             <div style={{marginTop:4}}>{g.label}</div>
-          </button>)}
+          </button>})}
         </div>
         <div style={{fontSize:".78rem",fontWeight:850,color:T.textSub,lineHeight:1.35,marginTop:10}}>
           {gestionGroups.find(g=>g.id===gestionGroup)?.sub}
@@ -11917,10 +11917,10 @@ function GestionAdmin({user,setUser,showToast,showPoints,unread,onNavigate}){
       </Card>
 
       <div className="gestion-grid-pro" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:9,marginBottom:12}}>
-        {visibleTabs.map(t=><button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${active.id===t.id?T.gold:T.g300}`,background:active.id===t.id?T.gradGold:"rgba(255,244,214,.84)",color:active.id===t.id?T.g900:T.g700,borderRadius:16,padding:"12px 8px",fontWeight:950,cursor:"pointer",boxShadow:active.id===t.id?"0 10px 24px rgba(212,175,55,.25)":"0 6px 14px rgba(20,8,4,.1)"}}>
+        {visibleTabs.map(t=>{const tones={agenda:"#F2C85B",citas:"#3EE6C7",clientes:"#35B8D0",inventario:"#B878FF",stock:"#B878FF",pedidos:"#B878FF",mensajes:"#0FB890",moderacion:"#D94A35",estadisticas:"#35B8D0",facturacion:"#3EE6C7",caja:"#3EE6C7",juegos_admin:"#35B8D0"};const tone=tones[t.id]||T.gold;const isActive=active.id===t.id;return <button key={t.id} onClick={()=>{SFX.tab();setTab(t.id);}} style={{border:`2px solid ${isActive?tone:tone+"55"}`,background:isActive?`linear-gradient(135deg,${tone}26,#FFF8E6 60%,${tone}18)`:"rgba(255,244,214,.84)",color:T.g800,borderRadius:16,padding:"12px 8px",fontWeight:950,cursor:"pointer",boxShadow:isActive?`0 8px 18px ${tone}26`:"0 6px 14px rgba(20,8,4,.1)"}}>
           <div style={{fontSize:"1.35rem",lineHeight:1}}>{t.icon}</div>
           <div style={{fontSize:".76rem",marginTop:4}}>{t.label}</div>
-        </button>)}
+        </button>})}
       </div>
 
       <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF4D6,#F6E5BE)",padding:"12px 14px"}}>
