@@ -6768,6 +6768,12 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     {id:"ranking",icon:"🏆",label:"Ranking",sub:"Piques y Top",ids:["runner","jump","stitch","memoria"]},
     {id:"clasicos",icon:"🕹️",label:"Clásicos",sub:"Partidas rápidas",ids:["memoria","sopa","trivia"]}
   ];
+  const catToneMap={
+    todos:["#3EE6C7","#123E37"],
+    destacados:["#F2C85B","#4A2F0D"],
+    ranking:["#B878FF","#2A1747"],
+    clasicos:["#35B8D0","#123E52"]
+  };
   const activeCat=categoryDefs.find(x=>x.id===category)||categoryDefs[0];
   const visibleGames=GAMES.filter(g=>activeCat.ids.includes(g.id));
   const bestOverall=Math.max(0,...GAMES.filter(g=>g.id!=="tycoon"&&g.id!=="gacha").map(g=>getMyBestScore(g.id,uid)));
@@ -6780,16 +6786,17 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
     const toneMap={tycoon:["#E0B84F","#4A2F0D","local"],gacha:["#B878FF","#2A1747","gacha"],runner:["#35B8D0","#123E52","arcade"],jump:["#3EE6C7","#123F32","arcade"],stitch:["#D94A35","#4A1711","reto"],memoria:["#E0B84F","#3E3010","arcade"],sopa:["#0FB890","#143F2E","reto"],trivia:["#B878FF","#281A42","comunidad"]};
     const [accent,deep,artType]=toneMap[g.id]||["#3EE6C7","#123F32","arcade"];
     const status=isTycoon?"Progreso propio":isGacha?"RC + XP":played?"Cobrado hoy":"Pendiente hoy";
-    return <Card hover style={{opacity:played&&!isTycoon?0.92:1,background:`linear-gradient(145deg,rgba(8,13,10,.97),${deep}F2), radial-gradient(circle at 88% 16%,${accent}33,transparent 38%)`,border:`1px solid ${played&&!isTycoon?"rgba(255,244,214,.18)":accent+"77"}`,position:"relative",overflow:"hidden",color:"#FFF7DA",padding:0,boxShadow:"0 18px 42px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08)"}}>
-      <div style={{position:"absolute",right:4,top:10,opacity:.38,transform:"rotate(-5deg)",pointerEvents:"none",zIndex:0}}><RastaCardIllustration type={artType} accent={accent} size={96}/></div>
-      <div style={{position:"absolute",left:0,right:0,top:0,height:38,background:`linear-gradient(90deg,${accent}24,rgba(255,255,255,.045),transparent)`,borderBottom:`1px solid ${accent}18`,zIndex:0}}/>
-      <div style={{position:"absolute",top:9,left:12,zIndex:2,display:"inline-flex",alignItems:"center",gap:6,padding:"5px 9px",borderRadius:999,background:"rgba(255,244,214,.88)",border:`1px solid ${accent}66`,fontSize:".62rem",fontWeight:1000,color:"#211407",textTransform:"uppercase",letterSpacing:".045em",boxShadow:"0 5px 12px rgba(0,0,0,.16)",maxWidth:"calc(100% - 120px)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+    return <Card hover style={{opacity:played&&!isTycoon?0.94:1,background:`linear-gradient(155deg,rgba(7,11,9,.98) 0%,${deep}F2 58%,rgba(8,12,10,.96) 100%), radial-gradient(circle at 88% 16%,${accent}40,transparent 38%), radial-gradient(circle at 0% 100%,${accent}18,transparent 32%)`,border:`1px solid ${played&&!isTycoon?"rgba(255,244,214,.18)":accent+"88"}`,position:"relative",overflow:"hidden",color:"#FFF7DA",padding:0,boxShadow:`0 18px 42px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08), 0 0 0 1px ${accent}12`}}>
+      <div style={{position:"absolute",right:4,top:10,opacity:.42,transform:"rotate(-5deg)",pointerEvents:"none",zIndex:0}}><RastaCardIllustration type={artType} accent={accent} size={96}/></div>
+      <div style={{position:"absolute",left:0,right:0,top:0,height:38,background:`linear-gradient(90deg,${accent}3D,rgba(255,255,255,.055),transparent)`,borderBottom:`1px solid ${accent}22`,zIndex:0}}/>
+      <div style={{position:"absolute",left:0,right:0,bottom:0,height:6,background:`linear-gradient(90deg,${accent},rgba(255,255,255,.18),transparent)`}}/>
+      <div style={{position:"absolute",top:9,left:12,zIndex:2,display:"inline-flex",alignItems:"center",gap:6,padding:"5px 9px",borderRadius:999,background:"rgba(255,244,214,.90)",border:`1px solid ${accent}88`,fontSize:".62rem",fontWeight:1000,color:"#211407",textTransform:"uppercase",letterSpacing:".045em",boxShadow:"0 5px 12px rgba(0,0,0,.16)",maxWidth:"calc(100% - 120px)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
         {status}
       </div>
       <div style={{position:"relative",zIndex:1,padding:"46px 12px 12px",display:"grid",gridTemplateColumns:"minmax(0,1fr) auto",gap:10,alignItems:"end",minHeight:132}}>
         <div style={{minWidth:0,maxWidth:"78%"}}>
-          <div className="rc-card-title" style={{fontWeight:1000,fontSize:featured?"1.16rem":"1.04rem",marginTop:0,color:accent,textTransform:"uppercase",letterSpacing:".02em",lineHeight:1}}>{g.title}</div>
-          <div style={{fontSize:".74rem",fontWeight:800,lineHeight:1.25,color:"rgba(255,247,218,.78)",marginTop:5,maxWidth:210}}>{g.desc}</div>
+          <div className="rc-card-title" style={{fontWeight:1000,fontSize:featured?"1.16rem":"1.04rem",marginTop:0,color:accent,textTransform:"uppercase",letterSpacing:".02em",lineHeight:1,textShadow:`0 0 12px ${accent}22`}}>{g.title}</div>
+          <div style={{fontSize:".74rem",fontWeight:800,lineHeight:1.25,color:"rgba(255,247,218,.84)",marginTop:5,maxWidth:210,background:"rgba(255,255,255,.05)",border:`1px solid ${accent}18`,padding:"8px 9px",borderRadius:14}}>{g.desc}</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
             {isTycoon?<Badge col="blue">🪙 RC global</Badge>:isGacha?<Badge col="gold">🎰 premios de juego</Badge>:<Badge col="gold">💎 hasta +{g.pts} RP</Badge>}
             {!isTycoon&&<Badge col="blue">🏆 récord {best}</Badge>}
@@ -6833,22 +6840,22 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
       </Card>
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-        <button onClick={()=>onOpenTops?.("games")} style={{border:`2px solid ${T.g300}`,borderRadius:20,padding:"13px 12px",background:"linear-gradient(135deg,#FFF4D6,#EBD7A8)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 8px 18px rgba(20,8,4,.13)"}}><div style={{fontSize:"1.6rem"}}>🏆</div><div>Ranking semanal</div><div style={{fontSize:".72rem",color:T.textSub,marginTop:3}}>Top por minijuego</div></button>
-        <button onClick={()=>onOpenTops?.("general")} style={{border:`2px solid ${T.g300}`,borderRadius:20,padding:"13px 12px",background:"linear-gradient(135deg,#FFF4D6,#EBD7A8)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 8px 18px rgba(20,8,4,.13)"}}><div style={{fontSize:"1.6rem"}}>👑</div><div>Ranking general</div><div style={{fontSize:".72rem",color:T.textSub,marginTop:3}}>Juego y comunidad</div></button>
+        <button onClick={()=>onOpenTops?.("games")} style={{border:"2px solid rgba(53,184,208,.40)",borderRadius:20,padding:"13px 12px",background:"linear-gradient(135deg,rgba(53,184,208,.18),#E9F9FF 58%,#D8F3FB)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 20px rgba(53,184,208,.16)"}}><div style={{fontSize:"1.6rem"}}>🏆</div><div>Ranking semanal</div><div style={{fontSize:".72rem",color:T.textSub,marginTop:3}}>Top por minijuego</div></button>
+        <button onClick={()=>onOpenTops?.("general")} style={{border:"2px solid rgba(184,120,255,.38)",borderRadius:20,padding:"13px 12px",background:"linear-gradient(135deg,rgba(184,120,255,.20),#FFF1FD 58%,#F0D7FF)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:"0 10px 20px rgba(184,120,255,.16)"}}><div style={{fontSize:"1.6rem"}}>👑</div><div>Ranking general</div><div style={{fontSize:".72rem",color:T.textSub,marginTop:3}}>Juego y comunidad</div></button>
       </div>
 
-      <Card style={{marginBottom:14,background:"linear-gradient(180deg,#FFF8E6,#F3E4BD)",border:`1.5px solid ${T.g200}`}}>
+      <Card style={{marginBottom:14,background:"linear-gradient(135deg,#FFF8E6 0%,#F7E9C7 44%,#F3E0F7 100%)",border:`1.5px solid ${T.g200}`,boxShadow:"0 12px 26px rgba(20,8,4,.10)"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
           <div><div style={{fontWeight:950,color:T.g800}}>🎯 Estado de hoy</div><div style={{fontSize:".78rem",fontWeight:820,color:T.textSub}}>Pendientes: {pendingCount}. Puedes rejugar sin cobrar RP para mejorar récord.</div></div>
           <Btn small col="ghost" onClick={()=>setActiveGame("gacha")}>🎰 Gacha</Btn>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(100px,1fr))",gap:8}}>
-          {GAMES.filter(g=>g.id!=="tycoon").slice(0,7).map(g=>{const played=getPlayedToday(g.id,uid);return <div key={g.id} style={{border:`1px solid ${played?T.g200:T.gold}`,background:played?"rgba(185,154,69,.14)":"rgba(255,255,255,.42)",borderRadius:16,padding:9,textAlign:"center"}}><div style={{fontSize:"1.35rem"}}>{g.icon}</div><div style={{fontSize:".68rem",fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.title}</div><div style={{fontSize:".64rem",fontWeight:900,color:played?T.g600:T.orange}}>{played?"cobrado":"pendiente"}</div></div>})}
+          {GAMES.filter(g=>g.id!=="tycoon").slice(0,7).map(g=>{const played=getPlayedToday(g.id,uid);const tone=toneMap[g.id]||["#3EE6C7","#123F32"];return <div key={g.id} style={{border:`1px solid ${played?tone[0]+"66":tone[0]+"88"}`,background:played?`linear-gradient(180deg,${tone[0]}22,rgba(255,255,255,.72))`:`linear-gradient(180deg,rgba(255,255,255,.86),${tone[0]}18)`,borderRadius:16,padding:9,textAlign:"center",boxShadow:`0 8px 18px ${tone[0]}15`}}><div style={{fontSize:"1.35rem"}}>{g.icon}</div><div style={{fontSize:".68rem",fontWeight:950,color:T.g800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.title}</div><div style={{fontSize:".64rem",fontWeight:900,color:played?T.g600:tone[0]}}>{played?"cobrado":"pendiente"}</div></div>})}
         </div>
       </Card>
 
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6,marginBottom:12}}>
-        {categoryDefs.map(c=><button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{minWidth:132,border:`2px solid ${category===c.id?T.gold:T.g200}`,borderRadius:18,padding:"10px 12px",background:category===c.id?"linear-gradient(135deg,#FFF4D6,#EBD081)":"rgba(255,244,214,.72)",color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:category===c.id?"0 8px 18px rgba(185,154,69,.22)":"0 5px 12px rgba(20,8,4,.08)"}}><div>{c.icon} {c.label}</div><div style={{fontSize:".66rem",fontWeight:850,color:T.textSub,marginTop:2}}>{c.sub}</div></button>)}
+        {categoryDefs.map(c=>{const tone=catToneMap[c.id]||[T.gold,T.g700];const active=category===c.id;return <button key={c.id} onClick={()=>{SFX.tab();setCategory(c.id);}} style={{minWidth:132,border:`2px solid ${active?tone[0]:tone[0]+"44"}`,borderRadius:18,padding:"10px 12px",background:active?`linear-gradient(135deg,${tone[0]}26,#FFF8E8 56%,${tone[0]}18)`:`linear-gradient(135deg,rgba(255,244,214,.72),rgba(255,255,255,.55))`,color:T.g800,fontWeight:950,cursor:"pointer",textAlign:"left",boxShadow:active?`0 8px 18px ${tone[0]}28`:"0 5px 12px rgba(20,8,4,.08)"}}><div>{c.icon} {c.label}</div><div style={{fontSize:".66rem",fontWeight:850,color:active?tone[1]:T.textSub,marginTop:2}}>{c.sub}</div></button>})}
       </div>
 
       <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",margin:"-2px 2px 10px",flexWrap:"wrap"}}>
@@ -6856,9 +6863,9 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
           Mostrando {visibleGames.length} de {GAMES.length} juegos. Cambia de pestaña sólo si quieres filtrar.
         </div>
         <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-          <button onClick={()=>setActiveGame("runner")} style={{border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.70)",borderRadius:999,padding:"6px 9px",fontSize:".68rem",fontWeight:950,color:T.g800,cursor:"pointer"}}>✂️ Runner</button>
-          <button onClick={()=>setActiveGame("gacha")} style={{border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.70)",borderRadius:999,padding:"6px 9px",fontSize:".68rem",fontWeight:950,color:T.g800,cursor:"pointer"}}>🎰 Gacha</button>
-          <button onClick={()=>onOpenTycoon?.()} style={{border:`1px solid ${T.g300}`,background:"rgba(255,244,214,.70)",borderRadius:999,padding:"6px 9px",fontSize:".68rem",fontWeight:950,color:T.g800,cursor:"pointer"}}>🏪 Tycoon</button>
+          <button onClick={()=>setActiveGame("runner")} style={{border:"1px solid rgba(53,184,208,.42)",background:"linear-gradient(135deg,rgba(53,184,208,.18),rgba(255,255,255,.76))",borderRadius:999,padding:"6px 9px",fontSize:".68rem",fontWeight:950,color:T.g800,cursor:"pointer"}}>✂️ Runner</button>
+          <button onClick={()=>setActiveGame("gacha")} style={{border:"1px solid rgba(184,120,255,.42)",background:"linear-gradient(135deg,rgba(184,120,255,.18),rgba(255,255,255,.76))",borderRadius:999,padding:"6px 9px",fontSize:".68rem",fontWeight:950,color:T.g800,cursor:"pointer"}}>🎰 Gacha</button>
+          <button onClick={()=>onOpenTycoon?.()} style={{border:"1px solid rgba(242,200,91,.46)",background:"linear-gradient(135deg,rgba(242,200,91,.24),rgba(255,255,255,.78))",borderRadius:999,padding:"6px 9px",fontSize:".68rem",fontWeight:950,color:T.g800,cursor:"pointer"}}>🏪 Tycoon</button>
         </div>
       </div>
 
@@ -12076,7 +12083,7 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
     </section>
 
     <div className="rc-home-live-panels" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
-      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(28,20,13,.94))",border:"1px solid rgba(255,210,98,.24)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.22)"}}>
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(140deg,rgba(22,14,8,.98) 0%,rgba(54,34,14,.96) 54%,rgba(25,17,10,.98) 100%), radial-gradient(circle at 100% 0%,rgba(242,200,91,.22),transparent 34%)",border:"1px solid rgba(255,210,98,.30)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.22), 0 0 0 1px rgba(242,200,91,.08) inset"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
           <div>
             <div style={{fontWeight:1000,color:"#E0B84F",fontSize:"1.02rem"}}>📌 Hoy en Rasta Cuts</div>
@@ -12085,14 +12092,14 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
           <div style={{width:46,height:46,borderRadius:16,display:"grid",placeItems:"center",background:"rgba(242,200,91,.10)",border:"1px solid rgba(242,200,91,.24)",fontSize:"1.35rem"}}>💈</div>
         </div>
         {loading?<Spinner/>:<div style={{display:"grid",gap:8,marginTop:14}}>
-          {pendingOrders[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(255,210,98,.22)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>Pedido pendiente</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.72}}>{pendingOrders[0].nombre||pendingOrders[0].cliente_nombre||"Nuevo pedido"} · {pendingOrders[0].estado||"pendiente"}</div></button>}
-          {activeCoupons[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(95,240,200,.20)",background:"rgba(95,240,200,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>Vale activo</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.72}}>{activeCoupons[0].titulo||activeCoupons[0].codigo||"Cupón disponible"}</div></button>}
-          {bestScore&&<button onClick={()=>onNavigate?.("juegos")} style={{textAlign:"left",border:"1px solid rgba(255,255,255,.10)",background:"rgba(255,255,255,.06)",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA"}}><div style={{fontWeight:1000}}>Mejor partida reciente</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.72}}>{bestScore.game_id||bestScore.juego||"Arcade"} · {Number(bestScore.score||bestScore.points||0).toLocaleString("es-ES")} puntos de juego</div></button>}
+          {pendingOrders[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(255,210,98,.34)",background:"linear-gradient(135deg,rgba(242,200,91,.16),rgba(255,255,255,.05))",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA",boxShadow:"0 10px 22px rgba(242,200,91,.10)"}}><div style={{fontWeight:1000}}>Pedido pendiente</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.74}}>{pendingOrders[0].nombre||pendingOrders[0].cliente_nombre||"Nuevo pedido"} · {pendingOrders[0].estado||"pendiente"}</div></button>}
+          {activeCoupons[0]&&<button onClick={()=>onNavigate?.("gestion")} style={{textAlign:"left",border:"1px solid rgba(95,240,200,.30)",background:"linear-gradient(135deg,rgba(95,240,200,.18),rgba(255,255,255,.05))",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA",boxShadow:"0 10px 22px rgba(95,240,200,.10)"}}><div style={{fontWeight:1000}}>Vale activo</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.74}}>{activeCoupons[0].titulo||activeCoupons[0].codigo||"Cupón disponible"}</div></button>}
+          {bestScore&&<button onClick={()=>onNavigate?.("juegos")} style={{textAlign:"left",border:"1px solid rgba(184,120,255,.28)",background:"linear-gradient(135deg,rgba(184,120,255,.18),rgba(255,255,255,.05))",borderRadius:16,padding:12,cursor:"pointer",color:"#FFF7DA",boxShadow:"0 10px 22px rgba(184,120,255,.10)"}}><div style={{fontWeight:1000}}>Mejor partida reciente</div><div style={{fontSize:".78rem",fontWeight:820,opacity:.74}}>{bestScore.game_id||bestScore.juego||"Arcade"} · {Number(bestScore.score||bestScore.points||0).toLocaleString("es-ES")} puntos de juego</div></button>}
           {!pendingOrders[0]&&!activeCoupons[0]&&!bestScore&&<div style={{fontSize:".84rem",fontWeight:850,color:"rgba(255,247,218,.74)",padding:"8px 0"}}>Todo tranquilo por ahora. Cuando haya pedidos, vales o partidas destacadas aparecerán aquí.</div>}
         </div>}
       </div>
 
-      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(17,37,31,.90))",border:"1px solid rgba(95,240,200,.26)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.20)"}}>
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(145deg,rgba(7,19,16,.98) 0%,rgba(15,54,44,.92) 56%,rgba(7,19,16,.98) 100%), radial-gradient(circle at 100% 0%,rgba(95,240,200,.20),transparent 36%)",border:"1px solid rgba(95,240,200,.30)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.20), 0 0 0 1px rgba(95,240,200,.08) inset"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
           <div>
             <div style={{fontWeight:1000,color:"#5EF0C8",fontSize:"1.02rem"}}>⭐ Progreso del perfil</div>
@@ -12113,14 +12120,14 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
             </div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-            <div style={{borderRadius:14,padding:"10px 8px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.10)"}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.7}}>RP</div><div style={{fontWeight:1000,color:"#E0B84F"}}>{Number(user?.puntos||0).toLocaleString("es-ES")}</div></div>
-            <div style={{borderRadius:14,padding:"10px 8px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.10)"}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.7}}>RC</div><div style={{fontWeight:1000,color:"#5EF0C8"}}>{userRC(user).toLocaleString("es-ES")}</div></div>
-            <div style={{borderRadius:14,padding:"10px 8px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.10)"}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.7}}>XP</div><div style={{fontWeight:1000,color:"#FFF7DA"}}>{userXP(user).toLocaleString("es-ES")}</div></div>
+            <div style={{borderRadius:14,padding:"10px 8px",background:"linear-gradient(135deg,rgba(242,200,91,.18),rgba(255,255,255,.06))",border:"1px solid rgba(242,200,91,.24)",boxShadow:"0 8px 18px rgba(242,200,91,.10)"}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.76}}>RP</div><div style={{fontWeight:1000,color:"#E0B84F"}}>{Number(user?.puntos||0).toLocaleString("es-ES")}</div></div>
+            <div style={{borderRadius:14,padding:"10px 8px",background:"linear-gradient(135deg,rgba(95,240,200,.18),rgba(255,255,255,.06))",border:"1px solid rgba(95,240,200,.24)",boxShadow:"0 8px 18px rgba(95,240,200,.10)"}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.76}}>RC</div><div style={{fontWeight:1000,color:"#5EF0C8"}}>{userRC(user).toLocaleString("es-ES")}</div></div>
+            <div style={{borderRadius:14,padding:"10px 8px",background:"linear-gradient(135deg,rgba(184,120,255,.18),rgba(255,255,255,.06))",border:"1px solid rgba(184,120,255,.24)",boxShadow:"0 8px 18px rgba(184,120,255,.10)"}}><div style={{fontSize:".7rem",fontWeight:900,opacity:.76}}>XP</div><div style={{fontWeight:1000,color:"#FFF7DA"}}>{userXP(user).toLocaleString("es-ES")}</div></div>
           </div>
         </div>
       </div>
 
-      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(24,19,12,.94))",border:"1px solid rgba(255,210,98,.22)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.20)"}}>
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(145deg,rgba(20,11,8,.98) 0%,rgba(64,20,16,.92) 60%,rgba(20,11,8,.98) 100%), radial-gradient(circle at 100% 0%,rgba(217,74,53,.22),transparent 36%)",border:"1px solid rgba(217,74,53,.28)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.20), 0 0 0 1px rgba(217,74,53,.08) inset"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
           <div>
             <div style={{fontWeight:1000,color:"#E0B84F",fontSize:"1.02rem"}}>🎯 Reto recomendado</div>
@@ -12128,14 +12135,14 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
           </div>
           <div style={{width:46,height:46,borderRadius:16,display:"grid",placeItems:"center",background:"rgba(217,74,53,.10)",border:"1px solid rgba(217,74,53,.24)",fontSize:"1.35rem"}}>⚡</div>
         </div>
-        <div style={{marginTop:14,borderRadius:18,padding:14,background:"linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.03))",border:"1px solid rgba(255,255,255,.10)"}}>
+        <div style={{marginTop:14,borderRadius:18,padding:14,background:"linear-gradient(135deg,rgba(217,74,53,.14),rgba(255,255,255,.03))",border:"1px solid rgba(217,74,53,.20)",boxShadow:"0 10px 22px rgba(217,74,53,.10)"}}>
           <div style={{fontWeight:1000,color:"#FFF7DA"}}>Completa una acción diaria</div>
           <div style={{fontSize:".82rem",fontWeight:820,color:"rgba(255,247,218,.72)",lineHeight:1.45,marginTop:5}}>Revisa tus retos disponibles y reclama sólo lo que hayas completado.</div>
           <button onClick={()=>onNavigate?.("misiones")} style={{marginTop:12,border:"1px solid rgba(255,210,98,.36)",background:"linear-gradient(135deg,#E0B84F,#A56B1E)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#201407",cursor:"pointer"}}>Ver retos</button>
         </div>
       </div>
 
-      <div style={{borderRadius:24,padding:16,background:"linear-gradient(180deg,rgba(10,17,14,.96),rgba(20,24,15,.94))",border:"1px solid rgba(255,210,98,.22)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.20)"}}>
+      <div style={{borderRadius:24,padding:16,background:"linear-gradient(145deg,rgba(11,15,22,.98) 0%,rgba(17,37,54,.92) 58%,rgba(11,15,22,.98) 100%), radial-gradient(circle at 100% 0%,rgba(53,184,208,.24),transparent 38%)",border:"1px solid rgba(53,184,208,.26)",color:"#FFF7DA",boxShadow:"0 18px 34px rgba(0,0,0,.20), 0 0 0 1px rgba(53,184,208,.08) inset"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
           <div>
             <div style={{fontWeight:1000,color:"#E0B84F",fontSize:"1.02rem"}}>🌐 Comunidad activa</div>
@@ -12145,7 +12152,7 @@ function InternalHomeDashboard({user,onNavigate,unread={}}={}){
         </div>
         <div style={{marginTop:14,fontSize:".95rem",fontWeight:1000}}>💬 {home.comments.length} comentarios recientes</div>
         <div style={{marginTop:8,fontSize:".82rem",fontWeight:820,color:"rgba(255,247,218,.72)",lineHeight:1.45}}>Cuando haya movimiento en el tablón o en noticias aparecerá aquí.</div>
-        <button onClick={()=>onNavigate?.("comunidad")} style={{marginTop:14,border:"1px solid rgba(95,240,200,.30)",background:"rgba(95,240,200,.12)",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#5EF0C8",cursor:"pointer"}}>Ver comunidad</button>
+        <button onClick={()=>onNavigate?.("comunidad")} style={{marginTop:14,border:"1px solid rgba(53,184,208,.34)",background:"linear-gradient(135deg,rgba(53,184,208,.18),rgba(255,255,255,.04))",borderRadius:14,padding:"10px 14px",fontWeight:1000,color:"#79E9FF",cursor:"pointer",boxShadow:"0 10px 22px rgba(53,184,208,.10)"}}>Ver comunidad</button>
       </div>
     </div>
   </div>;
