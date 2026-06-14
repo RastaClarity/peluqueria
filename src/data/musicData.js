@@ -1,5 +1,5 @@
-// Rasta Cuts 2.9.3b
-// Datos de música y sonidos separados de App.jsx para evitar que el archivo principal crezca sin control.
+// Rasta Cuts 2.9.9m
+// Playlist robusta: cada canción tiene varias rutas posibles para evitar fallos por espacios, mayúsculas o nombres alternativos.
 
 export const BACKGROUND_PLAYLIST=[
   {
@@ -10,8 +10,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"shop",
     energy:"low",
     gain:1.00,
-    tags:["barber","lounge","warm","smooth"],
-    srcs:["/audio/Glass%20Lounge%20Loop.mp3","/audio/Glass Lounge Loop.mp3"]
+    tags:["barber", "lounge", "warm", "smooth"],
+    srcs:["/audio/Glass Lounge Loop.mp3", "/audio/Glass%20Lounge%20Loop.mp3", "/audio/glass-lounge-loop.mp3", "/audio/glass_lounge_loop.mp3", "/audio/glass lounge loop.mp3", "/audio/glass%20lounge%20loop.mp3"]
   },
   {
     id:"quiet_rhodes_loop_01",
@@ -21,8 +21,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"login",
     energy:"low",
     gain:1.12,
-    tags:["rhodes","lofi","rainy","calm"],
-    srcs:["/audio/Quiet%20Rhodes%20Loop.mp3","/audio/Quiet Rhodes Loop.mp3"]
+    tags:["rhodes", "lofi", "rainy", "calm"],
+    srcs:["/audio/Quiet Rhodes Loop.mp3", "/audio/Quiet%20Rhodes%20Loop.mp3", "/audio/quiet-rhodes-loop.mp3", "/audio/quiet_rhodes_loop.mp3", "/audio/quiet rhodes loop.mp3", "/audio/quiet%20rhodes%20loop.mp3"]
   },
   {
     id:"velvet_menu_glow_01",
@@ -32,8 +32,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"home",
     energy:"medium",
     gain:0.94,
-    tags:["menu","bright","smooth","positive"],
-    srcs:["/audio/Velvet%20Menu%20Glow.mp3","/audio/Velvet Menu Glow.mp3"]
+    tags:["menu", "bright", "smooth", "positive"],
+    srcs:["/audio/Velvet Menu Glow.mp3", "/audio/Velvet%20Menu%20Glow.mp3", "/audio/velvet-menu-glow.mp3", "/audio/velvet_menu_glow.mp3", "/audio/velvet menu glow.mp3", "/audio/velvet%20menu%20glow.mp3"]
   },
   {
     id:"velvet_menu_drift_01",
@@ -43,8 +43,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"home",
     energy:"low",
     gain:1.04,
-    tags:["sunset","beach","drift","chill"],
-    srcs:["/audio/Velvet%20Menu%20Drift.mp3","/audio/Velvet Menu Drift.mp3"]
+    tags:["sunset", "beach", "drift", "chill"],
+    srcs:["/audio/Velvet Menu Drift.mp3", "/audio/Velvet%20Menu%20Drift.mp3", "/audio/velvet-menu-drift.mp3", "/audio/velvet_menu_drift.mp3", "/audio/velvet menu drift.mp3", "/audio/velvet%20menu%20drift.mp3"]
   },
   {
     id:"drift_through_linen_01",
@@ -54,8 +54,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"profile",
     energy:"low",
     gain:1.10,
-    tags:["soft","emotional","anime","ambient"],
-    srcs:["/audio/Drift%20Through%20Linen.mp3","/audio/Drift Through Linen.mp3"]
+    tags:["soft", "emotional", "anime", "ambient"],
+    srcs:["/audio/Drift Through Linen.mp3", "/audio/Drift%20Through%20Linen.mp3", "/audio/drift-through-linen.mp3", "/audio/drift_through_linen.mp3", "/audio/drift through linen.mp3", "/audio/drift%20through%20linen.mp3"]
   },
   {
     id:"velvet_tab_loop_01",
@@ -65,8 +65,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"global",
     energy:"low",
     gain:1.02,
-    tags:["tabs","soft","navigation","background"],
-    srcs:["/audio/Velvet%20Tab%20Loop.mp3","/audio/Velvet Tab Loop.mp3"]
+    tags:["tabs", "soft", "navigation", "background"],
+    srcs:["/audio/Velvet Tab Loop.mp3", "/audio/Velvet%20Tab%20Loop.mp3", "/audio/velvet-tab-loop.mp3", "/audio/velvet_tab_loop.mp3", "/audio/velvet tab loop.mp3", "/audio/velvet%20tab%20loop.mp3"]
   },
   {
     id:"velvet_reward_room_01",
@@ -76,8 +76,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"profile",
     energy:"medium",
     gain:0.92,
-    tags:["reward","warm","progress","smooth"],
-    srcs:["/audio/Velvet%20Reward%20Room.mp3","/audio/Velvet Reward Room.mp3"]
+    tags:["reward", "warm", "progress", "smooth"],
+    srcs:["/audio/Velvet Reward Room.mp3", "/audio/Velvet%20Reward%20Room.mp3", "/audio/velvet-reward-room.mp3", "/audio/velvet_reward_room.mp3", "/audio/velvet reward room.mp3", "/audio/velvet%20reward%20room.mp3"]
   },
   {
     id:"velvet_reward_shop_01",
@@ -87,8 +87,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"shop",
     energy:"medium",
     gain:0.90,
-    tags:["shop","reward","barber","clean"],
-    srcs:["/audio/Velvet%20Reward%20Shop.mp3","/audio/Velvet Reward Shop.mp3"]
+    tags:["shop", "reward", "barber", "clean"],
+    srcs:["/audio/Velvet Reward Shop.mp3", "/audio/Velvet%20Reward%20Shop.mp3", "/audio/velvet-reward-shop.mp3", "/audio/velvet_reward_shop.mp3", "/audio/velvet reward shop.mp3", "/audio/velvet%20reward%20shop.mp3"]
   },
   {
     id:"barbershop_arcade_dub_01",
@@ -98,8 +98,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"arcade",
     energy:"medium",
     gain:0.95,
-    tags:["arcade","dub","barber","game"],
-    srcs:["/audio/barbershop-arcade-dub.mp3"]
+    tags:["arcade", "dub", "barber", "game"],
+    srcs:["/audio/barbershop-arcade-dub.mp3", "/audio/barbershop_arcade_dub.mp3", "/audio/Barbershop Arcade Dub.mp3", "/audio/Barbershop%20Arcade%20Dub.mp3", "/audio/barbershop arcade dub.mp3", "/audio/barbershop%20arcade%20dub.mp3", "/audio/barbershop-arcade-dub(1).mp3", "/audio/barbershop-arcade-dub1.mp3", "/audio/barbershop_arcade_dub1.mp3"]
   },
   {
     id:"vinyl_arcade_skank_01",
@@ -109,8 +109,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"arcade",
     energy:"medium",
     gain:0.95,
-    tags:["arcade","vinyl","skank","reggae"],
-    srcs:["/audio/Vinyl%20Arcade%20Skank.mp3","/audio/Vinyl Arcade Skank.mp3"]
+    tags:["arcade", "vinyl", "skank", "reggae"],
+    srcs:["/audio/Vinyl Arcade Skank.mp3", "/audio/Vinyl%20Arcade%20Skank.mp3", "/audio/vinyl-arcade-skank.mp3", "/audio/vinyl_arcade_skank.mp3", "/audio/vinyl arcade skank.mp3", "/audio/vinyl%20arcade%20skank.mp3"]
   },
   {
     id:"neon_barbertron_01",
@@ -120,8 +120,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"arcade",
     energy:"high",
     gain:0.90,
-    tags:["neon","arcade","retro","game"],
-    srcs:["/audio/Neon%20Barbertron.mp3","/audio/Neon Barbertron.mp3"]
+    tags:["neon", "arcade", "retro", "game"],
+    srcs:["/audio/Neon Barbertron.mp3", "/audio/Neon%20Barbertron.mp3", "/audio/neon-barbertron.mp3", "/audio/neon_barbertron.mp3", "/audio/neon barbertron.mp3", "/audio/neon%20barbertron.mp3"]
   },
   {
     id:"rasta_cuts_groove_01",
@@ -131,8 +131,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"home",
     energy:"medium",
     gain:0.95,
-    tags:["groove","fresh","positive","rasta"],
-    srcs:["/audio/Rasta%20Cuts%20Groove.mp3","/audio/Rasta Cuts Groove.mp3"]
+    tags:["groove", "fresh", "positive", "rasta"],
+    srcs:["/audio/Rasta Cuts Groove.mp3", "/audio/Rasta%20Cuts%20Groove.mp3", "/audio/rasta-cuts-groove.mp3", "/audio/rasta_cuts_groove.mp3", "/audio/rasta cuts groove.mp3", "/audio/rasta%20cuts%20groove.mp3"]
   },
   {
     id:"rasta_cuts_loop_01",
@@ -142,8 +142,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"global",
     energy:"low",
     gain:1.00,
-    tags:["loop","smooth","barber","background"],
-    srcs:["/audio/Rasta%20Cuts%20Loop.mp3","/audio/Rasta Cuts Loop.mp3"]
+    tags:["loop", "smooth", "barber", "background"],
+    srcs:["/audio/Rasta Cuts Loop.mp3", "/audio/Rasta%20Cuts%20Loop.mp3", "/audio/rasta-cuts-loop.mp3", "/audio/rasta_cuts_loop.mp3", "/audio/rasta cuts loop.mp3", "/audio/rasta%20cuts%20loop.mp3"]
   },
   {
     id:"rasta_cuts_loop_1_01",
@@ -153,8 +153,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"home",
     energy:"low",
     gain:1.00,
-    tags:["loop","sunset","warm","chill"],
-    srcs:["/audio/Rasta%20Cuts%20Loop%201.mp3","/audio/Rasta Cuts Loop 1.mp3"]
+    tags:["loop", "sunset", "warm", "chill"],
+    srcs:["/audio/Rasta Cuts Loop 1.mp3", "/audio/Rasta%20Cuts%20Loop%201.mp3", "/audio/rasta-cuts-loop-1.mp3", "/audio/rasta_cuts_loop_1.mp3", "/audio/rasta cuts loop 1.mp3", "/audio/rasta%20cuts%20loop%201.mp3", "/audio/Rasta Cuts Loop (1).mp3", "/audio/Rasta%20Cuts%20Loop%20(1).mp3", "/audio/rasta cuts loop (1).mp3", "/audio/rasta%20cuts%20loop%20(1).mp3"]
   },
   {
     id:"rasta_cuts_loop_2_01",
@@ -164,8 +164,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"login",
     energy:"low",
     gain:1.04,
-    tags:["loop","lofi","soft","calm"],
-    srcs:["/audio/Rasta%20Cuts%20Loop%202.mp3","/audio/Rasta Cuts Loop 2.mp3"]
+    tags:["loop", "lofi", "soft", "calm"],
+    srcs:["/audio/Rasta Cuts Loop 2.mp3", "/audio/Rasta%20Cuts%20Loop%202.mp3", "/audio/rasta-cuts-loop-2.mp3", "/audio/rasta_cuts_loop_2.mp3", "/audio/rasta cuts loop 2.mp3", "/audio/rasta%20cuts%20loop%202.mp3", "/audio/Rasta Cuts Loop (2).mp3", "/audio/Rasta%20Cuts%20Loop%20(2).mp3", "/audio/rasta cuts loop (2).mp3", "/audio/rasta%20cuts%20loop%20(2).mp3"]
   },
   {
     id:"rasta_drift_01",
@@ -175,8 +175,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"home",
     energy:"low",
     gain:1.00,
-    tags:["drift","rasta","beach","chill"],
-    srcs:["/audio/rasta%20drift.mp3","/audio/rasta drift.mp3"]
+    tags:["drift", "rasta", "beach", "chill"],
+    srcs:["/audio/Rasta Drift.mp3", "/audio/Rasta%20Drift.mp3", "/audio/rasta-drift.mp3", "/audio/rasta_drift.mp3", "/audio/rasta drift.mp3", "/audio/rasta%20drift.mp3"]
   },
   {
     id:"rasta_cuts_drift_01",
@@ -186,8 +186,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"profile",
     energy:"low",
     gain:1.03,
-    tags:["drift","emotional","soft","anime"],
-    srcs:["/audio/Rasta%20Cuts%20Drift.mp3","/audio/Rasta Cuts Drift.mp3"]
+    tags:["drift", "emotional", "soft", "anime"],
+    srcs:["/audio/Rasta Cuts Drift.mp3", "/audio/Rasta%20Cuts%20Drift.mp3", "/audio/rasta-cuts-drift.mp3", "/audio/rasta_cuts_drift.mp3", "/audio/rasta cuts drift.mp3", "/audio/rasta%20cuts%20drift.mp3"]
   },
   {
     id:"rasta_cuts_drift_1_01",
@@ -197,8 +197,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"login",
     energy:"low",
     gain:1.03,
-    tags:["drift","rainy","lofi","calm"],
-    srcs:["/audio/Rasta%20Cuts%20Drift%20(1).mp3","/audio/Rasta Cuts Drift (1).mp3"]
+    tags:["drift", "rainy", "lofi", "calm"],
+    srcs:["/audio/Rasta Cuts Drift 1.mp3", "/audio/Rasta%20Cuts%20Drift%201.mp3", "/audio/rasta-cuts-drift-1.mp3", "/audio/rasta_cuts_drift_1.mp3", "/audio/rasta cuts drift 1.mp3", "/audio/rasta%20cuts%20drift%201.mp3", "/audio/Rasta Cuts Drift (1).mp3", "/audio/Rasta%20Cuts%20Drift%20(1).mp3", "/audio/rasta cuts drift (1).mp3", "/audio/rasta%20cuts%20drift%20(1).mp3"]
   },
   {
     id:"rasta_cuts_drift_4_01",
@@ -208,8 +208,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"home",
     energy:"low",
     gain:1.00,
-    tags:["drift","sunset","warm","rasta"],
-    srcs:["/audio/Rasta%20Cuts%20Drift%204.mp3","/audio/Rasta Cuts Drift 4.mp3"]
+    tags:["drift", "sunset", "warm", "rasta"],
+    srcs:["/audio/Rasta Cuts Drift 4.mp3", "/audio/Rasta%20Cuts%20Drift%204.mp3", "/audio/rasta-cuts-drift-4.mp3", "/audio/rasta_cuts_drift_4.mp3", "/audio/rasta cuts drift 4.mp3", "/audio/rasta%20cuts%20drift%204.mp3", "/audio/Rasta Cuts Drift (4).mp3", "/audio/Rasta%20Cuts%20Drift%20(4).mp3", "/audio/rasta cuts drift (4).mp3", "/audio/rasta%20cuts%20drift%20(4).mp3"]
   },
   {
     id:"rasta_cuts_flow_01",
@@ -219,8 +219,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"shop",
     energy:"medium",
     gain:0.96,
-    tags:["flow","barber","smooth","clean"],
-    srcs:["/audio/Rasta%20Cuts%20Flow.mp3","/audio/Rasta Cuts Flow.mp3"]
+    tags:["flow", "barber", "smooth", "clean"],
+    srcs:["/audio/Rasta Cuts Flow.mp3", "/audio/Rasta%20Cuts%20Flow.mp3", "/audio/rasta-cuts-flow.mp3", "/audio/rasta_cuts_flow.mp3", "/audio/rasta cuts flow.mp3", "/audio/rasta%20cuts%20flow.mp3"]
   },
   {
     id:"barber_vinyl_crackle_01",
@@ -230,8 +230,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"shop",
     energy:"low",
     gain:1.02,
-    tags:["barber","vinyl","crackle","warm"],
-    srcs:["/audio/Barber%20Vinyl%20Crackle.mp3","/audio/Barber Vinyl Crackle.mp3"]
+    tags:["barber", "vinyl", "crackle", "warm"],
+    srcs:["/audio/Barber Vinyl Crackle.mp3", "/audio/Barber%20Vinyl%20Crackle.mp3", "/audio/barber-vinyl-crackle.mp3", "/audio/barber_vinyl_crackle.mp3", "/audio/barber vinyl crackle.mp3", "/audio/barber%20vinyl%20crackle.mp3"]
   },
   {
     id:"rasta_breeze_01",
@@ -241,8 +241,8 @@ export const BACKGROUND_PLAYLIST=[
     zone:"home",
     energy:"low",
     gain:1.00,
-    tags:["breeze","beach","rasta","soft"],
-    srcs:["/audio/Rasta%20Breeze.mp3","/audio/Rasta Breeze.mp3"]
+    tags:["breeze", "beach", "rasta", "soft"],
+    srcs:["/audio/Rasta Breeze.mp3", "/audio/Rasta%20Breeze.mp3", "/audio/rasta-breeze.mp3", "/audio/rasta_breeze.mp3", "/audio/rasta breeze.mp3", "/audio/rasta%20breeze.mp3"]
   },
   {
     id:"rasta_cuts_breeze_01",
@@ -252,11 +252,10 @@ export const BACKGROUND_PLAYLIST=[
     zone:"home",
     energy:"medium",
     gain:0.98,
-    tags:["breeze","morning","fresh","positive"],
-    srcs:["/audio/Rasta%20Cuts%20Breeze.mp3","/audio/Rasta Cuts Breeze.mp3"]
+    tags:["breeze", "morning", "fresh", "positive"],
+    srcs:["/audio/Rasta Cuts Breeze.mp3", "/audio/Rasta%20Cuts%20Breeze.mp3", "/audio/rasta-cuts-breeze.mp3", "/audio/rasta_cuts_breeze.mp3", "/audio/rasta cuts breeze.mp3", "/audio/rasta%20cuts%20breeze.mp3"]
   }
 ];
-
 export const PENTA=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
 
 export const NOTE_FREQ={
