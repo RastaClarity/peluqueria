@@ -8272,9 +8272,10 @@ function Perfil({user,setUser,onLogout,showToast,showPoints,onNavigate,onOpenAud
         <div style={{fontFamily:"'Pirata One',cursive",fontSize:"1.35rem",color:T.g800}}>⚙️ Ajustes del perfil</div>
         <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.38,marginTop:4}}>Opciones personales para que la app se adapte mejor a cómo la usas.</div>
         <div style={{display:"grid",gap:10,marginTop:12}}>
-          <button onClick={()=>onOpenAudioSettings?.()} style={{border:`2px solid ${T.g200}`,background:"linear-gradient(180deg,#101C15,#07100D)",color:T.white,borderRadius:18,padding:12,textAlign:"left",cursor:"pointer",boxShadow:"0 8px 18px rgba(20,8,4,.16)"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
-              <div><div style={{fontWeight:1000}}>🎧 Sonido y música</div><div style={{fontSize:".78rem",fontWeight:800,color:"rgba(255,247,218,.72)",lineHeight:1.34,marginTop:3}}>Modo actual: {audioMode==="ambient"?"ambientada por sección":"aleatoria en toda la app"}</div></div>
+          <button onClick={()=>onOpenAudioSettings?.()} style={{border:"2px solid rgba(95,240,200,.36)",background:"linear-gradient(145deg,#07100D 0%,#123E37 58%,#2A1747 100%)",color:T.white,borderRadius:18,padding:12,textAlign:"left",cursor:"pointer",boxShadow:"0 12px 24px rgba(20,8,4,.20), inset 0 1px 0 rgba(255,255,255,.08)",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",right:-18,top:-22,fontSize:"5rem",opacity:.10}}>🎧</div>
+            <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+              <div><div style={{fontWeight:1000}}>🎧 Sonido y música</div><div style={{fontSize:".78rem",fontWeight:800,color:"rgba(255,247,218,.76)",lineHeight:1.34,marginTop:3}}>Modo actual: {audioMode==="ambient"?"ambientada por sección":"aleatoria en toda la app"} · audio robusto</div></div>
               <Badge col={audioMode==="ambient"?"blue":"gold"}>{audioMode==="ambient"?"Ambientada":"Aleatoria"}</Badge>
             </div>
           </button>
@@ -14265,11 +14266,11 @@ function AudioSettingsModal({show,onClose,mode,onModeChange,currentZone,musicOn,
       <Card style={{background:"linear-gradient(180deg,#FFF4D6,#E9D3A3)",border:`1.5px solid ${T.g300}`}}>
         <div style={{fontWeight:1000,color:T.g800}}>🎧 Música de fondo</div>
         <div style={{fontSize:".8rem",fontWeight:800,color:T.textSub,lineHeight:1.38,marginTop:4}}>
-          Elige cómo quieres que se comporte la playlist. Esta pantalla ya guarda tu preferencia para la próxima fase del motor de audio.
+          Elige cómo quieres que se comporte la playlist. El motor de audio usa varias rutas por canción y salta si algún archivo falla.
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:10,marginTop:12}}>
           <ModeButton id="random" icon="🔀" title="Aleatoria en toda la app" desc="Mezcla todas las canciones de la playlist sin importar la sección." note="Modo por defecto"/>
-          <ModeButton id="ambient" icon="🌗" title="Ambientada por sección" desc="Deja preparado que Inicio, Tienda, Perfil y Arcade usen canciones de su ambiente." note="Se conectará al motor en la siguiente fase"/>
+          <ModeButton id="ambient" icon="🌗" title="Ambientada por sección" desc="Guarda la preferencia para que cada zona use la música que mejor encaje." note="Inicio, Tienda, Perfil, Arcade y Comunidad"/>
         </div>
       </Card>
 
@@ -14292,6 +14293,27 @@ function AudioSettingsModal({show,onClose,mode,onModeChange,currentZone,musicOn,
           <Btn full small col={musicOn?"ghost":"gold"} onClick={onToggleMusic}>{musicOn?"🔇 Silenciar":"🔊 Activar"}</Btn>
           <Btn full small col="blue" onClick={onNextTrack}>⏭️ Cambiar tema</Btn>
           <Btn full small col="ghost" onClick={onToggleTheme}>{uiTheme==="night"?"☀️ Modo día":"🌙 Modo noche"}</Btn>
+        </div>
+      </Card>
+
+      <Card style={{background:"linear-gradient(135deg,#FFF4D6,#E8F8F2 58%,#F4E0FF)",border:`1.5px solid ${T.g300}`}}>
+        <div style={{fontWeight:1000,color:T.g800}}>🧪 Diagnóstico rápido</div>
+        <div style={{fontSize:".79rem",fontWeight:820,color:T.textSub,lineHeight:1.42,marginTop:6}}>
+          Si una canción no suena, pulsa <b>Cambiar tema</b>. El motor probará otra pista y evitará quedarse mudo. Si sigue fallando, revisa que el archivo exista en <b>public/audio</b> con el mismo nombre.
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:8,marginTop:11}}>
+          <div style={{borderRadius:14,padding:10,background:"rgba(255,255,255,.44)",border:`1px solid ${T.g200}`}}>
+            <div style={{fontSize:".68rem",fontWeight:950,color:T.textSub}}>FALLOS</div>
+            <div style={{fontWeight:1000,color:T.g800}}>Salto seguro</div>
+          </div>
+          <div style={{borderRadius:14,padding:10,background:"rgba(255,255,255,.44)",border:`1px solid ${T.g200}`}}>
+            <div style={{fontSize:".68rem",fontWeight:950,color:T.textSub}}>RUTAS</div>
+            <div style={{fontWeight:1000,color:T.g800}}>Varias por tema</div>
+          </div>
+          <div style={{borderRadius:14,padding:10,background:"rgba(255,255,255,.44)",border:`1px solid ${T.g200}`}}>
+            <div style={{fontSize:".68rem",fontWeight:950,color:T.textSub}}>CONTROL</div>
+            <div style={{fontWeight:1000,color:T.g800}}>Mute sin reiniciar</div>
+          </div>
         </div>
       </Card>
 
