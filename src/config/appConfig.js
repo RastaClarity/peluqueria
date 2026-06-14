@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.9m: audio robusto y playlist revisada.
+  // Paleta 2.9.9n: centro de sonido y diagnóstico.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_9M_AUDIO_ROBUST_PLAYLIST";
-const APP_VERSION_SHORT = "2.9.9m";
+const APP_VERSION = "RASTACUTS_2_9_9N_AUDIO_CENTER_UI";
+const APP_VERSION_SHORT = "2.9.9n";
 const APP_BUILD_DATE = "2026-06-14";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
