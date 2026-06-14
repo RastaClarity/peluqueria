@@ -1,6 +1,7 @@
-import { BACKGROUND_PLAYLIST, PENTA, NOTE_FREQ, REGGAE_LOFI_TRACKS, GAME_MUSIC } from "../data/musicData.js";
+import { BACKGROUND_PLAYLIST, PENTA, NOTE_FREQ, GAME_MUSIC } from "../data/musicData.js";
 
 let audioCtx = null;
+
 let musicPlaying = false;
 let globalMuted = true;
 let masterVolume = 0.72;
@@ -56,9 +57,7 @@ function playTone(freq, type = "sine", dur = 0.12, vol = 0.12, delay = 0) {
     filter.Q.setValueAtTime(0.45, start);
 
     osc.connect(filter);
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(1450, start);
-    filter.Q.setValueAtTime(0.45 filter.connect(gain);
+    filter.connect(gain);
     gain.connect(ctx.destination);
 
     gain.gain.setValueAtTime(0.001, start);
@@ -211,12 +210,10 @@ function slugAudioName(name) {
 
 function uniqueList(list) {
   const out = [];
-
   list.forEach((item) => {
     const src = cleanAudioSrc(item);
     if (src && !out.includes(src)) out.push(src);
   });
-
   return out;
 }
 
@@ -270,17 +267,13 @@ function pickRandomBackgroundIndex() {
 
 function backgroundTargetVolume() {
   if (globalMuted || backgroundDuckedForGame) return 0;
-
   const gain = Number(getBackgroundTrack()?.gain) || 1;
-  const base = Number.isFinite(masterVolume) ? masterVolume : 0.72;
-
-  return Math.max(0.28, Math.min(0.78, base * 0.58 * gain));
+  return Math.max(0.28, Math.min(0.78, masterVolume * 0.58 * gain));
 }
 
 function applyBackgroundAudioState() {
   try {
     if (!backgroundAudio) return;
-
     backgroundAudio.loop = false;
     backgroundAudio.muted = Boolean(globalMuted || backgroundDuckedForGame);
     backgroundAudio.volume = backgroundTargetVolume();
@@ -306,10 +299,7 @@ function resetBackgroundAudio(keepAvailability = true) {
   } catch (e) {}
 
   backgroundAudio = null;
-
-  if (keepAvailability) {
-    backgroundAudioAvailable = true;
-  }
+  if (keepAvailability) backgroundAudioAvailable = true;
 }
 
 function tryNextSourceOrTrack() {
@@ -335,16 +325,13 @@ function tryNextSourceOrTrack() {
 
 function recoverBackgroundPlayback() {
   if (!musicPlaying || globalMuted || backgroundDuckedForGame) return;
-
   if (!tryNextSourceOrTrack()) return;
-
   resetBackgroundAudio(true);
   playBackgroundWithRecovery(true);
 }
 
 function scheduleBackgroundWatchdog(audioRef) {
   clearBackgroundWatchdog();
-
   if (!audioRef) return;
 
   const startAt = Number(audioRef.currentTime) || 0;
@@ -372,7 +359,6 @@ function createBackgroundAudio() {
   if (typeof Audio === "undefined") return null;
 
   const a = new Audio();
-
   a.src = getBackgroundSrc();
   a.loop = false;
   a.preload = "auto";
@@ -382,7 +368,6 @@ function createBackgroundAudio() {
 
   const markProgress = () => {
     backgroundLastProgress = Number(a.currentTime) || 0;
-
     if (a.readyState >= 2 && Number.isFinite(a.duration) && a.duration > 0.8) {
       clearBackgroundWatchdog();
     }
@@ -394,18 +379,13 @@ function createBackgroundAudio() {
 
   a.addEventListener("loadedmetadata", () => {
     try {
-      if (!Number.isFinite(a.duration) || a.duration <= 0.8) {
-        recoverBackgroundPlayback();
-      }
+      if (!Number.isFinite(a.duration) || a.duration <= 0.8) recoverBackgroundPlayback();
     } catch (e) {}
   });
 
   a.addEventListener("ended", () => {
     clearBackgroundWatchdog();
-
-    if (musicPlaying) {
-      nextMusicTrack(true);
-    }
+    if (musicPlaying) nextMusicTrack(true);
   });
 
   a.addEventListener("error", recoverBackgroundPlayback);
@@ -417,11 +397,7 @@ function createBackgroundAudio() {
 
 function getBackgroundAudio() {
   if (typeof Audio === "undefined") return null;
-
-  if (!backgroundAudio) {
-    backgroundAudio = createBackgroundAudio();
-  }
-
+  if (!backgroundAudio) backgroundAudio = createBackgroundAudio();
   return backgroundAudio;
 }
 
@@ -429,10 +405,7 @@ function playCurrentBackgroundTrack(forceRestart = false) {
   backgroundAudioAvailable = true;
 
   const a = getBackgroundAudio();
-
-  if (!a) {
-    return Promise.reject(new Error("Audio no disponible"));
-  }
+  if (!a) return Promise.reject(new Error("Audio no disponible"));
 
   if (forceRestart) {
     try {
@@ -447,7 +420,6 @@ function playCurrentBackgroundTrack(forceRestart = false) {
     backgroundFailedTracks = 0;
     scheduleBackgroundWatchdog(a);
     applyBackgroundAudioState();
-
     return true;
   });
 }
@@ -478,19 +450,15 @@ function startMusic() {
 
 function stopMusic() {
   musicPlaying = false;
-
   clearBackgroundWatchdog();
 
   try {
-    if (backgroundAudio && !backgroundAudio.paused) {
-      backgroundAudio.pause();
-    }
+    if (backgroundAudio && !backgroundAudio.paused) backgroundAudio.pause();
   } catch (e) {}
 }
 
 function muteMusicKeepTime(muted = true) {
   globalMuted = Boolean(muted);
-
   applyBackgroundAudioState();
 
   if (musicPlaying && backgroundAudioAvailable) {
@@ -518,13 +486,8 @@ function nextMusicTrack(auto = false) {
 
   if (shouldPlay) {
     musicPlaying = true;
-
-    if (!wasDucked) {
-      globalMuted = false;
-    }
-
+    if (!wasDucked) globalMuted = false;
     backgroundDuckedForGame = wasDucked;
-
     playBackgroundWithRecovery(true);
   }
 }
@@ -537,10 +500,8 @@ function startGameMusic(gameId) {
   if (globalMuted) return;
 
   stopGameMusic(false);
-
   resumeMainAfterGame = musicPlaying;
   backgroundDuckedForGame = true;
-
   applyBackgroundAudioState();
 
   const cfg = GAME_MUSIC?.[gameId] || GAME_MUSIC?.sopa || {
@@ -571,16 +532,10 @@ function startGameMusic(gameId) {
       if (i % 4 === 0) playTone(resolveFreq(n) * (cfg.bass || 0.5), "sine", 0.080, 0.010, 0.02);
     } else if (gameId === "stitch") {
       playTone(n, "triangle", 0.060, 0.012, 0);
-
-      if (i % 3 === 0) {
-        playTone(next, "sine", 0.070, 0.008, 0.07);
-      }
+      if (i % 3 === 0) playTone(next, "sine", 0.070, 0.008, 0.07);
     } else {
       playTone(n, cfg.wave || "sine", 0.075, 0.011, 0);
-
-      if (i % 4 === 1) {
-        playTone(next, "triangle", 0.090, 0.007, 0.08);
-      }
+      if (i % 4 === 1) playTone(next, "triangle", 0.090, 0.007, 0.08);
     }
 
     i += 1;
@@ -594,7 +549,6 @@ function stopGameMusic(restoreMain = true) {
   }
 
   backgroundDuckedForGame = false;
-
   applyBackgroundAudioState();
 
   if (restoreMain && resumeMainAfterGame && !globalMuted) {
