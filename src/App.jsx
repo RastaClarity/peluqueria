@@ -6777,13 +6777,13 @@ function Juegos({user,setUser,showToast,showPoints,setHelperPage,onOpenTops,onOp
   const activeCat=categoryDefs.find(x=>x.id===category)||categoryDefs[0];
   const visibleGames=GAMES.filter(g=>activeCat.ids.includes(g.id));
   const bestOverall=Math.max(0,...GAMES.filter(g=>g.id!=="tycoon"&&g.id!=="gacha").map(g=>getMyBestScore(g.id,uid)));
+  const toneMap={tycoon:["#E0B84F","#4A2F0D","local"],gacha:["#B878FF","#2A1747","gacha"],runner:["#35B8D0","#123E52","arcade"],jump:["#3EE6C7","#123F32","arcade"],stitch:["#D94A35","#4A1711","reto"],memoria:["#E0B84F","#3E3010","arcade"],sopa:["#0FB890","#143F2E","reto"],trivia:["#B878FF","#281A42","comunidad"]};
 
   function GameCard({g,featured=false}){
     const played=getPlayedToday(g.id,uid);
     const best=getMyBestScore(g.id,uid);
     const isTycoon=g.id==="tycoon";
     const isGacha=g.id==="gacha";
-    const toneMap={tycoon:["#E0B84F","#4A2F0D","local"],gacha:["#B878FF","#2A1747","gacha"],runner:["#35B8D0","#123E52","arcade"],jump:["#3EE6C7","#123F32","arcade"],stitch:["#D94A35","#4A1711","reto"],memoria:["#E0B84F","#3E3010","arcade"],sopa:["#0FB890","#143F2E","reto"],trivia:["#B878FF","#281A42","comunidad"]};
     const [accent,deep,artType]=toneMap[g.id]||["#3EE6C7","#123F32","arcade"];
     const status=isTycoon?"Progreso propio":isGacha?"RC + XP":played?"Cobrado hoy":"Pendiente hoy";
     return <Card hover style={{opacity:played&&!isTycoon?0.94:1,background:`linear-gradient(155deg,rgba(7,11,9,.98) 0%,${deep}F2 58%,rgba(8,12,10,.96) 100%), radial-gradient(circle at 88% 16%,${accent}40,transparent 38%), radial-gradient(circle at 0% 100%,${accent}18,transparent 32%)`,border:`1px solid ${played&&!isTycoon?"rgba(255,244,214,.18)":accent+"88"}`,position:"relative",overflow:"hidden",color:"#FFF7DA",padding:0,boxShadow:`0 18px 42px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08), 0 0 0 1px ${accent}12`}}>
