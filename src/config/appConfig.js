@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.9i: perfil, gestión, comunidad y tienda con más identidad.
+  // Paleta 2.9.9j: hotfix visual global sin error JSX.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,9 +39,9 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_9I_ALL_SECTIONS_VISUAL_PASS";
-const APP_VERSION_SHORT = "2.9.9i";
-const APP_BUILD_DATE = "2026-06-11";
+const APP_VERSION = "RASTACUTS_2_9_9J_VISUAL_PASS_SYNTAX_HOTFIX";
+const APP_VERSION_SHORT = "2.9.9j";
+const APP_BUILD_DATE = "2026-06-14";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
 export {
