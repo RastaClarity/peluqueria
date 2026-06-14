@@ -4696,7 +4696,7 @@ function Foro({user,showToast}){
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4}}>
         {categories.map(c=><button key={c.id} onClick={()=>{SFX.tab();setFilter(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${filter===c.id?T.gold:T.g300}`,background:filter===c.id?T.gradGold:"rgba(255,244,214,.84)",color:filter===c.id?T.g900:T.g700,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer"}}>
           {c.icon} {c.label}
-        </button>})}
+        </button>)}
       </div>
     </Card>}
 
