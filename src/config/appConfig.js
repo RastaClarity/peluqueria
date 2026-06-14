@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.9p: limpieza de textos públicos.
+  // Paleta 2.9.9q: pulido visual móvil.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_9P_CLEAN_PUBLIC_COPY_AUDIT";
-const APP_VERSION_SHORT = "2.9.9p";
+const APP_VERSION = "RASTACUTS_2_9_9Q_MOBILE_VISUAL_POLISH";
+const APP_VERSION_SHORT = "2.9.9q";
 const APP_BUILD_DATE = "2026-06-14";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
