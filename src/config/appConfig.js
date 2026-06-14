@@ -1,5 +1,5 @@
 const T = {
-  // Paleta 2.9.9f: agenda del día tipo timeline.
+  // Paleta 2.9.9h: segunda pasada visual global.
   g900:"#050706",
   g800:"#07100D",
   g700:"#101C15",
@@ -39,8 +39,8 @@ const BRAND = {
   subtagline:"Reserva, juega y gana recompensas",
 };
 
-const APP_VERSION = "RASTACUTS_2_9_9F_BOOKING_DAY_TIMELINE";
-const APP_VERSION_SHORT = "2.9.9f";
+const APP_VERSION = "RASTACUTS_2_9_9H_GLOBAL_VISUAL_PASS";
+const APP_VERSION_SHORT = "2.9.9h";
 const APP_BUILD_DATE = "2026-06-11";
 const APP_SAFE_MODE_KEY = "rastaCutsSafeMode";
 
