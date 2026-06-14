@@ -5116,7 +5116,7 @@ function Tienda({user,setUser,showToast,showPoints,settings}){
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:10}}>
         {cats.map(c=>{const tone=c.id==="juegos"?"#35B8D0":c.id==="productos"?"#B878FF":"#F2C85B";const active=cat===c.id;return <button key={c.id} onClick={()=>{SFX.tab();setCat(c.id);}} style={{flex:"0 0 auto",border:`2px solid ${active?tone:tone+"55"}`,background:active?`linear-gradient(135deg,${tone}26,#FFF8E6 55%,${tone}18)`:"rgba(255,244,214,.84)",color:T.g800,borderRadius:999,padding:"8px 12px",fontWeight:950,cursor:"pointer",boxShadow:active?`0 8px 18px ${tone}28`:"none"}}>
           {c.icon} {c.label}
-        </button>)}
+        </button>})}
       </div>
 
       {loading?<Spinner/>:visibles.length===0?<EmptyState icon="🛍️" title="Sin artículos todavía" sub="Aquí irán vales de juegos o productos reales. Los estilos y cupones están en el Camino de recompensas."/>
